@@ -11,7 +11,8 @@ const defaultData = {
       description:
         'On February 23rd, we hosted our annual Ramadan dinner for the Somali student boards in collaboration with SIBAT, SAPHS, SIS, SSC, and SPDA. We were honored to have Sheikh Hamad as our guest speaker. He gave a meaningful lecture on Islam, youth, and how to balance faith and school life. It was a beautiful evening of community, reflection, and connection during Ramadan.\n\nOn February 24th, we were honored to speak at the BSU annual Unity Dinner. Their event was dedicated to celebrating community and being together.\n\nOn February 26th, we hosted our Muslim Ramadan Dinner in collaboration with MPMA, AMC, MAS, and MBA. The evening was a meaningful opportunity to reflect and come together as a community during this blessed month. We were especially honored to welcome Ahmed Billo as our guest speaker.\n\nOn February 20th, we held Melting Points: ICE Out in collaboration with Mi Gente and the Black Student Union. We discussed how the presence of ICE on campus is impacting our respective communities and the student body as a whole. Students came together to vent, discuss, and find community.',
       image: 'images/february-newsletter.png',
-      link: 'https://www.instagram.com/p/DVmjjfGDhtk/'
+      link: 'https://www.instagram.com/p/DVmjjfGDhtk/',
+      secondaryLink: 'https://www.instagram.com/p/DVsD4UoDmTX/'
     }
   ],
   events: [
@@ -151,27 +152,49 @@ function renderNewsletters() {
   if (!list) return;
 
   list.innerHTML = siteData.newsletters
-    .map((item) => {
+    .map((item, idx) => {
       const imageHtml = item.image
         ? `<div class="newsletter-media-col"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="newsletter-card-media" /></div>`
         : '';
-      const embedUrl = toInstagramEmbedUrl(item.link);
-      const instagramEmbed =
-        embedUrl
-          ? `<div class="newsletter-media-col"><iframe class="newsletter-embed-frame" src="${escapeHtml(embedUrl)}" loading="lazy" allowfullscreen title="Instagram video"></iframe></div>`
-          : '';
+      const primaryUrl = toInstagramEmbedUrl(item.link);
+      const secondaryRaw = item.secondaryLink || (idx === 0 ? 'https://www.instagram.com/p/DVsD4UoDmTX/' : '');
+      const secondaryUrl = toInstagramEmbedUrl(secondaryRaw);
       const linkHtml = item.link
         ? `<a class="btn-ghost newsletter-read-more admin-editable-link" data-link-key="newsletter-${escapeHtml(item.id)}" href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">Read More</a>`
         : '';
-      const rightColumn = `
-        <div class="newsletter-content-col">
-          <p>${linkifyText(item.description)}</p>
-          ${instagramEmbed}
-          ${linkHtml}
+      const topRow = `
+        <div class="newsletter-top-row">
+          ${imageHtml || '<div class="newsletter-media-col newsletter-media-placeholder"></div>'}
+          <div class="newsletter-content-col">
+            <p>${linkifyText(item.description)}</p>
+          </div>
         </div>`;
-      const bodyContent = imageHtml
-        ? `${imageHtml}${rightColumn}`
-        : rightColumn;
+      let bottomRow = '';
+      const embedUrls = [primaryUrl, secondaryUrl].filter(Boolean);
+      if (embedUrls.length) {
+        const embedsHtml = embedUrls
+          .map(
+            (url) => `
+            <div class="newsletter-embed-wrap">
+              <iframe class="newsletter-embed-frame" src="${escapeHtml(url)}" loading="lazy" allowfullscreen title="Instagram video"></iframe>
+            </div>`
+          )
+          .join('');
+        bottomRow = `
+          <div class="newsletter-bottom-row">
+            <div class="newsletter-embed-row">
+              ${embedsHtml}
+            </div>
+            ${linkHtml}
+          </div>`;
+      } else if (linkHtml) {
+        bottomRow = `
+          <div class="newsletter-bottom-row">
+            <div class="newsletter-embed-wrap">
+              ${linkHtml}
+            </div>
+          </div>`;
+      }
       return `
       <article class="newsletter-card">
         <div class="newsletter-card-head">
@@ -179,7 +202,8 @@ function renderNewsletters() {
           <span class="newsletter-card-date">${escapeHtml(item.date)}</span>
         </div>
         <div class="newsletter-card-body">
-          ${bodyContent}
+          ${topRow}
+          ${bottomRow}
         </div>
       </article>`;
     })
@@ -392,7 +416,8 @@ function renderAdminForms() {
           { key: 'date', label: 'Date', value: n.date },
           { key: 'description', label: 'Description', value: n.description, type: 'textarea' },
           { key: 'image', label: 'Image URL', value: n.image },
-          { key: 'link', label: 'Link URL', value: n.link }
+          { key: 'link', label: 'Primary Link URL', value: n.link },
+          { key: 'secondaryLink', label: 'Secondary Instagram Link URL', value: n.secondaryLink || '' }
         ],
         'newsletters',
         idx
@@ -584,7 +609,8 @@ function bindAdminForms() {
           date: 'Month Year',
           description: 'Write your newsletter update here.',
           image: '',
-          link: ''
+          link: '',
+          secondaryLink: ''
         });
       }
       if (section === 'events') {

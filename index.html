@@ -68,8 +68,8 @@
       text-decoration: none;
     }
     .nav-logo img {
-      height: 52px;
-      width: 52px;
+      height: 64px;
+      width: 64px;
       object-fit: contain;
       filter: brightness(1.1);
     }
@@ -829,7 +829,7 @@
       gap: 12px;
     }
     .footer-left img {
-      height: 24px;
+      height: 34px;
       opacity: 0.7;
       filter: brightness(1.2);
     }
@@ -986,9 +986,30 @@
     }
     .newsletter-card-body {
       display: grid;
-      grid-template-columns: minmax(240px, 320px) 1fr;
-      gap: 22px;
+      gap: 20px;
       align-items: start;
+    }
+    .newsletter-top-row {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) minmax(320px, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    .newsletter-bottom-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .newsletter-embed-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      width: 100%;
+      align-items: start;
+    }
+    .newsletter-media-placeholder {
+      min-height: 10px;
     }
     .newsletter-content-col p {
       color: var(--silver);
@@ -1002,21 +1023,29 @@
       border: 1px solid rgba(255,255,255,0.12);
       background: var(--navy);
     }
+    .newsletter-media-col,
+    .newsletter-embed-wrap {
+      width: min(100%, 360px);
+    }
+    .newsletter-embed-row .newsletter-embed-wrap {
+      width: 100%;
+      max-width: none;
+    }
     .newsletter-card-media {
-      aspect-ratio: 3 / 4;
+      aspect-ratio: 4 / 5;
       object-fit: contain;
     }
     .newsletter-embed-frame {
       width: 100%;
-      max-width: 340px;
       aspect-ratio: 4 / 5;
-      object-fit: contain;
+      object-fit: cover;
       display: block;
     }
-    .newsletter-embed-frame {
-      margin: 8px 0 14px;
+    .newsletter-embed-wrap {
+      margin-top: 0;
     }
     .newsletter-read-more {
+      margin-top: 12px;
       width: fit-content;
       padding: 11px 22px;
       font-size: 10px;
@@ -1229,7 +1258,8 @@
 
     @media (max-width: 1024px) {
       #newsletter { padding: 80px 32px; }
-      .newsletter-card-body { grid-template-columns: 1fr; }
+      .newsletter-top-row { grid-template-columns: 1fr; }
+      .newsletter-embed-row { grid-template-columns: 1fr; }
       .full-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
