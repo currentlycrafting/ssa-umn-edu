@@ -192,14 +192,26 @@ function renderBoard() {
 
   boardGrid.innerHTML = siteData.boardMembers
     .map((member) => {
-      let mobileClass = '';
+      const mobileClasses = [];
       const lowerName = member.name.toLowerCase();
-      if (lowerName.includes('ifrah')) mobileClass = 'leader-photo-ifrah';
-      if (lowerName.includes('layla')) mobileClass = 'leader-photo-layla';
+      if (lowerName.includes('ifrah')) mobileClasses.push('leader-photo-ifrah');
+      if (lowerName.includes('layla')) mobileClasses.push('leader-photo-layla');
+      if (
+        lowerName.includes('ruweyda') ||
+        lowerName.includes('salman') ||
+        lowerName.includes('ikhlas') ||
+        lowerName.includes('maida') ||
+        lowerName.includes('ashaar') ||
+        lowerName.includes('salma') ||
+        lowerName.includes('aisha') ||
+        lowerName.includes('dahir')
+      ) {
+        mobileClasses.push('leader-photo-mobile-higher');
+      }
       return `
       <div class="leader-card">
         <div class="leader-card-image">
-          <img src="${escapeHtml(member.image)}" alt="${escapeHtml(member.name)}" class="${mobileClass}" />
+          <img src="${escapeHtml(member.image)}" alt="${escapeHtml(member.name)}" class="${mobileClasses.join(' ')}" />
           <div class="leader-card-overlay">
             <div class="leader-name">${escapeHtml(member.name)}</div>
             <div class="leader-role">${escapeHtml(member.role)}</div>

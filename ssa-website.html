@@ -3,180 +3,1503 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Somali Student Association - UMN</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Somali Student Association — University of Minnesota</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0b0f1c;
+      --navy-mid: #141929;
+      --navy-light: #1e2540;
+      --white: #f8f6f2;
+      --off-white: #ede9e1;
+      --silver: #9a9fad;
+      --gold: #b89a5c;
+      --gold-light: #d4b87a;
+      --stone: #c4bdb0;
+      --charcoal: #2a2e3d;
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    #scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      z-index: 9999;
+      transition: width 0.1s linear;
+    }
+
+    nav {
+      position: fixed;
+      top: 2px; left: 0; right: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 60px;
+      transition: background 0.5s ease, padding 0.4s ease, backdrop-filter 0.5s;
+    }
+    nav.scrolled {
+      background: rgba(11, 15, 28, 0.94);
+      backdrop-filter: blur(18px);
+      padding: 16px 60px;
+      border-bottom: 1px solid rgba(184,154,92,0.12);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .nav-logo img {
+      height: 36px;
+      width: 36px;
+      object-fit: contain;
+      filter: brightness(1.1);
+    }
+    .nav-logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+    .nav-logo-text span:first-child {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+    .nav-logo-text span:last-child {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-top: 3px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--stone);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-cta {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold) !important;
+      padding: 8px 22px;
+      font-size: 10px !important;
+      letter-spacing: 0.22em !important;
+      transition: background 0.3s, color 0.3s !important;
+    }
+    .nav-cta:hover {
+      background: var(--gold) !important;
+      color: var(--navy) !important;
+    }
+
+    #hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--navy);
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(11,15,28,0.15) 0%,
+        rgba(11,15,28,0.1) 40%,
+        rgba(11,15,28,0.72) 75%,
+        rgba(11,15,28,0.97) 100%
+      );
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 0 60px 80px;
+      max-width: 900px;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: heroIn 1.2s ease 0.4s forwards;
+    }
+    @keyframes heroIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 7vw, 88px);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      margin-bottom: 24px;
+      color: var(--white);
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--off-white);
+    }
+    .hero-sub {
+      font-size: 15px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--stone);
+      max-width: 480px;
+      margin-bottom: 40px;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      padding: 14px 36px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-ghost {
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 14px 36px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 400;
+      cursor: pointer;
+      transition: border-color 0.3s, color 0.3s;
+      display: inline-block;
+    }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold-light); }
+
+    .hero-scroll-indicator {
+      position: absolute;
+      bottom: 30px;
+      right: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      animation: heroIn 1.2s ease 1.4s forwards;
+    }
+    .hero-scroll-indicator span {
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--silver);
+      writing-mode: vertical-rl;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.1); }
+    }
+
+    section { position: relative; }
+
+    .section-label {
+      font-size: 9px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    #mission {
+      background: var(--navy-mid);
+      padding: 100px 60px;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 80px;
+      align-items: center;
+      border-top: 1px solid rgba(184,154,92,0.15);
+      border-bottom: 1px solid rgba(184,154,92,0.15);
+    }
+    .mission-left {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .mission-year {
+      font-family: var(--font-display);
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .mission-stat {
+      font-family: var(--font-display);
+      font-size: 72px;
+      font-weight: 300;
+      line-height: 1;
+      color: var(--white);
+    }
+    .mission-stat-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+    }
+    .mission-right h2 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 300;
+      line-height: 1.3;
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    .mission-right h2 em {
+      font-style: italic;
+      color: var(--stone);
+    }
+    .mission-right p {
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--silver);
+      max-width: 560px;
+    }
+
+    #signature-event {
+      min-height: 80vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .event-image-side {
+      position: relative;
+      overflow: hidden;
+      min-height: 600px;
+    }
+    .event-image-side img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 15%;
+      transition: transform 0.8s ease;
+    }
+    .event-image-side:hover img { transform: scale(1.04); }
+    .event-image-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(11,15,28,0.4) 0%, transparent 60%);
+    }
+    .event-content-side {
+      background: var(--navy-light);
+      padding: 80px 64px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .event-tag {
+      display: inline-block;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      margin-bottom: 32px;
+      width: fit-content;
+    }
+    .event-content-side h2 {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: var(--white);
+    }
+    .event-content-side p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--silver);
+      margin-bottom: 40px;
+    }
+    .event-meta {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+    .event-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .event-meta-item span:first-child {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .event-meta-item span:last-child {
+      font-size: 14px;
+      color: var(--white);
+    }
+
+    #gallery {
+      padding: 100px 60px;
+      background: var(--navy);
+    }
+    .gallery-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+    .gallery-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 3.5vw, 44px);
+      font-weight: 300;
+      color: var(--white);
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(2, 280px);
+      gap: 8px;
+    }
+    .gallery-item {
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s ease;
+      filter: grayscale(15%);
+    }
+    .gallery-item:hover img {
+      transform: scale(1.06);
+      filter: grayscale(0%);
+    }
+    .gallery-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, rgba(11,15,28,0.6) 100%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .gallery-item:hover::after { opacity: 1; }
+    .g1 { grid-column: 1 / 5; grid-row: 1 / 3; }
+    .g2 { grid-column: 5 / 8; grid-row: 1; }
+    .g3 { grid-column: 8 / 13; grid-row: 1; }
+    .g4 { grid-column: 5 / 9; grid-row: 2; }
+    .g5 { grid-column: 9 / 13; grid-row: 2; }
+
+    #about {
+      padding: 120px 60px;
+      background: var(--navy-mid);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 100px;
+      align-items: center;
+    }
+    .about-image-wrap {
+      position: relative;
+    }
+    .about-image-wrap img {
+      width: 100%;
+      height: 500px;
+      object-fit: cover;
+      object-position: center 10%;
+      display: block;
+    }
+    .about-image-accent {
+      position: absolute;
+      bottom: -24px;
+      left: -24px;
+      width: 160px;
+      height: 160px;
+      border: 1px solid var(--gold);
+      z-index: -1;
+      opacity: 0.5;
+    }
+    .about-content h2 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 50px);
+      font-weight: 300;
+      line-height: 1.2;
+      margin-bottom: 28px;
+      color: var(--white);
+    }
+    .about-content p {
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--silver);
+      margin-bottom: 20px;
+    }
+    .about-pillars {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 40px;
+    }
+    .pillar {
+      padding: 24px;
+      border: 1px solid rgba(184,154,92,0.2);
+      background: rgba(255,255,255,0.02);
+    }
+    .pillar-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gold-light);
+      margin-bottom: 8px;
+    }
+    .pillar p {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--silver);
+      margin: 0;
+    }
+
+    #leadership {
+      padding: 120px 60px;
+      background: var(--navy);
+    }
+    .leadership-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+    .leadership-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .leadership-header p {
+      font-size: 14px;
+      color: var(--silver);
+      max-width: 440px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .leadership-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+    .leader-card {
+      position: relative;
+      background: var(--navy-mid);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .leader-card-image {
+      height: 340px;
+      overflow: hidden;
+      position: relative;
+    }
+    .leader-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      filter: grayscale(20%);
+      transition: filter 0.5s, transform 0.6s;
+    }
+    .leader-card:hover .leader-card-image img {
+      filter: grayscale(0%);
+      transform: scale(1.04);
+    }
+    .leader-card-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(11,15,28,0.95) 0%, transparent 70%);
+      padding: 32px 24px 24px;
+      transform: translateY(8px);
+      transition: transform 0.4s;
+    }
+    .leader-card:hover .leader-card-overlay { transform: translateY(0); }
+    .leader-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .leader-role {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .leader-card-info {
+      padding: 20px 24px;
+      background: var(--navy-mid);
+    }
+    .leader-card-info p {
+      font-size: 12px;
+      color: var(--silver);
+      line-height: 1.6;
+    }
+
+    #events {
+      padding: 120px 60px;
+      background: var(--navy-light);
+    }
+    .events-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 60px;
+    }
+    .events-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 300;
+      color: var(--white);
+    }
+    .events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .event-row {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      align-items: center;
+      gap: 40px;
+      padding: 32px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .event-row:first-child { border-top: 1px solid rgba(255,255,255,0.07); }
+    .event-row:hover { padding-left: 12px; }
+    .event-date {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .event-date-day {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 300;
+      line-height: 1;
+      color: var(--white);
+    }
+    .event-date-month {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .event-details h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .event-details p {
+      font-size: 13px;
+      color: var(--silver);
+    }
+    .event-row-tag {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--navy);
+      background: var(--gold);
+      padding: 6px 14px;
+      white-space: nowrap;
+    }
+
+    #alumni {
+      padding: 120px 60px;
+      background: var(--navy-mid);
+    }
+    .alumni-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+    .alumni-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .alumni-header p {
+      font-size: 14px;
+      color: var(--silver);
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .alumni-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .alumni-card {
+      background: var(--navy-light);
+      padding: 32px;
+      border: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: border-color 0.3s, transform 0.3s;
+      cursor: default;
+    }
+    .alumni-card:hover {
+      border-color: rgba(184,154,92,0.3);
+      transform: translateY(-3px);
+    }
+    .alumni-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid rgba(184,154,92,0.25);
+    }
+    .alumni-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      filter: grayscale(20%);
+    }
+    .alumni-info h3 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .alumni-info .role {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .alumni-info .tenure {
+      font-size: 11px;
+      color: var(--silver);
+    }
+
+    #cta {
+      padding: 140px 60px;
+      background: var(--navy);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #cta::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(184,154,92,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    #cta .section-label { justify-content: center; }
+    #cta .section-label::before { display: none; }
+    #cta h2 {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 300;
+      line-height: 1.1;
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    #cta h2 em { font-style: italic; color: var(--stone); }
+    #cta p {
+      font-size: 16px;
+      color: var(--silver);
+      max-width: 440px;
+      margin: 0 auto 48px;
+      line-height: 1.8;
+    }
+    .cta-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 40px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-left img {
+      height: 24px;
+      opacity: 0.7;
+      filter: brightness(1.2);
+    }
+    .footer-left span {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--silver);
+      text-transform: uppercase;
+    }
+    .footer-center {
+      font-size: 11px;
+      color: rgba(154,159,173,0.5);
+      letter-spacing: 0.05em;
+    }
+    .footer-right {
+      display: flex;
+      gap: 28px;
+    }
+    .footer-right a {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-right a:hover { color: var(--gold-light); }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.9s ease, transform 0.9s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.15s; }
+    .reveal-delay-2 { transition-delay: 0.3s; }
+    .reveal-delay-3 { transition-delay: 0.45s; }
+
+    .gold-divider {
+      width: 48px;
+      height: 1px;
+      background: var(--gold);
+      margin: 24px 0;
+    }
+
+    @media (max-width: 1024px) {
+      nav { padding: 20px 32px; }
+      nav.scrolled { padding: 14px 32px; }
+      #mission { grid-template-columns: 1fr; gap: 40px; padding: 80px 32px; }
+      #signature-event { grid-template-columns: 1fr; }
+      .event-image-side { min-height: 400px; }
+      #gallery { padding: 80px 32px; }
+      .gallery-grid { grid-template-rows: repeat(2, 200px); }
+      #about { grid-template-columns: 1fr; padding: 80px 32px; }
+      .leadership-grid { grid-template-columns: 1fr 1fr; }
+      #events { padding: 80px 32px; }
+      #alumni { padding: 80px 32px; }
+      .alumni-grid { grid-template-columns: 1fr 1fr; }
+      #cta { padding: 100px 32px; }
+      footer { flex-direction: column; gap: 20px; text-align: center; padding: 32px; }
+      .hero-content { padding: 0 32px 60px; }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .gallery-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: repeat(3, 200px);
+      }
+      .g1 { grid-column: 1 / 3; grid-row: 1; }
+      .g2 { grid-column: 1; grid-row: 2; }
+      .g3 { grid-column: 2; grid-row: 2; }
+      .g4 { grid-column: 1; grid-row: 3; }
+      .g5 { grid-column: 2; grid-row: 3; }
+      .leadership-grid { grid-template-columns: 1fr; }
+      .leader-card-image img { object-position: center 90%; }
+      .leader-card-image img.leader-photo-mobile-higher { object-position: center 62%; }
+      .alumni-grid { grid-template-columns: 1fr; }
+      .event-row { grid-template-columns: 80px 1fr; }
+      .event-row-tag { display: none; }
+    }
+  </style>
+  <style>
+    .gallery-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: auto;
+    }
+    .gallery-item {
+      min-height: 220px;
+    }
+    .gallery-item.g1,
+    .gallery-item.g2,
+    .gallery-item.g3,
+    .gallery-item.g4,
+    .gallery-item.g5 {
+      grid-column: auto;
+      grid-row: auto;
+    }
+
+    .event-row-actions a {
+      color: var(--gold-light);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(212,184,122,0.45);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding-bottom: 2px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+
+    #newsletter {
+      padding: 120px 60px;
+      background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .newsletter-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4vw, 48px);
+      font-weight: 300;
+      color: var(--white);
+      margin-bottom: 14px;
+    }
+    .newsletter-list {
+      margin-top: 36px;
+      display: grid;
+      gap: 24px;
+    }
+    .newsletter-card {
+      background: var(--navy-mid);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 28px;
+    }
+    .newsletter-card-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .newsletter-card-head h3 {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 400;
+    }
+    .newsletter-card-date {
+      color: var(--gold-light);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+    .newsletter-card-body {
+      display: grid;
+      grid-template-columns: minmax(240px, 320px) 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .newsletter-content-col p {
+      color: var(--silver);
+      line-height: 1.8;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+    .newsletter-card-media,
+    .newsletter-embed-frame {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: var(--navy);
+    }
+    .newsletter-card-media {
+      aspect-ratio: 3 / 4;
+      object-fit: contain;
+    }
+    .newsletter-embed-frame {
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+    .newsletter-embed-frame {
+      margin: 8px 0 14px;
+    }
+    .newsletter-read-more {
+      width: fit-content;
+      padding: 11px 22px;
+      font-size: 10px;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-social {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--silver);
+      text-decoration: none;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+    .footer-social img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      filter: none;
+      opacity: 1;
+    }
+    .admin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--silver);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+    .admin-link img {
+      width: 14px;
+      height: 14px;
+      opacity: 0.9;
+      filter: none;
+    }
+
+    .full-gallery-modal,
+    .admin-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 2500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .full-gallery-modal.open,
+    .admin-panel.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .full-gallery-backdrop,
+    .admin-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 8, 15, 0.86);
+    }
+    .full-gallery-card {
+      position: relative;
+      margin: 4vh auto;
+      width: min(1100px, 95vw);
+      max-height: 92vh;
+      overflow: auto;
+      background: var(--navy-mid);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 18px;
+    }
+    .full-gallery-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .full-gallery-grid .gallery-item {
+      min-height: 170px;
+    }
+    .gallery-open {
+      overflow: hidden;
+    }
+
+    .admin-shell {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: min(760px, 95vw);
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      background: #0f1424;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 18px;
+    }
+    .admin-toolbar,
+    .admin-inline-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .admin-top-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 14px 0;
+    }
+    .admin-tab-btn {
+      border: 1px solid rgba(255,255,255,0.25);
+      background: transparent;
+      color: var(--off-white);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+    .admin-tab-btn.active {
+      border-color: var(--gold-light);
+      color: var(--gold-light);
+    }
+    .admin-group {
+      display: none;
+    }
+    .admin-group.active {
+      display: block;
+    }
+    .admin-section-form {
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 12px;
+      margin-bottom: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+    .admin-section-form label {
+      display: block;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      color: var(--stone);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .admin-section-form input,
+    .admin-section-form textarea,
+    #admin-password {
+      width: 100%;
+      background: #0a0e1b;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: var(--off-white);
+      padding: 10px;
+      font-family: var(--font-body);
+      font-size: 13px;
+    }
+    .admin-section-form textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+    .admin-upload-zone {
+      margin-top: 8px;
+      border: 1px dashed rgba(255,255,255,0.25);
+      color: var(--silver);
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .admin-upload-zone.dragover {
+      border-color: var(--gold-light);
+      color: var(--gold-light);
+    }
+    .admin-file-input {
+      display: none;
+    }
+    .admin-upload-note,
+    .admin-direct-hint {
+      color: var(--silver);
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 6px;
+    }
+    .admin-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .admin-group-header h4 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 400;
+    }
+    .admin-toolbar .btn-ghost,
+    .admin-toolbar .btn-primary,
+    .admin-inline-actions .btn-ghost,
+    .admin-toolbar-btn {
+      padding: 9px 16px;
+      font-size: 10px;
+    }
+    body.admin-direct-edit [data-admin-direct-edit="true"] {
+      outline: 1px dashed var(--gold-light);
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 1024px) {
+      #newsletter { padding: 80px 32px; }
+      .newsletter-card-body { grid-template-columns: 1fr; }
+      .full-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
 </head>
 <body>
+
   <div id="scroll-progress"></div>
 
-  <header id="navbar">
-    <div class="container nav-wrap">
-      <a class="brand" href="#hero">
-        <img src="images/ssa-logo.png" alt="SSA Logo" />
-        <span>SSA UMN</span>
-      </a>
-      <nav class="nav-links">
-        <a href="#mission">Mission</a>
-        <a href="#signature-event">Signature Event</a>
-        <a href="#about">About</a>
-        <a href="#leadership">Leadership</a>
-        <a href="#gallery">Gallery</a>
-        <a href="#events">Events</a>
-        <a href="#newsletter">Newsletter</a>
-        <a href="#cta">Join</a>
-      </nav>
+  <nav id="navbar">
+    <a href="#" class="nav-logo">
+      <img src="images/ssa-logo.png" alt="SSA Logo" />
+      <div class="nav-logo-text">
+        <span>SSA</span>
+        <span>University of Minnesota</span>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#events">Events</a></li>
+      <li><a href="#newsletter">Newsletter</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#leadership">Leadership</a></li>
+      <li><a href="#alumni">Alumni</a></li>
+      <li><a href="#cta" class="nav-cta">Join</a></li>
+    </ul>
+  </nav>
+
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Somali Student Association</div>
+      <h1 class="hero-title">
+        Heritage.<br />
+        <em>Excellence.</em><br />
+        Community.
+      </h1>
+      <p class="hero-sub">
+        A cultural and academic institution at the University of Minnesota — built by students who carry their roots with pride.
+      </p>
+      <div class="hero-actions">
+        <a href="#about" class="btn-primary">Explore the Association</a>
+        <a href="#events" class="btn-ghost">View Events</a>
+      </div>
     </div>
-  </header>
+    <div class="hero-scroll-indicator">
+      <div class="scroll-line"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
 
-  <main>
-    <section id="hero" class="section">
-      <div class="container reveal">
-        <p class="section-label hero-eyebrow">University of Minnesota</p>
-        <h1 class="hero-title">Somali Student Association</h1>
-        <p class="hero-sub">
-          Building community, preserving culture, and creating opportunities for Somali students
-          and allies through leadership, service, and events.
-        </p>
-        <div class="hero-ctas">
-          <a class="btn-primary admin-editable-link" data-link-key="hero-main-cta" href="#cta">Join SSA</a>
-          <a class="btn-ghost admin-editable-link" data-link-key="hero-secondary-cta" href="#events">View Events</a>
-        </div>
-      </div>
-    </section>
+  <section id="mission">
+    <div class="mission-left reveal">
+      <div class="mission-year">Est. University of Minnesota</div>
+      <div class="mission-stat">500+</div>
+      <div class="mission-stat-label">Members & Community</div>
+      <div class="gold-divider"></div>
+      <div class="mission-stat" style="font-size: 48px;">Since 1998</div>
+      <div class="mission-stat-label">SSA Legacy</div>
+    </div>
+    <div class="mission-right reveal reveal-delay-1">
+      <div class="section-label">Our Purpose</div>
+      <h2>
+        A space where <em>Somali excellence</em><br />meets academic ambition.
+      </h2>
+      <p>
+        The Somali Student Association at the University of Minnesota exists to celebrate our shared heritage, uplift our community, and create a home away from home for every Somali student who walks through our doors. We are more than a club — we are a legacy in progress, rooted in culture and driven by purpose.
+      </p>
+    </div>
+  </section>
 
-    <section id="mission" class="section">
-      <div class="container mission-layout">
-        <article class="panel reveal">
-          <p class="mission-year">2005</p>
-          <p class="mission-stat">20+</p>
-          <p class="mission-stat-label">Years of student leadership and impact</p>
-        </article>
-        <article class="panel mission-right reveal">
-          <h2>Our Mission</h2>
-          <p>
-            SSA supports Somali students academically, professionally, and socially while creating
-            spaces that celebrate identity and connection across the UMN community.
-          </p>
-        </article>
-      </div>
-    </section>
-
-    <section id="signature-event" class="section">
-      <div class="container signature-layout">
-        <article class="panel event-content-image reveal">
-          <img src="images/somali-night-2026-poster-v2.png" alt="Somali Night performers" class="admin-editable-image" data-image-key="signature-poster" />
-        </article>
-        <article class="panel event-content-side">
-          <div class="reveal">
-            <p class="event-tag">Signature Event</p>
-            <h2>Somali Night</h2>
-            <p>
-              A flagship annual production that celebrates Somali art, storytelling, and culture on
-              campus through performance and community.
-            </p>
-            <div class="event-actions">
-              <a class="btn-ghost admin-editable-link" data-link-key="signature-dates-link" href="#events">View Upcoming Dates</a>
-              <a class="btn-primary admin-editable-link" data-link-key="signature-fashion-link" href="https://docs.google.com/forms/d/e/1FAIpQLSfQfo3l21lIhDbftuPh-1a15XN0sD8SFxUkzxJtjMIy7o3hfg/viewform" target="_blank" rel="noopener noreferrer">Join the Fashion Show</a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section id="about" class="section">
-      <div class="container about-layout">
-        <article class="panel about-copy reveal">
-          <p class="section-label">About SSA</p>
-          <h2>Culture. Service. Leadership.</h2>
-          <p>
-            The Somali Student Association uplifts students through mentoring, professional
-            development, cultural programming, and collaborations with organizations across campus.
-          </p>
-        </article>
-        <article class="panel about-image-wrap reveal">
-          <img src="images/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108.png" alt="SSA members in cultural attire" class="admin-editable-image" data-image-key="about-main-image" />
-        </article>
-      </div>
-    </section>
-
-    <section id="leadership" class="section">
-      <div class="container">
-        <p class="section-label reveal">Leadership</p>
-        <h2 class="reveal">Executive Board</h2>
-        <div id="leadership-grid" class="leadership-grid"></div>
-      </div>
-    </section>
-
-    <section id="gallery" class="section">
-      <div class="container">
-        <div class="reveal" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <div>
-            <p class="section-label">Life at SSA</p>
-            <h2>Moments from the Community</h2>
-          </div>
-          <a id="open-full-gallery" class="btn-ghost" href="#">Full Gallery</a>
-        </div>
-        <div id="gallery-grid" class="gallery-grid"></div>
-      </div>
-    </section>
-
-    <section id="events" class="section">
-      <div class="container">
-        <p class="section-label reveal">Upcoming Events</p>
-        <h2 class="reveal">What’s Next</h2>
-        <div id="events-list" class="events-list"></div>
-      </div>
-    </section>
-
-    <section id="newsletter" class="section">
-      <div class="container">
-        <p class="section-label reveal">Newsletter</p>
-        <h2 class="reveal">Monthly Updates</h2>
-        <div id="newsletter-list" class="newsletter-list"></div>
-      </div>
-    </section>
-
-    <section id="cta" class="section">
-      <div class="container panel reveal">
-        <p class="section-label">Get Involved</p>
-        <h2>Join SSA at UMN</h2>
+  <section id="signature-event">
+    <div class="event-image-side">
+      <img src="images/somali-night-2026-poster-v3.png" alt="Somali Night performers" />
+      <div class="event-image-overlay"></div>
+    </div>
+    <div class="event-content-side">
+      <div class="reveal">
+        <div class="event-tag">Signature Event</div>
+        <h2>Somali Night</h2>
         <p>
-          Become part of a supportive student network and help shape events that celebrate culture,
-          leadership, and belonging.
+          Our flagship annual celebration is a full-scale cultural production — featuring theatrical performances, traditional fashion, original music, spoken word, and dance choreography that draws hundreds from across campus and beyond.
         </p>
-        <div class="hero-ctas">
-          <a class="btn-primary admin-editable-link" data-link-key="cta-main-link" href="mailto:ssa@umn.edu">Contact SSA</a>
-          <a class="btn-ghost admin-editable-link" data-link-key="cta-secondary-link" href="#newsletter">Read Newsletter</a>
+        <div class="event-meta">
+          <div class="event-meta-item">
+            <span>Format</span>
+            <span>Live Stage Production</span>
+          </div>
+          <div class="event-meta-item">
+            <span>Scale</span>
+            <span>1200+ Attendees</span>
+          </div>
+          <div class="event-meta-item">
+            <span>Frequency</span>
+            <span>Annual</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="#events" class="btn-primary admin-editable-link" data-link-key="signature-dates-link">View Upcoming Dates</a>
+          <a href="https://docs.google.com/forms/d/e/1FAIpQLSfQfo3l21lIhDbftuPh-1a15XN0sD8SFxUkzxJtjMIy7o3hfg/viewform" target="_blank" rel="noopener noreferrer" class="btn-ghost admin-editable-link" data-link-key="signature-fashion-link">Join the Fashion Show</a>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <div class="gallery-header reveal">
+      <div>
+        <div class="section-label">Community</div>
+        <h2>Life at SSA</h2>
+      </div>
+      <a href="#" id="open-full-gallery" class="btn-ghost" style="font-size:10px;">Full Gallery</a>
+    </div>
+    <div id="gallery-grid" class="gallery-grid reveal reveal-delay-1">
+      <div class="gallery-item g1">
+        <img src="images/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108.png" alt="SSA members group photo" />
+      </div>
+      <div class="gallery-item g2">
+        <img src="images/100_1012-71860fb2-dc0b-4ef4-b923-ef1edda295ba.png" alt="SSA event performance" />
+      </div>
+      <div class="gallery-item g3">
+        <img src="images/100_1759-d5380cf9-ea10-404d-b7a8-0cec3b367a23.png" alt="SSA campus event" />
+      </div>
+      <div class="gallery-item g4">
+        <img src="images/100_1764-bb9d05c5-66d0-4a7a-908f-9ed6f6c02df3.png" alt="SSA community gathering" />
+      </div>
+      <div class="gallery-item g5">
+        <img src="images/100_1773-3e53c74a-8e3a-4828-a1cc-cdc4b7a75972.png" alt="SSA students" />
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="about-image-wrap reveal">
+      <img src="images/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108.png" alt="SSA members in cultural attire" />
+      <div class="about-image-accent"></div>
+    </div>
+    <div class="about-content reveal reveal-delay-1">
+      <div class="section-label">About SSA</div>
+      <h2>Grounded in culture.<br />Driven by excellence.</h2>
+      <p>
+        The Somali Student Association at the University of Minnesota is an organization built on the belief that heritage and academic excellence are not in conflict — they are complementary. We organize, we celebrate, we support, and we lead.
+      </p>
+      <p>
+        From cultural events to academic resources, community dinners to large-scale productions, SSA has been a home for Somali students at UMN for over a decade.
+      </p>
+      <div class="about-pillars">
+        <div class="pillar">
+          <div class="pillar-title">Heritage</div>
+          <p>Preserving and celebrating Somali culture through art, performance, and community.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-title">Excellence</div>
+          <p>Holding ourselves to the highest standard in everything we produce.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-title">Community</div>
+          <p>Building lasting bonds among Somali students across generations.</p>
+        </div>
+        <div class="pillar">
+          <div class="pillar-title">Leadership</div>
+          <p>Developing the next generation of Somali leaders on campus and beyond.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="leadership">
+    <div class="leadership-header reveal">
+      <div class="section-label" style="justify-content:center;"><span style="display:block;width:24px;height:1px;background:var(--gold)"></span>Leadership</div>
+      <h2>Executive Board</h2>
+      <p>The people who make it happen — dedicated students shaping SSA's future.</p>
+    </div>
+    <div id="leadership-grid" class="leadership-grid reveal reveal-delay-1"></div>
+  </section>
+
+  <section id="events">
+    <div class="events-header reveal">
+      <div>
+        <div class="section-label">Calendar</div>
+        <h2>Upcoming Events</h2>
+      </div>
+      <a href="#" class="btn-ghost" style="font-size:10px;">Full Calendar</a>
+    </div>
+    <div id="events-list" class="events-list reveal reveal-delay-1"></div>
+  </section>
+
+  <section id="newsletter">
+    <div class="newsletter-header reveal">
+      <div class="section-label">Newsletter</div>
+      <h2>February Newsletter</h2>
+      <p style="max-width:650px;color:var(--silver);line-height:1.8;">
+        Monthly updates, event highlights, and community reflections.
+      </p>
+    </div>
+    <div id="newsletter-list" class="newsletter-list reveal reveal-delay-1"></div>
+  </section>
+
+  <section id="alumni">
+    <div class="alumni-header reveal">
+      <div class="section-label" style="justify-content:center;"><span style="display:block;width:24px;height:1px;background:var(--gold)"></span>Alumni</div>
+      <h2>Board Alumni</h2>
+      <p>Those who led before us — the foundation of what SSA is today.</p>
+    </div>
+    <div class="alumni-grid reveal reveal-delay-1">
+      <div class="alumni-card">
+        <div class="alumni-avatar">
+          <img src="images/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108.png" alt="Alumni" style="object-position: 15% 5%;" />
+        </div>
+        <div class="alumni-info">
+          <h3>Mowlid Hassan</h3>
+          <div class="role">President</div>
+        </div>
+      </div>
+      <div class="alumni-card">
+        <div class="alumni-avatar">
+          <img src="images/IMG_5334-a34db345-51e4-45bd-a24f-ec3bbfe4b21b.png" alt="Alumni" style="object-position: 80% 5%;" />
+        </div>
+        <div class="alumni-info">
+          <h3>Anisa Hassan</h3>
+          <div class="role">President</div>
+        </div>
+      </div>
+      <div class="alumni-card">
+        <div class="alumni-avatar">
+          <img src="images/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108.png" alt="Alumni" style="object-position: 75% 5%;" />
+        </div>
+        <div class="alumni-info">
+          <h3>Adnan Jeylani</h3>
+          <div class="role">Vice President</div>
+        </div>
+      </div>
+      <div class="alumni-card">
+        <div class="alumni-avatar">
+          <img src="images/IMG_5334-a34db345-51e4-45bd-a24f-ec3bbfe4b21b.png" alt="Alumni" style="object-position: 45% 5%;" />
+        </div>
+        <div class="alumni-info">
+          <h3>Bahja Mohamed</h3>
+          <div class="role">Vice President</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta">
+    <div class="section-label reveal">Community</div>
+    <h2 class="reveal reveal-delay-1">
+      Your roots.<br />
+      <em>Your community.</em>
+    </h2>
+    <p class="reveal reveal-delay-2">
+      Whether you are Somali or simply someone who believes in the power of culture and community — SSA welcomes you.
+    </p>
+    <div class="cta-actions reveal reveal-delay-3">
+      <a href="#" class="btn-primary">Join SSA</a>
+      <a href="#" class="btn-ghost">Contact Us</a>
+    </div>
+  </section>
 
   <footer>
-    <div class="container footer-wrap">
-      <div class="footer-left">
-        <img src="images/ssa-logo.png" alt="SSA logo" />
-        <span>Somali Student Association</span>
-      </div>
-      <div class="footer-center">ssa@umn.edu</div>
-      <div class="footer-right">
-        <a class="footer-social" href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">
-          <img src="images/instagram-logo.png" alt="Instagram" />
-          <span>Instagram</span>
-        </a>
-        <a class="footer-social" href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=tiktok.com" alt="TikTok" />
-          <span>TikTok</span>
-        </a>
-        <a class="footer-social" href="https://www.linkedin.com/in/somali-student-association-b435362a2/" target="_blank" rel="noopener noreferrer">
-          <img src="https://www.google.com/s2/favicons?sz=64&domain=linkedin.com" alt="LinkedIn" />
-          <span>LinkedIn</span>
-        </a>
-        <a id="admin-entry" class="admin-link" href="#">
-          <img src="images/lock-icon.svg" alt="Admin" />
-          <span>Admin</span>
-        </a>
-      </div>
+    <div class="footer-left">
+      <img src="images/ssa-logo.png" alt="SSA Logo" />
+      <span>Somali Student Association — UMN</span>
+    </div>
+    <div class="footer-center">ssa@umn.edu</div>
+    <div class="footer-right">
+      <a class="footer-social" href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">
+        <img src="images/instagram-logo.png" alt="Instagram" />
+        <span>Instagram</span>
+      </a>
+      <a class="footer-social" href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain=tiktok.com" alt="TikTok" />
+        <span>TikTok</span>
+      </a>
+      <a class="footer-social" href="https://www.linkedin.com/in/somali-student-association-b435362a2/" target="_blank" rel="noopener noreferrer">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain=linkedin.com" alt="LinkedIn" />
+        <span>LinkedIn</span>
+      </a>
+      <a id="admin-entry" class="admin-link" href="#">
+        <img src="images/lock-icon.svg" alt="Admin" />
+        <span>Admin</span>
+      </a>
     </div>
   </footer>
 
@@ -184,7 +1507,7 @@
     <div class="full-gallery-backdrop" data-close-full-gallery></div>
     <div class="full-gallery-card">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <h3>Full Gallery</h3>
+        <h3 style="font-family:var(--font-display);font-size:32px;font-weight:400;">Full Gallery</h3>
         <button id="close-full-gallery" class="btn-ghost" type="button">Close</button>
       </div>
       <div id="full-gallery-grid" class="full-gallery-grid"></div>
@@ -195,16 +1518,16 @@
     <div class="admin-backdrop"></div>
     <div class="admin-shell">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <h3>Admin Edit Mode</h3>
+        <h3 style="font-family:var(--font-display);font-size:34px;font-weight:400;">Admin Edit Mode</h3>
         <button id="admin-close" class="btn-ghost" type="button">Close</button>
       </div>
 
       <div id="admin-login">
-        <p style="color:#94a3b8;">Enter the admin password to unlock editing tools.</p>
+        <p style="color:var(--silver);margin-top:8px;">Enter the admin password to unlock editing tools.</p>
         <input id="admin-password" type="password" placeholder="Enter password" />
         <div class="admin-toolbar">
           <button id="admin-unlock" class="btn-primary" type="button">Unlock Admin</button>
-          <span id="admin-login-message" style="color:#fca5a5;"></span>
+          <span id="admin-login-message" style="color:#f4b8b8;"></span>
         </div>
       </div>
 
