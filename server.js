@@ -24,6 +24,8 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
 
 app.use(express.json({ limit: "2mb" }));
+// Cache images for 1 year so photos load faster on repeat visits (filenames are content-addressed).
+app.use("/images", express.static(path.join(__dirname, "images"), { maxAge: "1y", immutable: true }));
 app.use(express.static(path.join(__dirname)));
 app.use("/uploads", express.static(uploadsDir));
 

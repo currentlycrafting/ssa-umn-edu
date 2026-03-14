@@ -202,7 +202,7 @@ function renderNewsletters() {
   list.innerHTML = siteData.newsletters
     .map((item, idx) => {
       const imageHtml = item.image
-        ? `<div class="newsletter-media-col"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="newsletter-card-media" /></div>`
+        ? `<div class="newsletter-media-col"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="newsletter-card-media" loading="lazy" /></div>`
         : '';
       const primaryUrl = toInstagramEmbedUrl(item.link);
       const secondaryRaw = item.secondaryLink || (idx === 0 ? 'https://www.instagram.com/p/DVsD4UoDmTX/' : '');
@@ -283,7 +283,7 @@ function renderBoard() {
       return `
       <div class="leader-card">
         <div class="leader-card-image">
-          <img src="${escapeHtml(member.image)}" alt="${escapeHtml(member.name)}" class="${mobileClasses.join(' ')}" />
+          <img src="${escapeHtml(member.image)}" alt="${escapeHtml(member.name)}" class="${mobileClasses.join(' ')}" loading="lazy" />
           <div class="leader-card-overlay">
             <div class="leader-name">${escapeHtml(member.name)}</div>
             <div class="leader-role">${escapeHtml(member.role)}</div>
@@ -307,7 +307,7 @@ function renderGallery() {
       .map(
         (img) => `
       <div class="gallery-item">
-        <img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt || 'SSA gallery image')}" />
+        <img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt || 'SSA gallery image')}" loading="lazy" />
       </div>`
       )
       .join('');
