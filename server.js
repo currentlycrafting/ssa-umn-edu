@@ -17,7 +17,9 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID || undefined);
-const uploadsDir = path.join(__dirname, "uploads");
+// Use same persistent dir as SQLite when DATA_DIR is set (e.g. Render disk at /data).
+const dataDir = process.env.DATA_DIR || __dirname;
+const uploadsDir = path.join(dataDir, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
 

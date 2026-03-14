@@ -1,7 +1,18 @@
 const path = require("path");
+const fs = require("fs");
 const Database = require("better-sqlite3");
 
-const dbPath = path.join(__dirname, "ssa-ops.db");
+// Use DATA_DIR for persistent storage (e.g. Render persistent disk at /data).
+// Set env DATA_DIR=/data and mount a disk there so the DB survives deploys.
+const dataDir = process.env.DATA_DIR || __dirname;
+if (dataDir !== __dirname) {
+  try {
+    fs.mkdirSync(dataDir, { recursive: true });
+  } catch (e) {
+    console.warn("DATA_DIR mkdir:", e.message);
+  }
+}
+const dbPath = path.join(dataDir, "ssa-ops.db");
 const db = new Database(dbPath);
 
 function ensureColumn(tableName, columnName, columnSql) {
