@@ -703,6 +703,8 @@ function setupAdminPanel() {
   };
 
   entry.addEventListener('click', (e) => {
+    const href = entry.getAttribute('href') || '';
+    if (href && href !== '#') return;
     e.preventDefault();
     panel.classList.add('open');
     panel.setAttribute('aria-hidden', 'false');

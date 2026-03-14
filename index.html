@@ -202,6 +202,7 @@
       display: flex;
       gap: 16px;
       align-items: center;
+      flex-wrap: wrap;
     }
     .btn-primary {
       background: var(--gold);
@@ -245,18 +246,11 @@
       gap: 8px;
       opacity: 0;
       animation: heroIn 1.2s ease 1.4s forwards;
-    }
-    .hero-scroll-indicator span {
-      font-size: 9px;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
       color: var(--silver);
-      writing-mode: vertical-rl;
     }
-    .scroll-line {
-      width: 1px;
-      height: 60px;
-      background: linear-gradient(to bottom, var(--gold), transparent);
+    .hero-scroll-indicator .scroll-mouse {
+      width: 24px;
+      height: 38px;
       animation: scrollPulse 2s ease infinite;
     }
     @keyframes scrollPulse {
@@ -1037,14 +1031,22 @@
       aspect-ratio: 4 / 5;
       object-fit: contain;
     }
-    .newsletter-embed-frame {
-      width: 100%;
-      aspect-ratio: 4 / 5;
-      object-fit: cover;
-      display: block;
-    }
     .newsletter-embed-wrap {
       margin-top: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      aspect-ratio: 4 / 5;
+    }
+    .newsletter-embed-frame {
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      aspect-ratio: 4 / 5;
+      display: block;
+      border: none;
+      background: var(--navy);
+      transform: scale(1.18);
+      transform-origin: center center;
     }
     .newsletter-read-more {
       margin-top: 12px;
@@ -1285,7 +1287,7 @@
       <li><a href="#gallery">Gallery</a></li>
       <li><a href="#leadership">Leadership</a></li>
       <li><a href="#alumni">Alumni</a></li>
-      <li><a href="#cta" class="nav-cta">Join</a></li>
+      <li><a href="join.html" class="nav-cta">Join</a></li>
     </ul>
   </nav>
 
@@ -1305,11 +1307,15 @@
       <div class="hero-actions">
         <a href="#about" class="btn-primary">Explore the Association</a>
         <a href="#events" class="btn-ghost">View Events</a>
+        <a href="ops-login.html" class="btn-ghost">Are You a Board Member?</a>
       </div>
     </div>
-    <div class="hero-scroll-indicator">
-      <div class="scroll-line"></div>
-      <span>Scroll</span>
+    <div class="hero-scroll-indicator" aria-label="Scroll to explore">
+      <svg class="scroll-mouse" viewBox="0 0 24 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <rect x="4" y="2" width="16" height="28" rx="8"/>
+        <line x1="12" y1="8" x2="12" y2="14"/>
+        <path d="M8 20l4 4 4-4"/>
+      </svg>
     </div>
   </section>
 
@@ -1516,7 +1522,7 @@
       Whether you are Somali or simply someone who believes in the power of culture and community — SSA welcomes you.
     </p>
     <div class="cta-actions reveal reveal-delay-3">
-      <a href="#" class="btn-primary">Join SSA</a>
+      <a href="join.html" class="btn-primary">Join SSA</a>
       <a href="#" class="btn-ghost">Contact Us</a>
     </div>
   </section>
@@ -1540,9 +1546,9 @@
         <img src="https://www.google.com/s2/favicons?sz=64&domain=linkedin.com" alt="LinkedIn" />
         <span>LinkedIn</span>
       </a>
-      <a id="admin-entry" class="admin-link" href="#">
+      <a id="admin-entry" class="admin-link" href="ops-login.html">
         <img src="images/lock-icon.svg" alt="Admin" />
-        <span>Admin</span>
+        <span>Are You a Board Member?</span>
       </a>
     </div>
   </footer>

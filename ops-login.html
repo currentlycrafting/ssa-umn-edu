@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SSA Ops Login</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="ops-style.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="ops-common.js" defer></script>
+    <style>
+      body {
+        background:
+          radial-gradient(800px 400px at 15% 10%, rgba(184, 154, 92, 0.08), transparent 65%),
+          radial-gradient(900px 500px at 85% 85%, rgba(45, 72, 132, 0.16), transparent 60%),
+          var(--navy);
+      }
+
+      .auth-wrap {
+        max-width: 760px;
+        margin: 64px auto;
+        padding: 36px;
+        border: 1px solid rgba(184, 154, 92, 0.28);
+        background: linear-gradient(180deg, rgba(20, 25, 41, 0.95), rgba(11, 15, 28, 0.94));
+        box-shadow: 0 22px 50px rgba(0, 0, 0, 0.35);
+      }
+
+      .auth-title {
+        font-size: clamp(48px, 7vw, 62px);
+        line-height: 0.95;
+        margin-top: 8px;
+      }
+
+      .muted {
+        color: var(--stone);
+      }
+
+      .stack {
+        margin-top: 18px;
+      }
+
+      #g_id_signin {
+        margin-top: 8px;
+      }
+
+      .label {
+        color: var(--gold-light);
+      }
+
+      .input {
+        background: rgba(255, 255, 255, 0.03);
+        border-color: rgba(255, 255, 255, 0.18);
+        transition: border-color 0.2s ease, background 0.2s ease;
+        padding: 14px 14px;
+        min-height: 50px;
+      }
+
+      .input:focus {
+        outline: none;
+        border-color: var(--gold);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .btn {
+        margin-top: 10px;
+        padding: 11px 14px;
+      }
+
+      .auth-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .btn-home {
+        padding: 8px 16px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--gold);
+        background: transparent;
+        border: 1px solid rgba(184, 154, 92, 0.35);
+        cursor: pointer;
+        text-decoration: none;
+        transition: border-color 0.2s, background 0.2s;
+      }
+      .btn-home:hover {
+        background: rgba(184, 154, 92, 0.08);
+        border-color: var(--gold);
+      }
+
+      .login-features {
+        margin-top: 20px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .login-feature {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+        padding: 10px;
+      }
+
+      .login-feature b {
+        display: block;
+        color: var(--off-white);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .login-feature span {
+        font-size: 11px;
+        color: var(--silver);
+        line-height: 1.5;
+      }
+
+      @media (max-width: 760px) {
+        .auth-wrap {
+          margin: 28px 14px;
+          padding: 24px;
+        }
+        .login-features {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-wrap">
+      <div class="auth-topbar">
+        <span class="label">SSA Internal Operations</span>
+        <a href="index.html" class="btn-home">Return to Home Page</a>
+      </div>
+      <h1 class="auth-title">Board Access</h1>
+      <p class="muted">Sign in to continue.</p>
+
+      <div class="stack">
+        <div id="gsi-note" class="muted"></div>
+        <div id="g_id_signin"></div>
+      </div>
+
+      <div class="stack">
+        <label class="label" for="role-mode">Workspace Mode</label>
+        <select id="role-mode" class="input">
+          <option value="board">Board Member</option>
+          <option value="vp-internal">VP Internal Affairs</option>
+          <option value="vp-external">VP External Affairs</option>
+          <option value="president">Executive President</option>
+        </select>
+        <label class="label" for="email">UMN Email</label>
+        <input id="email" class="input" type="email" placeholder="you@umn.edu" />
+        <button id="dev-login-btn" class="btn">Continue with Email</button>
+      </div>
+
+      <div class="login-features">
+        <div class="login-feature">
+          <b>Event Ops</b>
+          <span>Create events and generate task workflows with dependencies.</span>
+        </div>
+        <div class="login-feature">
+          <b>Task Review</b>
+          <span>Approve submissions, request redo, and monitor overdue tasks.</span>
+        </div>
+        <div class="login-feature">
+          <b>Board Visibility</b>
+          <span>Track progress across timelines, departments, and assignees.</span>
+        </div>
+      </div>
+
+      <p id="error" class="muted" style="color: var(--red)"></p>
+    </div>
+
+    <script>
+      function routeByRole(user, selectedRole, redirectTo) {
+        if (redirectTo) {
+          window.location.href = redirectTo;
+          return;
+        }
+        const normalizedSelected = String(selectedRole || "").toLowerCase();
+        if (normalizedSelected === "president") {
+          window.location.href = "president.html";
+          return;
+        }
+        if (normalizedSelected === "vp-external") {
+          window.location.href = "vp.html?division=external";
+          return;
+        }
+        if (normalizedSelected === "vp-internal") {
+          window.location.href = "vp.html?division=internal";
+          return;
+        }
+        if (normalizedSelected === "board") {
+          window.location.href = "board.html";
+          return;
+        }
+
+        // Safety fallback if workspace mode is missing/invalid.
+        if (user.view_type === "president") return void (window.location.href = "president.html");
+        if (user.view_type === "vp") {
+          const division = user.vp_type === "external" ? "external" : "internal";
+          return void (window.location.href = `vp.html?division=${division}`);
+        }
+        window.location.href = "board.html";
+      }
+
+      function collectBoardProfile() {
+        return null;
+      }
+
+      async function loginByEmail() {
+        const errorEl = document.getElementById("error");
+        errorEl.textContent = "";
+        const email = document.getElementById("email").value.trim();
+        const role = document.getElementById("role-mode").value;
+        const profile = collectBoardProfile();
+        if (!email) {
+          errorEl.textContent = "Enter a UMN email.";
+          return;
+        }
+        if (!email.toLowerCase().endsWith("@umn.edu")) {
+          errorEl.textContent = "Only @umn.edu emails are allowed.";
+          return;
+        }
+        try {
+          const res = await fetch("/api/auth/dev", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, role, profile })
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            errorEl.textContent = data.error || "Login failed.";
+            return;
+          }
+          setSession(data);
+          routeByRole(data.user, role, data.redirect_to);
+        } catch (_e) {
+          errorEl.textContent = "Unable to reach server.";
+        }
+      }
+
+      window.handleGoogleCredential = async (response) => {
+        const errorEl = document.getElementById("error");
+        errorEl.textContent = "";
+        const role = document.getElementById("role-mode").value;
+        const profile = collectBoardProfile();
+        try {
+          const res = await fetch("/api/auth/google", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ credential: response.credential, role, profile })
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            errorEl.textContent = data.error || "Google sign-in failed.";
+            return;
+          }
+          setSession(data);
+          routeByRole(data.user, role, data.redirect_to);
+        } catch (_e) {
+          errorEl.textContent = "Unable to complete Google auth.";
+        }
+      };
+
+      async function initGoogleSignIn() {
+        const note = document.getElementById("gsi-note");
+        const mount = document.getElementById("g_id_signin");
+        try {
+          const res = await fetch("/api/config/public");
+          const cfg = await res.json();
+          if (!cfg.googleClientIdConfigured) {
+            note.textContent = "Google sign-in is not configured yet.";
+            return;
+          }
+          if (!window.google?.accounts?.id) {
+            note.textContent = "Loading Google sign-in...";
+            return;
+          }
+
+          mount.innerHTML = "";
+          google.accounts.id.initialize({
+            client_id: cfg.googleClientId,
+            callback: handleGoogleCredential
+          });
+          google.accounts.id.renderButton(document.getElementById("g_id_signin"), {
+            theme: "filled_blue",
+            size: "large",
+            shape: "rectangular",
+            text: "signin_with",
+            width: 320
+          });
+          google.accounts.id.prompt();
+          note.textContent = "Use Google to sign in with your @umn.edu account.";
+        } catch (_e) {
+          note.textContent = "Unable to initialize Google sign-in.";
+        }
+      }
+
+      (function bootstrapGoogleSignIn() {
+        let attempts = 0;
+        const maxAttempts = 20;
+        const timer = setInterval(async () => {
+          attempts += 1;
+          await initGoogleSignIn();
+          const hasRenderedButton =
+            document.getElementById("g_id_signin").children.length > 0;
+          if (hasRenderedButton || attempts >= maxAttempts) {
+            clearInterval(timer);
+          }
+        }, 300);
+      })();
+      document.getElementById("dev-login-btn").addEventListener("click", loginByEmail);
+    </script>
+  </body>
+</html>
