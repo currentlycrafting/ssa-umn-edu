@@ -1021,6 +1021,40 @@ app.patch("/api/reports/:id", (req, res) => {
   res.json({ ok: true });
 });
 
+// Submit suggestion from join.html (public, no auth)
+app.post("/api/suggestions", (req, res) => {
+  const body = req.body || {};
+  const submitterName = body.submitter_name != null ? String(body.submitter_name).trim() : "";
+  const suggestionType = String(body.suggestion_type || "").trim();
+  const ideaText = String(body.idea_text || "").trim();
+  const audience = body.audience != null ? String(body.audience).trim() : "";
+  if (!ideaText) return res.status(400).json({ error: "Idea or suggestion text is required." });
+  if (!suggestionType) return res.status(400).json({ error: "Suggestion type is required." });
+
+  const info = db
+    .prepare(
+      `
+    INSERT INTO suggestions (submitter_name, suggestion_type, idea_text, audience, status)
+    VALUES (?, ?, ?, ?, 'new')
+  `
+    )
+    .run(submitterName || null, suggestionType, ideaText, audience || null);
+  res.json({ ok: true, id: info.lastInsertRowid });
+});
+
+// List suggestions (Internal VP only)
+app.get("/api/suggestions", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  const isInternalVp =
+    (user.permission_level === "vp" || user.view_type === "vp") && user.vp_type === "internal";
+  if (!isInternalVp) return res.status(403).json({ error: "Internal VP access required." });
+
+  const rows = db.prepare(`SELECT id, submitter_name, suggestion_type, idea_text, audience, status, created_at FROM suggestions ORDER BY created_at DESC`).all();
+  res.json({ suggestions: rows });
+});
+
 app.post("/api/events/generate", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);

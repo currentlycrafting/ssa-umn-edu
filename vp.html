@@ -184,6 +184,7 @@ const VP_CONFIG = {
     <div class="sb-item" onclick="showPage('calendar')"><span class="sb-icon">◻</span>Calendar</div>
 
     <div class="sb-section-label">Reports</div>
+    <div class="sb-item" id="sb-item-suggestions" onclick="showPage('suggestions')"><span class="sb-icon">◇</span>Suggestion Box</div>
     <div class="sb-item" onclick="showPage('escalate')"><span class="sb-icon">★</span>Escalate to President</div>
   </div>
   <div class="sb-footer">
@@ -372,6 +373,17 @@ const VP_CONFIG = {
     </div>
   </div>
 
+
+  <!-- ── SUGGESTION BOX (Internal VP: event ideas from join.html) ── -->
+  <div class="page" id="page-suggestions">
+    <div class="breadcrumb"><span>Community Input</span> / Suggestion Box</div>
+    <div class="card">
+      <div class="section-label">From Join Page</div>
+      <div style="font-family:var(--font-display);font-size:22px;color:var(--white);margin-bottom:8px">Event Ideas &amp; Suggestions</div>
+      <div style="font-size:13px;color:var(--silver);margin-bottom:20px">Suggestions submitted from the Join SSA page are routed here for the Internal VP.</div>
+      <div id="suggestions-list"></div>
+    </div>
+  </div>
 
   <!-- ── ESCALATE ── -->
   <div class="page" id="page-escalate">
@@ -844,10 +856,13 @@ function showPage(id) {
     'overdue':'Overdue Tasks','members':'Division Members','div-tasks':'Division Tasks',
     'assign':'Smart Assignment','events':'Active Events',
     'dependency':'Dependency Graph','calendar':'Calendar',
+    'suggestions':'Suggestion Box',
     'escalate':'Escalate to President',
   };
   document.getElementById('page-title').textContent = titles[id] || id;
   document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  const navItem = document.querySelector(".sb-item[onclick*=\"showPage('" + id + "')\"]");
+  if (navItem) navItem.classList.add('active');
 }
 
 function updateBadge(id, delta) {
@@ -1011,6 +1026,8 @@ init();
     document.getElementById("vp-greeting").textContent = `Hey ${me.user.full_name.split(" ")[0]},`;
     document.getElementById("vp-role").textContent = me.user.role_title;
     document.getElementById("vp-div").textContent = `${me.user.department} · Division Admin`;
+    const sbSuggestions = document.getElementById("sb-item-suggestions");
+    if (sbSuggestions) sbSuggestions.style.display = me.user.vp_type === "external" ? "none" : "";
     populateReportSelectors();
 
     renderLiveStats(dashboard.tasks);
@@ -1211,6 +1228,43 @@ init();
     renderOperationalCalendar(document.getElementById("cal-content"), dashboard.events, dashboard.tasks);
     renderDependencyGraph(document.getElementById("dep-graph"), dashboard.tasks, dashboard.dependencies);
   }
+
+  async function renderSuggestionsBox() {
+    const list = document.getElementById("suggestions-list");
+    if (!list) return;
+    list.innerHTML = '<div style="color:var(--silver);padding:16px">Loading…</div>';
+    try {
+      const data = await apiGet("/api/suggestions");
+      const suggestions = data.suggestions || [];
+      list.innerHTML =
+        suggestions.length === 0
+          ? '<div style="color:var(--silver);font-size:13px;padding:16px">No suggestions yet.</div>'
+          : suggestions
+              .map(
+                (s) => `
+        <div class="approval-item" style="margin-bottom:12px">
+          <div class="approval-header">
+            <div>
+              <div class="approval-task">${(s.submitter_name || "Anonymous").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+              <div class="approval-by">${String(s.suggestion_type || "").replace(/</g, "&lt;")} · ${String(s.audience || "—").replace(/</g, "&lt;")} · ${String(s.status || "new").replace(/</g, "&lt;")}</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--silver);margin-top:6px;white-space:pre-wrap">${String(s.idea_text || "").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+          <div style="font-size:10px;color:var(--silver);margin-top:4px">${new Date(s.created_at).toLocaleString()}</div>
+        </div>
+      `
+              )
+              .join("");
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--red);font-size:13px;padding:16px">Could not load suggestions.</div>';
+    }
+  }
+
+  const origShowPage = window.showPage;
+  window.showPage = function (id) {
+    if (typeof origShowPage === "function") origShowPage(id);
+    if (id === "suggestions") renderSuggestionsBox();
+  };
 
   window.approveTaskLive = async function approveTaskLive(taskId) {
     await apiPost(`/api/tasks/${taskId}/approve`, {});

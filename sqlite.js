@@ -131,6 +131,16 @@ function initDb() {
       clarification_notes TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS suggestions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      submitter_name TEXT,
+      suggestion_type TEXT NOT NULL,
+      idea_text TEXT NOT NULL,
+      audience TEXT,
+      status TEXT NOT NULL DEFAULT 'new',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
   `);
 
   ensureColumn("events", "budget_limit", "REAL");

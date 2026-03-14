@@ -1855,10 +1855,42 @@
   }
 
   // Suggestion form
-  function handleSuggestion(e) {
+  async function handleSuggestion(e) {
     e.preventDefault();
-    document.getElementById('sug-confirm').style.display = 'block';
-    e.target.style.display = 'none';
+    var nameEl = document.getElementById('sug-name');
+    var typeEl = document.getElementById('sug-type');
+    var ideaEl = document.getElementById('sug-idea');
+    var audienceEl = document.getElementById('sug-audience');
+    var ideaText = (ideaEl && ideaEl.value || '').trim();
+    var suggestionType = (typeEl && typeEl.value || '').trim();
+    if (!ideaText) { alert('Please describe your idea or suggestion.'); return; }
+    if (!suggestionType) { alert('Please select a suggestion type.'); return; }
+    var form = e.target;
+    var submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+      var res = await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submitter_name: nameEl ? nameEl.value.trim() : '',
+          suggestion_type: suggestionType,
+          idea_text: ideaText,
+          audience: audienceEl ? audienceEl.value.trim() : ''
+        })
+      });
+      var data = res.ok ? await res.json() : {};
+      if (!res.ok) {
+        alert(data.error || 'Could not submit. Please try again.');
+        if (submitBtn) submitBtn.disabled = false;
+        return;
+      }
+      document.getElementById('sug-confirm').style.display = 'block';
+      form.style.display = 'none';
+    } catch (err) {
+      alert('Could not send suggestion. Please check your connection and try again.');
+      if (submitBtn) submitBtn.disabled = false;
+    }
   }
 </script>
 
