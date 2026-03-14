@@ -1,0 +1,17 @@
+{
+  "name": "ssa-website-ops",
+  "version": "1.0.0",
+  "description": "SSA public site and board operations platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "google-auth-library": "^9.15.1",
+    "multer": "^1.4.5-lts.2"
+  }
+}

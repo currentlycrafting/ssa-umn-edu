@@ -1,0 +1,6 @@
+node_modules/
+.env
+ssa-ops.db
+ssa-ops.db-shm
+ssa-ops.db-wal
+uploads/
