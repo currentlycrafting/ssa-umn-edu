@@ -203,8 +203,8 @@ function seedUsers() {
   const seeded = [
     // Executive Division
     {
-      email: "president.exec@umn.edu",
-      full_name: "Amina Noor",
+      email: "said0106@umn.edu",
+      full_name: "Salman Said",
       role_title: "Executive President",
       department: "Executive Division",
       permission_level: "president",
@@ -212,8 +212,8 @@ function seedUsers() {
       vp_type: null
     },
     {
-      email: "vp.internal@umn.edu",
-      full_name: "Ibrahim Hassan",
+      email: "osman471@umn.edu",
+      full_name: "Suhaila Osman",
       role_title: "Vice President, Chief of Internal Affairs",
       department: "Executive Division",
       permission_level: "vp",
@@ -221,8 +221,8 @@ function seedUsers() {
       vp_type: "internal"
     },
     {
-      email: "vp.external@umn.edu",
-      full_name: "Nadira Ali",
+      email: "warsa084@umn.edu",
+      full_name: "Ruweyda Warsame",
       role_title: "Vice President, Chief of External Affairs",
       department: "Executive Division",
       permission_level: "vp",
