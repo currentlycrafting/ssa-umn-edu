@@ -52,7 +52,6 @@ const defaultData = {
   ],
   galleryImages: [
     { id: crypto.randomUUID(), src: 'images/100_0590-a7715620-22f8-45cc-9d10-6c90a634de5f.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/IMG_5578-c56b3912-18b1-4fd4-8c94-59818fdc99cd.png', alt: 'SSA members' },
     { id: crypto.randomUUID(), src: 'images/100_0556-5d957b7a-d29f-4dbf-8090-2d1fecbb695a.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/100_1179-b7bd434a-fa9a-4b92-b115-dc695ee82e60.png', alt: 'SSA group photo' },
     { id: crypto.randomUUID(), src: 'images/100_1756-6dd33dfc-a3d1-48dd-8da6-aa48cbf2bd6d.png', alt: 'SSA event' },
@@ -65,8 +64,6 @@ const defaultData = {
     { id: crypto.randomUUID(), src: 'images/100_0736-a1198205-08bf-43b3-b961-3919d842379d.png', alt: 'SSA members' },
     { id: crypto.randomUUID(), src: 'images/100_0626-e774bf69-7387-47a2-975c-e4ffb9c4ac80.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/100_1727-4ca31c50-3130-4821-bec9-bb49ac0ddb1e.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/100_1763_2-2e0847ff-c697-454e-84cb-b18cd06e57dc.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/DSC07352-81204cc6-fee9-4089-bd96-2560349b4ab4.png', alt: 'SSA event' },
     { id: crypto.randomUUID(), src: 'images/100_1753-f253cb3c-cd86-4f31-8efc-6a2a97fbfe89.png', alt: 'SSA cultural event' },
     { id: crypto.randomUUID(), src: 'images/IMG_3252-da12d712-770e-4f2c-9917-06a22fca8739.png', alt: 'SSA members' },
     { id: crypto.randomUUID(), src: 'images/100_0628-dce7edc1-e2da-4068-af8d-b446fd4107a9.png', alt: 'SSA community' },
@@ -75,39 +72,16 @@ const defaultData = {
     { id: crypto.randomUUID(), src: 'images/100_1724-79fac5d9-c824-40e6-b78e-240b41a5edcf.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/100_1751-183423a3-6338-4ecf-82fe-faf357943ea8.png', alt: 'SSA event' },
     { id: crypto.randomUUID(), src: 'images/IMG_3253-9aa7fb1b-d417-4558-9a16-18b43870cf47.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3604-a10cd95f-200c-4e63-950c-033ba83e7bda.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/IMG_6106-0ea29d18-bd68-4dbd-a6cd-6614a0458ea6.png', alt: 'SSA event' },
     { id: crypto.randomUUID(), src: 'images/IMG_2978-db443af7-655d-42cf-9f25-3e23a63374de.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/IMG_5097-b2a0fa62-f94c-43c8-aed7-62d438bf9089.png', alt: 'SSA Nationals' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6108-85075e5f-86a0-4a21-ab6d-0db6cfe9a4e9.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6105-76ac8014-279f-40ff-8d6b-85da499ae94d.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/IMG_6147-f682ea2a-6b0d-41ca-9fff-49fce6c4599b.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3565-38175542-2151-46bb-a296-63982118a31b.png', alt: 'SSA event' },
     { id: crypto.randomUUID(), src: 'images/IMG_5082-60e70f2b-288e-4974-966c-c9efa0156cf9.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/IMG_0776-6da79056-3273-4df1-8f50-b73606120877.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_9187-264cb4f0-a7cb-4aca-913a-c7e024534a7e.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_2978-69a451e3-107d-4388-b4ec-4de0063576a8.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3604-75128a59-b84e-4146-aa15-ed2711ad3897.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6105-7c7bf918-6de4-4ac2-8bb0-d54b026b3a4a.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_5097-6e6dcb03-ee5d-4591-84ec-d78231845bf5.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6106-e6340975-4258-433d-b54a-bd0301f71c22.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6108-42b723e7-f931-482a-a074-3efffdde039a.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6147-cebac1f8-c375-43f7-8a46-7c8cc0758c89.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/IMG_3565-003f4feb-e0d2-45bc-befa-518f013e50e1.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/IMG_5082-a54c147b-29fd-4f07-8cad-14ae026aca78.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_9187-80366a8f-2d3f-4f9d-8d46-d8582404843e.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/IMG_0776-b917829a-e7eb-4a8e-9eae-e3dd56de3b62.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6147-a85ce06d-8d61-4953-b2d8-c195f4a0218f.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3604-b150ddba-0e6f-40a4-ac81-f7d10ec21a94.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/IMG_6105-769ac347-fb9b-4e42-931f-b92b18456f13.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6106-e9415907-bd73-4708-8492-5bf78cc91cb6.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_2978-0dbeee85-9207-4e65-ab51-5f308c6e8578.png', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'images/IMG_6108-ecd59a4d-acac-4a7f-ade8-cde636eaf361.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_5097-02956e68-fe8a-4fa2-9235-e0dc578b29d8.png', alt: 'SSA Nationals' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3565-d587c813-64c0-46be-8ab0-ff95fa3d88ef.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/IMG_9187-0c719813-8fa1-4633-9864-439f284ab0ff.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_0776-e5b1dd3e-e455-4efd-a4aa-fb79f21fe392.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_5082-22168f0c-4478-4bed-948b-0fc12762f1c1.png', alt: 'SSA community' }
+    { id: crypto.randomUUID(), src: 'images/IMG_9187-0c719813-8fa1-4633-9864-439f284ab0ff.png', alt: 'SSA event' }
   ],
   directText: {},
   editableLinks: {},
@@ -859,6 +833,42 @@ function setupFullGalleryModal() {
   });
 }
 
+function setupGalleryLightbox() {
+  const lightbox = document.getElementById('gallery-lightbox');
+  const lightboxImg = document.getElementById('gallery-lightbox-img');
+  const closeBtn = document.getElementById('close-gallery-lightbox');
+  const backdrop = document.querySelector('[data-close-lightbox]');
+
+  const openLightbox = (src, alt) => {
+    if (!lightbox || !lightboxImg) return;
+    lightboxImg.src = src;
+    lightboxImg.alt = alt || 'Gallery image';
+    lightbox.classList.add('open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('gallery-open');
+  };
+  const closeLightbox = () => {
+    if (!lightbox) return;
+    lightbox.classList.remove('open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('gallery-open');
+  };
+
+  document.addEventListener('click', (e) => {
+    const item = e.target.closest('.gallery-item');
+    if (!item) return;
+    const img = item.querySelector('img');
+    if (!img) return;
+    e.preventDefault();
+    openLightbox(img.src, img.alt);
+  });
+  closeBtn?.addEventListener('click', closeLightbox);
+  backdrop?.addEventListener('click', closeLightbox);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox?.classList.contains('open')) closeLightbox();
+  });
+}
+
 function init() {
   renderAllDynamicSections();
   assignDirectEditableElements();
@@ -869,6 +879,7 @@ function init() {
   setupAdminPanel();
   setupScrollAndReveal();
   setupFullGalleryModal();
+  setupGalleryLightbox();
 }
 
 init();

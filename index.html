@@ -1138,6 +1138,67 @@
       overflow: hidden;
     }
 
+    .gallery-item {
+      cursor: pointer;
+    }
+    .gallery-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 2600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .gallery-lightbox.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .gallery-lightbox-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+    }
+    .gallery-lightbox-inner {
+      position: relative;
+      max-width: 95vw;
+      max-height: 95vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gallery-lightbox-inner img {
+      max-width: 95vw;
+      max-height: 95vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    .gallery-lightbox-close {
+      position: absolute;
+      top: -44px;
+      right: 0;
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.5);
+      color: var(--white);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .gallery-lightbox-close:hover {
+      border-color: var(--gold);
+      background: rgba(0,0,0,0.7);
+    }
+
     .admin-shell {
       position: absolute;
       top: 20px;
@@ -1274,7 +1335,7 @@
 
   <nav id="navbar">
     <a href="#" class="nav-logo">
-      <img src="images/ssa-logo.png" alt="SSA Logo" />
+      <img src="images/favicon-logo-transparent.png" alt="SSA Logo" />
       <div class="nav-logo-text">
         <span>SSA</span>
         <span>University of Minnesota</span>
@@ -1529,13 +1590,13 @@
 
   <footer>
     <div class="footer-left">
-      <img src="images/ssa-logo.png" alt="SSA Logo" loading="lazy" />
+      <img src="images/favicon-logo-transparent.png" alt="SSA Logo" loading="lazy" />
       <span>Somali Student Association — UMN</span>
     </div>
     <div class="footer-center">ssa@umn.edu</div>
     <div class="footer-right">
       <a class="footer-social" href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">
-        <img src="images/instagram-logo.png" alt="Instagram" loading="lazy" />
+        <img src="images/pngtree-instagram-icon-png-image_6315974-removebg-preview-62e65149-b182-4b35-9585-cc0f560683ab.png" alt="Instagram" loading="lazy" />
         <span>Instagram</span>
       </a>
       <a class="footer-social" href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">
@@ -1561,6 +1622,14 @@
         <button id="close-full-gallery" class="btn-ghost" type="button">Close</button>
       </div>
       <div id="full-gallery-grid" class="full-gallery-grid"></div>
+    </div>
+  </div>
+
+  <div id="gallery-lightbox" class="gallery-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Zoomed image">
+    <div class="gallery-lightbox-backdrop" data-close-lightbox></div>
+    <div class="gallery-lightbox-inner">
+      <button type="button" class="gallery-lightbox-close" id="close-gallery-lightbox" aria-label="Close">✕</button>
+      <img id="gallery-lightbox-img" src="" alt="" />
     </div>
   </div>
 
