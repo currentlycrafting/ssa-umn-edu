@@ -2004,7 +2004,8 @@ app.get("/api/admin/github-repo", (req, res) => {
     return res.status(403).json({ error: "President access required." });
   }
   const url = process.env.GITHUB_REPO || null;
-  res.json({ url });
+  const branch = process.env.GITHUB_BRANCH || "main";
+  res.json({ url, branch });
 });
 
 app.post("/api/admin/seed-users-push", async (req, res) => {
@@ -2083,6 +2084,21 @@ app.post("/api/site/gallery", upload.single("photo"), (req, res) => {
   const content = readSiteContent();
   const id = crypto.randomUUID();
   content.galleryImages.push({ id, src: `/uploads/${file.filename}`, alt });
+  writeSiteContent(content);
+  res.json({ ok: true, galleryImages: content.galleryImages });
+});
+
+app.delete("/api/site/gallery/:id", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can remove gallery photos." });
+  const id = req.params.id;
+  if (!id) return res.status(400).json({ error: "Missing image id." });
+  const content = readSiteContent();
+  const before = content.galleryImages.length;
+  content.galleryImages = content.galleryImages.filter((img) => img.id !== id);
+  if (content.galleryImages.length === before) return res.status(404).json({ error: "Gallery image not found." });
   writeSiteContent(content);
   res.json({ ok: true, galleryImages: content.galleryImages });
 });

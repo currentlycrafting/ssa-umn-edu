@@ -81,6 +81,26 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .btn-red{background:var(--red);color:#fff}
 .btn-green{background:var(--green);color:#fff}
 
+/* Index & Board: drop zone (add file UI) */
+.site-drop-zone{border:1px dashed rgba(184,154,92,.35);background:var(--navy-light);border-radius:10px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .2s}
+.site-drop-zone:hover,.site-drop-zone.drag-over{border-color:var(--gold);background:rgba(184,154,92,.08)}
+.site-drop-zone.upload-done{border-style:solid;border-color:rgba(76,175,125,.4);background:rgba(76,175,125,.08)}
+.site-dz-text{font-size:12px;color:var(--silver)}
+.site-dz-text strong{color:var(--gold-light)}
+.site-dz-sub{font-size:10px;color:rgba(154,159,173,.5);margin-top:4px}
+.site-gallery-item{position:relative;width:100px;height:100px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.site-gallery-item img{width:100%;height:100%;object-fit:cover}
+.site-gallery-remove{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:4px;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:.9}
+.site-gallery-remove:hover{opacity:1}
+.site-board-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);padding:16px;border-radius:10px;display:grid;grid-template-columns:100px 1fr auto;gap:16px;align-items:start}
+.site-board-photo-wrap{width:100px;height:100px;border-radius:8px;overflow:hidden;background:var(--navy);position:relative}
+.site-board-photo-wrap img{width:100%;height:100%;object-fit:cover}
+.site-board-upload{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--gold);cursor:pointer;opacity:0;transition:opacity .2s}
+.site-board-photo-wrap:hover .site-board-upload{opacity:1}
+.site-board-fields{display:flex;flex-direction:column;gap:8px}
+.site-board-fields input{background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:8px 12px;border-radius:6px;color:var(--white);font-size:12px}
+.site-board-fields input::placeholder{color:var(--silver)}
+
 /* PAGE */
 .page{display:none;padding:32px;flex-direction:column;gap:24px}
 .page.active{display:flex}
@@ -782,30 +802,33 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="card">
       <div class="section-label">Index gallery</div>
       <div class="card-title">Photos on homepage</div>
-      <div class="card-sub">Add a photo below. Only president can push to GitHub; board and VP can add photos.</div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:16px">
-        <label style="display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:11px;color:var(--silver)">Photo</span>
-          <input type="file" id="site-gallery-file" accept="image/*" style="font-size:11px;color:var(--stone)" />
-        </label>
+      <div class="card-sub">Add or remove photos below. These appear in the gallery on the public index. Only president can push to GitHub.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:16px">
+        <div class="site-drop-zone" id="site-gallery-drop" style="width:220px;flex-shrink:0" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryDrop(event)" onclick="document.getElementById('site-gallery-file').click()">
+          <div class="site-dz-text" id="site-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
+          <div class="site-dz-sub">PNG, JPG · one image</div>
+          <input type="file" id="site-gallery-file" accept="image/*" style="display:none" onchange="siteGalleryFileChosen(this)" />
+        </div>
         <label style="display:flex;flex-direction:column;gap:4px">
           <span style="font-size:11px;color:var(--silver)">Alt text</span>
           <input type="text" id="site-gallery-alt" placeholder="e.g. SSA event" style="background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:8px 12px;border-radius:6px;color:var(--white);font-size:12px;min-width:160px" />
         </label>
         <button type="button" class="btn btn-gold" onclick="siteAddGalleryPhoto()">Add to gallery</button>
       </div>
-      <div id="site-gallery-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px"></div>
-      <button type="button" class="btn btn-gold" onclick="sitePushToGitHub()">Push site content to GitHub</button>
-      <span id="site-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      <div id="site-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px"></div>
     </div>
     <div class="card" style="margin-top:24px">
       <div class="section-label">Board section (Executive Board on index)</div>
       <div class="card-title">Edit members</div>
-      <div class="card-sub">Change names, roles, bios, and photos. Save below, then push to GitHub.</div>
-      <div id="site-board-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px"></div>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <div class="card-sub">Current board photos, names, roles, and bios. Change photos with the overlay; save then push to GitHub.</div>
+      <div id="site-board-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
         <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
         <button type="button" class="btn btn-gold" onclick="siteSaveBoard()">Save board</button>
+      </div>
+      <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="sitePushToGitHub()">Push site content to GitHub</button>
+        <span id="site-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
       </div>
     </div>
   </div>
@@ -816,14 +839,12 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="card">
       <div class="section-label">Database</div>
       <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:8px">seedUsers() in sqlite.js</div>
-      <div style="font-size:12px;color:var(--silver);margin-bottom:16px">Edit the seedUsers() function below and run locally or push to GitHub.</div>
+      <div style="font-size:12px;color:var(--silver);margin-bottom:16px">Paste or edit the seedUsers() function below, then push to GitHub.</div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-        <button type="button" class="btn btn-gold" onclick="loadSeedSnippet()">Load / Refresh</button>
-        <button type="button" class="btn btn-outline" onclick="runSeedUsers()">Run seed now</button>
         <button type="button" class="btn btn-gold" onclick="pushSeedToGitHub()">Push to GitHub</button>
         <a id="seed-open-github" class="btn btn-outline" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Open in GitHub</a>
       </div>
-      <textarea id="seed-users-snippet" style="width:100%;min-height:360px;background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:var(--stone);resize:vertical;line-height:1.5" placeholder="Click Load to fetch seedUsers() from sqlite.js."></textarea>
+      <textarea id="seed-users-snippet" style="width:100%;min-height:360px;background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:var(--stone);resize:vertical;line-height:1.5" placeholder="Paste seedUsers() from sqlite.js or edit locally, then click Push to GitHub."></textarea>
       <div id="seed-status" style="font-size:11px;color:var(--silver);margin-top:10px"></div>
     </div>
   </div>
@@ -1312,7 +1333,7 @@ function showPage(id, param) {
     'templates':'Event Templates','reports':'Reports','site-content':'Index & Board','seed-users':'Seed users',
   };
   document.getElementById('page-title').textContent = titles[id] || id;
-  if (id === 'seed-users') loadSeedSnippet();
+  if (id === 'seed-users') setSeedGitHubLink();
   if (id === 'site-content') loadSiteContentPage();
 }
 
@@ -1900,65 +1921,31 @@ function showToast(msg) {
 }
 
 // ── SEED USERS (sqlite.js) ──────────────────────────────────────────────────
-window.loadSeedSnippet = async function loadSeedSnippet() {
-  const ta = document.getElementById('seed-users-snippet');
-  const status = document.getElementById('seed-status');
+window.setSeedGitHubLink = async function setSeedGitHubLink() {
   const githubLink = document.getElementById('seed-open-github');
-  if (!ta) return;
-  if (status) status.textContent = 'Loading…';
+  if (!githubLink) return;
   try {
     const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-    const [snippetRes, repoRes] = await Promise.all([
-      fetch('/api/admin/seed-users-snippet', { headers: { 'x-session-token': token } }),
-      fetch('/api/admin/github-repo', { headers: { 'x-session-token': token } })
-    ]);
-    if (!snippetRes.ok) throw new Error(snippetRes.status === 403 ? 'President only' : 'Failed to load');
-    const data = await snippetRes.json();
-    ta.value = data.content || '';
-    if (status) status.textContent = 'Loaded ' + (data.filename || 'sqlite.js');
-    if (githubLink && repoRes.ok) {
-      const repo = await repoRes.json().catch(() => ({}));
-      const url = repo.url;
-      if (url) {
-        const base = url.replace(/\/$/, '');
-        githubLink.href = base + '/blob/main/sqlite.js';
-        githubLink.style.display = '';
-      } else {
-        githubLink.style.display = 'none';
-      }
+    const res = await fetch('/api/admin/github-repo', { headers: { 'x-session-token': token } });
+    if (!res.ok) { githubLink.style.display = 'none'; return; }
+    const repo = await res.json().catch(() => ({}));
+    const url = repo.url;
+    const branch = repo.branch || 'main';
+    if (url) {
+      const base = url.replace(/\/$/, '');
+      githubLink.href = base + '/blob/' + encodeURIComponent(branch) + '/sqlite.js';
+      githubLink.style.display = '';
+    } else {
+      githubLink.style.display = 'none';
     }
-  } catch (e) {
-    ta.value = '';
-    if (status) status.textContent = 'Error: ' + (e.message || 'Could not load');
-    if (githubLink) githubLink.style.display = 'none';
+  } catch (_e) {
+    githubLink.style.display = 'none';
   }
-};
-window.runSeedUsers = async function runSeedUsers() {
-  const status = document.getElementById('seed-status');
-  if (status) status.textContent = 'Running seed…';
-  try {
-    const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-    const res = await fetch('/api/admin/run-seed', { method: 'POST', headers: { 'x-session-token': token, 'Content-Type': 'application/json' } });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Seed failed');
-    if (status) status.textContent = 'Seed run successfully.';
-    showToast('Seed users run successfully.');
-  } catch (e) {
-    if (status) status.textContent = 'Error: ' + (e.message || 'Run failed');
-    showToast(e.message || 'Run failed');
-  }
-};
-window.copySeedToClipboard = function copySeedToClipboard() {
-  const ta = document.getElementById('seed-users-snippet');
-  if (!ta || !ta.value) { showToast('Load the snippet first.'); return; }
-  ta.select();
-  document.execCommand('copy');
-  showToast('Copied to clipboard. Paste into GitHub or your editor.');
 };
 window.pushSeedToGitHub = async function pushSeedToGitHub() {
   const ta = document.getElementById('seed-users-snippet');
   const status = document.getElementById('seed-status');
-  if (!ta || !ta.value.trim()) { showToast('Load and edit the seedUsers() function first.'); return; }
+    if (!ta || !ta.value.trim()) { showToast('Paste or edit the seedUsers() function first.'); return; }
   if (status) status.textContent = 'Pushing to GitHub…';
   try {
     const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
@@ -1970,7 +1957,6 @@ window.pushSeedToGitHub = async function pushSeedToGitHub() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Push failed');
     if (status) status.textContent = 'Pushed to GitHub successfully.';
-    showToast('Pushed to GitHub.');
   } catch (e) {
     if (status) status.textContent = 'Error: ' + (e.message || 'Push failed');
     showToast(e.message || 'Push failed');
@@ -2012,22 +1998,79 @@ function renderSiteGalleryList() {
     return;
   }
   el.innerHTML = siteContentGallery.map(function (img) {
-    const src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : img.src;
-    return '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1)"><img src="' + (src || '') + '" alt="" style="width:100%;height:100%;object-fit:cover" /></div>';
+    const src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : (img.src || '');
+    const id = (img.id || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return '<div class="site-gallery-item"><img src="' + (src || '') + '" alt="" /><button type="button" class="site-gallery-remove" data-gallery-id="' + id + '" onclick="siteRemoveGalleryPhoto(this.getAttribute(\'data-gallery-id\'))" aria-label="Remove">×</button></div>';
   }).join('');
 }
+function siteGalleryDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function siteGalleryDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function siteGalleryDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file && file.type.indexOf('image/') === 0) {
+    const input = document.getElementById('site-gallery-file');
+    if (input) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      const zone = document.getElementById('site-gallery-drop');
+      const text = document.getElementById('site-gallery-dz-text');
+      if (zone) zone.classList.add('upload-done');
+      if (text) text.textContent = file.name;
+    }
+  }
+}
+function siteGalleryFileChosen(input) {
+  const file = input.files && input.files[0];
+  const zone = document.getElementById('site-gallery-drop');
+  const text = document.getElementById('site-gallery-dz-text');
+  if (zone) zone.classList.remove('upload-done');
+  if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
+  if (file) {
+    if (zone) zone.classList.add('upload-done');
+    if (text) text.textContent = file.name;
+  }
+}
+window.siteRemoveGalleryPhoto = async function siteRemoveGalleryPhoto(id) {
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) return;
+  try {
+    const res = await fetch('/api/site/gallery/' + encodeURIComponent(id), { method: 'DELETE', headers: { 'x-session-token': token } });
+    const data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Remove failed');
+    siteContentGallery = data.galleryImages || [];
+    renderSiteGalleryList();
+  } catch (e) {
+    showToast(e.message || 'Remove failed');
+  }
+};
 function renderSiteBoardList() {
   const el = document.getElementById('site-board-list');
   if (!el) return;
   el.innerHTML = siteContentBoard.map(function (m, i) {
-    const img = (m.image && m.image.startsWith('/')) ? (window.location.origin + m.image) : (m.image || '');
-    return '<div class="card-sm" style="display:grid;grid-template-columns:80px 1fr auto;gap:16px;align-items:center">' +
-      '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;background:var(--navy)"><img src="' + (img || '') + '" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'" /></div>' +
-      '<div><input type="text" data-board-index="' + i + '" data-board-field="name" value="' + (m.name || '').replace(/"/g, '&quot;') + '" placeholder="Name" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;margin-bottom:6px;color:var(--white);font-size:12px" />' +
-      '<input type="text" data-board-index="' + i + '" data-board-field="role" value="' + (m.role || '').replace(/"/g, '&quot;') + '" placeholder="Role" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;margin-bottom:6px;color:var(--white);font-size:12px" />' +
-      '<input type="text" data-board-index="' + i + '" data-board-field="bio" value="' + (m.bio || '').replace(/"/g, '&quot;') + '" placeholder="Bio" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;color:var(--white);font-size:12px" />' +
-      '<input type="text" data-board-index="' + i + '" data-board-field="image" value="' + (m.image || '').replace(/"/g, '&quot;') + '" placeholder="Image path (e.g. images/photo.png)" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;margin-top:6px;color:var(--stone);font-size:11px" /></div>' +
-      '<button type="button" class="btn btn-outline" style="padding:6px 12px;font-size:10px" onclick="siteRemoveBoardMember(' + i + ')">Remove</button></div>';
+    const imgSrc = (m.image && m.image.startsWith('/')) ? (window.location.origin + m.image) : (m.image || '');
+    const name = (m.name || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const role = (m.role || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const bio = (m.bio || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return '<div class="site-board-card">' +
+      '<div class="site-board-photo-wrap">' +
+      '<img src="' + (imgSrc || '') + '" alt="" onerror="this.style.display=\'none\'" />' +
+      '<div class="site-board-upload" onclick="siteBoardPhotoClick(' + i + ')">Change photo</div>' +
+      '</div>' +
+      '<div class="site-board-fields">' +
+      '<input type="text" data-board-index="' + i + '" data-board-field="name" value="' + name + '" placeholder="Name" />' +
+      '<input type="text" data-board-index="' + i + '" data-board-field="role" value="' + role + '" placeholder="Role" />' +
+      '<input type="text" data-board-index="' + i + '" data-board-field="bio" value="' + bio + '" placeholder="Bio" />' +
+      '</div>' +
+      '<button type="button" class="btn btn-outline" style="padding:6px 12px;font-size:10px" onclick="siteRemoveBoardMember(' + i + ')">Remove</button>' +
+      '</div>';
   }).join('');
   el.querySelectorAll('input[data-board-index]').forEach(function (input) {
     input.addEventListener('input', function () {
@@ -2037,6 +2080,43 @@ function renderSiteBoardList() {
     });
   });
 }
+var siteBoardPhotoInput = null;
+function siteBoardPhotoInputEl() {
+  if (!siteBoardPhotoInput) {
+    siteBoardPhotoInput = document.createElement('input');
+    siteBoardPhotoInput.type = 'file';
+    siteBoardPhotoInput.accept = 'image/*';
+    siteBoardPhotoInput.style.display = 'none';
+    siteBoardPhotoInput.onchange = function () {
+      var idx = siteBoardPhotoInput.getAttribute('data-board-index');
+      if (idx === null || idx === '') return;
+      idx = parseInt(idx, 10);
+      var file = siteBoardPhotoInput.files && siteBoardPhotoInput.files[0];
+      siteBoardPhotoInput.value = '';
+      siteBoardPhotoInput.removeAttribute('data-board-index');
+      if (!file || !siteContentBoard[idx]) return;
+      var fd = new FormData();
+      fd.append('files', file);
+      var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+      fetch('/api/upload', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.paths && data.paths[0]) {
+            siteContentBoard[idx].image = data.paths[0];
+            renderSiteBoardList();
+          }
+        })
+        .catch(function () {});
+    };
+    document.body.appendChild(siteBoardPhotoInput);
+  }
+  return siteBoardPhotoInput;
+}
+window.siteBoardPhotoClick = function siteBoardPhotoClick(index) {
+  var input = siteBoardPhotoInputEl();
+  input.setAttribute('data-board-index', String(index));
+  input.click();
+};
 window.siteAddGalleryPhoto = async function siteAddGalleryPhoto() {
   const fileInput = document.getElementById('site-gallery-file');
   const altInput = document.getElementById('site-gallery-alt');
@@ -2059,6 +2139,10 @@ window.siteAddGalleryPhoto = async function siteAddGalleryPhoto() {
     renderSiteGalleryList();
     fileInput.value = '';
     if (altInput) altInput.value = '';
+    var zone = document.getElementById('site-gallery-drop');
+    var text = document.getElementById('site-gallery-dz-text');
+    if (zone) zone.classList.remove('upload-done');
+    if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
     showToast('Photo added to gallery.');
   } catch (e) {
     showToast(e.message || 'Upload failed');
@@ -2073,7 +2157,6 @@ window.sitePushToGitHub = async function sitePushToGitHub() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Push failed');
     if (statusEl) statusEl.textContent = 'Pushed.';
-    showToast('Site content pushed to GitHub.');
   } catch (e) {
     if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
     showToast(e.message || 'Push failed');
