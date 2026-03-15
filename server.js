@@ -23,6 +23,38 @@ const uploadsDir = path.join(dataDir, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
 
+const siteContentPath = path.join(dataDir, "site-content.json");
+function readSiteContent() {
+  try {
+    if (fs.existsSync(siteContentPath)) {
+      const raw = fs.readFileSync(siteContentPath, "utf8");
+      const data = JSON.parse(raw);
+      return {
+        galleryImages: Array.isArray(data.galleryImages) ? data.galleryImages : [],
+        boardMembers: Array.isArray(data.boardMembers) ? data.boardMembers : []
+      };
+    }
+  } catch (_e) {}
+  return { galleryImages: [], boardMembers: [] };
+}
+function writeSiteContent(data) {
+  const payload = {
+    galleryImages: data.galleryImages || [],
+    boardMembers: data.boardMembers || []
+  };
+  fs.writeFileSync(siteContentPath, JSON.stringify(payload, null, 2), "utf8");
+  return payload;
+}
+function canEditGallery(user) {
+  if (!user) return false;
+  const level = user.permission_level || user.view_type || "";
+  return level === "president" || level === "vp" || level === "board";
+}
+function isPresident(user) {
+  if (!user) return false;
+  return (user.permission_level || user.view_type) === "president";
+}
+
 app.use(express.json({ limit: "2mb" }));
 // Cache images for 1 year so photos load faster on repeat visits (filenames are content-addressed).
 app.use("/images", express.static(path.join(__dirname, "images"), { maxAge: "1y", immutable: true }));
@@ -522,6 +554,11 @@ app.get("/api/config/public", (_req, res) => {
     geminiConfigured: Boolean(GEMINI_API_KEY),
     googleClientId: GOOGLE_CLIENT_ID || ""
   });
+});
+
+app.get("/api/public/site-content", (_req, res) => {
+  const content = readSiteContent();
+  res.json(content);
 });
 
 app.post("/api/auth/google", async (req, res) => {
@@ -1896,6 +1933,37 @@ app.patch("/api/events/:id", (req, res) => {
   });
 });
 
+function extractSeedUsersFunction(content) {
+  const start = content.indexOf("function seedUsers()");
+  if (start === -1) return content;
+  const openBrace = content.indexOf("{", start);
+  if (openBrace === -1) return content;
+  let depth = 1;
+  let i = openBrace + 1;
+  while (i < content.length && depth > 0) {
+    if (content[i] === "{") depth++;
+    else if (content[i] === "}") depth--;
+    i++;
+  }
+  return content.slice(start, depth === 0 ? i : content.length).trim();
+}
+
+function replaceSeedUsersInFile(fullContent, newSeedUsersBlock) {
+  const start = fullContent.indexOf("function seedUsers()");
+  if (start === -1) return null;
+  const openBrace = fullContent.indexOf("{", start);
+  if (openBrace === -1) return null;
+  let depth = 1;
+  let i = openBrace + 1;
+  while (i < fullContent.length && depth > 0) {
+    if (fullContent[i] === "{") depth++;
+    else if (fullContent[i] === "}") depth--;
+    i++;
+  }
+  if (depth !== 0) return null;
+  return fullContent.slice(0, start) + newSeedUsersBlock + fullContent.slice(i);
+}
+
 app.get("/api/admin/seed-users-snippet", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
@@ -1905,7 +1973,8 @@ app.get("/api/admin/seed-users-snippet", (req, res) => {
   }
   try {
     const sqlitePath = path.join(__dirname, "sqlite.js");
-    const content = fs.readFileSync(sqlitePath, "utf8");
+    const fullContent = fs.readFileSync(sqlitePath, "utf8");
+    const content = extractSeedUsersFunction(fullContent);
     res.json({ content, filename: "sqlite.js" });
   } catch (e) {
     res.status(500).json({ error: e.message || "Failed to read file." });
@@ -1936,6 +2005,156 @@ app.get("/api/admin/github-repo", (req, res) => {
   }
   const url = process.env.GITHUB_REPO || null;
   res.json({ url });
+});
+
+app.post("/api/admin/seed-users-push", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  const githubToken = process.env.GITHUB_TOKEN;
+  if (!githubToken) {
+    return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
+  }
+  const { content: newSeedUsersBlock } = req.body || {};
+  if (!newSeedUsersBlock || typeof newSeedUsersBlock !== "string") {
+    return res.status(400).json({ error: "Request body must include content (the seedUsers() function)." });
+  }
+  const repoUrl = process.env.GITHUB_REPO || "";
+  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
+  if (!match) {
+    return res.status(400).json({ error: "GITHUB_REPO is missing or invalid (e.g. https://github.com/owner/repo)." });
+  }
+  const [, owner, repo] = match;
+  try {
+    const sqlitePath = path.join(__dirname, "sqlite.js");
+    const fullContent = fs.readFileSync(sqlitePath, "utf8");
+    const newFullContent = replaceSeedUsersInFile(fullContent, newSeedUsersBlock.trim());
+    if (!newFullContent) {
+      return res.status(400).json({ error: "Could not find seedUsers() in sqlite.js to replace." });
+    }
+    const getRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/sqlite.js`,
+      { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } }
+    );
+    const getData = await getRes.json();
+    const sha = getData && getData.sha ? getData.sha : null;
+    const branch = process.env.GITHUB_BRANCH || "main";
+    const body = {
+      message: "Update seedUsers() from SSA Ops",
+      content: Buffer.from(newFullContent, "utf8").toString("base64"),
+      branch
+    };
+    if (sha) body.sha = sha;
+    const putRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/sqlite.js`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          Authorization: `Bearer ${githubToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      }
+    );
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      return res.status(502).json({ error: errData.message || "GitHub API error." });
+    }
+    fs.writeFileSync(sqlitePath, newFullContent, "utf8");
+    res.json({ ok: true, message: "Pushed to GitHub and local file updated." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+// ---------- Site content (gallery + board): board/VP/president add gallery; president edits board & pushes ----------
+app.post("/api/site/gallery", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can add gallery photos." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  const alt = (req.body && req.body.alt) ? String(req.body.alt).trim() : "SSA event";
+  const content = readSiteContent();
+  const id = crypto.randomUUID();
+  content.galleryImages.push({ id, src: `/uploads/${file.filename}`, alt });
+  writeSiteContent(content);
+  res.json({ ok: true, galleryImages: content.galleryImages });
+});
+
+app.get("/api/site/board", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  const content = readSiteContent();
+  res.json({ boardMembers: content.boardMembers });
+});
+
+app.put("/api/site/board", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can edit the board section." });
+  const { boardMembers } = req.body || {};
+  if (!Array.isArray(boardMembers)) return res.status(400).json({ error: "Request body must include boardMembers array." });
+  const content = readSiteContent();
+  content.boardMembers = boardMembers;
+  writeSiteContent(content);
+  res.json({ ok: true, boardMembers: content.boardMembers });
+});
+
+app.post("/api/site/push", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push site content to GitHub." });
+  const githubToken = process.env.GITHUB_TOKEN;
+  if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
+  const repoUrl = process.env.GITHUB_REPO || "";
+  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
+  if (!match) return res.status(400).json({ error: "GITHUB_REPO is missing or invalid." });
+  const [, owner, repo] = match;
+  const branch = process.env.GITHUB_BRANCH || "main";
+  try {
+    const content = readSiteContent();
+    const jsonStr = JSON.stringify(content, null, 2);
+    const getRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/data/site-content.json`,
+      { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } }
+    );
+    const getData = await getRes.json();
+    const sha = getData && getData.sha ? getData.sha : null;
+    const putBody = {
+      message: "Update site content (gallery + board) from SSA Ops",
+      content: Buffer.from(jsonStr, "utf8").toString("base64"),
+      branch
+    };
+    if (sha) putBody.sha = sha;
+    const putRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/data/site-content.json`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          Authorization: `Bearer ${githubToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(putBody)
+      }
+    );
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      return res.status(502).json({ error: errData.message || "GitHub API error." });
+    }
+    res.json({ ok: true, message: "Site content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
 });
 
 app.delete("/api/events/:id", (req, res) => {

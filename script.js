@@ -89,6 +89,7 @@ const defaultData = {
 };
 
 let siteData = loadSiteData();
+let serverSiteContent = { galleryImages: null, boardMembers: null };
 let adminUnlocked = sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
 let directEditEnabled = false;
 let adminActiveTab = 'newsletters';
@@ -232,11 +233,20 @@ function renderNewsletters() {
     .join('');
 }
 
+function getBoardMembers() {
+  if (serverSiteContent.boardMembers && serverSiteContent.boardMembers.length) return serverSiteContent.boardMembers;
+  return siteData.boardMembers;
+}
+function getGalleryImages() {
+  if (serverSiteContent.galleryImages && serverSiteContent.galleryImages.length) return serverSiteContent.galleryImages;
+  return siteData.galleryImages;
+}
+
 function renderBoard() {
   const boardGrid = document.getElementById('leadership-grid');
   if (!boardGrid) return;
-
-  boardGrid.innerHTML = siteData.boardMembers
+  const members = getBoardMembers();
+  boardGrid.innerHTML = members
     .map((member) => {
       const mobileClasses = [];
       const lowerName = member.name.toLowerCase();
@@ -286,8 +296,9 @@ function renderGallery() {
       )
       .join('');
 
-  homeGrid.innerHTML = renderItems(siteData.galleryImages.slice(0, 6));
-  fullGrid.innerHTML = renderItems(siteData.galleryImages);
+  const images = getGalleryImages();
+  homeGrid.innerHTML = renderItems(images.slice(0, 6));
+  fullGrid.innerHTML = renderItems(images);
 }
 
 function assignDirectEditableElements() {
@@ -896,8 +907,23 @@ function setupGalleryLightbox() {
   });
 }
 
+function loadSiteContentFromServer() {
+  fetch('/api/public/site-content')
+    .then((r) => r.ok ? r.json() : null)
+    .then((data) => {
+      if (data && (data.galleryImages || data.boardMembers)) {
+        if (Array.isArray(data.galleryImages)) serverSiteContent.galleryImages = data.galleryImages;
+        if (Array.isArray(data.boardMembers)) serverSiteContent.boardMembers = data.boardMembers;
+        renderBoard();
+        renderGallery();
+      }
+    })
+    .catch(() => {});
+}
+
 function init() {
   renderAllDynamicSections();
+  loadSiteContentFromServer();
   assignDirectEditableElements();
   applyDirectText();
   applyEditableAssets();

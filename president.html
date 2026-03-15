@@ -535,6 +535,14 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
 #eventCreateModal .btn-back:hover{background:rgba(184,154,92,.07)}
 #eventCreateModal .ce-disclaimer{font-size:10px;color:var(--silver);margin-top:6px;line-height:1.5}
 
+/* Google Places autocomplete dropdown — dark blue to match app */
+.pac-container{background:var(--navy-mid)!important;border:1px solid rgba(255,255,255,.12)!important;border-radius:8px;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.4);font-family:var(--font-body)!important;}
+.pac-container .pac-item{background:transparent!important;color:var(--white)!important;padding:10px 14px!important;cursor:pointer;border:none!important;font-size:13px!important;}
+.pac-container .pac-item:hover,.pac-container .pac-item:focus{background:rgba(255,255,255,.08)!important;}
+.pac-container .pac-item-query{color:var(--white)!important;font-size:13px!important;}
+.pac-container .pac-item span:not(.pac-item-query){color:var(--silver)!important;font-size:11px!important;}
+.pac-container .pac-icon{filter:invert(1);opacity:.7;}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}
@@ -612,6 +620,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
 
     <div class="sb-section-label">Executive</div>
     <div class="sb-item" onclick="showPage('reports')"><span class="sb-icon">✦</span>Reports</div>
+    <div class="sb-item" onclick="showPage('site-content')"><span class="sb-icon">◷</span>Index & Board</div>
     <div class="sb-item" onclick="showPage('seed-users')"><span class="sb-icon">⎘</span>Seed users (sqlite.js)</div>
   </div>
   <div class="sb-footer">
@@ -767,20 +776,54 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="three-col" id="templates-grid"></div>
   </div>
 
+  <!-- ── PAGE: INDEX & BOARD (gallery + board section, push to GitHub) ── -->
+  <div class="page" id="page-site-content">
+    <div class="breadcrumb"><span>Executive</span> / Index & Board</div>
+    <div class="card">
+      <div class="section-label">Index gallery</div>
+      <div class="card-title">Photos on homepage</div>
+      <div class="card-sub">Add a photo below. Only president can push to GitHub; board and VP can add photos.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:16px">
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:11px;color:var(--silver)">Photo</span>
+          <input type="file" id="site-gallery-file" accept="image/*" style="font-size:11px;color:var(--stone)" />
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:11px;color:var(--silver)">Alt text</span>
+          <input type="text" id="site-gallery-alt" placeholder="e.g. SSA event" style="background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:8px 12px;border-radius:6px;color:var(--white);font-size:12px;min-width:160px" />
+        </label>
+        <button type="button" class="btn btn-gold" onclick="siteAddGalleryPhoto()">Add to gallery</button>
+      </div>
+      <div id="site-gallery-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px"></div>
+      <button type="button" class="btn btn-gold" onclick="sitePushToGitHub()">Push site content to GitHub</button>
+      <span id="site-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+    </div>
+    <div class="card" style="margin-top:24px">
+      <div class="section-label">Board section (Executive Board on index)</div>
+      <div class="card-title">Edit members</div>
+      <div class="card-sub">Change names, roles, bios, and photos. Save below, then push to GitHub.</div>
+      <div id="site-board-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
+        <button type="button" class="btn btn-gold" onclick="siteSaveBoard()">Save board</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── PAGE: SEED USERS (sqlite.js) ── -->
   <div class="page" id="page-seed-users">
     <div class="breadcrumb"><span>Executive</span> / Seed users</div>
     <div class="card">
       <div class="section-label">Database</div>
       <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:8px">seedUsers() in sqlite.js</div>
-      <div style="font-size:12px;color:var(--silver);margin-bottom:16px">View and run the seed function. Copy the file content to push changes to GitHub manually.</div>
+      <div style="font-size:12px;color:var(--silver);margin-bottom:16px">Edit the seedUsers() function below and run locally or push to GitHub.</div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
         <button type="button" class="btn btn-gold" onclick="loadSeedSnippet()">Load / Refresh</button>
         <button type="button" class="btn btn-outline" onclick="runSeedUsers()">Run seed now</button>
-        <button type="button" class="btn btn-outline" onclick="copySeedToClipboard()">Copy to clipboard</button>
+        <button type="button" class="btn btn-gold" onclick="pushSeedToGitHub()">Push to GitHub</button>
         <a id="seed-open-github" class="btn btn-outline" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Open in GitHub</a>
       </div>
-      <textarea id="seed-users-snippet" readonly style="width:100%;min-height:360px;background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:var(--stone);resize:vertical;line-height:1.5" placeholder="Click Load to fetch sqlite.js content."></textarea>
+      <textarea id="seed-users-snippet" style="width:100%;min-height:360px;background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:var(--stone);resize:vertical;line-height:1.5" placeholder="Click Load to fetch seedUsers() from sqlite.js."></textarea>
       <div id="seed-status" style="font-size:11px;color:var(--silver);margin-top:10px"></div>
     </div>
   </div>
@@ -825,9 +868,10 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
         <input type="hidden" id="ev-type" value=""/>
         <div class="ce-dv"></div>
         <div class="ce-r2">
-          <div class="ce-fg"><label class="ce-fl">Event Scope</label><select id="ev-scope" class="ce-fi"><option>1000+</option><option>Large Scale (500+)</option><option>Medium (100–500)</option><option>Small (&lt;100)</option><option>Internal Only</option></select></div>
-          <div class="ce-fg"><label class="ce-fl">Venue / Location</label><input type="text" class="ce-fi" placeholder="Enter venue or location" id="ev-venue"/></div>
+          <div class="ce-fg"><label class="ce-fl">Event Scope</label><select id="ev-scope" class="ce-fi"><option>Massive Scale (1000+)</option><option>Large Scale (500+)</option><option>Medium (100–500)</option><option>Small (&lt;100)</option><option>Internal Only</option></select></div>
+          <div class="ce-fg"><label class="ce-fl">Venue / Location</label><input type="text" class="ce-fi" placeholder="Building or place near UMN campus" id="ev-venue"/></div>
         </div>
+        <div class="ce-fg" style="margin-top:-8px"><label class="ce-fl">Room / Suite (optional)</label><input type="text" class="ce-fi" placeholder="e.g. Room 120, Suite 300" id="ev-venue-room"/></div>
       </div>
       <div class="step-section" id="create-step-2">
         <div class="ce-sl">Scope & Roles</div>
@@ -860,7 +904,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
             </div>
           </div>
         </div>
-        <div class="ce-fg"><label class="ce-fl">Expected Deliverables By Role</label><div id="role-deliverables-container" style="display:flex;flex-direction:column;gap:10px"></div></div>
+        <div class="ce-fg"><label class="ce-fl">Expected Deliverables By Role</label><div class="ce-disclaimer" style="margin-bottom:10px">Example: &ldquo;Finalize run-of-show by [date]; share with production and marketing for sign-off.&rdquo;</div><div id="role-deliverables-container" style="display:flex;flex-direction:column;gap:10px"></div></div>
       </div>
       <div class="step-section" id="create-step-3">
         <div class="ce-sl">Instructions</div>
@@ -878,7 +922,6 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
       </div>
       <div class="step-section" id="create-step-4">
         <div class="gen-stage">
-          <div class="gen-icon">◇</div>
           <div class="gen-title" id="gen-status">Generate Task Workflow</div>
           <div class="gen-sub">Gemini 2.5 Flash will analyze your event details and produce a structured set of tasks with assignments, dependencies, and timeline sequencing.</div>
           <div class="gen-summary" id="gen-summary-box" style="display:none">
@@ -1266,10 +1309,11 @@ function showPage(id, param) {
     'overdue':'Overdue & Alerts','events':'All Events','event-panel':'Event Control Panel',
     'dependency':'Dependency Graph','calendar':'Calendar',
     'internal-div':'Internal Division','external-div':'External Division','exec-div':'Executive Division',
-    'templates':'Event Templates','reports':'Reports','seed-users':'Seed users',
+    'templates':'Event Templates','reports':'Reports','site-content':'Index & Board','seed-users':'Seed users',
   };
   document.getElementById('page-title').textContent = titles[id] || id;
   if (id === 'seed-users') loadSeedSnippet();
+  if (id === 'site-content') loadSiteContentPage();
 }
 
 // ── RENDER WORKLOAD GRID ──────────────────────────────────────────────────
@@ -1632,9 +1676,17 @@ function attachVenueAutocomplete() {
   const input = document.getElementById('ev-venue');
   if (!input || input.getAttribute('data-places-bound')) return;
   input.setAttribute('data-places-bound', '1');
-  const autocomplete = new google.maps.places.Autocomplete(input, { types: ['establishment','geocode'], fields: ['formatted_address','name','place_id'] });
+  var umnBounds = new google.maps.LatLngBounds(
+    new google.maps.LatLng(44.96, -93.26),
+    new google.maps.LatLng(44.99, -93.20)
+  );
+  var autocomplete = new google.maps.places.Autocomplete(input, {
+    types: ['establishment', 'geocode'],
+    fields: ['formatted_address', 'name', 'place_id'],
+    bounds: umnBounds
+  });
   autocomplete.addListener('place_changed', function() {
-    const place = autocomplete.getPlace();
+    var place = autocomplete.getPlace();
     if (place && place.formatted_address) input.value = place.formatted_address;
   });
 }
@@ -1811,7 +1863,8 @@ function renderRoleDeliverableInputs() {
           (role) => {
             var key = role.replaceAll('"', "&quot;");
             var val = saved[key] != null ? saved[key] : "";
-            return `<div class="ce-fg"><label class="ce-fl">${role.replace(/</g, "&lt;")}</label><textarea class="ce-fi" data-role-deliverable="${key}" placeholder="Expected deliverables for this role" style="min-height:60px">${(val || "").replace(/</g, "&lt;").replace(/&/g, "&amp;")}</textarea></div>`;
+            var placeholder = "e.g. Finalize run-of-show by [date]; share with production and marketing for sign-off.";
+            return `<div class="ce-fg"><label class="ce-fl">${role.replace(/</g, "&lt;")}</label><textarea class="ce-fi" data-role-deliverable="${key}" placeholder="${placeholder.replace(/"/g, "&quot;")}" style="min-height:60px">${(val || "").replace(/</g, "&lt;").replace(/&/g, "&amp;")}</textarea></div>`;
           }
         )
         .join("")
@@ -1901,6 +1954,156 @@ window.copySeedToClipboard = function copySeedToClipboard() {
   ta.select();
   document.execCommand('copy');
   showToast('Copied to clipboard. Paste into GitHub or your editor.');
+};
+window.pushSeedToGitHub = async function pushSeedToGitHub() {
+  const ta = document.getElementById('seed-users-snippet');
+  const status = document.getElementById('seed-status');
+  if (!ta || !ta.value.trim()) { showToast('Load and edit the seedUsers() function first.'); return; }
+  if (status) status.textContent = 'Pushing to GitHub…';
+  try {
+    const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+    const res = await fetch('/api/admin/seed-users-push', {
+      method: 'POST',
+      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: ta.value })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Push failed');
+    if (status) status.textContent = 'Pushed to GitHub successfully.';
+    showToast('Pushed to GitHub.');
+  } catch (e) {
+    if (status) status.textContent = 'Error: ' + (e.message || 'Push failed');
+    showToast(e.message || 'Push failed');
+  }
+};
+
+// ── INDEX & BOARD (site content) ───────────────────────────────────────────
+let siteContentGallery = [];
+let siteContentBoard = [];
+window.loadSiteContentPage = async function loadSiteContentPage() {
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  try {
+    const [pubRes, boardRes] = await Promise.all([
+      fetch('/api/public/site-content'),
+      token ? fetch('/api/site/board', { headers: { 'x-session-token': token } }) : Promise.resolve(null)
+    ]);
+    const pub = pubRes.ok ? await pubRes.json() : {};
+    siteContentGallery = pub.galleryImages || [];
+    if (boardRes && boardRes.ok) {
+      const b = await boardRes.json();
+      siteContentBoard = b.boardMembers || [];
+    } else {
+      siteContentBoard = pub.boardMembers || [];
+    }
+    renderSiteGalleryList();
+    renderSiteBoardList();
+  } catch (_e) {
+    siteContentGallery = [];
+    siteContentBoard = [];
+    renderSiteGalleryList();
+    renderSiteBoardList();
+  }
+};
+function renderSiteGalleryList() {
+  const el = document.getElementById('site-gallery-list');
+  if (!el) return;
+  if (siteContentGallery.length === 0) {
+    el.innerHTML = '<span style="font-size:12px;color:var(--silver)">No photos yet. Add one above.</span>';
+    return;
+  }
+  el.innerHTML = siteContentGallery.map(function (img) {
+    const src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : img.src;
+    return '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1)"><img src="' + (src || '') + '" alt="" style="width:100%;height:100%;object-fit:cover" /></div>';
+  }).join('');
+}
+function renderSiteBoardList() {
+  const el = document.getElementById('site-board-list');
+  if (!el) return;
+  el.innerHTML = siteContentBoard.map(function (m, i) {
+    const img = (m.image && m.image.startsWith('/')) ? (window.location.origin + m.image) : (m.image || '');
+    return '<div class="card-sm" style="display:grid;grid-template-columns:80px 1fr auto;gap:16px;align-items:center">' +
+      '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;background:var(--navy)"><img src="' + (img || '') + '" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display=\'none\'" /></div>' +
+      '<div><input type="text" data-board-index="' + i + '" data-board-field="name" value="' + (m.name || '').replace(/"/g, '&quot;') + '" placeholder="Name" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;margin-bottom:6px;color:var(--white);font-size:12px" />' +
+      '<input type="text" data-board-index="' + i + '" data-board-field="role" value="' + (m.role || '').replace(/"/g, '&quot;') + '" placeholder="Role" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;margin-bottom:6px;color:var(--white);font-size:12px" />' +
+      '<input type="text" data-board-index="' + i + '" data-board-field="bio" value="' + (m.bio || '').replace(/"/g, '&quot;') + '" placeholder="Bio" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;color:var(--white);font-size:12px" />' +
+      '<input type="text" data-board-index="' + i + '" data-board-field="image" value="' + (m.image || '').replace(/"/g, '&quot;') + '" placeholder="Image path (e.g. images/photo.png)" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:6px 10px;margin-top:6px;color:var(--stone);font-size:11px" /></div>' +
+      '<button type="button" class="btn btn-outline" style="padding:6px 12px;font-size:10px" onclick="siteRemoveBoardMember(' + i + ')">Remove</button></div>';
+  }).join('');
+  el.querySelectorAll('input[data-board-index]').forEach(function (input) {
+    input.addEventListener('input', function () {
+      const idx = parseInt(input.dataset.boardIndex, 10);
+      const field = input.dataset.boardField;
+      if (siteContentBoard[idx]) siteContentBoard[idx][field] = input.value;
+    });
+  });
+}
+window.siteAddGalleryPhoto = async function siteAddGalleryPhoto() {
+  const fileInput = document.getElementById('site-gallery-file');
+  const altInput = document.getElementById('site-gallery-alt');
+  const file = fileInput && fileInput.files && fileInput.files[0];
+  if (!file) { showToast('Choose a photo first.'); return; }
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { showToast('You must be logged in.'); return; }
+  const fd = new FormData();
+  fd.append('photo', file);
+  fd.append('alt', (altInput && altInput.value) ? altInput.value : 'SSA event');
+  try {
+    const res = await fetch('/api/site/gallery', {
+      method: 'POST',
+      headers: { 'x-session-token': token },
+      body: fd
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    siteContentGallery = data.galleryImages || [];
+    renderSiteGalleryList();
+    fileInput.value = '';
+    if (altInput) altInput.value = '';
+    showToast('Photo added to gallery.');
+  } catch (e) {
+    showToast(e.message || 'Upload failed');
+  }
+};
+window.sitePushToGitHub = async function sitePushToGitHub() {
+  const statusEl = document.getElementById('site-push-status');
+  if (statusEl) statusEl.textContent = 'Pushing…';
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  try {
+    const res = await fetch('/api/site/push', { method: 'POST', headers: { 'x-session-token': token } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Push failed');
+    if (statusEl) statusEl.textContent = 'Pushed.';
+    showToast('Site content pushed to GitHub.');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
+    showToast(e.message || 'Push failed');
+  }
+};
+window.siteSaveBoard = async function siteSaveBoard() {
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { showToast('You must be logged in.'); return; }
+  try {
+    const res = await fetch('/api/site/board', {
+      method: 'PUT',
+      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ boardMembers: siteContentBoard })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    siteContentBoard = data.boardMembers || [];
+    renderSiteBoardList();
+    showToast('Board saved.');
+  } catch (e) {
+    showToast(e.message || 'Save failed');
+  }
+};
+window.siteAddBoardMember = function siteAddBoardMember() {
+  siteContentBoard.push({ id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'mb-' + Date.now(), name: '', role: '', bio: 'Executive Board Member', image: '' });
+  renderSiteBoardList();
+};
+window.siteRemoveBoardMember = function siteRemoveBoardMember(index) {
+  siteContentBoard.splice(index, 1);
+  renderSiteBoardList();
 };
 
 // ── CLICK OUTSIDE MODAL ───────────────────────────────────────────────────
@@ -2689,7 +2892,7 @@ init();
       eventDate: document.getElementById("ev-date")?.value || "",
       eventType: document.getElementById("ev-type")?.value || "",
       scope: document.getElementById("ev-scope")?.value || "",
-      venue: document.getElementById("ev-venue")?.value || "",
+      venue: (function(){ var v = document.getElementById("ev-venue")?.value || ""; var r = document.getElementById("ev-venue-room")?.value?.trim() || ""; return r ? v + ", " + r : v; })(),
       selectedRoles,
       deliverablesByRole,
       constraints: {
@@ -2793,8 +2996,8 @@ init();
       event_type: document.getElementById("ev-type")?.value || "Custom Event",
       scope: document.getElementById("ev-scope")?.value || "Custom",
       budget_limit: document.getElementById("ev-budget-limit")?.value || "",
-      venue: document.getElementById("ev-venue")?.value || "",
-      location: document.getElementById("ev-venue")?.value || "",
+      venue: (function(){ var v = document.getElementById("ev-venue")?.value || ""; var r = document.getElementById("ev-venue-room")?.value?.trim() || ""; return r ? v + ", " + r : v; })(),
+      location: (function(){ var v = document.getElementById("ev-venue")?.value || ""; var r = document.getElementById("ev-venue-room")?.value?.trim() || ""; return r ? v + ", " + r : v; })(),
       planning_notes: document.getElementById("ev-prompt")?.value || "",
       timeline_assumptions: document.getElementById("ev-sequence")?.value || "",
       hard_deadline: document.getElementById("ev-hard-deadline")?.value || "",
