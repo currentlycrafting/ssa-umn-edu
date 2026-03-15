@@ -346,18 +346,40 @@ img {
   color: #cbd5e1;
 }
 
-.newsletter-card-media,
 .newsletter-embed-frame {
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 12px;
-  border: 1px solid #334155;
   background: #020617;
   object-fit: cover;
+  border: 1px solid #334155;
+  margin-top: 12px;
 }
 
-.newsletter-embed-frame {
-  margin-top: 12px;
+.newsletter-card-media {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  background: #020617;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.newsletter-card-media-wrap {
+  display: block;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  line-height: 0;
+}
+
+.newsletter-card-media-wrap .newsletter-card-media {
+  display: block;
+  width: 100%;
 }
 
 .newsletter-read-more {

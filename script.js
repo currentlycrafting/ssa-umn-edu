@@ -74,7 +74,7 @@ const defaultData = {
 };
 
 let siteData = loadSiteData();
-let serverSiteContent = { galleryImages: null, boardMembers: null };
+let serverSiteContent = { galleryImages: null, boardMembers: null, newsletters: null };
 let adminUnlocked = sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
 let directEditEnabled = false;
 let adminActiveTab = 'newsletters';
@@ -159,10 +159,14 @@ function renderNewsletters() {
   const list = document.getElementById('newsletter-list');
   if (!list) return;
 
-  list.innerHTML = siteData.newsletters
+  const newsletters = Array.isArray(serverSiteContent.newsletters) && serverSiteContent.newsletters.length > 0
+    ? serverSiteContent.newsletters
+    : siteData.newsletters;
+
+  list.innerHTML = newsletters
     .map((item, idx) => {
       const imageHtml = item.image
-        ? `<div class="newsletter-media-col"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="newsletter-card-media" loading="lazy" /></div>`
+        ? `<div class="newsletter-media-col"><button type="button" class="newsletter-card-media-wrap" aria-label="View full size" onclick="var i=this.querySelector('img');if(i&&window.openImageLightbox)window.openImageLightbox(i.src,i.alt)"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" class="newsletter-card-media" loading="lazy" /></button></div>`
         : '';
       const primaryUrl = toInstagramEmbedUrl(item.link);
       const secondaryRaw = item.secondaryLink || (idx === 0 ? 'https://www.instagram.com/p/DVsD4UoDmTX/' : '');
@@ -749,8 +753,10 @@ function loadSiteContentFromServer() {
       if (data) {
         if (Array.isArray(data.galleryImages)) serverSiteContent.galleryImages = data.galleryImages;
         if (Array.isArray(data.boardMembers)) serverSiteContent.boardMembers = data.boardMembers;
+        if (Array.isArray(data.newsletters)) serverSiteContent.newsletters = data.newsletters;
         renderBoard();
         renderGallery();
+        renderNewsletters();
       }
     })
     .catch(() => {
@@ -903,6 +909,7 @@ function setupGalleryLightbox() {
     lightbox.setAttribute('aria-hidden', 'false');
     document.body.classList.add('gallery-open');
   };
+  window.openImageLightbox = openLightbox;
   const closeLightbox = () => {
     if (!lightbox) return;
     lightbox.classList.remove('open');

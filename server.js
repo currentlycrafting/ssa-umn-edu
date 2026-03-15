@@ -25,6 +25,10 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
 
 const siteContentPath = path.join(dataDir, "site-content.json");
+// Static newsletter file (editable in repo). Prefer data/newsletter.json in project, else dataDir.
+const newsletterPath = fs.existsSync(path.join(__dirname, "data", "newsletter.json"))
+  ? path.join(__dirname, "data", "newsletter.json")
+  : path.join(dataDir, "newsletter.json");
 const legacyImagesDir = path.join(__dirname, "images");
 const galleryDir = path.join(__dirname, "gallery");
 const boardImagesDir = path.join(__dirname, "board-images");
@@ -176,12 +180,22 @@ function readSiteContent() {
   let boardMembers = defaultBoardFromFolder();
   let boardOrder = [];
   let galleryOrder = [];
+  let newsletters = [];
+  try {
+    if (fs.existsSync(newsletterPath)) {
+      const raw = fs.readFileSync(newsletterPath, "utf8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) newsletters = parsed;
+      else if (Array.isArray(parsed.newsletters)) newsletters = parsed.newsletters;
+    }
+  } catch (_e) {}
   try {
     if (fs.existsSync(siteContentPath)) {
       const raw = fs.readFileSync(siteContentPath, "utf8");
       const data = JSON.parse(raw);
       boardOrder = Array.isArray(data.boardOrder) ? data.boardOrder : [];
       galleryOrder = Array.isArray(data.galleryOrder) ? data.galleryOrder : [];
+      if (newsletters.length === 0 && Array.isArray(data.newsletters)) newsletters = data.newsletters;
     }
   } catch (_e) {}
   if (galleryOrder.length) {
@@ -210,14 +224,15 @@ function readSiteContent() {
     byPath.forEach((m) => ordered.push(m));
     boardMembers = ordered;
   }
-  return { galleryImages, boardMembers, boardOrder, galleryOrder };
+  return { galleryImages, boardMembers, boardOrder, galleryOrder, newsletters };
 }
 function writeSiteContent(data) {
   const payload = {
     galleryImages: [],
     boardMembers: [],
     boardOrder: Array.isArray(data.boardOrder) ? data.boardOrder : [],
-    galleryOrder: Array.isArray(data.galleryOrder) ? data.galleryOrder : []
+    galleryOrder: Array.isArray(data.galleryOrder) ? data.galleryOrder : [],
+    newsletters: Array.isArray(data.newsletters) ? data.newsletters : []
   };
   fs.writeFileSync(siteContentPath, JSON.stringify(payload, null, 2), "utf8");
   return payload;
@@ -2427,6 +2442,56 @@ app.put("/api/site/gallery-order", (req, res) => {
   }
 });
 
+// Newsletter: president can save and upload images.
+app.put("/api/site/newsletters", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can edit newsletters." });
+  const { newsletters } = req.body || {};
+  if (!Array.isArray(newsletters)) return res.status(400).json({ error: "Request body must include newsletters array." });
+  try {
+    const normalized = newsletters.map((n) => ({
+      id: String(n.id || "").trim() || `nl-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      title: String(n.title || "").trim(),
+      date: String(n.date || "").trim(),
+      description: String(n.description || "").trim(),
+      image: String(n.image || "").trim(),
+      link: String(n.link || "").trim(),
+      secondaryLink: String(n.secondaryLink || "").trim()
+    }));
+    const dir = path.dirname(newsletterPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(newsletterPath, JSON.stringify(normalized, null, 2), "utf8");
+    const content = readSiteContent();
+    content.newsletters = normalized;
+    writeSiteContent(content);
+    res.json({ ok: true, newsletters: normalized });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Save failed." });
+  }
+});
+
+app.post("/api/site/newsletter-image", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can upload newsletter images." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const destName = `newsletter${safeExt}`;
+    const destPath = path.join(newsletterImagesDir, destName);
+    if (!fs.existsSync(newsletterImagesDir)) fs.mkdirSync(newsletterImagesDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    res.json({ ok: true, path: `newsletter-images/${destName}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Upload failed." });
+  }
+});
+
 app.post("/api/site/push", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
@@ -2503,6 +2568,24 @@ app.post("/api/site/push-board", (req, res) => {
     execSync("git commit -m \"Update board member content\" --allow-empty", { cwd: __dirname });
     execSync("git push", { cwd: __dirname });
     res.json({ ok: true, message: "Member content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: (e.stderr && e.stderr.toString()) || e.message || "Push failed. Ensure git is configured and remote is set." });
+  }
+});
+
+// Push newsletter-images and site-content (newsletter entries) to GitHub.
+app.post("/api/site/push-newsletter", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push newsletter." });
+  try {
+    const newsletterRel = path.relative(__dirname, newsletterPath);
+    const addPaths = ["newsletter-images", "site-content.json", newsletterRel].filter(Boolean).join(" ");
+    execSync(`git add ${addPaths} 2>/dev/null || true`, { cwd: __dirname });
+    execSync("git commit -m \"Update newsletter content\" --allow-empty", { cwd: __dirname });
+    execSync("git push", { cwd: __dirname });
+    res.json({ ok: true, message: "Newsletter content pushed to GitHub." });
   } catch (e) {
     res.status(500).json({ error: (e.stderr && e.stderr.toString()) || e.message || "Push failed. Ensure git is configured and remote is set." });
   }

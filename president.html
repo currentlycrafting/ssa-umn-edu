@@ -648,6 +648,9 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="sb-item" onclick="showPage('internal-div')"><span class="sb-icon">▲</span>Internal Division</div>
     <div class="sb-item" onclick="showPage('external-div')"><span class="sb-icon">◯</span>External Division</div>
 
+    <div class="sb-section-label">Newsletter</div>
+    <div class="sb-item" onclick="showPage('newsletter')"><span class="sb-icon">◐</span>Edit Newsletter</div>
+
     <div class="sb-section-label">Executive</div>
     <div class="sb-item" onclick="showPage('reports')"><span class="sb-icon">✦</span>Reports</div>
     <div class="sb-item" onclick="showPage('site-content')"><span class="sb-icon">◷</span>Index & Board</div>
@@ -806,6 +809,36 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="three-col" id="templates-grid"></div>
   </div>
 
+  <!-- ── PAGE: NEWSLETTER (full edit community newsletter) ── -->
+  <div class="page" id="page-newsletter">
+    <div class="breadcrumb"><span>Newsletter</span> / Community Newsletter</div>
+
+    <div class="card" style="margin-bottom:24px">
+      <div class="section-label">Current newsletter on site</div>
+      <div class="card-title">How it looks on the homepage</div>
+      <div class="card-sub">Preview of the newsletter section as visitors see it. Content is loaded from <code>data/newsletter.json</code>. Refresh to see updates.</div>
+      <div id="newsletter-preview-wrap" style="margin-top:16px;display:flex;flex-direction:column;gap:16px"></div>
+      <div style="margin-top:16px">
+        <button type="button" class="btn btn-outline" onclick="openNewsletterFullView()">View entire newsletter</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Community Newsletter</div>
+      <div class="card-title">Edit newsletter entries</div>
+      <div class="card-sub">These appear in the Newsletter section on the homepage. Edit <code>data/newsletter.json</code> directly or add entries here (then push to GitHub to publish).</div>
+      <div style="margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="newsletterAddEntry()">+ Add newsletter entry</button>
+        <button type="button" class="btn btn-outline" style="margin-left:10px" onclick="loadNewsletterPage()">Refresh</button>
+      </div>
+      <div id="newsletter-editor-list" style="display:flex;flex-direction:column;gap:20px"></div>
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="newsletterPushToGitHub()">Push Newsletter to Github</button>
+        <span id="newsletter-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+  </div>
+
   <!-- ── PAGE: INDEX & BOARD (gallery + board section, push to GitHub) ── -->
   <div class="page" id="page-site-content">
     <div class="breadcrumb"><span>Executive</span> / Index & Board</div>
@@ -904,6 +937,16 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
         <button type="button" class="btn btn-gold" onclick="siteSaveBoard();closeModal('site-board-modal')">Done</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: View entire newsletter (zoomed) ══ -->
+<div class="modal-overlay" id="newsletter-full-modal">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mh" style="flex-shrink:0;justify-content:flex-end">
+      <button type="button" class="modal-close" onclick="closeModal('newsletter-full-modal')" aria-label="Close">✕</button>
+    </div>
+    <div id="newsletter-full-modal-body" style="padding:0 24px 24px;overflow-y:auto;flex:1"></div>
   </div>
 </div>
 
@@ -1387,11 +1430,12 @@ function showPage(id, param) {
     'overdue':'Overdue & Alerts','events':'All Events','event-panel':'Event Control Panel',
     'dependency':'Dependency Graph','calendar':'Calendar',
     'internal-div':'Internal Division','external-div':'External Division','exec-div':'Executive Division',
-    'templates':'Event Templates','reports':'Reports','site-content':'Index & Board','seed-users':'Seed users',
+    'templates':'Event Templates','reports':'Reports','newsletter':'Newsletter','site-content':'Index & Board','seed-users':'Seed users',
   };
   document.getElementById('page-title').textContent = titles[id] || id;
   if (id === 'seed-users') loadSeedPage();
   if (id === 'site-content') loadSiteContentPage();
+  if (id === 'newsletter') loadNewsletterPage();
 }
 
 // ── RENDER WORKLOAD GRID ──────────────────────────────────────────────────
@@ -2393,6 +2437,219 @@ window.siteRemoveBoardMember = function siteRemoveBoardMember(index) {
       }
     })
     .catch(function () { showToast('Remove failed.'); });
+};
+
+// ── NEWSLETTER EDITOR ─────────────────────────────────────────────────────
+var presidentNewsletters = [];
+var newsletterImageInput = null;
+
+window.loadNewsletterPage = async function loadNewsletterPage() {
+  var listEl = document.getElementById('newsletter-editor-list');
+  var statusEl = document.getElementById('newsletter-save-status');
+  if (statusEl) statusEl.textContent = '';
+  try {
+    var res = await fetch('/api/public/site-content');
+    var data = res.ok ? await res.json() : {};
+    presidentNewsletters = Array.isArray(data.newsletters) ? data.newsletters.slice() : [];
+  } catch (_e) {
+    presidentNewsletters = [];
+  }
+  renderNewsletterEditorList();
+  renderNewsletterPreview();
+};
+
+function renderNewsletterPreview() {
+  var wrap = document.getElementById('newsletter-preview-wrap');
+  if (!wrap) return;
+  if (presidentNewsletters.length === 0) {
+    wrap.innerHTML = '<p style="font-size:12px;color:var(--silver)">No newsletter entries yet. Add entries below to see the preview.</p>';
+    return;
+  }
+  var baseUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, '') || '') + '/';
+  wrap.innerHTML = presidentNewsletters.map(function (n) {
+    var imgSrc = n.image ? (n.image.startsWith('/') ? (window.location.origin + n.image) : (baseUrl + n.image)) : '';
+    var desc = (n.description || '').slice(0, 280);
+    if ((n.description || '').length > 280) desc += '…';
+    desc = desc.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/\n/g, '<br />');
+    var title = (n.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    var date = (n.date || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    return '<div style="background:var(--navy);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;display:grid;grid-template-columns:min(180px,100%) 1fr;gap:20px;align-items:start">' +
+      (imgSrc ? '<div style="aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:var(--navy-light)"><img src="' + imgSrc + '" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display=\'none\'" /></div>' : '<div style="aspect-ratio:4/5;border-radius:8px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--silver)">No image</div>') +
+      '<div><div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:4px">' + title + '</div>' +
+      '<div style="font-size:11px;color:var(--gold-light);letter-spacing:.08em;margin-bottom:10px">' + date + '</div>' +
+      '<p style="font-size:13px;color:var(--stone);line-height:1.6;margin-bottom:0">' + desc + '</p></div></div>';
+  }).join('');
+}
+
+window.openNewsletterFullView = function openNewsletterFullView() {
+  var body = document.getElementById('newsletter-full-modal-body');
+  var modal = document.getElementById('newsletter-full-modal');
+  if (!body || !modal) return;
+  if (presidentNewsletters.length === 0) {
+    body.innerHTML = '<p style="font-size:13px;color:var(--silver)">No newsletter entries to show.</p>';
+    modal.classList.add('open');
+    return;
+  }
+  var baseUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, '') || '') + '/';
+  body.innerHTML = presidentNewsletters.map(function (n) {
+    var imgSrc = n.image ? (n.image.startsWith('/') ? (window.location.origin + n.image) : (baseUrl + n.image)) : '';
+    var desc = (n.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/\n/g, '<br />');
+    var title = (n.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    var date = (n.date || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    return '<div style="background:var(--navy);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:24px;margin-bottom:20px">' +
+      '<div style="font-family:var(--font-display);font-size:22px;color:var(--white);margin-bottom:6px">' + title + '</div>' +
+      '<div style="font-size:11px;color:var(--gold-light);letter-spacing:.08em;margin-bottom:16px">' + date + '</div>' +
+      (imgSrc ? '<div style="margin-bottom:16px;border-radius:8px;overflow:hidden;max-width:100%"><img src="' + imgSrc + '" alt="" style="width:100%;max-width:400px;height:auto;display:block" onerror="this.parentElement.style.display=\'none\'" /></div>' : '') +
+      '<div style="font-size:14px;color:var(--stone);line-height:1.7">' + desc + '</div></div>';
+  }).join('');
+  modal.classList.add('open');
+};
+
+function renderNewsletterEditorList() {
+  var listEl = document.getElementById('newsletter-editor-list');
+  if (!listEl) return;
+  if (presidentNewsletters.length === 0) {
+    listEl.innerHTML = '<p style="font-size:12px;color:var(--silver)">No newsletter entries yet. Click “Add newsletter entry” to create one.</p>';
+    return;
+  }
+  var html = presidentNewsletters.map(function (n, i) {
+    var id = (n.id || '').replace(/"/g, '&quot;');
+    var title = (n.title || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var date = (n.date || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var desc = n.description || '';
+    var descAttr = desc.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    var image = (n.image || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var link = (n.link || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var sec = (n.secondaryLink || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var imgSrc = image ? (image.startsWith('/') ? (window.location.origin + image) : image) : '';
+    return '<div class="newsletter-editor-card" data-index="' + i + '" style="background:var(--navy-light);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+      '<span style="font-size:11px;letter-spacing:.1em;color:var(--gold);">Entry ' + (i + 1) + '</span>' +
+      '<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:10px" onclick="newsletterRemoveEntry(' + i + ')">Remove</button>' +
+      '</div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Title</label><input type="text" data-nl-field="title" value="' + title + '" placeholder="e.g. February Newsletter" style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Date</label><input type="text" data-nl-field="date" value="' + date + '" placeholder="e.g. February 2026" style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Description</label><textarea data-nl-field="description" data-value="' + descAttr + '" rows="4" placeholder="Newsletter body text..." style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%;resize:vertical"></textarea></div>' +
+      (imgSrc ? '<div style="margin-bottom:10px"><img src="' + imgSrc + '" alt="" style="max-width:200px;max-height:120px;object-fit:contain;border-radius:8px" onerror="this.style.display=\'none\'" /></div>' : '') +
+      '<div style="margin-bottom:10px"><button type="button" class="btn btn-outline" style="padding:6px 12px;font-size:11px" onclick="newsletterUploadImage(' + i + ')">Upload new image</button></div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Primary link (e.g. Instagram)</label><input type="url" data-nl-field="link" value="' + link + '" placeholder="https://..." style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div>' +
+      '<div class="fg" style="margin-bottom:0"><label>Secondary link (optional)</label><input type="url" data-nl-field="secondaryLink" value="' + sec + '" placeholder="https://..." style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div>' +
+      '</div>';
+  }).join('');
+  listEl.innerHTML = html;
+  listEl.querySelectorAll('textarea[data-nl-field="description"]').forEach(function (ta) {
+    ta.value = ta.getAttribute('data-value') || '';
+    ta.removeAttribute('data-value');
+  });
+}
+
+window.newsletterUploadImage = function newsletterUploadImage(index) {
+  newsletterImageInput = newsletterImageInput || document.createElement('input');
+  newsletterImageInput.type = 'file';
+  newsletterImageInput.accept = 'image/*';
+  newsletterImageInput.setAttribute('data-nl-upload-index', String(index));
+  newsletterImageInput.onchange = function () {
+    var file = newsletterImageInput.files && newsletterImageInput.files[0];
+    if (!file) return;
+    var idx = parseInt(newsletterImageInput.getAttribute('data-nl-upload-index'), 10);
+    var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+    if (!token) { showToast('You must be logged in.'); return; }
+    var fd = new FormData();
+    fd.append('photo', file);
+    fetch('/api/site/newsletter-image', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (data) {
+        if (data.path && presidentNewsletters[idx]) {
+          presidentNewsletters[idx].image = data.path;
+          renderNewsletterEditorList();
+          showToast('Image uploaded.');
+        } else { showToast(data.error || 'Upload failed'); }
+      })
+      .catch(function () { showToast('Upload failed'); });
+    newsletterImageInput.value = '';
+  };
+  newsletterImageInput.click();
+};
+
+window.newsletterAddEntry = function newsletterAddEntry() {
+  presidentNewsletters.push({
+    id: 'nl-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
+    title: '',
+    date: '',
+    description: '',
+    image: '',
+    link: '',
+    secondaryLink: ''
+  });
+  renderNewsletterEditorList();
+};
+
+window.newsletterRemoveEntry = function newsletterRemoveEntry(index) {
+  presidentNewsletters.splice(index, 1);
+  renderNewsletterEditorList();
+};
+
+window.newsletterSave = async function newsletterSave() {
+  var listEl = document.getElementById('newsletter-editor-list');
+  var statusEl = document.getElementById('newsletter-save-status');
+  if (!listEl) return;
+  var cards = listEl.querySelectorAll('.newsletter-editor-card');
+  var payload = [];
+  cards.forEach(function (card) {
+    var i = card.getAttribute('data-index');
+    var entry = presidentNewsletters[parseInt(i, 10)];
+    if (!entry) return;
+    var titleIn = card.querySelector('[data-nl-field="title"]');
+    var dateIn = card.querySelector('[data-nl-field="date"]');
+    var descIn = card.querySelector('[data-nl-field="description"]');
+    var linkIn = card.querySelector('[data-nl-field="link"]');
+    var secIn = card.querySelector('[data-nl-field="secondaryLink"]');
+    payload.push({
+      id: entry.id,
+      title: titleIn ? titleIn.value.trim() : '',
+      date: dateIn ? dateIn.value.trim() : '',
+      description: descIn ? descIn.value.trim() : '',
+      image: entry.image || 'newsletter-images/newsletter.png',
+      link: linkIn ? linkIn.value.trim() : '',
+      secondaryLink: secIn ? secIn.value.trim() : ''
+    });
+  });
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { showToast('You must be logged in.'); return; }
+  if (statusEl) statusEl.textContent = 'Saving…';
+  try {
+    var res = await fetch('/api/site/newsletters', {
+      method: 'PUT',
+      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newsletters: payload })
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    presidentNewsletters = Array.isArray(data.newsletters) ? data.newsletters : payload;
+    if (statusEl) statusEl.textContent = 'Saved.';
+    renderNewsletterPreview();
+    showToast('Newsletters saved.');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '';
+    showToast(e.message || 'Save failed');
+  }
+};
+
+window.newsletterPushToGitHub = async function newsletterPushToGitHub() {
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { showToast('You must be logged in.'); return; }
+  var statusEl = document.getElementById('newsletter-push-status');
+  if (statusEl) statusEl.textContent = 'Pushing…';
+  try {
+    var res = await fetch('/api/site/push-newsletter', { method: 'POST', headers: { 'x-session-token': token } });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Push failed');
+    if (statusEl) statusEl.textContent = data.message || 'Pushed to GitHub.';
+    showToast(data.message || 'Newsletter pushed to GitHub.');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '';
+    showToast(e.message || 'Push failed');
+  }
 };
 
 // ── CLICK OUTSIDE MODAL ───────────────────────────────────────────────────

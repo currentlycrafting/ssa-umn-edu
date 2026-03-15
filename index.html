@@ -1005,8 +1005,10 @@
     .newsletter-card-media,
     .newsletter-embed-frame {
       width: 100%;
-      border: 1px solid rgba(255,255,255,0.12);
       background: var(--navy);
+    }
+    .newsletter-embed-frame {
+      border: 1px solid rgba(255,255,255,0.12);
     }
     .newsletter-media-col,
     .newsletter-embed-wrap {
@@ -1017,8 +1019,12 @@
       max-width: none;
     }
     .newsletter-card-media {
-      aspect-ratio: 4 / 5;
+      height: auto;
       object-fit: contain;
+      border: none;
+    }
+    .newsletter-card-media-wrap {
+      display: block; padding: 0; border: none; border-radius: 8px; background: none; cursor: pointer; width: 100%; line-height: 0;
     }
     .newsletter-embed-wrap {
       margin-top: 0;
