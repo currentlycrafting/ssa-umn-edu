@@ -802,7 +802,11 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="card">
       <div class="section-label">Index gallery</div>
       <div class="card-title">Photos on homepage</div>
-      <div class="card-sub">Add or remove photos below. These appear in the gallery on the public index. Only president can push to GitHub.</div>
+      <div class="card-sub">Temporary gallery: add or remove below. When ready, open full gallery to review and click Save gallery to apply. Then push to GitHub.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="openModal('site-gallery-modal');renderSiteGalleryList()">View full gallery</button>
+        <span style="font-size:11px;color:var(--silver)">Add below or in full gallery, then Save gallery</span>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:16px">
         <div class="site-drop-zone" id="site-gallery-drop" style="width:220px;flex-shrink:0" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryDrop(event)" onclick="document.getElementById('site-gallery-file').click()">
           <div class="site-dz-text" id="site-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
@@ -813,14 +817,16 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
           <span style="font-size:11px;color:var(--silver)">Alt text</span>
           <input type="text" id="site-gallery-alt" placeholder="e.g. SSA event" style="background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:8px 12px;border-radius:6px;color:var(--white);font-size:12px;min-width:160px" />
         </label>
-        <button type="button" class="btn btn-gold" onclick="siteAddGalleryPhoto()">Add to gallery</button>
+        <button type="button" class="btn btn-gold" onclick="siteAddGalleryPhoto()">Add to temporary gallery</button>
       </div>
-      <div id="site-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px"></div>
+      <div id="site-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
+      <button type="button" class="btn btn-outline" onclick="siteSaveGallery()">Save gallery</button>
+      <span id="site-gallery-save-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
     </div>
     <div class="card" style="margin-top:24px">
       <div class="section-label">Board section (Executive Board on index)</div>
       <div class="card-title">Edit members</div>
-      <div class="card-sub">Current board photos, names, roles, and bios. Change photos with the overlay; save then push to GitHub.</div>
+      <div class="card-sub">Edit photos, names, roles, and bios below. Changes are temporary until you click Save board; then Push site content to GitHub to publish.</div>
       <div id="site-board-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
         <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
@@ -849,6 +855,31 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     </div>
   </div>
 </main>
+
+<!-- ══ MODAL: Full gallery (temporary view — add/remove then Save gallery) ══ -->
+<div class="modal-overlay" id="site-gallery-modal">
+  <div class="modal" style="max-width:720px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mh" style="flex-shrink:0">
+      <div>
+        <div class="mh-title">Full gallery (temporary)</div>
+        <div class="mh-sub">Add or remove photos. Click Save gallery to apply this set to the site.</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeModal('site-gallery-modal')" style="margin:0">✕</button>
+    </div>
+    <div style="padding:0 24px 24px;overflow-y:auto;flex:1">
+      <div class="site-drop-zone" id="site-gallery-modal-drop" style="margin-bottom:16px" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryModalDrop(event)" onclick="document.getElementById('site-gallery-modal-file').click()">
+        <div class="site-dz-text" id="site-gallery-modal-dz-text"><strong>Click to upload</strong> or drag and drop a photo</div>
+        <div class="site-dz-sub">PNG, JPG</div>
+        <input type="file" id="site-gallery-modal-file" accept="image/*" style="display:none" onchange="siteGalleryModalFileChosen(this)" />
+      </div>
+      <div id="site-gallery-modal-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px"></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button type="button" class="btn btn-gold" onclick="siteSaveGallery();closeModal('site-gallery-modal')">Save gallery</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('site-gallery-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ MODAL: EVENT CREATE ══ -->
 <div class="modal-overlay" id="eventCreateModal">
@@ -1333,7 +1364,7 @@ function showPage(id, param) {
     'templates':'Event Templates','reports':'Reports','site-content':'Index & Board','seed-users':'Seed users',
   };
   document.getElementById('page-title').textContent = titles[id] || id;
-  if (id === 'seed-users') setSeedGitHubLink();
+  if (id === 'seed-users') loadSeedPage();
   if (id === 'site-content') loadSiteContentPage();
 }
 
@@ -1921,25 +1952,39 @@ function showToast(msg) {
 }
 
 // ── SEED USERS (sqlite.js) ──────────────────────────────────────────────────
-window.setSeedGitHubLink = async function setSeedGitHubLink() {
+window.loadSeedPage = async function loadSeedPage() {
+  const ta = document.getElementById('seed-users-snippet');
+  const status = document.getElementById('seed-status');
   const githubLink = document.getElementById('seed-open-github');
-  if (!githubLink) return;
+  if (status) status.textContent = 'Loading…';
   try {
     const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-    const res = await fetch('/api/admin/github-repo', { headers: { 'x-session-token': token } });
-    if (!res.ok) { githubLink.style.display = 'none'; return; }
-    const repo = await res.json().catch(() => ({}));
-    const url = repo.url;
-    const branch = repo.branch || 'main';
-    if (url) {
-      const base = url.replace(/\/$/, '');
-      githubLink.href = base + '/blob/' + encodeURIComponent(branch) + '/sqlite.js';
-      githubLink.style.display = '';
+    const [snippetRes, repoRes] = await Promise.all([
+      fetch('/api/admin/seed-users-snippet', { headers: { 'x-session-token': token } }),
+      fetch('/api/admin/github-repo', { headers: { 'x-session-token': token } })
+    ]);
+    if (snippetRes.ok) {
+      const data = await snippetRes.json();
+      if (ta) ta.value = data.content || '';
+    }
+    if (status) status.textContent = '';
+    if (githubLink && repoRes.ok) {
+      const repo = await repoRes.json().catch(() => ({}));
+      const url = repo.url;
+      const branch = repo.branch || 'main';
+      if (url) {
+        const base = url.replace(/\/$/, '');
+        githubLink.href = base + '/blob/' + encodeURIComponent(branch) + '/sqlite.js';
+        githubLink.style.display = '';
+      } else {
+        githubLink.style.display = 'none';
+      }
     } else {
-      githubLink.style.display = 'none';
+      if (githubLink) githubLink.style.display = 'none';
     }
   } catch (_e) {
-    githubLink.style.display = 'none';
+    if (status) status.textContent = '';
+    if (githubLink) githubLink.style.display = 'none';
   }
 };
 window.pushSeedToGitHub = async function pushSeedToGitHub() {
@@ -1991,15 +2036,19 @@ window.loadSiteContentPage = async function loadSiteContentPage() {
   }
 };
 function renderSiteGalleryList() {
-  const el = document.getElementById('site-gallery-list');
-  if (!el) return;
-  if (siteContentGallery.length === 0) {
-    el.innerHTML = '<span style="font-size:12px;color:var(--silver)">No photos yet. Add one above.</span>';
-    return;
-  }
-  el.innerHTML = siteContentGallery.map(function (img) {
-    const src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : (img.src || '');
-    const id = (img.id || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  var html = siteContentGallery.length === 0
+    ? '<span style="font-size:12px;color:var(--silver)">No photos yet. Add above or in full gallery.</span>'
+    : siteContentGallery.map(function (img) {
+        var src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : (img.src || '');
+        var id = (img.id || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        return '<div class="site-gallery-item"><img src="' + (src || '') + '" alt="" /><button type="button" class="site-gallery-remove" data-gallery-id="' + id + '" onclick="siteRemoveGalleryPhoto(this.getAttribute(\'data-gallery-id\'))" aria-label="Remove">×</button></div>';
+      }).join('');
+  var el = document.getElementById('site-gallery-list');
+  if (el) el.innerHTML = html;
+  var modalList = document.getElementById('site-gallery-modal-list');
+  if (modalList) modalList.innerHTML = siteContentGallery.length === 0 ? '<span style="font-size:12px;color:var(--silver)">No photos. Click or drag to add.</span>' : siteContentGallery.map(function (img) {
+    var src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : (img.src || '');
+    var id = (img.id || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     return '<div class="site-gallery-item"><img src="' + (src || '') + '" alt="" /><button type="button" class="site-gallery-remove" data-gallery-id="' + id + '" onclick="siteRemoveGalleryPhoto(this.getAttribute(\'data-gallery-id\'))" aria-label="Remove">×</button></div>';
   }).join('');
 }
@@ -2038,18 +2087,9 @@ function siteGalleryFileChosen(input) {
     if (text) text.textContent = file.name;
   }
 }
-window.siteRemoveGalleryPhoto = async function siteRemoveGalleryPhoto(id) {
-  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-  if (!token) return;
-  try {
-    const res = await fetch('/api/site/gallery/' + encodeURIComponent(id), { method: 'DELETE', headers: { 'x-session-token': token } });
-    const data = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw new Error(data.error || 'Remove failed');
-    siteContentGallery = data.galleryImages || [];
-    renderSiteGalleryList();
-  } catch (e) {
-    showToast(e.message || 'Remove failed');
-  }
+window.siteRemoveGalleryPhoto = function siteRemoveGalleryPhoto(id) {
+  siteContentGallery = siteContentGallery.filter(function (img) { return (img.id || '') !== id; });
+  renderSiteGalleryList();
 };
 function renderSiteBoardList() {
   const el = document.getElementById('site-board-list');
@@ -2117,35 +2157,84 @@ window.siteBoardPhotoClick = function siteBoardPhotoClick(index) {
   input.setAttribute('data-board-index', String(index));
   input.click();
 };
-window.siteAddGalleryPhoto = async function siteAddGalleryPhoto() {
-  const fileInput = document.getElementById('site-gallery-file');
-  const altInput = document.getElementById('site-gallery-alt');
-  const file = fileInput && fileInput.files && fileInput.files[0];
-  if (!file) { showToast('Choose a photo first.'); return; }
-  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-  if (!token) { showToast('You must be logged in.'); return; }
-  const fd = new FormData();
+function siteAddGalleryPhotoFromFile(file, altText) {
+  if (!file || !(file.type || '').match(/^image\//)) return Promise.reject(new Error('Choose an image.'));
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) return Promise.reject(new Error('You must be logged in.'));
+  var fd = new FormData();
   fd.append('photo', file);
-  fd.append('alt', (altInput && altInput.value) ? altInput.value : 'SSA event');
-  try {
-    const res = await fetch('/api/site/gallery', {
-      method: 'POST',
-      headers: { 'x-session-token': token },
-      body: fd
+  return fetch('/api/site/gallery/upload', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.path && data.path) {
+        var id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'g-' + Date.now();
+        siteContentGallery.push({ id: id, src: data.path, alt: altText || 'SSA event' });
+        renderSiteGalleryList();
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
     });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Upload failed');
-    siteContentGallery = data.galleryImages || [];
-    renderSiteGalleryList();
-    fileInput.value = '';
+}
+window.siteAddGalleryPhoto = async function siteAddGalleryPhoto() {
+  var fileInput = document.getElementById('site-gallery-file');
+  var altInput = document.getElementById('site-gallery-alt');
+  var file = fileInput && fileInput.files && fileInput.files[0];
+  if (!file) { showToast('Choose a photo first.'); return; }
+  var altText = (altInput && altInput.value) ? altInput.value : 'SSA event';
+  try {
+    await siteAddGalleryPhotoFromFile(file, altText);
+    if (fileInput) fileInput.value = '';
     if (altInput) altInput.value = '';
     var zone = document.getElementById('site-gallery-drop');
     var text = document.getElementById('site-gallery-dz-text');
     if (zone) zone.classList.remove('upload-done');
     if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
-    showToast('Photo added to gallery.');
+    showToast('Photo added to temporary gallery.');
   } catch (e) {
     showToast(e.message || 'Upload failed');
+  }
+};
+function siteGalleryModalDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  var file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (file && file.type.indexOf('image/') === 0) {
+    siteAddGalleryPhotoFromFile(file, 'SSA event').then(function () {
+      var zone = document.getElementById('site-gallery-modal-drop');
+      var text = document.getElementById('site-gallery-modal-dz-text');
+      if (zone) zone.classList.remove('upload-done');
+      if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop a photo';
+    }).catch(function (err) { showToast(err.message || 'Upload failed'); });
+  }
+}
+function siteGalleryModalFileChosen(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  siteAddGalleryPhotoFromFile(file, 'SSA event').then(function () {
+    input.value = '';
+    var zone = document.getElementById('site-gallery-modal-drop');
+    var text = document.getElementById('site-gallery-modal-dz-text');
+    if (zone) zone.classList.remove('upload-done');
+    if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop a photo';
+  }).catch(function (err) { showToast(err.message || 'Upload failed'); });
+}
+window.siteSaveGallery = async function siteSaveGallery() {
+  var statusEl = document.getElementById('site-gallery-save-status');
+  if (statusEl) statusEl.textContent = 'Saving…';
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  try {
+    var res = await fetch('/api/site/gallery', {
+      method: 'PUT',
+      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ galleryImages: siteContentGallery })
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    if (statusEl) statusEl.textContent = 'Saved.';
+    showToast('Gallery saved.');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
+    showToast(e.message || 'Save failed');
   }
 };
 window.sitePushToGitHub = async function sitePushToGitHub() {

@@ -2073,6 +2073,31 @@ app.post("/api/admin/seed-users-push", async (req, res) => {
 });
 
 // ---------- Site content (gallery + board): board/VP/president add gallery; president edits board & pushes ----------
+// Upload one image for gallery (does not persist to site content; client adds to staging then PUT gallery)
+app.post("/api/site/gallery/upload", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can add gallery photos." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  res.json({ path: `/uploads/${file.filename}` });
+});
+
+// Replace entire gallery (save temporary/staging gallery)
+app.put("/api/site/gallery", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can edit gallery." });
+  const { galleryImages } = req.body || {};
+  if (!Array.isArray(galleryImages)) return res.status(400).json({ error: "Request body must include galleryImages array." });
+  const content = readSiteContent();
+  content.galleryImages = galleryImages;
+  writeSiteContent(content);
+  res.json({ ok: true, galleryImages: content.galleryImages });
+});
+
 app.post("/api/site/gallery", upload.single("photo"), (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
