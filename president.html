@@ -6,6 +6,7 @@
 <link rel="icon" type="image/png" href="images/favicon-32.png?v=3" />
 <link rel="shortcut icon" type="image/png" href="images/favicon-32.png?v=3" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDmbwcgEO1GmqNNAKsDFTOmK196a26eY8M&libraries=places&callback=initVenuePlaces" async defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -132,6 +133,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 /* GRID LAYOUTS */
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.division-cards-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:16px}
 .one-two{display:grid;grid-template-columns:1fr 2fr;gap:16px}
 
 /* EVENTS */
@@ -171,31 +173,35 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .approval-by{font-size:10px;color:var(--silver);margin-top:2px}
 .approval-actions{display:flex;gap:8px}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+/* MODAL — dark overlay, rounded card, clear primary/secondary */
+.modal-overlay{position:fixed;inset:0;background:rgba(5,8,15,.88);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--navy-mid);border:1px solid rgba(184,154,92,.2);width:700px;max-width:95vw;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column}
-.modal-header{padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-mid);z-index:5}
+.modal{background:var(--navy-mid);border:1px solid rgba(184,154,92,.22);border-radius:14px;box-shadow:0 24px 56px rgba(0,0,0,.45);width:700px;max-width:95vw;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-header{padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.06);border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-mid);z-index:5}
 .modal-title{font-family:var(--font-display);font-size:24px;font-weight:400;color:var(--white)}
-.modal-close{background:transparent;border:1px solid rgba(255,255,255,.15);width:30px;height:30px;color:var(--silver);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.modal-close:hover{border-color:var(--red);color:var(--red)}
+.modal-close{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);border-radius:8px;width:34px;height:34px;color:var(--silver);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{border-color:var(--red);color:var(--red);background:rgba(192,80,77,.1)}
 .modal-body{padding:28px;display:flex;flex-direction:column;gap:20px}
-.modal-footer{padding:16px 28px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:14px;background:var(--navy-mid);position:sticky;bottom:0;flex-wrap:wrap}
+.modal-footer{padding:18px 28px;border-top:1px solid rgba(255,255,255,.06);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;align-items:center;gap:12px;background:var(--navy-mid);position:sticky;bottom:0;flex-wrap:wrap}
+.modal-footer .btn-outline{border-radius:10px;padding:10px 20px}
+.modal-footer .btn-gold,.modal-footer .btn-red{border-radius:10px;padding:10px 22px}
 
 /* FORM */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .fg{display:flex;flex-direction:column;gap:6px}
 .fg label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--silver)}
 .fg input,.fg select,.fg textarea{
-  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.14);
-  padding:13px 14px;font-family:var(--font-body);font-size:13px;color:var(--white);
-  min-height:48px;border-radius:6px;outline:none;transition:border-color .3s;resize:vertical;
+  background:var(--navy-light);border:1px solid rgba(255,255,255,.12);
+  padding:13px 16px;font-family:var(--font-body);font-size:13px;color:var(--white);
+  min-height:48px;border-radius:10px;outline:none;transition:border-color .25s,box-shadow .2s;resize:vertical;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
 }
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,154,92,.2)}
 .fg input::placeholder,.fg textarea::placeholder{color:rgba(154,159,173,.4)}
-.fg select option{background:var(--navy-mid)}
+.fg select option{background:var(--navy-mid);color:var(--white)}
 .fg textarea{min-height:80px}
-.fg select{min-height:48px}
+.fg select{min-height:48px;cursor:pointer;appearance:auto}
+.fg select::-ms-expand{display:block}
 .checkbox-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .cb-item{
   display:flex;align-items:center;gap:6px;padding:6px 12px;
@@ -203,6 +209,167 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   transition:all .2s;
 }
 .cb-item.checked{border-color:var(--gold);color:var(--gold);background:rgba(184,154,92,.08)}
+
+/* ASSIGN TASK MODAL (reference style) */
+.at-modal{width:720px;max-width:100%;background:var(--navy-mid);border:1px solid rgba(184,154,92,.22);display:flex;flex-direction:column;border-radius:14px;overflow:hidden;}
+.at-header{padding:22px 28px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;}
+.at-htitle{font-family:var(--font-display);font-size:26px;font-weight:400;color:var(--white);}
+.at-hsub{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-top:3px;}
+.at-close{background:transparent;border:1px solid rgba(255,255,255,.12);width:30px;height:30px;color:var(--silver);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;border-radius:6px;}
+.at-close:hover{border-color:#c0504d;color:#c0504d;}
+.at-body{padding:24px 28px;display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:640px;}
+.at-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.at-fl{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-family:var(--font-body);}
+.at-fi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:10px 13px;font-family:var(--font-body);font-size:13px;color:var(--white);outline:none;transition:border-color .25s;width:100%;border-radius:8px;}
+.at-fi:focus{border-color:var(--gold);}
+.at-fi::placeholder{color:rgba(154,159,173,.38);}
+.at-fta{min-height:80px;resize:vertical;}
+.at-divider{height:1px;background:rgba(255,255,255,.06);margin:4px 0 20px;}
+.at-sec-label{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--silver);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.at-sec-label::before{content:'';display:block;width:16px;height:1px;background:var(--gold);}
+.at-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;}
+.at-role-chip{padding:10px 13px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;border-radius:8px;}
+.at-role-chip:hover{border-color:rgba(184,154,92,.3);background:rgba(184,154,92,.04);}
+.at-role-chip.selected{border-color:var(--gold);background:rgba(184,154,92,.1);}
+.at-rc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.at-rc-div{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver);margin-bottom:1px;}
+.at-rc-name{font-size:12px;color:var(--white);}
+.at-suggest-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);padding:14px;margin-bottom:18px;border-radius:8px;}
+.at-suggest-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.at-suggest-title{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);}
+.at-suggest-list{display:flex;flex-direction:column;gap:4px;}
+.at-suggest-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .2s;border-radius:6px;}
+.at-suggest-item:hover{border-color:rgba(184,154,92,.25);background:rgba(184,154,92,.04);}
+.at-suggest-item.selected{border-color:var(--gold);background:rgba(184,154,92,.1);}
+.at-si-rank{font-family:var(--font-display);font-size:20px;font-weight:300;color:rgba(184,154,92,.35);width:20px;flex-shrink:0;}
+.at-si-name{font-size:12px;color:var(--white);margin-bottom:2px;}
+.at-si-role{font-size:10px;color:var(--silver);}
+.at-si-load{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.at-wl-bar{width:64px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;}
+.at-wl-fill{height:100%;transition:width .4s;border-radius:2px;}
+.at-wl-ok{background:#4caf7d;}
+.at-wl-warn{background:#d4914a;}
+.at-wl-over{background:#c0504d;}
+.at-prereq-list{display:flex;flex-direction:column;gap:4px;margin-bottom:18px;}
+.at-prereq-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:all .2s;border-radius:6px;}
+.at-prereq-item:hover{border-color:rgba(184,154,92,.2);background:rgba(255,255,255,.02);}
+.at-prereq-item.checked{border-color:rgba(184,154,92,.3);background:rgba(184,154,92,.07);}
+.at-prereq-cb{width:14px;height:14px;border:1px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;border-radius:3px;}
+.at-prereq-item.checked .at-prereq-cb{border-color:var(--gold);background:var(--gold);}
+.at-prereq-dept{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:1px;}
+.at-prereq-name{font-size:12px;color:var(--white);}
+.at-prereq-assignee{font-size:10px;color:var(--silver);margin-top:2px;}
+.at-prereq-status{margin-left:auto;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:2px 8px;border-radius:4px;}
+.at-ps-done{background:rgba(76,175,125,.12);color:#4caf7d;}
+.at-ps-active{background:rgba(184,154,92,.12);color:var(--gold);}
+.at-ps-locked{background:rgba(255,255,255,.05);color:var(--silver);}
+.at-prio-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:18px;}
+.at-prio-btn{padding:8px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:10px;letter-spacing:.16em;text-transform:uppercase;text-align:center;color:var(--silver);transition:all .2s;background:transparent;border-radius:6px;}
+.at-prio-btn:hover{border-color:rgba(255,255,255,.2);}
+.at-prio-btn.active-urgent{border-color:#c0504d;color:#c0504d;background:rgba(192,80,77,.1);}
+.at-prio-btn.active-high{border-color:#d4914a;color:#d4914a;background:rgba(212,145,74,.1);}
+.at-prio-btn.active-standard{border-color:var(--gold);color:var(--gold);background:rgba(184,154,92,.1);}
+.at-prio-btn.active-low{border-color:rgba(255,255,255,.2);color:var(--stone);background:rgba(255,255,255,.04);}
+.at-date-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);pointer-events:none;}
+.at-fi-date{padding-left:52px;}
+.at-footer{padding:16px 28px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--navy-mid);}
+.at-footer-left{font-size:11px;color:var(--silver);}
+.at-footer-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.at-btn-cancel{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--silver);padding:9px 24px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:8px;}
+.at-btn-cancel:hover{border-color:rgba(255,255,255,.25);color:var(--white);}
+.at-btn-assign{background:var(--gold);color:var(--navy);padding:9px 24px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border:none;border-radius:8px;}
+.at-btn-assign:hover{background:var(--gold-light);}
+.at-progress-track{height:2px;background:rgba(255,255,255,.07);margin-bottom:22px;}
+.at-progress-val{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .4s;border-radius:2px;}
+select.at-fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9fad'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+input[type="date"],input[type="time"],input[type="datetime-local"]{background:var(--navy-light)!important;color:var(--white)!important;accent-color:var(--gold);}
+input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webkit-calendar-picker-indicator,input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7;}
+.at-body .at-cols{margin-bottom:14px;}
+.at-body .at-prio-row{margin-top:6px;margin-bottom:14px;}
+.at-body .at-role-grid{margin-top:4px;margin-bottom:14px;}
+.at-body .at-suggest-wrap{margin-top:4px;margin-bottom:14px;}
+.at-body .at-prereq-list{margin-top:4px;margin-bottom:14px;}
+.at-body .at-divider{margin:14px 0;}
+.at-body .at-sec-label{margin-top:2px;margin-bottom:10px;}
+.at-body .fg{margin-bottom:14px;}
+.at-footer-right .at-btn-cancel,.at-footer-right .at-btn-assign{margin-top:4px;}
+.at-footer-right a.at-btn-cancel{margin-top:4px;}
+/* Edit modal: status grid (reference) */
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;}
+.st-btn{padding:11px 10px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.st-btn:hover{border-color:rgba(255,255,255,.2);}
+.st-dot{width:8px;height:8px;border-radius:50%;}
+.st-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9a9fad;transition:color .2s;}
+.st-btn.active .st-label{font-weight:500;}
+.st-btn[data-s="current"].active{border-color:#b89a5c;background:rgba(184,154,92,.08);}
+.st-btn[data-s="current"].active .st-label{color:#b89a5c;}
+.st-btn[data-s="locked"].active{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.04);}
+.st-btn[data-s="locked"].active .st-label{color:#c4bdb0;}
+.st-btn[data-s="pending_review"].active{border-color:rgba(123,163,212,.45);background:rgba(123,163,212,.08);}
+.st-btn[data-s="pending_review"].active .st-label{color:#7ba3d4;}
+.st-btn[data-s="redo"].active{border-color:rgba(212,145,74,.45);background:rgba(212,145,74,.08);}
+.st-btn[data-s="redo"].active .st-label{color:#d4914a;}
+.st-btn[data-s="completed"].active{border-color:rgba(76,175,125,.45);background:rgba(76,175,125,.08);}
+.st-btn[data-s="completed"].active .st-label{color:#4caf7d;}
+.st-btn[data-s="overdue"].active{border-color:rgba(192,80,77,.45);background:rgba(192,80,77,.08);}
+.st-btn[data-s="overdue"].active .st-label{color:#c0504d;}
+/* Edit modal: prerequisites list (reference) */
+.pre-list{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.pre-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:all .2s;}
+.pre-item:hover{border-color:rgba(184,154,92,.2);background:rgba(255,255,255,.02);}
+.pre-item.chk{border-color:rgba(184,154,92,.3);background:rgba(184,154,92,.06);}
+.pre-cb{width:14px;height:14px;border:1px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.pre-item.chk .pre-cb{border-color:#b89a5c;background:#b89a5c;}
+.pre-cb-dot{width:6px;height:6px;background:#0b0f1c;display:none;}
+.pre-item.chk .pre-cb-dot{display:block;}
+.pre-dept{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#b89a5c;margin-bottom:1px;}
+.pre-name{font-size:12px;color:#f8f6f2;}
+.pre-assignee{font-size:10px;color:#9a9fad;margin-top:2px;}
+.ps{margin-left:auto;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:2px 8px;flex-shrink:0;}
+.ps-done{background:rgba(76,175,125,.12);color:#4caf7d;}
+.ps-act{background:rgba(184,154,92,.12);color:#b89a5c;}
+.ps-lock{background:rgba(255,255,255,.05);color:#9a9fad;}
+.btn-del{background:transparent;border:1px solid rgba(192,80,77,.3);color:#c0504d;padding:9px 22px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.btn-del:hover{background:rgba(192,80,77,.08);}
+.task-id-badge{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#9a9fad;border:1px solid rgba(255,255,255,.07);padding:4px 10px;}
+/* Edit modal: tighter section spacing */
+.at-body .at-divider.at-divider-tight{margin:6px 0;}
+.at-body .at-sec-tight{margin-top:2px;}
+.at-body .at-sec-tight .at-sec-label{margin-bottom:8px;}
+/* Assign modal: less top margin for meeting link */
+.p-assign-meeting-wrap{margin-top:10px;}
+/* Attachments (reference style) */
+.att-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.att-file{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);padding:10px 14px;display:flex;align-items:center;gap:12px;transition:border-color .2s;}
+.att-file:hover{border-color:rgba(255,255,255,.14);}
+.att-file-icon{width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:500;letter-spacing:.06em;}
+.att-pdf{background:rgba(192,80,77,.12);color:#c0504d;}
+.att-img{background:rgba(76,175,125,.12);color:#4caf7d;}
+.att-doc{background:rgba(123,163,212,.12);color:#7ba3d4;}
+.att-slide{background:rgba(184,154,92,.2);color:#b89a5c;}
+.att-file-info{flex:1;min-width:0;}
+.att-file-name{font-size:12px;color:#f8f6f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
+.att-file-meta{font-size:10px;color:#9a9fad;}
+.att-prog-wrap{margin-top:5px;}
+.att-prog-bar{height:2px;background:rgba(255,255,255,.07);}
+.att-prog-fill{height:100%;background:#b89a5c;transition:width .4s;}
+.att-file-del{background:transparent;border:none;color:rgba(154,159,173,.4);cursor:pointer;font-size:14px;padding:4px;transition:color .2s;flex-shrink:0;}
+.att-file-del:hover{color:#c0504d;}
+.att-file-status{font-size:9px;letter-spacing:.14em;text-transform:uppercase;flex-shrink:0;}
+.att-done{color:#4caf7d;}
+.att-err{color:#c0504d;}
+.att-up{color:#b89a5c;}
+.att-zone{border:1px dashed rgba(184,154,92,.3);padding:22px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;background:rgba(255,255,255,.01);}
+.att-zone:hover,.att-zone.drag{border-color:#b89a5c;background:rgba(184,154,92,.05);}
+.att-zone-icon{width:32px;height:32px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;}
+.att-zone-text{font-size:12px;color:#9a9fad;}
+.att-zone-text strong{color:#d4b87a;}
+.att-zone-sub{font-size:10px;color:rgba(154,159,173,.45);margin-top:3px;}
+/* Rule buttons (redo / escalation) */
+.rule-btn-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.rule-btn{padding:8px 14px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:11px;letter-spacing:.06em;color:#9a9fad;transition:all .2s;background:transparent;}
+.rule-btn:hover{border-color:rgba(184,154,92,.3);color:#c4bdb0;}
+.rule-btn.sel{border-color:#b89a5c;background:rgba(184,154,92,.1);color:#d4b87a;}
 
 /* GENERATED TASKS REVIEW */
 .gen-task{background:var(--navy);border:1px solid rgba(255,255,255,.05);padding:14px;margin-bottom:2px}
@@ -214,6 +381,19 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .btn-icon{background:transparent;border:1px solid rgba(255,255,255,.1);width:26px;height:26px;cursor:pointer;font-size:12px;color:var(--silver);display:flex;align-items:center;justify-content:center;transition:all .2s}
 .btn-icon:hover{border-color:var(--gold);color:var(--gold)}
 .btn-icon.red:hover{border-color:var(--red);color:var(--red)}
+/* Generated task cards (assign-task style) */
+.gen-task-card{background:var(--navy-mid);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:16px 18px;margin-bottom:12px;}
+.gen-task-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.06);}
+.gen-task-card-div{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:2px;}
+.gen-task-card-person{font-size:13px;color:var(--white);margin-bottom:2px;}
+.gen-task-card-role{font-size:11px;color:var(--silver);}
+.gen-task-card-title-wrap{margin-bottom:12px;}
+.gen-task-card-title-wrap .at-fl{font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;display:block;}
+.gen-task-card-body{display:flex;flex-direction:column;gap:10px;}
+.gen-task-card-row{display:flex;flex-direction:column;gap:4px;}
+.gen-task-card-row .at-fl{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);}
+.gen-task-card-row .at-fi,.gen-task-card-row textarea.at-fi{min-height:44px;font-size:12px;}
+.gen-task-card-row textarea.at-fi{min-height:56px;resize:vertical;}
 
 /* CALENDAR */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
@@ -269,6 +449,92 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .step.active{background:rgba(184,154,92,.12);color:var(--gold)}
 .step.done{background:rgba(76,175,125,.08);color:var(--green)}
 
+/* CREATE EVENT WORKFLOW (new UI) */
+#eventCreateModal .modal{width:780px;max-width:100%;max-height:88vh;display:flex;flex-direction:column}
+#eventCreateModal .mh{padding:22px 28px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}
+#eventCreateModal .mh-title{font-family:var(--font-display);font-size:28px;font-weight:400;color:var(--white);line-height:1.1}
+#eventCreateModal .mh-sub{font-size:10px;color:var(--silver);margin-top:4px;letter-spacing:.04em}
+#eventCreateModal .ev-id{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--silver);border:1px solid rgba(255,255,255,.08);padding:4px 10px}
+#eventCreateModal .step-bar{display:flex;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+#eventCreateModal .step-tab{flex:1;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all .2s;border-right:1px solid rgba(255,255,255,.05);position:relative;background:transparent;border-top:none}
+#eventCreateModal .step-tab:last-child{border-right:none}
+#eventCreateModal .step-tab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:transparent;transition:background .2s}
+#eventCreateModal .step-tab.active::after{background:var(--gold)}
+#eventCreateModal .step-tab.done::after{background:var(--green)}
+#eventCreateModal .st-num{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--silver);transition:all .2s;flex-shrink:0}
+#eventCreateModal .step-tab.active .st-num{border-color:var(--gold);background:rgba(184,154,92,.15);color:var(--gold-light)}
+#eventCreateModal .step-tab.done .st-num{border-color:var(--green);background:rgba(76,175,125,.12);color:var(--green)}
+#eventCreateModal .st-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--silver);text-align:center;line-height:1.3}
+#eventCreateModal .step-tab.active .st-label{color:var(--gold-light)}
+#eventCreateModal .step-tab.done .st-label{color:var(--green)}
+#eventCreateModal .prog-track{height:2px;background:rgba(255,255,255,.05);flex-shrink:0}
+#eventCreateModal .prog-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .4s}
+#eventCreateModal .mb{padding:26px 28px;overflow-y:auto;flex:1}
+#eventCreateModal .step-section{display:none}
+#eventCreateModal .step-section.active{display:block}
+#eventCreateModal .ce-sl{font-size:8px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+#eventCreateModal .ce-sl::before{content:'';display:block;width:14px;height:1px;background:var(--gold)}
+#eventCreateModal .ce-r2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#eventCreateModal .ce-fg{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+#eventCreateModal .ce-fl{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+#eventCreateModal .ce-fi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:10px 13px;font-size:13px;color:var(--white);outline:none;transition:border-color .25s;width:100%}
+#eventCreateModal .ce-fi:focus{border-color:var(--gold)}
+#eventCreateModal .ce-fi::placeholder{color:rgba(154,159,173,.38)}
+#eventCreateModal select.ce-fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9fad'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+#eventCreateModal .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+#eventCreateModal .type-card{padding:14px 12px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;text-align:left}
+#eventCreateModal .type-card:hover{border-color:rgba(255,255,255,.2)}
+#eventCreateModal .type-card.on{border-color:var(--gold);background:rgba(184,154,92,.08)}
+#eventCreateModal .tc-name{font-size:12px;color:var(--white);margin-bottom:2px;font-weight:400}
+#eventCreateModal .tc-desc{font-size:10px;color:var(--silver);line-height:1.45}
+#eventCreateModal .type-card.on .tc-name{color:var(--gold-light)}
+#eventCreateModal .ce-dv{height:1px;background:rgba(255,255,255,.06);margin:4px 0 20px}
+#eventCreateModal .checkbox-group.cb-role-grid{display:flex;flex-wrap:wrap;gap:6px}
+#eventCreateModal .cb-item{padding:8px 14px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:11px;color:var(--silver);transition:all .2s}
+#eventCreateModal .cb-item:hover{border-color:rgba(255,255,255,.2)}
+#eventCreateModal .cb-item.checked{border-color:var(--gold);color:var(--gold-light);background:rgba(184,154,92,.09)}
+#eventCreateModal .toggle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+#eventCreateModal .toggle-item{padding:12px 14px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between}
+#eventCreateModal .toggle-item:hover{border-color:rgba(255,255,255,.18)}
+#eventCreateModal .toggle-item.on{border-color:rgba(184,154,92,.3);background:rgba(184,154,92,.05)}
+#eventCreateModal .ti-label{font-size:12px;color:var(--white)}
+#eventCreateModal .ti-sub{font-size:10px;color:var(--silver);margin-top:2px}
+#eventCreateModal .ti-toggle{width:32px;height:18px;background:rgba(255,255,255,.08);border-radius:9px;position:relative;flex-shrink:0;transition:background .2s}
+#eventCreateModal .ti-toggle::after{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:var(--silver);top:3px;left:3px;transition:all .2s}
+#eventCreateModal .toggle-item.on .ti-toggle{background:var(--gold)}
+#eventCreateModal .toggle-item.on .ti-toggle::after{left:17px;background:#fff}
+#eventCreateModal .gen-stage{text-align:center;padding:32px 20px}
+#eventCreateModal .gen-icon{width:64px;height:64px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;background:rgba(184,154,92,.08);border:1px solid rgba(184,154,92,.2)}
+#eventCreateModal .gen-title{font-family:var(--font-display);font-size:28px;color:var(--white);margin-bottom:8px}
+#eventCreateModal .gen-sub{font-size:13px;color:var(--silver);line-height:1.7;max-width:480px;margin:0 auto 24px}
+#eventCreateModal .gen-summary{background:var(--navy-light);border:1px solid rgba(255,255,255,.07);padding:16px;margin-bottom:24px;text-align:left}
+#eventCreateModal .gs-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+#eventCreateModal .gs-row:last-child{border-bottom:none}
+#eventCreateModal .gs-lbl{color:var(--silver);font-size:10px;letter-spacing:.15em;text-transform:uppercase}
+#eventCreateModal .gs-val{color:var(--white)}
+#eventCreateModal .gen-btn{background:var(--gold);color:var(--navy);border:none;padding:13px 40px;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+#eventCreateModal .gen-btn:hover{background:var(--gold-light)}
+#eventCreateModal .tr-item{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);border-left:3px solid var(--gold)}
+#eventCreateModal .tr-item.tr-finance{border-left-color:#7ba3d4}
+#eventCreateModal .tr-item.tr-ops{border-left-color:#7ba3d4}
+#eventCreateModal .tr-item.tr-creative{border-left-color:var(--red)}
+#eventCreateModal .tr-item.tr-ext{border-left-color:var(--green)}
+#eventCreateModal .tr-inner{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+#eventCreateModal .tr-dept{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
+#eventCreateModal .tr-title{font-size:13px;color:var(--white);margin-bottom:3px}
+#eventCreateModal .tr-meta{font-size:10px;color:var(--silver)}
+#eventCreateModal .prio{font-size:8px;letter-spacing:.14em;text-transform:uppercase;padding:2px 7px}
+#eventCreateModal .p-urg{background:var(--red-dim);color:var(--red)}
+#eventCreateModal .p-hi{background:rgba(212,145,74,.12);color:var(--amber)}
+#eventCreateModal .p-std{background:rgba(184,154,92,.12);color:var(--gold)}
+#eventCreateModal .review-add{background:transparent;border:1px dashed rgba(184,154,92,.25);width:100%;padding:10px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);cursor:pointer;margin-top:6px;transition:all .2s}
+#eventCreateModal .review-add:hover{background:rgba(184,154,92,.05)}
+#eventCreateModal .mf{padding:16px 28px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#eventCreateModal .mf-step-txt{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+#eventCreateModal .btn-back{background:transparent;border:1px solid rgba(184,154,92,.3);color:var(--gold)}
+#eventCreateModal .btn-back:hover{background:rgba(184,154,92,.07)}
+#eventCreateModal .ce-disclaimer{font-size:10px;color:var(--silver);margin-top:6px;line-height:1.5}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}
@@ -281,7 +547,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .dep-node{
   background:var(--navy-mid);border:1px solid rgba(255,255,255,.1);padding:10px 14px;
   font-size:11px;color:var(--white);z-index:1;cursor:pointer;transition:all .2s;
-  white-space:nowrap;position:relative;min-width:130px;text-align:center;
+  position:relative;min-width:130px;max-width:200px;text-align:center;overflow:hidden;
 }
 .dep-node:hover{border-color:var(--gold);background:var(--charcoal)}
 .dep-node.done-node{border-color:var(--green);background:rgba(76,175,125,.06)}
@@ -302,10 +568,11 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 @media(max-width:900px){
   #sidebar{display:none}
   #main{margin-left:0}
-  .stat-row{grid-template-columns:repeat(2,1fr)}
+.stat-row{grid-template-columns:repeat(2,1fr)}
   .dept-grid{grid-template-columns:1fr}
   .two-col,.three-col,.one-two{grid-template-columns:1fr}
-}
+  .division-cards-grid{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -345,6 +612,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 
     <div class="sb-section-label">Executive</div>
     <div class="sb-item" onclick="showPage('reports')"><span class="sb-icon">✦</span>Reports</div>
+    <div class="sb-item" onclick="showPage('seed-users')"><span class="sb-icon">⎘</span>Seed users (sqlite.js)</div>
   </div>
   <div class="sb-footer">
     <div class="sb-footer-txt"><span class="poll-dot"></span>Live · syncing every 30s</div>
@@ -456,8 +724,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <!-- ── PAGE: INTERNAL DIV ── -->
   <div class="page" id="page-internal-div">
     <div class="breadcrumb"><span>Divisions</span> / Internal Division</div>
-    <div class="section-label">Team</div>
-    <div class="three-col" id="internal-member-cards"></div>
+    <div id="internal-member-cards"></div>
     <div class="card" style="margin-top:16px">
       <div class="section-label">Internal Tasks</div>
       <div class="card-title">All Internal Division Tasks</div>
@@ -468,8 +735,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <!-- ── PAGE: EXTERNAL DIV ── -->
   <div class="page" id="page-external-div">
     <div class="breadcrumb"><span>Divisions</span> / External Division</div>
-    <div class="section-label">Team</div>
-    <div class="three-col" id="external-member-cards"></div>
+    <div id="external-member-cards"></div>
     <div class="card" style="margin-top:16px">
       <div class="section-label">External Tasks</div>
       <div class="card-title">All External Division Tasks</div>
@@ -483,13 +749,13 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
     <div id="exec-member-cards"></div>
   </div>
 
-  <!-- ── PAGE: REPORTS ── -->
+  <!-- ── PAGE: REPORTS (escalations) ── -->
   <div class="page" id="page-reports">
     <div class="breadcrumb"><span>Executive</span> / Reports</div>
     <div class="card">
-      <div class="section-label">Oversight</div>
-      <div class="card-title">Vice President Reports Inbox</div>
-      <div class="card-sub">Escalations and executive review items from division leadership.</div>
+      <div class="section-label">Escalations</div>
+      <div class="card-title">Reports from Escalations</div>
+      <div class="card-sub">VP and division escalations submitted for executive review. Review details, recommended actions, and update status.</div>
       <div id="reports-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px"></div>
     </div>
   </div>
@@ -500,111 +766,149 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
     <div class="breadcrumb"><span>Events</span> / Event Templates</div>
     <div class="three-col" id="templates-grid"></div>
   </div>
+
+  <!-- ── PAGE: SEED USERS (sqlite.js) ── -->
+  <div class="page" id="page-seed-users">
+    <div class="breadcrumb"><span>Executive</span> / Seed users</div>
+    <div class="card">
+      <div class="section-label">Database</div>
+      <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:8px">seedUsers() in sqlite.js</div>
+      <div style="font-size:12px;color:var(--silver);margin-bottom:16px">View and run the seed function. Copy the file content to push changes to GitHub manually.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="loadSeedSnippet()">Load / Refresh</button>
+        <button type="button" class="btn btn-outline" onclick="runSeedUsers()">Run seed now</button>
+        <button type="button" class="btn btn-outline" onclick="copySeedToClipboard()">Copy to clipboard</button>
+        <a id="seed-open-github" class="btn btn-outline" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Open in GitHub</a>
+      </div>
+      <textarea id="seed-users-snippet" readonly style="width:100%;min-height:360px;background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:var(--stone);resize:vertical;line-height:1.5" placeholder="Click Load to fetch sqlite.js content."></textarea>
+      <div id="seed-status" style="font-size:11px;color:var(--silver);margin-top:10px"></div>
+    </div>
+  </div>
 </main>
 
 <!-- ══ MODAL: EVENT CREATE ══ -->
 <div class="modal-overlay" id="eventCreateModal">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Create New Event</div>
-      <button class="modal-close" onclick="closeModal('eventCreateModal')">✕</button>
+    <div class="mh">
+      <div>
+        <div class="mh-title">Create New Event</div>
+        <div class="mh-sub">Define event details, scope, and generate tasks with Gemini.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="ev-id">New</span>
+        <button type="button" class="modal-close" onclick="closeModal('eventCreateModal')" style="margin:0">✕</button>
+      </div>
     </div>
-    <div class="modal-body">
-      <div class="steps" id="create-steps">
-        <div class="step active">1 · Event Info</div>
-        <div class="step">2 · Scope</div>
-        <div class="step">3 · Instructions</div>
-        <div class="step">4 · Generate</div>
-        <div class="step">5 · Review</div>
-      </div>
-      <div id="create-step-1">
-        <div class="form-row">
-          <div class="fg"><label>Event Name</label><input type="text" placeholder="Enter event name" id="ev-name"/></div>
-          <div class="fg"><label>Event Date</label><input type="date" id="ev-date"/></div>
+    <div class="step-bar" id="create-steps">
+      <div class="step step-tab active" id="tab-1" onclick="goToCreateStep(1)"><span class="st-num">1</span><span class="st-label">Event Info</span></div>
+      <div class="step step-tab" id="tab-2" onclick="goToCreateStep(2)"><span class="st-num">2</span><span class="st-label">Scope</span></div>
+      <div class="step step-tab" id="tab-3" onclick="goToCreateStep(3)"><span class="st-num">3</span><span class="st-label">Instructions</span></div>
+      <div class="step step-tab" id="tab-4" onclick="goToCreateStep(4)"><span class="st-num">4</span><span class="st-label">Generate</span></div>
+      <div class="step step-tab" id="tab-5" onclick="goToCreateStep(5)"><span class="st-num">5</span><span class="st-label">Review</span></div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="create-prog-fill" style="width:20%"></div></div>
+    <div class="mb">
+      <div class="step-section active" id="create-step-1">
+        <div class="ce-sl">Event Info</div>
+        <div class="ce-r2">
+          <div class="ce-fg"><label class="ce-fl">Event Name</label><input type="text" class="ce-fi" placeholder="Enter event name" id="ev-name"/></div>
+          <div class="ce-fg"><label class="ce-fl">Event Date</label><input type="date" class="ce-fi" id="ev-date"/></div>
         </div>
-        <div class="form-row">
-          <div class="fg"><label>Event Type</label>
-            <select id="ev-type">
-              <option value="">— Select —</option>
-              <option>Flagship Production</option><option>Cultural Event</option>
-              <option>Campus Kickoff</option><option>Community Event</option>
-              <option>Speaker Event</option><option>Fundraiser</option>
-              <option>General Body Meeting</option>
-            </select>
-          </div>
-          <div class="fg"><label>Event Scope</label>
-            <select id="ev-scope">
-              <option>Large Scale (500+)</option><option>Medium (100–500)</option>
-              <option>Small (&lt;100)</option><option>Internal Only</option>
-            </select>
-          </div>
+        <div class="type-grid" id="ev-type-grid">
+          <div class="type-card" data-value="Flagship Production" onclick="setEvType(this)"><div class="tc-name">Flagship Production</div><div class="tc-desc">Major production events</div></div>
+          <div class="type-card" data-value="Cultural Event" onclick="setEvType(this)"><div class="tc-name">Cultural Event</div><div class="tc-desc">Cultural celebrations</div></div>
+          <div class="type-card" data-value="Campus Kickoff" onclick="setEvType(this)"><div class="tc-name">Campus Kickoff</div><div class="tc-desc">Campus-wide kickoffs</div></div>
+          <div class="type-card" data-value="Campus Event" onclick="setEvType(this)"><div class="tc-name">Campus Event</div><div class="tc-desc">Campus events and activations</div></div>
+          <div class="type-card" data-value="Community Event" onclick="setEvType(this)"><div class="tc-name">Community Event</div><div class="tc-desc">Community-focused</div></div>
+          <div class="type-card" data-value="Speaker Event" onclick="setEvType(this)"><div class="tc-name">Speaker Event</div><div class="tc-desc">Guest speakers</div></div>
         </div>
-        <div class="fg"><label>Venue / Location</label><input type="text" placeholder="Enter venue or location" id="ev-venue"/></div>
-      </div>
-      <div id="create-step-2" style="display:none">
-        <div class="fg"><label>Divisions & Roles Involved</label>
-          <div class="checkbox-group" id="dept-checkboxes">
-            <div class="cb-item checked" data-role="Director of Operations" data-division="internal" onclick="toggleCb(this)">Internal · Director of Operations</div>
-            <div class="cb-item checked" data-role="Director of Finance & Development - Finance" data-division="internal" onclick="toggleCb(this)">Internal · Director of Finance & Development - Finance</div>
-            <div class="cb-item" data-role="Director of Finance & Development - Development" data-division="internal" onclick="toggleCb(this)">Internal · Director of Finance & Development - Development</div>
-            <div class="cb-item checked" data-role="Director of Events & Experiences" data-division="internal" onclick="toggleCb(this)">Internal · Director of Events & Experiences</div>
-            <div class="cb-item" data-role="Executive Producer, Somali Night — Production" data-division="internal" onclick="toggleCb(this)">Internal · Executive Producer, Somali Night — Production</div>
-            <div class="cb-item" data-role="Executive Producer, Somali Night — Creative" data-division="internal" onclick="toggleCb(this)">Internal · Executive Producer, Somali Night — Creative</div>
-            <div class="cb-item checked" data-role="Director of Brand & Marketing" data-division="external" onclick="toggleCb(this)">External · Director of Brand & Marketing</div>
-            <div class="cb-item" data-role="Director of Strategic Relations & Advancement" data-division="external" onclick="toggleCb(this)">External · Director of Strategic Relations & Advancement</div>
-            <div class="cb-item" data-role="Director of Editorial & Communications" data-division="external" onclick="toggleCb(this)">External · Director of Editorial & Communications</div>
-            <div class="cb-item checked" data-role="Director of Campus Activation" data-division="external" onclick="toggleCb(this)">External · Director of Campus Activation</div>
-          </div>
-        </div>
-        <div class="fg" style="margin-top:12px"><label>Expected Deliverables By Role</label>
-          <div id="role-deliverables-container" style="display:flex;flex-direction:column;gap:10px"></div>
+        <input type="hidden" id="ev-type" value=""/>
+        <div class="ce-dv"></div>
+        <div class="ce-r2">
+          <div class="ce-fg"><label class="ce-fl">Event Scope</label><select id="ev-scope" class="ce-fi"><option>1000+</option><option>Large Scale (500+)</option><option>Medium (100–500)</option><option>Small (&lt;100)</option><option>Internal Only</option></select></div>
+          <div class="ce-fg"><label class="ce-fl">Venue / Location</label><input type="text" class="ce-fi" placeholder="Enter venue or location" id="ev-venue"/></div>
         </div>
       </div>
-      <div id="create-step-3" style="display:none">
-        <div class="form-row">
-          <div class="fg"><label>Budget Limit (USD)</label><input type="number" id="ev-budget-limit" placeholder="e.g. 5000"/></div>
-          <div class="fg"><label>Hard Deadline</label><input type="date" id="ev-hard-deadline"/></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Requires Venue Contract?</label>
-            <select id="ev-need-contract"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div class="step-section" id="create-step-2">
+        <div class="ce-sl">Scope & Roles</div>
+        <div class="ce-fg"><label class="ce-fl">Divisions & Roles Involved</label>
+          <div id="dept-checkboxes">
+            <div class="ce-dv" style="margin:8px 0 6px"></div>
+            <div class="ce-fl" style="margin-bottom:8px;font-size:9px">Internal Division</div>
+            <div class="checkbox-group cb-role-grid">
+              <div class="cb-item checked" data-role="Director of Operations" data-division="internal" onclick="toggleCb(this)">Director of Operations</div>
+              <div class="cb-item checked" data-role="Director of Finance & Development - Finance" data-division="internal" onclick="toggleCb(this)">Director of Finance & Development - Finance</div>
+              <div class="cb-item" data-role="Director of Finance & Development - Development" data-division="internal" onclick="toggleCb(this)">Director of Finance & Development - Development</div>
+              <div class="cb-item checked" data-role="Director of Events & Experiences" data-division="internal" onclick="toggleCb(this)">Director of Events & Experiences</div>
+              <div class="cb-item" data-role="Executive Producer, Somali Night — Production" data-division="internal" onclick="toggleCb(this)">Executive Producer, Somali Night — Production</div>
+            </div>
+            <div class="ce-dv" style="margin:14px 0 6px"></div>
+            <div class="ce-fl" style="margin-bottom:8px;font-size:9px">External Division</div>
+            <div class="checkbox-group cb-role-grid">
+              <div class="cb-item checked" data-role="Director of Brand & Marketing" data-division="external" onclick="toggleCb(this)">Director of Brand & Marketing</div>
+              <div class="cb-item" data-role="Director of Strategic Relations & Advancement" data-division="external" onclick="toggleCb(this)">Director of Strategic Relations & Advancement</div>
+              <div class="cb-item" data-role="Director of Editorial & Communications" data-division="external" onclick="toggleCb(this)">Director of Editorial & Communications</div>
+              <div class="cb-item checked" data-role="Director of Campus Activation" data-division="external" onclick="toggleCb(this)">Director of Campus Activation</div>
+              <div class="cb-item" data-role="Executive Producer, Somali Night — Creative" data-division="external" onclick="toggleCb(this)">Executive Producer, Somali Night — Creative</div>
+            </div>
+            <div class="ce-dv" style="margin:14px 0 6px"></div>
+            <div class="ce-fl" style="margin-bottom:8px;font-size:9px">Executive Division</div>
+            <div class="checkbox-group cb-role-grid">
+              <div class="cb-item" data-role="Executive President" data-division="executive" onclick="toggleCb(this)">Executive President</div>
+              <div class="cb-item" data-role="Vice President, Chief of Internal Affairs" data-division="executive" onclick="toggleCb(this)">Vice President, Chief of Internal Affairs</div>
+              <div class="cb-item" data-role="Vice President, Chief of External Affairs" data-division="executive" onclick="toggleCb(this)">Vice President, Chief of External Affairs</div>
+            </div>
           </div>
-          <div class="fg"><label>Requires Sponsor Outreach?</label>
-            <select id="ev-need-sponsors"><option value="yes">Yes</option><option value="no">No</option></select>
+        </div>
+        <div class="ce-fg"><label class="ce-fl">Expected Deliverables By Role</label><div id="role-deliverables-container" style="display:flex;flex-direction:column;gap:10px"></div></div>
+      </div>
+      <div class="step-section" id="create-step-3">
+        <div class="ce-sl">Instructions</div>
+        <div class="ce-r2">
+          <div class="ce-fg"><label class="ce-fl">Budget Limit (USD)</label><input type="number" class="ce-fi" id="ev-budget-limit" placeholder="e.g. 5000" min="0" max="150000" step="1" onblur="validateBudgetLimit()"/><span class="ce-fi-hint" id="ev-budget-hint" style="display:none;font-size:10px;color:var(--red);margin-top:4px"></span></div>
+          <div class="ce-fg"><label class="ce-fl">Hard Deadline</label><input type="date" class="ce-fi" id="ev-hard-deadline"/></div>
+        </div>
+        <div class="toggle-grid">
+          <div class="toggle-item on" id="toggle-contract" onclick="toggleEvYesNo('ev-need-contract', this)"><div><div class="ti-label">Venue Contract</div><div class="ti-sub">Required</div></div><div class="ti-toggle"></div></div>
+          <div class="toggle-item on" id="toggle-sponsors" onclick="toggleEvYesNo('ev-need-sponsors', this)"><div><div class="ti-label">Sponsor Outreach</div><div class="ti-sub">Required</div></div><div class="ti-toggle"></div></div>
+        </div>
+        <input type="hidden" id="ev-need-contract" value="yes"/><input type="hidden" id="ev-need-sponsors" value="yes"/>
+        <div class="ce-fg"><label class="ce-fl">Preferred Sequencing (optional)</label><textarea class="ce-fi" placeholder="e.g. Budget and contracts first; then marketing; then day-of logistics." id="ev-sequence" style="min-height:70px"></textarea><div class="ce-disclaimer">Example: &ldquo;Finance and contracts before creative; marketing after venue locked.&rdquo; Keep it short: which groups depend on which.</div></div>
+        <div class="ce-fg"><label class="ce-fl">Custom Planning Prompt / Notes for Gemini</label><textarea class="ce-fi" placeholder="e.g. Focus on campus outreach and two checkpoints before event day." id="ev-prompt" style="min-height:100px"></textarea><div class="ce-disclaimer">Example: &ldquo;Include budget checkpoints and one internal review before external launch.&rdquo; Shorter prompts often produce cleaner, valid output.</div></div>
+      </div>
+      <div class="step-section" id="create-step-4">
+        <div class="gen-stage">
+          <div class="gen-icon">◇</div>
+          <div class="gen-title" id="gen-status">Generate Task Workflow</div>
+          <div class="gen-sub">Gemini 2.5 Flash will analyze your event details and produce a structured set of tasks with assignments, dependencies, and timeline sequencing.</div>
+          <div class="gen-summary" id="gen-summary-box" style="display:none">
+            <div class="gs-row"><span class="gs-lbl">Event</span><span class="gs-val" id="gs-name">—</span></div>
+            <div class="gs-row"><span class="gs-lbl">Date</span><span class="gs-val" id="gs-date">—</span></div>
+            <div class="gs-row"><span class="gs-lbl">Type</span><span class="gs-val" id="gs-type">—</span></div>
+            <div class="gs-row"><span class="gs-lbl">Scope</span><span class="gs-val" id="gs-scope">—</span></div>
           </div>
+          <button class="gen-btn" id="gen-btn" onclick="generateTasks()">Generate with Gemini</button>
         </div>
-        <div class="fg"><label>Preferred Sequencing Guidance (optional)</label>
-          <textarea placeholder="Describe preferred sequencing and dependency rules" id="ev-sequence"></textarea>
-        </div>
-        <div class="fg"><label>Custom Planning Prompt / Notes for Gemini</label>
-          <textarea placeholder="Any specific instructions for task generation. The more detail, the better the output..." id="ev-prompt" style="min-height:100px"></textarea>
+        <div style="padding:0 0 12px">
+          <div id="gen-input-preview" style="font-size:11px;color:var(--silver);margin-bottom:8px"></div>
+          <div id="gen-detail-log" style="background:var(--navy);border:1px solid rgba(255,255,255,.08);padding:12px;max-height:160px;overflow:auto;font-size:11px;color:var(--stone);text-align:left"></div>
         </div>
       </div>
-      <div id="create-step-4" style="display:none">
-        <div style="text-align:center;padding:28px 20px 14px">
-          <div id="gen-status" style="font-family:var(--font-display);font-size:28px;color:var(--white);margin-bottom:12px">Generate Task Workflow</div>
-          <div style="font-size:13px;color:var(--silver);margin-bottom:16px;max-width:640px;margin-left:auto;margin-right:auto">Gemini 2.5 Flash will analyze your event details and produce a structured set of tasks with assignments, dependencies, and timeline sequencing.</div>
-          <button class="btn btn-gold" style="font-size:12px;padding:12px 32px" onclick="generateTasks()">Generate with Gemini</button>
-        </div>
-        <div style="padding:0 20px 22px">
-          <div id="gen-input-preview" style="font-size:11px;color:var(--silver);margin-bottom:10px"></div>
-          <div id="gen-detail-log" style="background:var(--navy);border:1px solid rgba(255,255,255,.08);padding:12px;max-height:180px;overflow:auto;font-size:11px;color:var(--stone);text-align:left"></div>
-        </div>
-      </div>
-      <div id="create-step-5" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div>
-            <div style="font-family:var(--font-display);font-size:20px;color:var(--white)">Generated Tasks</div>
-            <div style="font-size:11px;color:var(--silver);margin-top:2px">Review, edit, or delete before publishing</div>
-          </div>
-          <button class="btn btn-outline" onclick="addGenTask()" style="font-size:9px;padding:7px 16px">+ Add Task</button>
+      <div class="step-section" id="create-step-5">
+        <div class="ce-sl">Review</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div><div style="font-family:var(--font-display);font-size:18px;color:var(--white)">Generated Tasks</div><div style="font-size:11px;color:var(--silver);margin-top:2px">Review, edit, or delete before publishing</div></div>
+          <button type="button" class="review-add" onclick="addGenTask()">+ Add Task</button>
         </div>
         <div id="generated-tasks-list"></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" id="create-back-btn" onclick="createStep(-1)" style="display:none">← Back</button>
-      <button class="btn btn-gold" id="create-next-btn" onclick="createStep(1)">Continue →</button>
+    <div class="mf">
+      <span class="mf-step-txt" id="mf-step-txt">Step 1 of 5</span>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button type="button" class="btn btn-back" id="create-back-btn" onclick="createStep(-1)" style="display:none">← Back</button>
+        <button type="button" class="btn btn-gold" id="create-next-btn" onclick="createStep(1)">Continue →</button>
+      </div>
     </div>
   </div>
 </div>
@@ -656,57 +960,80 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 
 <!-- ══ MODAL: ASSIGN TASK ══ -->
 <div class="modal-overlay" id="assignTaskModal">
-  <div class="modal" style="max-width:760px">
-    <div class="modal-header">
-      <div class="modal-title">Assign Task</div>
-      <button class="modal-close" onclick="closeModal('assignTaskModal')">✕</button>
+  <div class="modal at-modal" style="max-width:720px">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Assign Task</div>
+        <div class="at-hsub">Internal Operations · SSA Board Platform</div>
+      </div>
+      <button class="at-close" type="button" onclick="closeModal('assignTaskModal')">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="fg"><label>Task Title</label><input id="p-assign-title" type="text" placeholder="Enter task title" /></div>
-        <div class="fg"><label>Role</label>
-          <select id="p-assign-role" onchange="loadPresidentSuggestions()">
-            <option value="">— Select role —</option>
-            <option>Director of Operations</option>
-            <option>Director of Finance & Development - Finance</option>
-            <option>Director of Finance & Development - Development</option>
-            <option>Director of Events & Experiences</option>
-            <option>Director of Brand & Marketing</option>
-            <option>Director of Strategic Relations & Advancement</option>
-            <option>Director of Editorial & Communications</option>
-            <option>Director of Campus Activation</option>
-            <option>Executive Producer, Somali Night — Production</option>
-            <option>Executive Producer, Somali Night — Creative</option>
-          </select>
+    <div class="at-body">
+      <div class="at-progress-track"><div class="at-progress-val" id="p-assign-progress" style="width:20%"></div></div>
+      <input type="hidden" id="p-assign-priority" value="standard" />
+      <select id="p-assign-role" style="display:none" aria-hidden="true"><option value="">—</option></select>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Task Title</label>
+          <input class="at-fi" id="p-assign-title" type="text" placeholder="e.g. Launch promotional campaign" oninput="updateAssignProgress()" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Linked Event</label>
+          <select class="at-fi" id="p-assign-event" onchange="updateAssignProgress()"><option value="">Standalone</option></select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Due Date</label><input id="p-assign-due" type="date" /></div>
-        <div class="fg"><label>Priority</label>
-          <select id="p-assign-priority">
-            <option value="standard">Standard</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
-            <option value="critical">Critical</option>
-          </select>
+      <div class="fg" style="margin-top:4px;margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row">
+        <button type="button" class="at-prio-btn" data-prio="urgent" onclick="setAssignPrio(this)">Urgent</button>
+        <button type="button" class="at-prio-btn" data-prio="high" onclick="setAssignPrio(this)">High</button>
+        <button type="button" class="at-prio-btn active-standard" data-prio="standard" onclick="setAssignPrio(this)">Standard</button>
+        <button type="button" class="at-prio-btn" data-prio="low" onclick="setAssignPrio(this)">Low</button>
+      </div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Due Date</label>
+          <input class="at-fi" id="p-assign-due" type="date" oninput="updateAssignProgress()" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Unlock Date</label>
+          <input class="at-fi" id="p-assign-unlock" type="datetime-local" oninput="updateAssignProgress()" />
         </div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Linked Event</label><select id="p-assign-event"></select></div>
-        <div class="fg"><label>Unlock Date</label><input id="p-assign-unlock" type="datetime-local" /></div>
-      </div>
-      <div class="fg"><label>Description</label><textarea id="p-assign-description" placeholder="Describe scope and completion criteria"></textarea></div>
-      <div class="fg"><label>Prerequisite Tasks</label><div style="font-size:11px;color:var(--silver)">Select tasks that must be completed first. New task auto-locks until prerequisites are done.</div><div id="p-assign-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Assign to Role</div>
+      <div class="at-role-grid" id="p-assign-role-chips"></div>
+      <div class="at-suggest-wrap">
+        <div class="at-suggest-hdr">
+          <span class="at-suggest-title">Smart Suggestions</span>
+          <span class="at-suggest-title" style="font-size:10px;color:var(--silver)">Sorted by role fit + workload</span>
+        </div>
+        <div class="at-suggest-list" id="p-assign-suggestions">
+          <div style="font-size:12px;color:var(--silver);padding:8px 0">Select a role to load suggestions.</div>
+        </div>
+      </div></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:12px;margin-top:-8px">Task auto-locks until all selected prerequisites are complete. These appear in the Dependency Graph.</div>
+      <div class="at-prereq-list" id="p-assign-dependencies"></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Description</div>
       <div class="fg">
-        <label>Smart Suggestions</label>
-        <div id="p-assign-suggestions" style="display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:12px;color:var(--silver)">Select a role to load suggestions.</div>
-        </div>
+        <textarea class="at-fi at-fta" id="p-assign-description" placeholder="Describe the scope, what done looks like, and any context the assignee needs." oninput="updateAssignProgress()"></textarea>
+      </div>
+      </div>
+      <div class="fg p-assign-meeting-wrap">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="p-assign-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="validateMeetingLink(this)" />
+        <span class="meeting-link-err" id="p-assign-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('assignTaskModal')">Cancel</button>
-      <button class="btn btn-gold" onclick="assignTaskFromPresident()">Assign Task</button>
+    <div class="at-footer">
+      <div class="at-footer-left" id="p-assign-footer-hint">Select a role and assignee above.</div>
+      <div class="at-footer-right">
+        <a id="p-assign-add-calendar" href="#" target="_blank" rel="noopener noreferrer" class="at-btn-cancel" style="text-decoration:none;display:inline-flex;align-items:center" onclick="return openAssignTaskCalendar();">Add to Google Calendar</a>
+        <button type="button" class="at-btn-cancel" onclick="closeModal('assignTaskModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="assignTaskFromPresident()">Assign Task</button>
+      </div>
     </div>
   </div>
 </div>
@@ -750,47 +1077,134 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 </div>
 
 <div class="modal-overlay" id="taskEditModal">
-  <div class="modal" style="max-width:900px">
-    <div class="modal-header">
-      <div class="modal-title">Edit Task</div>
-      <button class="modal-close" onclick="closeModal('taskEditModal')">✕</button>
+  <div class="modal at-modal" style="max-width:720px">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Edit Task</div>
+        <div class="at-hsub" id="edit-task-header-sub">Internal Operations · SSA Board Platform</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="task-id-badge" id="edit-task-id-badge">TASK-000</span>
+        <button class="at-close" type="button" onclick="closeModal('taskEditModal')">✕</button>
+      </div>
     </div>
-    <div class="modal-body">
+    <div class="at-body">
       <input type="hidden" id="edit-task-id" />
-      <div class="form-row">
-        <div class="fg"><label>Task Title</label><input id="edit-task-title" type="text" /></div>
-        <div class="fg"><label>Assigned Person</label><select id="edit-task-assignee"></select></div>
+      <select id="edit-task-status" style="display:none"><option value="current">Current</option><option value="locked">Locked</option><option value="pending_review">Pending Review</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select>
+      <select id="edit-task-priority" style="display:none"><option value="urgent">Urgent</option><option value="high">High</option><option value="standard">Standard</option><option value="low">Low</option></select>
+      <div class="at-sec-label">Task Status</div>
+      <div class="status-grid" id="edit-task-status-grid">
+        <div class="st-btn" data-s="current" onclick="setEditStatus(this)"><div class="st-dot" style="background:#b89a5c"></div><div class="st-label">Current</div></div>
+        <div class="st-btn" data-s="locked" onclick="setEditStatus(this)"><div class="st-dot" style="background:rgba(255,255,255,.25)"></div><div class="st-label">Locked</div></div>
+        <div class="st-btn" data-s="pending_review" onclick="setEditStatus(this)"><div class="st-dot" style="background:#7ba3d4"></div><div class="st-label">Pending Review</div></div>
+        <div class="st-btn" data-s="redo" onclick="setEditStatus(this)"><div class="st-dot" style="background:#d4914a"></div><div class="st-label">Redo</div></div>
+        <div class="st-btn" data-s="completed" onclick="setEditStatus(this)"><div class="st-dot" style="background:#4caf7d"></div><div class="st-label">Completed</div></div>
+        <div class="st-btn" data-s="overdue" onclick="setEditStatus(this)"><div class="st-dot" style="background:#c0504d"></div><div class="st-label">Overdue</div></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Assigned Role</label><input id="edit-task-role" type="text" /></div>
-        <div class="fg"><label>Assigned Division</label><input id="edit-task-division" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Task Details</div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Task Title</label>
+          <input class="at-fi" id="edit-task-title" type="text" placeholder="Task title" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Linked Event</label>
+          <select class="at-fi" id="edit-task-event"><option value="">Standalone</option></select>
+        </div>
       </div>
-      <div class="fg"><label>Description</label><textarea id="edit-task-description"></textarea></div>
-      <div class="form-row">
-        <div class="fg"><label>Linked Event</label><select id="edit-task-event"></select></div>
-        <div class="fg"><label>Priority</label><select id="edit-task-priority"><option value="standard">Standard</option><option value="high">High</option><option value="urgent">Urgent</option><option value="critical">Critical</option></select></div>
+      <div class="fg" style="margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row" id="edit-task-prio-row">
+        <div class="at-prio-btn" data-p="urgent" onclick="setEditPrio(this)">Urgent</div>
+        <div class="at-prio-btn" data-p="high" onclick="setEditPrio(this)">High</div>
+        <div class="at-prio-btn" data-p="standard" onclick="setEditPrio(this)">Standard</div>
+        <div class="at-prio-btn" data-p="low" onclick="setEditPrio(this)">Low</div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Unlock Date / Time</label><input id="edit-task-unlock" type="datetime-local" /></div>
-        <div class="fg"><label>Due Date</label><input id="edit-task-due" type="datetime-local" /></div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Due Date</label>
+          <input class="at-fi" id="edit-task-due" type="datetime-local" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Unlock Date</label>
+          <input class="at-fi" id="edit-task-unlock" type="datetime-local" />
+        </div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Status</label><select id="edit-task-status"><option value="current">Current</option><option value="locked">Locked</option><option value="pending_review">Pending Review</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select></div>
-        <div class="fg"><label>Meeting Date</label><input id="edit-task-meeting-date" type="date" /></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Meeting Time</label><input id="edit-task-meeting-time" type="time" /></div>
-        <div class="fg"><label>Meeting Location</label><input id="edit-task-meeting-location" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Assigned</div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Assigned Person</label>
+          <select class="at-fi" id="edit-task-assignee"></select>
+        </div>
+        <div class="fg">
+          <label class="at-fl">Assigned Role</label>
+          <input class="at-fi" id="edit-task-role" type="text" />
+        </div>
       </div>
-      <div class="fg"><label>Dependencies</label><div style="font-size:11px;color:var(--silver)">Use this to build or refine the dependency chart for this task.</div><div id="edit-task-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
-      <div class="fg"><label>Attachments</label><textarea id="edit-task-attachments" placeholder='["/uploads/file.pdf","https://..."]'></textarea></div>
-      <div class="fg"><label>Notes</label><textarea id="edit-task-notes"></textarea></div>
-      <div class="fg"><label>Redo Rules</label><textarea id="edit-task-redo-rules"></textarea></div>
-      <div class="fg"><label>Escalation Rules</label><textarea id="edit-task-escalation-rules"></textarea></div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Assigned Division</label>
+          <input class="at-fi" id="edit-task-division" type="text" />
+        </div>
+        <div class="fg"></div>
+      </div>
+      </div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:10px;margin-top:-6px">Task auto-locks until all selected prerequisites are complete.</div>
+      <div class="pre-list" id="edit-task-dependencies"></div>
+      </div>
+      <div class="at-divider"></div>
+      <div class="at-sec-label">Description</div>
+      <div class="fg">
+        <textarea class="at-fi at-fta" id="edit-task-description" placeholder="Describe scope, deliverables, and what done looks like."></textarea>
+      </div>
+      <div class="fg">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="edit-task-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="validateMeetingLink(this)" />
+        <span class="meeting-link-err" id="edit-task-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
+      </div>
+      <div class="at-divider"></div>
+      <div class="at-sec-label">Attachments</div>
+      <div class="att-list" id="edit-task-att-list"></div>
+      <div class="att-zone" id="edit-task-att-zone"
+        ondragover="editAttZoneDrag(this,true);event.preventDefault();"
+        ondragleave="editAttZoneDrag(this,false)"
+        ondrop="editAttZoneDrop(event);event.preventDefault();"
+        onclick="document.getElementById('edit-task-att-input').click()">
+        <div class="att-zone-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b89a5c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="att-zone-text"><strong>Click to upload</strong> or drag and drop</div>
+        <div class="att-zone-sub">PDF, PNG, JPG, DOCX, MP4 · Max 50 MB</div>
+        <input type="file" id="edit-task-att-input" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.ppt,.pptx,.mp4" style="display:none" onchange="editAttFilesPicked(this)" />
+      </div>
+      <input type="hidden" id="edit-task-attachments" value="[]" />
+      <div class="fg">
+        <label class="at-fl">Escalation Rules</label>
+        <p style="font-size:11px;color:var(--silver);margin-bottom:8px">When should this task escalate?</p>
+        <div class="rule-btn-wrap" id="edit-task-escalation-rules-wrap">
+          <button type="button" class="rule-btn" data-rule="notify_vp_2days" onclick="toggleRuleBtn(this,'escalation')">Notify VP after 2 days</button>
+          <button type="button" class="rule-btn" data-rule="escalate_to_president" onclick="toggleRuleBtn(this,'escalation')">Escalate to President</button>
+          <button type="button" class="rule-btn" data-rule="auto_remind" onclick="toggleRuleBtn(this,'escalation')">Auto-remind assignee</button>
+          <button type="button" class="rule-btn" data-rule="none" onclick="toggleRuleBtn(this,'escalation')">None</button>
+        </div>
+        <input type="hidden" id="edit-task-escalation-rules" value="" />
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('taskEditModal')">Cancel</button>
-      <button class="btn btn-gold" onclick="saveTaskEdit()">Save Task</button>
+    <div class="at-footer">
+      <div class="at-footer-left" id="edit-task-footer-hint" style="font-size:11px;color:var(--silver)">Assigned to · Status</div>
+      <div class="at-footer-right" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn-del" onclick="deleteTaskFromEditModal()">Delete Task</button>
+        <a id="edit-task-add-calendar" class="at-btn-cancel" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none" onclick="return openEditTaskCalendar(event)">Add to Google Calendar</a>
+        <button type="button" class="at-btn-cancel" onclick="closeModal('taskEditModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="saveTaskEdit()">Save Changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -852,9 +1266,10 @@ function showPage(id, param) {
     'overdue':'Overdue & Alerts','events':'All Events','event-panel':'Event Control Panel',
     'dependency':'Dependency Graph','calendar':'Calendar',
     'internal-div':'Internal Division','external-div':'External Division','exec-div':'Executive Division',
-    'templates':'Event Templates','reports':'Reports',
+    'templates':'Event Templates','reports':'Reports','seed-users':'Seed users',
   };
   document.getElementById('page-title').textContent = titles[id] || id;
+  if (id === 'seed-users') loadSeedSnippet();
 }
 
 // ── RENDER WORKLOAD GRID ──────────────────────────────────────────────────
@@ -1054,6 +1469,16 @@ function renderWorkloadDetail() {
   }).join('');
 }
 
+var DEP_NODE_TITLE_MAX = 36;
+function truncateDepTitle(s) {
+  if (!s || typeof s !== "string") return "";
+  return s.length <= DEP_NODE_TITLE_MAX ? s : s.slice(0, DEP_NODE_TITLE_MAX - 1) + "…";
+}
+function statusDisplayLabel(status) {
+  var s = String(status || "").toLowerCase().replace(/_/g, " ");
+  var map = { overdue: "Overdue", current: "Current", completed: "Completed", done: "Completed", locked: "Locked", pending: "Pending", pending_review: "Pending Review", redo: "Redo" };
+  return map[s] || (s ? s.charAt(0).toUpperCase() + s.slice(1) : status);
+}
 // ── DEPENDENCY GRAPH ──────────────────────────────────────────────────────
 function renderDependencyGraph() {
   const g = document.getElementById('dep-graph-content');
@@ -1063,9 +1488,9 @@ function renderDependencyGraph() {
     return;
   }
   const rows = TASKS.slice(0, 6).map((t) => [
-    { title: t.title, dept: t.dept, status: t.status },
+    { title: truncateDepTitle(t.title), dept: t.dept, status: t.status },
     { arrow: true },
-    { title: t.dep?.length ? `Depends on ${t.dep.length} task(s)` : "Ready", dept: t.dept, status: t.dep?.length ? "locked" : "current" }
+    { title: t.dep?.length ? "Depends on " + t.dep.length + " task(s)" : "Ready", dept: t.dept, status: t.dep?.length ? "locked" : "current" }
   ]);
   g.innerHTML = rows
     .map(
@@ -1074,7 +1499,7 @@ function renderDependencyGraph() {
           .map((n) => {
             if (n.arrow) return `<div class="dep-arrow">→</div>`;
             const cls = n.status === "done" ? "done-node" : n.status === "current" || n.status === "pending" ? "active-node" : "locked-node";
-            return `<div class="dep-node ${cls}"><div class="dep-dept">${n.dept}</div>${n.title}</div>`;
+            return `<div class="dep-node ${cls}"><div class="dep-dept">${n.dept}</div>${truncateDepTitle(n.title)}</div>`;
           })
           .join("")}</div>`
     )
@@ -1194,7 +1619,25 @@ function renderNotifications() {
 }
 
 // ── MODALS ────────────────────────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('open'); }
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'eventCreateModal') {
+    goToCreateStep(1);
+    if (typeof attachVenueAutocomplete === 'function') attachVenueAutocomplete();
+  }
+}
+function initVenuePlaces() { window.__googlePlacesReady = true; if (typeof attachVenueAutocomplete === 'function') attachVenueAutocomplete(); }
+function attachVenueAutocomplete() {
+  if (!window.google || !window.google.maps || !window.google.maps.places) return;
+  const input = document.getElementById('ev-venue');
+  if (!input || input.getAttribute('data-places-bound')) return;
+  input.setAttribute('data-places-bound', '1');
+  const autocomplete = new google.maps.places.Autocomplete(input, { types: ['establishment','geocode'], fields: ['formatted_address','name','place_id'] });
+  autocomplete.addListener('place_changed', function() {
+    const place = autocomplete.getPlace();
+    if (place && place.formatted_address) input.value = place.formatted_address;
+  });
+}
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function openRedoModal() { openModal('redoModal'); }
 function submitRedo() { closeModal('redoModal'); showToast('Redo request sent'); }
@@ -1214,6 +1657,7 @@ function inspectTask(id) {
       ${t.description ? `<div class="redo-section"><div class="redo-label">Description</div><div class="redo-val">${t.description}</div></div>` : ''}
       ${t.notes ? `<div class="redo-section"><div class="redo-label">Notes</div><div class="redo-val">${t.notes}</div></div>` : ''}
       ${t.meeting_location || t.meeting_date ? `<div class="redo-section"><div class="redo-label">Meeting</div><div class="redo-val">${t.meeting_date || ''} ${t.meeting_time || ''} ${t.meeting_location || ''}</div></div>` : ''}
+      ${t.meeting_link ? `<div class="redo-section"><div class="redo-label">Meeting Link</div><div class="redo-val"><a href="${t.meeting_link}" target="_blank" rel="noopener noreferrer" style="color:var(--gold-light)">${t.meeting_link}</a></div></div>` : ''}
       ${t.attachments_json && t.attachments_json !== "[]" ? `<div class="redo-section"><div class="redo-label">Attachments</div><div class="redo-val">${t.attachments_json}</div></div>` : ''}
       ${t.summary ? `<div class="redo-section"><div class="redo-label">Completion Summary</div><div class="redo-val">${t.summary}</div></div>` : ''}
     </div>`;
@@ -1224,36 +1668,68 @@ function inspectTask(id) {
 function createStep(dir) {
   if (isGeneratingTasks) return;
   const steps = document.querySelectorAll('#create-steps .step');
-  const curr = document.getElementById('create-step-' + currentStep);
-  if (curr) curr.style.display = 'none';
   if (currentStep === 4 && dir === 1) { generateTasks(); return; }
   currentStep = Math.max(1, Math.min(totalSteps, currentStep + dir));
+  document.querySelectorAll('.step-section').forEach(p => p.classList.remove('active'));
   const next = document.getElementById('create-step-' + currentStep);
-  if (next) next.style.display = '';
+  if (next) next.classList.add('active');
   steps.forEach((s, i) => {
-    s.className = 'step' + (i + 1 < currentStep ? ' done' : i + 1 === currentStep ? ' active' : '');
+    s.className = 'step step-tab' + (i + 1 < currentStep ? ' done' : i + 1 === currentStep ? ' active' : '');
   });
   document.getElementById('create-back-btn').style.display = currentStep > 1 ? '' : 'none';
   const nextBtn = document.getElementById('create-next-btn');
   nextBtn.textContent = currentStep === totalSteps ? 'Publish Event' : currentStep === 4 ? 'Generate' : 'Continue →';
   nextBtn.onclick = currentStep === totalSteps ? publishEvent : () => createStep(1);
+  const prog = document.getElementById('create-prog-fill');
+  if (prog) prog.style.width = (currentStep / totalSteps * 100) + '%';
+  const mfTxt = document.getElementById('mf-step-txt');
+  if (mfTxt) mfTxt.textContent = 'Step ' + currentStep + ' of ' + totalSteps;
 }
 
 function goToCreateStep(stepNumber) {
   const target = Math.max(1, Math.min(totalSteps, Number(stepNumber || 1)));
   currentStep = target;
   const steps = document.querySelectorAll('#create-steps .step');
-  for (let i = 1; i <= totalSteps; i += 1) {
-    const pane = document.getElementById(`create-step-${i}`);
-    if (pane) pane.style.display = i === currentStep ? '' : 'none';
-  }
+  document.querySelectorAll('.step-section').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById('create-step-' + currentStep);
+  if (pane) pane.classList.add('active');
   steps.forEach((s, i) => {
-    s.className = 'step' + (i + 1 < currentStep ? ' done' : i + 1 === currentStep ? ' active' : '');
+    s.className = 'step step-tab' + (i + 1 < currentStep ? ' done' : i + 1 === currentStep ? ' active' : '');
   });
   document.getElementById('create-back-btn').style.display = currentStep > 1 ? '' : 'none';
   const nextBtn = document.getElementById('create-next-btn');
   nextBtn.textContent = currentStep === totalSteps ? 'Publish Event' : currentStep === 4 ? 'Generate' : 'Continue →';
   nextBtn.onclick = currentStep === totalSteps ? publishEvent : () => createStep(1);
+  const prog = document.getElementById('create-prog-fill');
+  if (prog) prog.style.width = (currentStep / totalSteps * 100) + '%';
+  const mfTxt = document.getElementById('mf-step-txt');
+  if (mfTxt) mfTxt.textContent = 'Step ' + currentStep + ' of ' + totalSteps;
+}
+
+function setEvType(el) {
+  document.querySelectorAll('#ev-type-grid .type-card').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  const sel = document.getElementById('ev-type');
+  if (sel) sel.value = el.getAttribute('data-value') || '';
+}
+function toggleEvYesNo(fieldId, toggleEl) {
+  const field = document.getElementById(fieldId);
+  if (!field) return;
+  const next = field.value === 'yes' ? 'no' : 'yes';
+  field.value = next;
+  toggleEl.classList.toggle('on', next === 'yes');
+}
+function validateBudgetLimit() {
+  const input = document.getElementById('ev-budget-limit');
+  const hint = document.getElementById('ev-budget-hint');
+  if (!input || !hint) return true;
+  const raw = (input.value || '').trim();
+  if (raw === '') { hint.style.display = 'none'; hint.textContent = ''; return true; }
+  const num = Number(raw);
+  if (!Number.isFinite(num)) { hint.style.display = 'block'; hint.textContent = 'Enter a valid number.'; return false; }
+  if (num < 0) { hint.style.display = 'block'; hint.textContent = 'Budget cannot be below 0.'; return false; }
+  if (num > 150000) { hint.style.display = 'block'; hint.textContent = 'Budget cannot exceed 150,000.'; return false; }
+  hint.style.display = 'none'; hint.textContent = ''; return true;
 }
 
 let genTasks = [];
@@ -1263,22 +1739,29 @@ function generateTasks() {
 }
 
 function renderGenTasks() {
-  document.getElementById('generated-tasks-list').innerHTML = genTasks.map((t, i) => `
-    <div class="gen-task" id="gt-${t.id}">
-      <div class="gen-task-top">
-        <div><div class="gen-task-dept">${t.dept}</div><div class="gen-task-title">${t.title}</div></div>
-        <div class="gen-task-actions">
-          <button class="btn-icon" title="Edit">✎</button>
-          <button class="btn-icon red" title="Delete" onclick="removeGenTask('${t.id}')">✕</button>
+  const list = document.getElementById('generated-tasks-list');
+  if (!list) return;
+  list.innerHTML = genTasks.map((t, i) => {
+    const div = t.dept || t.department || "";
+    const person = t.ownerSuggestion || t.assigned || "—";
+    const role = t.role || "";
+    const title = (t.title || "").replace(/</g, "&lt;").replace(/&/g, "&amp;");
+    return `<div class="gen-task-card" id="gt-${(t.id || "g"+i)}">
+      <div class="gen-task-card-header">
+        <div class="gen-task-card-meta">
+          <div class="gen-task-card-person">${(person || "—").replace(/</g, "&lt;")}</div>
+          <div class="gen-task-card-role">${(role || "").replace(/</g, "&lt;")}</div>
         </div>
+        <button type="button" class="btn-icon red" title="Remove" onclick="removeGenTask('${(t.id || "g"+i).toString().replace(/'/g, "\\'")}')">✕</button>
       </div>
-      <div class="gen-task-meta">
-        <span>Assigned: ${t.assigned}</span>
-        <span>Unlock: ${t.due}</span>
-        <span>Priority: ${t.priority}</span>
-        ${t.dep ? `<span>Dep: Task ${t.dep}</span>` : ''}
-      </div>
-    </div>`).join('');
+      <div class="gen-task-card-title-wrap"><label class="at-fl">Task</label><div class="gen-task-title" style="font-size:13px;color:var(--white)">${title || "—"}</div></div>
+      ${t.description ? `<div class="gen-task-card-row"><label class="at-fl">Description</label><div style="font-size:12px;color:var(--silver);line-height:1.5">${(t.description||"").replace(/</g, "&lt;").replace(/&/g, "&amp;")}</div></div>` : ""}
+      ${t.phase ? `<div class="gen-task-card-row"><label class="at-fl">Phase</label><div style="font-size:11px;color:var(--silver)">${(t.phase||"").replace(/</g, "&lt;")}</div></div>` : ""}
+      ${t.goals ? `<div class="gen-task-card-row"><label class="at-fl">Goals</label><div style="font-size:11px;color:var(--silver)">${(t.goals||"").replace(/</g, "&lt;")}</div></div>` : ""}
+      ${t.successCriteria ? `<div class="gen-task-card-row"><label class="at-fl">Success looks like</label><div style="font-size:11px;color:var(--silver)">${(t.successCriteria||"").replace(/</g, "&lt;")}</div></div>` : ""}
+      ${t.whatWeDontWant ? `<div class="gen-task-card-row"><label class="at-fl">What we don't want</label><div style="font-size:11px;color:var(--silver)">${(t.whatWeDontWant||"").replace(/</g, "&lt;")}</div></div>` : ""}
+    </div>`;
+  }).join('');
 }
 
 function removeGenTask(id) {
@@ -1287,7 +1770,21 @@ function removeGenTask(id) {
 }
 
 function addGenTask() {
-  genTasks.push({id:'g'+(genTasks.length+10),title:'New Task',dept:'Operations',assigned:'Unassigned',dep:'',due:'-2 weeks',priority:'Medium'});
+  genTasks.push({
+    id: 'g' + (genTasks.length + 10),
+    title: 'New Task',
+    dept: 'Internal Division',
+    department: 'Internal Division',
+    role: '',
+    ownerSuggestion: '',
+    description: '',
+    phase: '',
+    goals: '',
+    successCriteria: '',
+    whatWeDontWant: '',
+    priority: 'medium',
+    dependsOnTitles: []
+  });
   renderGenTasks();
 }
 
@@ -1300,17 +1797,22 @@ function publishEvent() {
 function renderRoleDeliverableInputs() {
   const root = document.getElementById("role-deliverables-container");
   if (!root) return;
+  var saved = {};
+  root.querySelectorAll("[data-role-deliverable]").forEach(function (el) {
+    var key = el.getAttribute("data-role-deliverable");
+    if (key) saved[key] = el.value || "";
+  });
   const roles = [...document.querySelectorAll("#dept-checkboxes .cb-item.checked")]
     .map((el) => el.getAttribute("data-role") || el.textContent.trim())
     .filter(Boolean);
   root.innerHTML = roles.length
     ? roles
         .map(
-          (role, idx) => `
-      <div class="fg">
-        <label>${role}</label>
-        <textarea data-role-deliverable="${role.replaceAll('"', "&quot;")}" placeholder="Expected deliverables for ${role}"></textarea>
-      </div>`
+          (role) => {
+            var key = role.replaceAll('"', "&quot;");
+            var val = saved[key] != null ? saved[key] : "";
+            return `<div class="ce-fg"><label class="ce-fl">${role.replace(/</g, "&lt;")}</label><textarea class="ce-fi" data-role-deliverable="${key}" placeholder="Expected deliverables for this role" style="min-height:60px">${(val || "").replace(/</g, "&lt;").replace(/&/g, "&amp;")}</textarea></div>`;
+          }
         )
         .join("")
     : '<div style="font-size:12px;color:var(--silver)">Select roles above to define deliverables.</div>';
@@ -1343,6 +1845,63 @@ function showToast(msg) {
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
+
+// ── SEED USERS (sqlite.js) ──────────────────────────────────────────────────
+window.loadSeedSnippet = async function loadSeedSnippet() {
+  const ta = document.getElementById('seed-users-snippet');
+  const status = document.getElementById('seed-status');
+  const githubLink = document.getElementById('seed-open-github');
+  if (!ta) return;
+  if (status) status.textContent = 'Loading…';
+  try {
+    const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+    const [snippetRes, repoRes] = await Promise.all([
+      fetch('/api/admin/seed-users-snippet', { headers: { 'x-session-token': token } }),
+      fetch('/api/admin/github-repo', { headers: { 'x-session-token': token } })
+    ]);
+    if (!snippetRes.ok) throw new Error(snippetRes.status === 403 ? 'President only' : 'Failed to load');
+    const data = await snippetRes.json();
+    ta.value = data.content || '';
+    if (status) status.textContent = 'Loaded ' + (data.filename || 'sqlite.js');
+    if (githubLink && repoRes.ok) {
+      const repo = await repoRes.json().catch(() => ({}));
+      const url = repo.url;
+      if (url) {
+        const base = url.replace(/\/$/, '');
+        githubLink.href = base + '/blob/main/sqlite.js';
+        githubLink.style.display = '';
+      } else {
+        githubLink.style.display = 'none';
+      }
+    }
+  } catch (e) {
+    ta.value = '';
+    if (status) status.textContent = 'Error: ' + (e.message || 'Could not load');
+    if (githubLink) githubLink.style.display = 'none';
+  }
+};
+window.runSeedUsers = async function runSeedUsers() {
+  const status = document.getElementById('seed-status');
+  if (status) status.textContent = 'Running seed…';
+  try {
+    const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+    const res = await fetch('/api/admin/run-seed', { method: 'POST', headers: { 'x-session-token': token, 'Content-Type': 'application/json' } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Seed failed');
+    if (status) status.textContent = 'Seed run successfully.';
+    showToast('Seed users run successfully.');
+  } catch (e) {
+    if (status) status.textContent = 'Error: ' + (e.message || 'Run failed');
+    showToast(e.message || 'Run failed');
+  }
+};
+window.copySeedToClipboard = function copySeedToClipboard() {
+  const ta = document.getElementById('seed-users-snippet');
+  if (!ta || !ta.value) { showToast('Load the snippet first.'); return; }
+  ta.select();
+  document.execCommand('copy');
+  showToast('Copied to clipboard. Paste into GitHub or your editor.');
+};
 
 // ── CLICK OUTSIDE MODAL ───────────────────────────────────────────────────
 document.querySelectorAll('.modal-overlay').forEach(o => {
@@ -1435,7 +1994,7 @@ init();
                   <div class="task-title">${t.title}</div>
                   <div class="task-meta"><span>${t.owner_name}</span><span>${t.department}</span><span>Due ${new Date(t.due_at).toLocaleDateString()}</span></div>
                 </div>
-                <div class="task-actions"><span class="status-badge ${t.status === "completed" ? "sb-done" : t.status === "pending_review" ? "sb-pending" : t.status === "overdue" ? "sb-urgent" : t.status === "redo" ? "sb-redo" : t.status === "current" ? "sb-current" : "sb-locked"}">${t.status.replaceAll("_", " ")}</span></div>
+                <div class="task-actions"><span class="status-badge ${t.status === "completed" ? "sb-done" : t.status === "pending_review" ? "sb-pending" : t.status === "overdue" ? "sb-urgent" : t.status === "redo" ? "sb-redo" : t.status === "current" ? "sb-current" : "sb-locked"}">${typeof statusDisplayLabel === "function" ? statusDisplayLabel(t.status) : t.status.replaceAll("_", " ")}</span></div>
               </div>`
                     )
                     .join("")
@@ -1482,7 +2041,7 @@ init();
           </div>
         </div>
         <div class="task-actions">
-          <span class="status-badge ${statusClass}">${t.status.replaceAll("_", " ")}</span>
+          <span class="status-badge ${statusClass}">${typeof statusDisplayLabel === "function" ? statusDisplayLabel(t.status) : t.status.replaceAll("_", " ")}</span>
           <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();inspectTask(${t.id})">Click to Review</button>
         </div>
       </div>
@@ -1537,7 +2096,12 @@ init();
   }
 
   function buildDivisionSummary(divisionName, leaderRole) {
-    const members = (dashboardCache?.users || []).filter((u) => u.department === divisionName);
+    const allUsers = dashboardCache?.users || [];
+    let members = allUsers.filter((u) => u.department === divisionName);
+    const leaderByRole = allUsers.find((u) => u.role_title === leaderRole);
+    if (leaderByRole && !members.some((m) => m.email === leaderByRole.email)) {
+      members = [leaderByRole, ...members];
+    }
     const leader = members.find((u) => u.role_title === leaderRole) || members[0];
     const memberEmails = new Set(members.map((m) => m.email));
     const tasks = (dashboardCache?.tasks || []).filter((t) => memberEmails.has(t.owner_email));
@@ -1559,17 +2123,25 @@ init();
     const root = document.getElementById("reports-list");
     if (!root) return;
     const reports = dashboardCache?.reports || [];
+    const esc = (s) => (s == null || s === "") ? "" : String(s).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     root.innerHTML = reports.length
       ? reports
           .map(
-            (r) => `
+            (r) => {
+              const status = (r.status || "open").replace(/_/g, " ");
+              const statusStyle = r.status === "reviewed" ? "background:var(--green-dim);color:var(--green)" : r.status === "archived" ? "background:rgba(255,255,255,.06);color:var(--silver)" : r.status === "needs_clarification" ? "background:var(--amber-dim);color:var(--amber)" : "background:rgba(184,154,92,.12);color:var(--gold)";
+              return `
         <div class="approval-item">
           <div class="approval-header">
-            <div>
-              <div class="approval-task">${r.reason}</div>
-              <div class="approval-by">${r.submitted_by_name} · ${r.submitted_by_role} · ${r.division}</div>
-              <div style="font-size:11px;color:var(--silver);margin-top:6px">${r.notes}</div>
-              <div style="font-size:10px;color:var(--gold);margin-top:6px">${r.event_name || "No event"}${r.task_title ? ` · ${r.task_title}` : ""} · ${new Date(r.created_at).toLocaleString()}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span class="approval-task">${esc(r.reason)}</span>
+                <span style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:4px;${statusStyle}">${esc(status)}</span>
+              </div>
+              <div class="approval-by">${esc(r.submitted_by_name)} · ${esc(r.submitted_by_role)} · ${esc(r.division)}</div>
+              <div style="font-size:11px;color:var(--silver);margin-top:6px;line-height:1.5">${esc(r.notes)}</div>
+              ${r.recommended_action ? `<div style="font-size:11px;color:var(--gold);margin-top:8px;padding:8px 10px;background:rgba(184,154,92,.06);border-left:2px solid var(--gold);"><strong>Recommended action:</strong> ${esc(r.recommended_action)}</div>` : ""}
+              <div style="font-size:10px;color:var(--silver);margin-top:8px">${esc(r.event_name || "No event")}${r.task_title ? " · " + esc(r.task_title) : ""} · ${r.created_at ? new Date(r.created_at).toLocaleString() : ""}</div>
             </div>
             <div class="approval-actions">
               <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'reviewed')">Mark Reviewed</button>
@@ -1578,10 +2150,11 @@ init();
             </div>
           </div>
         </div>
-      `
+      `;
+            }
           )
           .join("")
-      : '<div style="font-size:13px;color:var(--silver);padding:12px">No VP reports submitted yet.</div>';
+      : '<div style="font-size:13px;color:var(--silver);padding:12px">No escalation reports yet.</div>';
   }
 
   window.renderEventPanel = function renderEventPanelLive(name) {
@@ -1655,7 +2228,7 @@ init();
               </div>
               ${t.previous_summary ? `<div style="font-size:11px;color:var(--silver);margin-top:6px">${t.previous_summary}</div>` : ""}
             </div>
-            <div class="task-actions"><span class="status-badge ${t.status === "completed" ? "sb-done" : t.status === "pending_review" ? "sb-pending" : t.status === "overdue" ? "sb-urgent" : t.status === "current" ? "sb-current" : "sb-locked"}">${t.status.replaceAll("_", " ")}</span></div>
+            <div class="task-actions"><span class="status-badge ${t.status === "completed" ? "sb-done" : t.status === "pending_review" ? "sb-pending" : t.status === "overdue" ? "sb-urgent" : t.status === "current" ? "sb-current" : "sb-locked"}">${typeof statusDisplayLabel === "function" ? statusDisplayLabel(t.status) : t.status.replaceAll("_", " ")}</span></div>
           </div>`
             )
             .join("")
@@ -1664,6 +2237,7 @@ init();
   };
 
   window.renderDivisions = function renderDivisionsLive() {
+    const seededEmails = new Set((dashboardCache?.users || []).map((u) => u.email));
     const configs = [
       ["Executive Division", "Executive President", "exec-member-cards"],
       ["Internal Division", "Vice President, Chief of Internal Affairs", "internal-member-cards"],
@@ -1673,19 +2247,24 @@ init();
       const root = document.getElementById(rootId);
       if (!root) return;
       const summary = buildDivisionSummary(divisionName, leaderRole);
+      const leader = summary.members.find((m) => m.role_title === leaderRole);
+      const sortedMembers = leader
+        ? [leader, ...summary.members.filter((m) => m.email !== leader.email)]
+        : summary.members;
       root.innerHTML = `
         <div class="card">
           <div class="section-label">${divisionName}</div>
           <div class="card-title">${summary.leader ? summary.leader.full_name : "Division Overview"}</div>
           <div class="card-sub">${summary.leader ? summary.leader.role_title : "No leader mapped"} · ${summary.pct}% complete · ${summary.overdue} overdue · ${summary.blocked} blockers</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px">
-            ${summary.members
+          <div class="division-cards-grid">
+            ${sortedMembers
               .map((m) => {
                 const memberTasks = summary.tasks.filter((t) => t.owner_email === m.email);
                 const active = memberTasks.filter((t) => ["current", "pending_review", "redo", "locked"].includes(t.status)).length;
                 const overdue = memberTasks.filter((t) => t.status === "overdue").length;
+                const isLeader = m.role_title === leaderRole;
                 return `<div class="card-sm">
-                  <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">${m.department}</div>
+                  <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">${m.department}${isLeader ? " · Leader" : ""}</div>
                   <div style="font-size:15px;font-family:var(--font-display);color:var(--white)">${m.full_name}</div>
                   <div style="font-size:11px;color:var(--silver);margin-bottom:10px">${m.role_title}</div>
                   <div style="font-size:11px;color:var(--off-white)">Active Tasks: ${active}</div>
@@ -1701,13 +2280,13 @@ init();
     const externalRoot = document.getElementById("external-tasks-list");
     if (internalRoot) {
       internalRoot.innerHTML = (dashboardCache?.tasks || [])
-        .filter((t) => t.department === "Internal Division")
+        .filter((t) => t.department === "Internal Division" && seededEmails.has(t.owner_email))
         .map(asTaskCard)
         .join("") || '<div style="font-size:12px;color:var(--silver)">No internal tasks.</div>';
     }
     if (externalRoot) {
       externalRoot.innerHTML = (dashboardCache?.tasks || [])
-        .filter((t) => t.department === "External Division")
+        .filter((t) => t.department === "External Division" && seededEmails.has(t.owner_email))
         .map(asTaskCard)
         .join("") || '<div style="font-size:12px;color:var(--silver)">No external tasks.</div>';
     }
@@ -1786,7 +2365,7 @@ init();
         name: "Fundraiser",
         text: "Donor targets, finance tracking, creative collateral, external partnerships, activation plan, collection checkpoints, and wrap-up reporting.",
         preset: {
-          event_type: "Fundraiser",
+          event_type: "Campus Event",
           scope: "Small (<100)",
           roles: [
             "Director of Finance & Development - Development",
@@ -1817,7 +2396,9 @@ init();
   window.useEventTemplate = function useEventTemplate(templateId) {
     const template = (window.__eventTemplates || []).find((t) => t.id === templateId);
     if (!template) return;
-    document.getElementById("ev-type").value = template.preset.event_type || "";
+    const evTypeVal = template.preset.event_type || "";
+    document.getElementById("ev-type").value = evTypeVal;
+    document.querySelectorAll("#ev-type-grid .type-card").forEach(c => { c.classList.toggle("on", c.getAttribute("data-value") === evTypeVal); });
     document.getElementById("ev-scope").value = template.preset.scope || "";
     document.querySelectorAll("#dept-checkboxes .cb-item").forEach((chip) => {
       const role = chip.getAttribute("data-role");
@@ -1920,8 +2501,38 @@ init();
     }
     const assignDeps = document.getElementById("p-assign-dependencies");
     if (assignDeps) {
+      const users = data.users || [];
       assignDeps.innerHTML = data.tasks
-        .map((t) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px"><input type="checkbox" value="${t.id}" /> <span>${t.title}</span></label>`)
+        .map((t) => {
+          const status = t.status === "completed" ? "Done" : ["current", "pending_review", "redo"].includes(t.status) ? "In Progress" : "Locked";
+          const psClass = t.status === "completed" ? "at-ps-done" : ["current", "pending_review", "redo"].includes(t.status) ? "at-ps-active" : "at-ps-locked";
+          const dept = (t.owner_role || t.department || "").replace(/</g, "&lt;");
+          const owner = users.find((u) => (u.email || "").toLowerCase() === (t.owner_email || "").toLowerCase());
+          const assigneeLine = owner ? `${(owner.full_name || "").replace(/</g, "&lt;")} · ${(owner.role_title || "").replace(/</g, "&lt;")}` : (t.owner_name || "").replace(/</g, "&lt;");
+          return `<div class="at-prereq-item" data-task-id="${t.id}" onclick="toggleAssignPrereq(this)">
+            <input type="checkbox" value="${t.id}" class="p-assign-dep-cb" style="position:absolute;opacity:0;width:0;height:0;margin:0" />
+            <div class="at-prereq-cb"><div style="width:6px;height:6px;background:var(--navy);border-radius:1px;display:none" class="at-prereq-cb-inner"></div></div>
+            <div><div class="at-prereq-dept">${dept}</div><div class="at-prereq-name">${(t.title || "").replace(/</g, "&lt;")}</div><div class="at-prereq-assignee">${assigneeLine}</div></div>
+            <span class="at-prereq-status ${psClass}">${status}</span></div>`;
+        })
+        .join("");
+    }
+    const roleChipsRoot = document.getElementById("p-assign-role-chips");
+    const roleSelect = document.getElementById("p-assign-role");
+    if (roleChipsRoot && roleSelect) {
+      const roleSet = new Map();
+      (data.users || []).forEach((u) => { if (u.role_title && !roleSet.has(u.role_title)) roleSet.set(u.role_title, u.department); });
+      const roles = Array.from(roleSet.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+      const opts = roles.map(([r, d]) => `<option value="${r.replace(/"/g, "&quot;")}">${r}</option>`).join("");
+      roleSelect.innerHTML = `<option value="">— Select role —</option>${opts}`;
+      roleChipsRoot.innerHTML = roles
+        .map(([roleTitle, dept]) => {
+          const div = dept && dept.indexOf("External") !== -1 ? "External" : dept && dept.indexOf("Internal") !== -1 ? "Internal" : "Executive";
+          const dotColor = div === "External" ? "#4caf7d" : div === "Internal" ? "#7ba3d4" : "var(--gold)";
+          return `<div class="at-role-chip" data-role="${roleTitle.replace(/"/g, "&quot;")}" onclick="selectAssignRole(this)">
+            <div class="at-rc-dot" style="background:${dotColor}"></div>
+            <div><div class="at-rc-div">${div}</div><div class="at-rc-name">${roleTitle}</div></div></div>`;
+        })
         .join("");
     }
 
@@ -1996,25 +2607,55 @@ init();
     document.body.appendChild(hidden);
   }
 
-  // Override generated-task render to be editable before publish.
+  function escAttr(s) { return String(s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function escText(s) { return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  // Override generated-task render to be editable before publish (assign-task style cards).
   window.renderGenTasks = function renderGenTasksEditable() {
     const root = document.getElementById("generated-tasks-list");
     if (!root) return;
     root.innerHTML = (genTasks || [])
       .map(
-        (t, i) => `
-      <div class="gen-task">
-        <div class="gen-task-top">
-          <div style="flex:1;display:grid;gap:8px;">
-            <input data-edit-i="${i}" data-field="title" value="${(t.title || "").replaceAll('"', "&quot;")}" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:8px;color:var(--white);" />
-            <input data-edit-i="${i}" data-field="department" value="${(t.dept || t.department || "").replaceAll('"', "&quot;")}" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:8px;color:var(--white);" />
-            <textarea data-edit-i="${i}" data-field="description" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:8px;color:var(--white);min-height:60px;">${t.description || ""}</textarea>
+        (t, i) => {
+          const person = t.ownerSuggestion || "";
+          const role = t.role || "";
+          const id = (t.id || "g" + i).toString().replace(/"/g, "&quot;");
+          return `
+      <div class="gen-task-card" id="gt-${id}">
+        <div class="gen-task-card-header">
+          <div class="gen-task-card-meta">
+            <div class="gen-task-card-person">${escText(person) || "—"}</div>
+            <div class="gen-task-card-role">${escText(role) || "—"}</div>
           </div>
-          <div class="gen-task-actions">
-            <button class="btn-icon red" onclick="removeGenTask('${t.id || ("g"+i)}')">✕</button>
+          <button type="button" class="btn-icon red" title="Remove task" onclick="removeGenTask('${id.replace(/'/g, "\\'")}')">✕</button>
+        </div>
+        <div class="gen-task-card-title-wrap">
+          <label class="at-fl">Hypothetical task</label>
+          <input class="at-fi" data-edit-i="${i}" data-field="title" value="${escAttr(t.title || "")}" placeholder="Task title" />
+        </div>
+        <div class="gen-task-card-body">
+          <div class="gen-task-card-row">
+            <label class="at-fl">Description</label>
+            <textarea class="at-fi" data-edit-i="${i}" data-field="description" placeholder="What this task involves">${escText(t.description || "")}</textarea>
+          </div>
+          <div class="gen-task-card-row">
+            <label class="at-fl">Phase (e.g. Planning, Pre-Event, Execution, Wrap-up)</label>
+            <input class="at-fi" data-edit-i="${i}" data-field="phase" value="${escAttr(t.phase || "")}" placeholder="Phase in sequence" />
+          </div>
+          <div class="gen-task-card-row">
+            <label class="at-fl">Goals</label>
+            <input class="at-fi" data-edit-i="${i}" data-field="goals" value="${escAttr(t.goals || "")}" placeholder="What we're trying to achieve" />
+          </div>
+          <div class="gen-task-card-row">
+            <label class="at-fl">Success looks like</label>
+            <textarea class="at-fi" data-edit-i="${i}" data-field="successCriteria" placeholder="How we know this task is done well">${escText(t.successCriteria || "")}</textarea>
+          </div>
+          <div class="gen-task-card-row">
+            <label class="at-fl">What we don't want</label>
+            <textarea class="at-fi" data-edit-i="${i}" data-field="whatWeDontWant" placeholder="What to avoid">${escText(t.whatWeDontWant || "")}</textarea>
           </div>
         </div>
-      </div>`
+      </div>`;
+        }
       )
       .join("");
 
@@ -2030,6 +2671,7 @@ init();
 
   window.generateTasks = async function generateTasksLive() {
     if (isGeneratingTasks) return;
+    if (!validateBudgetLimit()) { showToast("Fix budget limit (0–150,000)."); return; }
     isGeneratingTasks = true;
     const selectedRoles = [...document.querySelectorAll("#dept-checkboxes .cb-item.checked")]
       .map((el) => ({
@@ -2098,9 +2740,15 @@ init();
         title: t.title,
         department: t.department,
         dept: t.department,
-        description: t.description,
+        role: t.role || "",
+        ownerSuggestion: t.ownerSuggestion || "",
+        description: t.description || "",
         priority: t.priority,
-        dependsOnTitles: t.dependsOnTitles || []
+        dependsOnTitles: t.dependsOnTitles || [],
+        phase: t.phase || "",
+        goals: t.goals || "",
+        successCriteria: t.successCriteria || "",
+        whatWeDontWant: t.whatWeDontWant || ""
       }));
       if (!genTasks.length) throw new Error("Gemini returned no tasks.");
       const depsCount = genTasks.reduce(
@@ -2131,8 +2779,9 @@ init();
   };
 
   window.publishEvent = async function publishEventLive() {
+    if (!validateBudgetLimit()) { showToast("Fix budget limit (0–150,000)."); return; }
     const roles = [...document.querySelectorAll("#dept-checkboxes .cb-item.checked")].map((el) => el.getAttribute("data-role")).filter(Boolean);
-    const divisions = [...new Set([...document.querySelectorAll("#dept-checkboxes .cb-item.checked")].map((el) => el.getAttribute("data-division") === "external" ? "External Division" : "Internal Division"))];
+    const divisions = [...new Set([...document.querySelectorAll("#dept-checkboxes .cb-item.checked")].map((el) => { const d = el.getAttribute("data-division"); return d === "external" ? "External Division" : d === "executive" ? "Executive Division" : "Internal Division"; }))];
     const deliverables_by_role = {};
     document.querySelectorAll("[data-role-deliverable]").forEach((el) => {
       const key = el.getAttribute("data-role-deliverable");
@@ -2158,17 +2807,25 @@ init();
         requiresSponsorOutreach: document.getElementById("ev-need-sponsors")?.value || ""
       }
     };
-    const tasks = (genTasks || []).map((t) => ({
-      title: t.title,
-      description: t.description || "Generated task",
-      department: t.department || t.dept || "Board Operations",
-      role: t.role || t.ownerSuggestion || "",
-      division: t.division || "",
-      priority: t.priority || "medium",
-      dependsOnTitles: t.dependsOnTitles || [],
-      unlock_at: t.unlock_at || null,
-      due_at: t.due_at || null
-    }));
+    const tasks = (genTasks || []).map((t) => {
+      const descParts = [t.description || "Generated task"];
+      if (t.goals) descParts.push("Goals: " + t.goals);
+      if (t.successCriteria) descParts.push("Success looks like: " + t.successCriteria);
+      if (t.whatWeDontWant) descParts.push("What we don't want: " + t.whatWeDontWant);
+      return {
+        title: t.title,
+        description: descParts.join("\n\n"),
+        department: t.department || t.dept || "Board Operations",
+        role: t.role || "",
+        ownerSuggestion: t.ownerSuggestion || "",
+        phase: t.phase || "",
+        division: t.division || "",
+        priority: t.priority || "medium",
+        dependsOnTitles: t.dependsOnTitles || [],
+        unlock_at: t.unlock_at || null,
+        due_at: t.due_at || null
+      };
+    });
     await apiPost("/api/events/publish", { event, tasks });
     closeModal("eventCreateModal");
     showToast("Event workflow published.");
@@ -2181,37 +2838,126 @@ init();
     const root = document.getElementById("p-assign-suggestions");
     if (!root) return;
     if (!role) {
-      root.innerHTML = '<div style="font-size:12px;color:var(--silver)">Select a role to load suggestions.</div>';
+      root.innerHTML = '<div style="font-size:12px;color:var(--silver);padding:8px 0">Select a role to load suggestions.</div>';
+      updateAssignFooterHint();
       return;
     }
-    root.innerHTML = '<div style="font-size:12px;color:var(--silver)">Loading suggestions...</div>';
+    root.innerHTML = '<div style="font-size:12px;color:var(--silver);padding:8px 0">Loading suggestions...</div>';
     try {
       const resp = await apiGet(`/api/assign/suggestions?role=${encodeURIComponent(role)}`);
-      root.innerHTML = (resp.suggestions || [])
-        .map(
-          (m, i) => `
-        <div class="approval-item" style="border-top-color:rgba(184,154,92,.25)">
-          <div class="approval-header">
-            <div>
-              <div class="approval-task">${m.full_name}</div>
-              <div class="approval-by">${m.role_title} · active ${m.activeCount}</div>
-            </div>
-            <div class="approval-actions">
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 12px" onclick="selectPresidentAssignee('${m.email}')">Select</button>
-            </div>
-          </div>
-          <div style="font-size:11px;color:var(--silver)">${m.email}</div>
-        </div>`
-        )
-        .join("") || '<div style="font-size:12px;color:var(--silver)">No users found for this role.</div>';
+      const list = resp.suggestions || [];
+      root.innerHTML = list.length
+        ? list
+            .map((m, i) => {
+              const pct = Math.min(100, (m.activeCount || 0) * 25);
+              const wlClass = pct >= 80 ? "at-wl-over" : pct >= 60 ? "at-wl-warn" : "at-wl-ok";
+              return `<div class="at-suggest-item" data-email="${(m.email || "").replace(/"/g, "&quot;")}" data-name="${(m.full_name || "").replace(/"/g, "&quot;")}" data-role="${(m.role_title || "").replace(/"/g, "&quot;")}" onclick="selectPresidentAssignee('${(m.email || "").replace(/'/g, "\\'")}'); selectAssignSuggestionItem(this); updateAssignFooterHint();">
+                <div class="at-si-rank">${i + 1}</div>
+                <div class="at-si-info"><div class="at-si-name">${m.full_name}</div><div class="at-si-role">${m.role_title} · ${m.department || ""}</div></div>
+                <div class="at-si-load"><span class="at-si-role">${m.activeCount || 0} tasks</span><div class="at-wl-bar"><div class="at-wl-fill ${wlClass}" style="width:${pct}%"></div></div></div>
+              </div>`;
+            })
+            .join("")
+        : '<div style="font-size:12px;color:var(--silver);padding:8px 0">No users found for this role.</div>';
+      updateAssignFooterHint();
     } catch (e) {
-      root.innerHTML = `<div style="font-size:12px;color:var(--red)">Unable to load suggestions: ${String(e.message || e)}</div>`;
+      root.innerHTML = `<div style="font-size:12px;color:var(--red);padding:8px 0">Unable to load suggestions: ${String(e.message || e)}</div>`;
+      updateAssignFooterHint();
     }
+  };
+
+  window.selectAssignRole = function selectAssignRole(el) {
+    const role = el.getAttribute("data-role") || "";
+    document.querySelectorAll("#p-assign-role-chips .at-role-chip").forEach((c) => c.classList.remove("selected"));
+    el.classList.add("selected");
+    const roleSelect = document.getElementById("p-assign-role");
+    if (roleSelect) roleSelect.value = role;
+    loadPresidentSuggestions();
+  };
+
+  window.toggleAssignPrereq = function toggleAssignPrereq(el) {
+    const cb = el.querySelector(".p-assign-dep-cb");
+    if (cb) {
+      cb.checked = !cb.checked;
+      el.classList.toggle("checked", cb.checked);
+      const inner = el.querySelector(".at-prereq-cb-inner");
+      if (inner) inner.style.display = cb.checked ? "block" : "none";
+    }
+  };
+
+  window.selectAssignSuggestionItem = function selectAssignSuggestionItem(el) {
+    document.querySelectorAll("#p-assign-suggestions .at-suggest-item").forEach((s) => s.classList.remove("selected"));
+    el.classList.add("selected");
+  };
+
+  window.updateAssignFooterHint = function updateAssignFooterHint() {
+    const hint = document.getElementById("p-assign-footer-hint");
+    if (!hint) return;
+    const sel = document.querySelector("#p-assign-suggestions .at-suggest-item.selected");
+    if (sel) {
+      const name = sel.getAttribute("data-name") || sel.querySelector(".at-si-name")?.textContent || "Assignee";
+      const role = sel.getAttribute("data-role") || sel.querySelector(".at-si-role")?.textContent?.split("·")[0]?.trim() || "";
+      hint.innerHTML = `Assigning to <strong style="color:var(--gold-light)">${name}</strong>${role ? ` · ${role}` : ""}`;
+    } else {
+      hint.textContent = "Select a role and assignee above.";
+    }
+  };
+
+  window.updateAssignProgress = function updateAssignProgress() {
+    const prog = document.getElementById("p-assign-progress");
+    if (!prog) return;
+    let n = 0;
+    if (document.getElementById("p-assign-title")?.value?.trim()) n += 25;
+    if (document.getElementById("p-assign-due")?.value) n += 15;
+    if (document.getElementById("p-assign-description")?.value?.trim()) n += 20;
+    if (document.getElementById("p-assign-role")?.value) n += 20;
+    if (selectedPresidentAssignee) n += 20;
+    prog.style.width = Math.min(100, n) + "%";
+  };
+
+  window.setAssignPrio = function setAssignPrio(el) {
+    document.querySelectorAll(".at-prio-btn").forEach((b) => b.classList.remove("active-urgent", "active-high", "active-standard", "active-low"));
+    el.classList.add("active-" + (el.getAttribute("data-prio") || "standard"));
+    const hid = document.getElementById("p-assign-priority");
+    if (hid) hid.value = el.getAttribute("data-prio") || "standard";
+  };
+
+  window.openAssignTaskCalendar = function openAssignTaskCalendar() {
+    const title = document.getElementById("p-assign-title")?.value?.trim() || "New Task";
+    const due = document.getElementById("p-assign-due")?.value;
+    const desc = document.getElementById("p-assign-description")?.value?.trim() || "";
+    const meeting = document.getElementById("p-assign-meeting-link")?.value?.trim() || "";
+    const details = [desc, meeting ? `Meeting: ${meeting}` : ""].filter(Boolean).join("\n");
+    const start = due ? new Date(due + "T09:00:00") : new Date();
+    const end = due ? new Date(due + "T10:00:00") : new Date(Date.now() + 3600000);
+    const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${fmt(start)}/${fmt(end)}&details=${encodeURIComponent(details)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    return false;
+  };
+  window.openEditTaskCalendar = function openEditTaskCalendar(ev) {
+    const title = document.getElementById("edit-task-title")?.value?.trim() || "Task";
+    const due = document.getElementById("edit-task-due")?.value;
+    const desc = document.getElementById("edit-task-description")?.value?.trim() || "";
+    const meetingLink = document.getElementById("edit-task-meeting-link")?.value?.trim() || "";
+    const fmt = (d) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+    let start, end;
+    if (due) {
+      start = new Date(due);
+      end = new Date(start.getTime() + 60 * 60 * 1000);
+    } else {
+      start = new Date();
+      end = new Date(start.getTime() + 60 * 60 * 1000);
+    }
+    const details = [desc, meetingLink ? `Meeting: ${meetingLink}` : ""].filter(Boolean).join("\n");
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${fmt(start)}/${fmt(end)}&details=${encodeURIComponent(details)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    if (ev) ev.preventDefault();
+    return false;
   };
 
   window.selectPresidentAssignee = function selectPresidentAssignee(email) {
     selectedPresidentAssignee = String(email || "").trim().toLowerCase();
-    showToast(`Selected ${selectedPresidentAssignee}`);
   };
 
   window.assignTaskFromPresident = async function assignTaskFromPresident() {
@@ -2223,7 +2969,12 @@ init();
     const unlockAt = document.getElementById("p-assign-unlock")?.value || "";
     const description =
       document.getElementById("p-assign-description")?.value?.trim() || "Assigned by executive president.";
-    const dependency_task_ids = [...document.querySelectorAll("#p-assign-dependencies input:checked")].map((el) => Number(el.value));
+    const dependency_task_ids = [...document.querySelectorAll("#p-assign-dependencies .p-assign-dep-cb:checked")].map((el) => Number(el.value));
+    const meetingInput = document.getElementById("p-assign-meeting-link");
+    if (meetingInput && meetingInput.value && !validateMeetingLink(meetingInput)) {
+      showToast("Please enter a valid meeting link (Zoom, Google Meet, Teams, or Webex).");
+      return;
+    }
     if (!title || !role) {
       showToast("Fill task title and role.");
       return;
@@ -2232,7 +2983,8 @@ init();
       dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const dueAt = new Date(`${finalDueDate}T23:59:00`);
     try {
-      await apiPost("/api/tasks/assign", {
+      const meetingLink = document.getElementById("p-assign-meeting-link")?.value?.trim() || "";
+    await apiPost("/api/tasks/assign", {
         title,
         role,
         due_at: dueAt.toISOString(),
@@ -2241,6 +2993,7 @@ init();
         assignee_email: selectedPresidentAssignee || undefined,
         event_id: eventId || undefined,
         unlock_at: unlockAt ? new Date(unlockAt).toISOString() : undefined,
+        meeting_link: meetingLink || undefined,
         dependency_task_ids
       });
       showToast("Task assigned.");
@@ -2250,12 +3003,197 @@ init();
       document.getElementById("p-assign-due").value = "";
       if (document.getElementById("p-assign-event")) document.getElementById("p-assign-event").value = "";
       if (document.getElementById("p-assign-unlock")) document.getElementById("p-assign-unlock").value = "";
-      document.querySelectorAll("#p-assign-dependencies input").forEach((el) => { el.checked = false; });
+      document.querySelectorAll("#p-assign-dependencies .p-assign-dep-cb").forEach((el) => { el.checked = false; });
+      document.querySelectorAll("#p-assign-dependencies .at-prereq-item").forEach((el) => { el.classList.remove("checked"); el.querySelector(".at-prereq-cb-inner") && (el.querySelector(".at-prereq-cb-inner").style.display = "none"); });
+      document.querySelectorAll("#p-assign-role-chips .at-role-chip").forEach((c) => c.classList.remove("selected"));
+      if (document.getElementById("p-assign-progress")) document.getElementById("p-assign-progress").style.width = "20%";
       selectedPresidentAssignee = "";
       await hydrateDashboard();
     } catch (e) {
       showToast(String(e.message || e));
     }
+  };
+
+  window.setEditStatus = function setEditStatus(el) {
+    const s = el && el.getAttribute("data-s");
+    if (!s) return;
+    document.getElementById("edit-task-status").value = s;
+    document.querySelectorAll("#edit-task-status-grid .st-btn").forEach((b) => b.classList.remove("active"));
+    if (el) el.classList.add("active");
+  };
+  window.setEditPrio = function setEditPrio(el) {
+    const p = el && el.getAttribute("data-p");
+    if (!p) return;
+    document.getElementById("edit-task-priority").value = p;
+    document.querySelectorAll("#edit-task-prio-row .at-prio-btn").forEach((b) => b.classList.remove("active-urgent", "active-high", "active-standard", "active-low"));
+    if (el) el.classList.add("active-" + (p === "urgent" ? "urgent" : p === "high" ? "high" : p === "low" ? "low" : "standard"));
+  };
+  window.toggleEditDep = function toggleEditDep(el) {
+    const cb = el && el.querySelector('input[type="checkbox"]');
+    if (cb) { cb.checked = !cb.checked; el.classList.toggle("chk", cb.checked); }
+  };
+  function editAttFileType(path) {
+    const ext = (path.split(".").pop() || "").split("?")[0].toLowerCase();
+    if (ext === "pdf") return { label: "PDF", class: "att-pdf" };
+    if (["png","jpg","jpeg","gif","webp"].includes(ext)) return { label: "IMG", class: "att-img" };
+    if (["doc","docx"].includes(ext)) return { label: "DOC", class: "att-doc" };
+    if (["ppt","pptx"].includes(ext)) return { label: "SLIDE", class: "att-slide" };
+    return { label: "FILE", class: "att-doc" };
+  }
+  function editAttFileName(path) { return path.replace(/^.*\//, "").split("?")[0] || "file"; }
+  window.renderEditAttachments = function renderEditAttachments() {
+    const raw = document.getElementById("edit-task-attachments").value || "[]";
+    let arr = [];
+    try { arr = JSON.parse(raw); } catch (_) {}
+    const list = document.getElementById("edit-task-att-list");
+    if (!list) return;
+    list.innerHTML = arr.map((path, i) => {
+      const type = editAttFileType(path);
+      const name = editAttFileName(path);
+      return `<div class="att-file" data-path="${(path || "").replace(/"/g, "&quot;")}">
+        <div class="att-file-icon ${type.class}">${type.label}</div>
+        <div class="att-file-info">
+          <div class="att-file-name">${(name || "file").replace(/</g, "&lt;")}</div>
+          <div class="att-file-meta">Uploaded</div>
+        </div>
+        <span class="att-file-status att-done">✓ Done</span>
+        <button type="button" class="att-file-del" onclick="removeEditAtt(this)" aria-label="Remove">✕</button>
+      </div>`;
+    }).join("");
+  };
+  window.removeEditAtt = function removeEditAtt(btn) {
+    const row = btn && btn.closest(".att-file");
+    if (!row) return;
+    const path = row.getAttribute("data-path");
+    const raw = document.getElementById("edit-task-attachments").value || "[]";
+    let arr = [];
+    try { arr = JSON.parse(raw); } catch (_) {}
+    arr = arr.filter((p) => p !== path);
+    document.getElementById("edit-task-attachments").value = JSON.stringify(arr);
+    renderEditAttachments();
+  };
+  window.editAttZoneDrag = function editAttZoneDrag(el, on) { if (el) el.classList.toggle("drag", !!on); };
+  window.editAttZoneDrop = function editAttZoneDrop(ev) {
+    editAttZoneDrag(document.getElementById("edit-task-att-zone"), false);
+    const files = ev.dataTransfer && ev.dataTransfer.files;
+    if (files && files.length) editAttUploadFiles(Array.from(files));
+  };
+  window.editAttFilesPicked = function editAttFilesPicked(input) {
+    const files = input && input.files;
+    if (files && files.length) editAttUploadFiles(Array.from(files));
+    if (input) input.value = "";
+  };
+  async function editAttUploadFiles(files) {
+    const taskId = Number(document.getElementById("edit-task-id").value || 0);
+    const token = getSessionToken();
+    const hidden = document.getElementById("edit-task-attachments");
+    let current = [];
+    try { current = JSON.parse(hidden.value || "[]"); } catch (_) {}
+    const list = document.getElementById("edit-task-att-list");
+    for (const file of files) {
+      const path = "/uploads/" + (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const id = "att-" + Math.random().toString(36).slice(2, 9);
+      const type = editAttFileType(file.name || "");
+      const row = document.createElement("div");
+      row.className = "att-file";
+      row.id = id;
+      row.innerHTML = `<div class="att-file-icon ${type.class}">${type.label}</div>
+        <div class="att-file-info">
+          <div class="att-file-name">${(file.name || "file").replace(/</g, "&lt;")}</div>
+          <div class="att-file-meta">Uploading…</div>
+          <div class="att-prog-wrap"><div class="att-prog-bar"><div class="att-prog-fill" style="width:0%"></div></div></div>
+        </div>
+        <span class="att-file-status att-up">0%</span>
+        <button type="button" class="att-file-del" onclick="this.closest('.att-file').remove()">✕</button>`;
+      list.appendChild(row);
+      try {
+        const fd = new FormData();
+        fd.append("files", file);
+        const xhr = new XMLHttpRequest();
+        const fill = row.querySelector(".att-prog-fill");
+        const pct = row.querySelector(".att-file-status");
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const v = Math.round((e.loaded / e.total) * 100);
+            if (fill) fill.style.width = v + "%";
+            if (pct) pct.textContent = v + "%";
+          }
+        };
+        const done = await new Promise((resolve, reject) => {
+          xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve(xhr.responseText) : reject(new Error(xhr.statusText)));
+          xhr.onerror = () => reject(new Error("Upload failed"));
+          xhr.open("POST", "/api/upload");
+          xhr.setRequestHeader("x-session-token", token);
+          xhr.send(fd);
+        });
+        const data = JSON.parse(done);
+        const uploaded = (data && data.paths && data.paths[0]) || path;
+        current.push(uploaded);
+        if (fill) fill.style.width = "100%";
+        if (pct) { pct.textContent = "✓ Done"; pct.className = "att-file-status att-done"; }
+        row.querySelector(".att-file-meta").textContent = "Uploaded";
+        row.removeAttribute("id");
+        row.setAttribute("data-path", uploaded);
+        row.querySelector(".att-prog-wrap").outerHTML = "";
+        row.querySelector(".att-file-del").onclick = function() { removeEditAtt(this); };
+      } catch (_) {
+        row.querySelector(".att-file-meta").textContent = "Upload failed";
+        const pct = row.querySelector(".att-file-status");
+        if (pct) { pct.textContent = "✕ Failed"; pct.className = "att-file-status att-err"; }
+        row.querySelector(".att-prog-wrap").outerHTML = "";
+      }
+    }
+    hidden.value = JSON.stringify(current);
+  }
+  window.validateMeetingLink = function validateMeetingLink(inputEl) {
+    if (!inputEl) return true;
+    const val = (inputEl.value || "").trim();
+    const errId = inputEl.id + "-err";
+    const errEl = document.getElementById(errId);
+    if (!val) {
+      if (errEl) { errEl.style.display = "none"; errEl.textContent = ""; }
+      return true;
+    }
+    const lower = val.toLowerCase();
+    const valid = lower.startsWith("https://") || lower.startsWith("http://")
+      ? (lower.includes("zoom.us") || lower.includes("meet.google.com") || lower.includes("teams.microsoft.com") || lower.includes("webex.com") || /^https?:\/\/[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(val))
+      : false;
+    if (errEl) {
+      errEl.style.display = valid ? "none" : "block";
+      errEl.textContent = valid ? "" : "Enter a valid meeting link (e.g. Zoom, Google Meet, Teams, or Webex).";
+    }
+    return valid;
+  };
+  window.toggleRuleBtn = function toggleRuleBtn(el, kind) {
+    if (!el) return;
+    const wrap = kind === "redo" ? document.getElementById("edit-task-redo-rules-wrap") : document.getElementById("edit-task-escalation-rules-wrap");
+    const input = kind === "redo" ? document.getElementById("edit-task-redo-rules") : document.getElementById("edit-task-escalation-rules");
+    if (!wrap || !input) return;
+    const rule = el.getAttribute("data-rule");
+    if (rule === "none" || rule === "no_auto_redo") {
+      wrap.querySelectorAll(".rule-btn").forEach((b) => b.classList.remove("sel"));
+      el.classList.add("sel");
+      input.value = rule;
+      return;
+    }
+    el.classList.toggle("sel");
+    if (el.classList.contains("sel")) {
+      wrap.querySelectorAll(".rule-btn[data-rule='none'], .rule-btn[data-rule='no_auto_redo']").forEach((b) => b.classList.remove("sel"));
+    }
+    const selected = [...wrap.querySelectorAll(".rule-btn.sel")].map((b) => b.getAttribute("data-rule")).filter(Boolean);
+    input.value = selected.join(", ");
+  };
+  window.deleteTaskFromEditModal = async function deleteTaskFromEditModal() {
+    const taskId = Number(document.getElementById("edit-task-id").value || 0);
+    if (!taskId) return;
+    openStyledConfirm("Delete this task permanently from workflow?", async () => {
+      const token = getSessionToken();
+      const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE", headers: { "x-session-token": token } });
+      if (!res.ok) { showToast("Unable to delete task."); return; }
+      showToast("Task deleted.");
+      closeModal("taskEditModal");
+      await hydrateDashboard();
+    });
   };
 
   window.editTaskAdmin = async function editTaskAdmin() {
@@ -2264,21 +3202,34 @@ init();
     const task = (dashboardCache?.tasks || []).find((t) => t.id === taskId);
     if (!task) return;
     document.getElementById("edit-task-id").value = String(task.id);
+    document.getElementById("edit-task-id-badge").textContent = "TASK-" + String(task.id).padStart(3, "0");
+    const eventName = (dashboardCache?.events || []).find((e) => e.id === task.event_id);
+    document.getElementById("edit-task-header-sub").textContent = (eventName ? eventName.name + " · " : "") + "SSA Board Platform";
     document.getElementById("edit-task-title").value = task.title || "";
     document.getElementById("edit-task-role").value = task.owner_role || "";
     document.getElementById("edit-task-division").value = task.department || "";
     document.getElementById("edit-task-description").value = task.description || "";
-    document.getElementById("edit-task-priority").value = task.priority || "standard";
-    document.getElementById("edit-task-status").value = task.status || "current";
+    const prio = task.priority || "standard";
+    document.getElementById("edit-task-priority").value = (prio === "critical" ? "urgent" : prio);
+    const status = task.status || "current";
+    document.getElementById("edit-task-status").value = status;
     document.getElementById("edit-task-unlock").value = task.unlock_at ? new Date(task.unlock_at).toISOString().slice(0,16) : "";
     document.getElementById("edit-task-due").value = task.due_at ? new Date(task.due_at).toISOString().slice(0,16) : "";
-    document.getElementById("edit-task-meeting-date").value = task.meeting_date || "";
-    document.getElementById("edit-task-meeting-time").value = task.meeting_time || "";
-    document.getElementById("edit-task-meeting-location").value = task.meeting_location || "";
-    document.getElementById("edit-task-notes").value = task.notes || "";
-    document.getElementById("edit-task-attachments").value = task.attachments_json || "[]";
-    document.getElementById("edit-task-redo-rules").value = task.redo_rules || "";
-    document.getElementById("edit-task-escalation-rules").value = task.escalation_rules || "";
+    document.getElementById("edit-task-meeting-link").value = task.meeting_link || "";
+    const attJson = task.attachments_json || "[]";
+    document.getElementById("edit-task-attachments").value = attJson;
+    if (window.renderEditAttachments) renderEditAttachments();
+    const escRules = String(task.escalation_rules || "").trim();
+    document.getElementById("edit-task-escalation-rules").value = escRules;
+    document.querySelectorAll("#edit-task-escalation-rules-wrap .rule-btn").forEach((b) => b.classList.toggle("sel", escRules.split(/[,\n]/).map((s) => s.trim().toLowerCase()).includes((b.getAttribute("data-rule") || "").toLowerCase())));
+
+    document.querySelectorAll("#edit-task-status-grid .st-btn").forEach((b) => b.classList.remove("active"));
+    const statusBtn = document.querySelector("#edit-task-status-grid .st-btn[data-s=\"" + status + "\"]");
+    if (statusBtn) statusBtn.classList.add("active");
+    document.querySelectorAll("#edit-task-prio-row .at-prio-btn").forEach((b) => b.classList.remove("active-urgent", "active-high", "active-standard", "active-low"));
+    const prioKey = prio === "critical" ? "urgent" : prio;
+    const prioBtn = document.querySelector("#edit-task-prio-row .at-prio-btn[data-p=\"" + prioKey + "\"]");
+    if (prioBtn) prioBtn.classList.add("active-" + (prioKey === "urgent" ? "urgent" : prioKey === "high" ? "high" : prioKey === "low" ? "low" : "standard"));
 
     const eventSelect = document.getElementById("edit-task-event");
     eventSelect.innerHTML = `<option value="">Standalone</option>${(dashboardCache?.events || [])
@@ -2288,14 +3239,37 @@ init();
 
     const assigneeSelect = document.getElementById("edit-task-assignee");
     assigneeSelect.innerHTML = (dashboardCache?.users || [])
-      .map((u) => `<option value="${u.email}">${u.full_name} · ${u.role_title}</option>`)
+      .map((u) => `<option value="${(u.email || "").replace(/"/g, "&quot;")}" data-role="${(u.role_title || "").replace(/"/g, "&quot;")}" data-department="${(u.department || "").replace(/"/g, "&quot;")}">${(u.full_name || "").replace(/</g, "&lt;")} · ${(u.role_title || "").replace(/</g, "&lt;")}</option>`)
       .join("");
     assigneeSelect.value = task.owner_email || "";
+    assigneeSelect.onchange = function editTaskAssigneeChange() {
+      const opt = this.selectedOptions && this.selectedOptions[0];
+      if (opt) {
+        document.getElementById("edit-task-role").value = opt.getAttribute("data-role") || "";
+        document.getElementById("edit-task-division").value = opt.getAttribute("data-department") || "";
+      }
+    };
+    const assigneeName = (dashboardCache?.users || []).find((u) => (u.email || "").toLowerCase() === (task.owner_email || "").toLowerCase());
+    const statusLabel = (status === "pending_review" ? "Pending Review" : status === "current" ? "Current" : status === "locked" ? "Locked" : status === "redo" ? "Redo" : status === "completed" ? "Completed" : "Overdue");
+    document.getElementById("edit-task-footer-hint").innerHTML = "Assigned to <strong style=\"color:var(--gold)\">" + (assigneeName ? assigneeName.full_name : task.owner_email || "—") + "</strong> · " + statusLabel;
 
     const depIds = new Set((dashboardCache?.dependencies || []).filter((d) => d.task_id === task.id).map((d) => d.depends_on_task_id));
+    function prereqStatus(t) {
+      const s = (t.status || "current").toLowerCase();
+      if (s === "completed") return { class: "ps-done", label: "Done" };
+      if (s === "current" || s === "pending_review" || s === "redo") return { class: "ps-act", label: "In Progress" };
+      return { class: "ps-lock", label: "Locked" };
+    }
+    const editUsers = dashboardCache?.users || [];
     document.getElementById("edit-task-dependencies").innerHTML = (dashboardCache?.tasks || [])
       .filter((t) => t.id !== task.id)
-      .map((t) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px;align-items:flex-start"><input type="checkbox" value="${t.id}" ${depIds.has(t.id) ? "checked" : ""}/> <span>${t.title}</span></label>`)
+      .map((t) => {
+        const ps = prereqStatus(t);
+        const chk = depIds.has(t.id) ? " chk" : "";
+        const owner = editUsers.find((u) => (u.email || "").toLowerCase() === (t.owner_email || "").toLowerCase());
+        const assigneeLine = owner ? `${(owner.full_name || "").replace(/</g, "&lt;")} · ${(owner.role_title || "").replace(/</g, "&lt;")}` : (t.owner_name || "").replace(/</g, "&lt;");
+        return `<div class="pre-item${chk}" onclick="toggleEditDep(this)"><div class="pre-cb"><div class="pre-cb-dot"></div></div><div><div class="pre-dept">${(t.department || "—").replace(/</g, "&lt;")}</div><div class="pre-name">${(t.title || "").replace(/</g, "&lt;")}</div><div class="pre-assignee">${assigneeLine}</div></div><span class="ps ${ps.class}">${ps.label}</span><input type="checkbox" value="${t.id}" ${depIds.has(t.id) ? "checked" : ""} style="position:absolute;opacity:0;width:0;height:0;pointer-events:none" /></div>`;
+      })
       .join("");
     closeModal("taskInspectModal");
     openModal("taskEditModal");
@@ -2368,25 +3342,30 @@ init();
   window.saveTaskEdit = async function saveTaskEdit() {
     const taskId = Number(document.getElementById("edit-task-id").value || 0);
     if (!taskId) return;
+    const meetingInput = document.getElementById("edit-task-meeting-link");
+    if (meetingInput && meetingInput.value && !validateMeetingLink(meetingInput)) {
+      showToast("Please enter a valid meeting link (Zoom, Google Meet, Teams, or Webex).");
+      return;
+    }
     const dependency_task_ids = [...document.querySelectorAll("#edit-task-dependencies input:checked")].map((el) => Number(el.value));
     try {
       await apiPatch(`/api/tasks/${taskId}`, {
         title: document.getElementById("edit-task-title").value,
         description: document.getElementById("edit-task-description").value,
         assignee_email: document.getElementById("edit-task-assignee").value,
-        role: document.getElementById("edit-task-role").value,
-        department: document.getElementById("edit-task-division").value,
+        role: document.getElementById("edit-task-role").value.trim(),
+        department: document.getElementById("edit-task-division").value.trim(),
         event_id: document.getElementById("edit-task-event").value || null,
         due_at: document.getElementById("edit-task-due").value ? new Date(document.getElementById("edit-task-due").value).toISOString() : null,
         unlock_at: document.getElementById("edit-task-unlock").value ? new Date(document.getElementById("edit-task-unlock").value).toISOString() : null,
         priority: document.getElementById("edit-task-priority").value,
         status: document.getElementById("edit-task-status").value,
-        meeting_date: document.getElementById("edit-task-meeting-date").value,
-        meeting_time: document.getElementById("edit-task-meeting-time").value,
-        meeting_location: document.getElementById("edit-task-meeting-location").value,
-        notes: document.getElementById("edit-task-notes").value,
+        meeting_date: "",
+        meeting_time: "",
+        meeting_location: "",
+        meeting_link: document.getElementById("edit-task-meeting-link").value,
+        notes: "",
         attachments: JSON.parse(document.getElementById("edit-task-attachments").value || "[]"),
-        redo_rules: document.getElementById("edit-task-redo-rules").value,
         escalation_rules: document.getElementById("edit-task-escalation-rules").value,
         dependency_task_ids
       });

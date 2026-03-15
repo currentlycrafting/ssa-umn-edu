@@ -539,13 +539,16 @@
       color: var(--silver); margin-bottom: 10px;
     }
     .form-input, .form-select, .form-textarea {
-      width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-      padding: 14px 16px; font-family: var(--font-body); font-size: 14px; font-weight: 300;
-      color: var(--white); outline: none; transition: border-color 0.3s;
+      width: 100%; background: var(--navy-light); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px; padding: 14px 16px; font-family: var(--font-body); font-size: 14px; font-weight: 300;
+      color: var(--white); outline: none; transition: border-color 0.25s, box-shadow 0.25s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
       appearance: none;
       -webkit-appearance: none;
     }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--gold); box-shadow: 0 0 0 2px rgba(184,154,92,0.25);
+    }
     .form-input::placeholder, .form-textarea::placeholder { color: rgba(154,159,173,0.4); }
     .form-textarea { resize: vertical; min-height: 120px; }
     .form-select { cursor: pointer; color: var(--stone); }

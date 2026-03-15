@@ -35,10 +35,12 @@
   --blue-dim:     rgba(123, 163, 212, .12);
   --border:       rgba(255, 255, 255, .06);
   --border-gold:  rgba(184, 154, 92, .2);
-  --sidebar-w:    256px;
+  --sidebar:      260px;
   --topbar-h:     56px;
-  --fd: 'Cormorant Garamond', serif;
-  --fb: 'DM Sans', sans-serif;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body:    'DM Sans', sans-serif;
+  --fd: var(--font-display);
+  --fb: var(--font-body);
 }
 
 /* ─────────────────────────────────────────────
@@ -55,13 +57,13 @@ textarea, input, select { font-family: var(--fb); }
 ::-webkit-scrollbar-thumb { background: rgba(184,154,92,.25); border-radius: 2px; }
 
 /* ─────────────────────────────────────────────
-   SIDEBAR
+   SIDEBAR (aligned with president / vp)
 ───────────────────────────────────────────── */
 #sidebar {
-  width: var(--sidebar-w);
+  width: var(--sidebar);
   flex-shrink: 0;
   background: var(--navy-mid);
-  border-right: 1px solid var(--border-gold);
+  border-right: 1px solid rgba(184,154,92,.12);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -72,123 +74,112 @@ textarea, input, select { font-family: var(--fb); }
   z-index: 200;
   transition: transform .3s;
 }
-
-/* logo */
 .sb-logo {
-  padding: 22px 18px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
   display: flex; align-items: center; gap: 10px;
 }
-.sb-logo-img {
-  width: 38px; height: 38px; object-fit: contain; flex-shrink: 0;
+.sb-logo img {
+  height: 38px; width: 38px; object-fit: contain; flex-shrink: 0;
 }
-.sb-logo-text { line-height: 1; }
-.sb-logo-text .sb-lg-title {
-  font-family: var(--fd);
+.sb-logo-txt { line-height: 1; }
+.sb-logo-txt span:first-child {
+  font-family: var(--font-display);
   font-size: 13px; font-weight: 500;
-  letter-spacing: .16em; text-transform: uppercase; color: var(--white);
+  letter-spacing: .15em; text-transform: uppercase; color: var(--white);
 }
-.sb-logo-text .sb-lg-sub {
-  display: block; font-size: 8px;
-  letter-spacing: .18em; text-transform: uppercase;
-  color: var(--silver); margin-top: 3px;
+.sb-logo-txt span:last-child {
+  display: block; font-size: 8px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--silver); margin-top: 2px;
 }
-
-/* user */
 .sb-user {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
 }
 .sb-user-name {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-size: 22px; font-weight: 400;
   color: var(--white); line-height: 1.1; margin-bottom: 4px;
 }
 .sb-user-role {
   font-size: 9px; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--gold);
+  text-transform: uppercase; color: var(--gold); margin-top: 4px;
 }
-.sb-user-div {
-  font-size: 10px; color: var(--silver); margin-top: 2px;
+.sb-user-dept, .sb-user-div {
+  font-size: 11px; color: var(--silver); margin-top: 2px;
 }
-
-/* nav */
-.sb-nav { padding: 10px 0; flex: 1; }
-.sb-nav-section {
-  font-size: 8px; letter-spacing: .32em; text-transform: uppercase;
-  color: var(--silver); padding: 14px 18px 5px; opacity: .55;
+.sb-nav { padding: 12px 0; flex: 1; }
+.sb-section-label {
+  font-size: 8px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--silver); padding: 14px 20px 6px; opacity: .6;
 }
-.sb-nav-item {
-  display: flex; align-items: center; gap: 9px;
-  padding: 8px 18px;
-  font-size: 12px; letter-spacing: .03em;
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px;
+  font-size: 12px; letter-spacing: .04em;
   color: var(--stone); cursor: pointer;
   border-left: 2px solid transparent;
-  transition: all .18s;
-  user-select: none;
+  transition: all .2s; user-select: none;
 }
-.sb-nav-item:hover {
+.sb-item:hover {
   color: var(--white);
   background: rgba(255,255,255,.03);
   border-left-color: rgba(184,154,92,.3);
 }
-.sb-nav-item.active {
+.sb-item.active {
   color: var(--white);
   background: rgba(184,154,92,.08);
   border-left-color: var(--gold);
 }
-.sb-nav-item .sni { font-size: 12px; width: 15px; text-align: center; flex-shrink: 0; }
-.sb-nav-badge {
+.sb-icon { font-size: 13px; width: 16px; text-align: center; flex-shrink: 0; }
+.sb-badge {
   margin-left: auto;
   background: var(--red); color: #fff;
   font-size: 9px; font-weight: 500;
   padding: 2px 6px; border-radius: 2px; min-width: 18px; text-align: center;
 }
-.sb-nav-badge.gold { background: var(--gold); color: var(--navy); }
-
-/* footer */
+.sb-badge.gold { background: var(--gold); color: var(--navy); }
 .sb-footer {
-  padding: 14px 18px;
-  border-top: 1px solid var(--border);
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,.05);
   font-size: 10px; color: var(--silver);
 }
 .poll-dot {
   display: inline-block; width: 6px; height: 6px;
   border-radius: 50%; background: var(--green);
-  margin-right: 5px; vertical-align: middle;
-  animation: blink 2.2s ease infinite;
+  margin-right: 6px; vertical-align: middle;
+  animation: blink 2s ease infinite;
 }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
 /* ─────────────────────────────────────────────
-   MAIN SHELL
+   MAIN SHELL (aligned with president / vp)
 ───────────────────────────────────────────── */
 #main {
-  margin-left: var(--sidebar-w);
+  margin-left: var(--sidebar);
   flex: 1;
   height: 100vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
-
-/* topbar */
-#topbar {
-  height: var(--topbar-h);
-  background: var(--navy-mid);
-  border-bottom: 1px solid var(--border-gold);
+.topbar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px;
+  padding: 16px 32px;
+  background: var(--navy-mid);
+  border-bottom: 1px solid rgba(184,154,92,.1);
   position: sticky; top: 0; z-index: 100;
   flex-shrink: 0;
 }
-.topbar-title {
-  font-family: var(--fd);
-  font-size: 14px; font-weight: 400;
-  letter-spacing: .14em; text-transform: uppercase;
+.topbar-left h1, #topbar .topbar-left h1 {
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 400;
+  letter-spacing: .15em; text-transform: uppercase;
   color: var(--silver);
 }
-.topbar-right { display: flex; align-items: center; gap: 10px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+#topbar { height: auto; min-height: 56px; }
+.topbar-title { font-family: var(--fd); font-size: 13px; font-weight: 400; letter-spacing: .15em; text-transform: uppercase; color: var(--silver); }
 
 /* buttons */
 .btn {
@@ -460,34 +451,44 @@ textarea, input, select { font-family: var(--fb); }
   text-transform: uppercase; color: var(--silver);
 }
 .form-input, .form-select, .form-textarea {
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.1);
-  padding: 10px 12px;
+  background: var(--navy-light);
+  border: 1px solid rgba(255,255,255,.12);
+  padding: 12px 16px;
   font-family: var(--fb); font-size: 13px;
   color: var(--white); outline: none;
-  transition: border-color .25s; width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+  transition: border-color .25s, box-shadow .2s; width: 100%;
   resize: vertical;
 }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(184,154,92,.2);
 }
 .form-input::placeholder, .form-textarea::placeholder { color: rgba(154,159,173,.38); }
 .form-textarea { min-height: 90px; }
-.form-select option { background: var(--navy-mid); }
+.form-select { cursor: pointer; }
+.form-select option { background: var(--navy-mid); color: var(--white); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-/* drag-drop */
+/* drag-drop with 5 states: none, done, warning, error, loading */
 .drop-zone {
-  border: 1px dashed rgba(184,154,92,.3);
-  background: rgba(255,255,255,.01);
+  border: 1px dashed rgba(184,154,92,.35);
+  background: var(--navy-light);
+  border-radius: 12px;
   padding: 28px 16px;
   text-align: center; cursor: pointer;
-  transition: all .2s; margin-bottom: 16px;
+  transition: all .25s; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
 }
 .drop-zone:hover, .drop-zone.drag-over {
   border-color: var(--gold);
-  background: rgba(184,154,92,.05);
+  background: rgba(184,154,92,.08);
 }
+.drop-zone.upload-done { border-style: solid; border-color: rgba(76,175,125,.4); background: rgba(76,175,125,.08); }
+.drop-zone.upload-warning { border-style: solid; border-color: rgba(212,145,74,.5); background: rgba(212,145,74,.08); }
+.drop-zone.upload-error { border-style: solid; border-color: rgba(192,80,77,.5); background: rgba(192,80,77,.08); }
+.drop-zone.upload-loading { border-style: solid; border-color: var(--gold); background: rgba(184,154,92,.1); pointer-events: none; }
 .drop-icon { font-size: 26px; opacity: .4; margin-bottom: 8px; }
 .drop-text { font-size: 12px; color: var(--silver); }
 .drop-sub  { font-size: 10px; color: rgba(154,159,173,.5); margin-top: 4px; }
@@ -507,6 +508,102 @@ textarea, input, select { font-family: var(--fb); }
   background: rgba(255,255,255,.02);
   border: 1px solid var(--border);
 }
+
+/* ─────────────────────────────────────────────
+   TASK COMPLETION SUBMISSION (reference-style UI)
+───────────────────────────────────────────── */
+.comp-steps { display: flex; gap: 0; margin-bottom: 22px; background: var(--navy-mid); border: 1px solid var(--border); }
+.comp-step { flex: 1; padding: 11px 12px; display: flex; align-items: center; gap: 8px; cursor: default; border-right: 1px solid var(--border); }
+.comp-step:last-child { border-right: none; }
+.comp-step-num { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(255,255,255,.15); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--silver); flex-shrink: 0; }
+.comp-step.active .comp-step-num { border-color: var(--gold); background: rgba(184,154,92,.15); color: var(--gold-light); }
+.comp-step-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--silver); }
+.comp-step.active .comp-step-label { color: var(--gold-light); }
+.comp-step.done .comp-step-num { border-color: var(--green); background: rgba(76,175,125,.12); color: var(--green); }
+.comp-step.done .comp-step-label { color: var(--green); }
+.task-sel-card { background: var(--navy-light); border: 1px solid rgba(184,154,92,.25); border-left: 3px solid var(--gold); padding: 14px 18px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tsc-left { flex: 1; min-width: 0; }
+.tsc-event { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.tsc-title { font-family: var(--fd); font-size: 20px; color: var(--white); margin-bottom: 4px; }
+.tsc-meta { font-size: 11px; color: var(--silver); display: flex; gap: 14px; flex-wrap: wrap; }
+.tsc-meta-item { display: flex; gap: 4px; }
+.tsc-ml { font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: rgba(154,159,173,.5); }
+.tsc-mv { color: var(--stone); }
+.tsc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.tsc-change { background: transparent; border: 1px solid rgba(184,154,92,.3); color: var(--gold); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; padding: 5px 12px; cursor: pointer; transition: all .2s; font-family: var(--fb); }
+.tsc-change:hover { background: rgba(184,154,92,.08); }
+.badge-comp { display: inline-flex; align-items: center; font-size: 8px; letter-spacing: .14em; text-transform: uppercase; padding: 3px 8px; font-weight: 500; }
+.badge-comp.b-over { background: var(--red-dim); color: var(--red); }
+.badge-comp.b-cur { background: rgba(184,154,92,.13); color: var(--gold); }
+.comp-form-cols { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
+.comp-form-stack { display: flex; flex-direction: column; gap: 20px; }
+.comp-form-stack .comp-form-side { display: flex; flex-direction: column; gap: 14px; }
+.comp-form-main { min-width: 0; }
+.comp-form-side { min-width: 0; }
+.comp-sl { font-size: 8px; letter-spacing: .32em; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.comp-sl::before { content: ''; display: block; width: 14px; height: 1px; background: var(--gold); }
+.comp-dv { height: 1px; background: var(--border); margin: 4px 0 18px; }
+.comp-fg { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+.comp-fl { font-size: 9px; letter-spacing: .26em; text-transform: uppercase; color: var(--gold); }
+.comp-fl-sub { font-size: 10px; color: var(--silver); margin-top: -3px; margin-bottom: 2px; }
+.comp-fi { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); padding: 10px 13px; font-family: var(--fb); font-size: 13px; color: var(--white); outline: none; transition: border-color .25s; width: 100%; }
+.comp-fi:focus { border-color: var(--gold); }
+.comp-fi::placeholder { color: rgba(154,159,173,.35); }
+.comp-fta { min-height: 120px; resize: vertical; line-height: 1.7; }
+.comp-fta-sm { min-height: 80px; resize: vertical; line-height: 1.6; }
+.comp-char-note { font-size: 10px; color: var(--silver); text-align: right; margin-top: 3px; }
+.comp-char-note.warn { color: var(--amber); }
+.comp-quality-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 18px; }
+.comp-q-btn { padding: 10px 8px; border: 1px solid rgba(255,255,255,.08); cursor: pointer; text-align: center; transition: all .2s; background: transparent; color: inherit; font-family: var(--fb); }
+.comp-q-btn:hover { border-color: rgba(255,255,255,.2); }
+.comp-q-btn .comp-q-icon { font-size: 18px; margin-bottom: 4px; opacity: .4; transition: opacity .2s; }
+.comp-q-btn .comp-q-label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--silver); transition: color .2s; }
+.comp-q-btn.on-smooth { border-color: rgba(76,175,125,.4); background: rgba(76,175,125,.07); }
+.comp-q-btn.on-smooth .comp-q-icon, .comp-q-btn.on-smooth .comp-q-label { opacity: 1; color: var(--green); }
+.comp-q-btn.on-rough { border-color: rgba(212,145,74,.4); background: rgba(212,145,74,.07); }
+.comp-q-btn.on-rough .comp-q-icon, .comp-q-btn.on-rough .comp-q-label { opacity: 1; color: var(--amber); }
+.comp-q-btn.on-blocker { border-color: rgba(192,80,77,.4); background: rgba(192,80,77,.07); }
+.comp-q-btn.on-blocker .comp-q-icon, .comp-q-btn.on-blocker .comp-q-label { opacity: 1; color: var(--red); }
+.comp-diff-row { display: flex; gap: 6px; align-items: center; margin-bottom: 18px; }
+.comp-dstar { font-size: 22px; cursor: pointer; color: var(--gold); opacity: .2; transition: opacity .15s; }
+.comp-dstar:hover { opacity: .6; }
+.comp-dstar.on { opacity: 1; }
+.comp-diff-label { font-size: 11px; color: var(--silver); margin-left: 8px; }
+.comp-link-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.comp-link-row { display: flex; gap: 6px; align-items: center; }
+.comp-add-link { background: transparent; border: 1px dashed rgba(184,154,92,.25); width: 100%; padding: 8px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); cursor: pointer; transition: all .2s; font-family: var(--fb); }
+.comp-add-link:hover { background: rgba(184,154,92,.05); border-color: rgba(184,154,92,.4); }
+.comp-drop-zone { border: 1px dashed rgba(184,154,92,.28); padding: 20px 16px; text-align: center; cursor: pointer; transition: all .2s; background: rgba(255,255,255,.01); margin-bottom: 14px; }
+.comp-drop-zone:hover, .comp-drop-zone.drag-over { border-color: var(--gold); background: rgba(184,154,92,.05); }
+.comp-dz-text { font-size: 12px; color: var(--silver); }
+.comp-dz-text strong { color: var(--gold-light); cursor: pointer; }
+.comp-dz-sub { font-size: 10px; color: rgba(154,159,173,.4); margin-top: 4px; }
+.comp-form-footer { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.comp-ff-note { font-size: 11px; color: var(--silver); max-width: 380px; line-height: 1.65; }
+.comp-ff-note strong { color: var(--white); }
+.comp-ff-btns { display: flex; gap: 8px; flex-shrink: 0; }
+.comp-side-card { background: var(--navy-mid); border: 1px solid var(--border); padding: 18px; margin-bottom: 14px; }
+.comp-side-card-title { font-family: var(--fd); font-size: 18px; color: var(--white); margin-bottom: 4px; }
+.comp-side-card-sub { font-size: 11px; color: var(--silver); margin-bottom: 14px; line-height: 1.65; }
+.comp-checklist { display: flex; flex-direction: column; gap: 6px; }
+.comp-cl-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--silver); line-height: 1.5; }
+.comp-cl-icon { flex-shrink: 0; margin-top: 2px; font-size: 12px; }
+.comp-cl-icon.done { color: var(--green); }
+.comp-cl-icon.todo { color: rgba(255,255,255,.2); }
+.comp-downstream-list { display: flex; flex-direction: column; gap: 5px; }
+.comp-ds-item { background: var(--navy-light); border: 1px solid var(--border); border-left: 2px solid rgba(184,154,92,.4); padding: 10px 12px; }
+.comp-ds-dept { font-size: 8px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
+.comp-ds-title { font-size: 12px; color: var(--white); margin-bottom: 2px; }
+.comp-ds-meta { font-size: 10px; color: var(--silver); }
+.comp-ds-locked { opacity: .5; }
+.comp-confirm-wrap { display: none; background: var(--navy-light); border: 1px solid rgba(184,154,92,.25); padding: 22px; text-align: center; margin-top: 16px; }
+.comp-confirm-wrap.show { display: block; }
+.comp-confirm-title { font-family: var(--fd); font-size: 24px; color: var(--white); margin-bottom: 8px; }
+.comp-confirm-sub { font-size: 12px; color: var(--silver); line-height: 1.7; margin-bottom: 18px; }
+.comp-confirm-btns { display: flex; gap: 8px; justify-content: center; }
+@media (max-width: 900px) { .comp-form-cols { grid-template-columns: 1fr; } }
+.page-stack { display: flex; flex-direction: column; gap: 24px; }
+.page-stack .page-stack-item { width: 100%; min-width: 0; }
 
 /* ─────────────────────────────────────────────
    EVENTS LIST
@@ -621,22 +718,25 @@ textarea, input, select { font-family: var(--fb); }
 ───────────────────────────────────────────── */
 .modal-backdrop {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,.72);
+  background: rgba(5,8,15,.88);
   z-index: 700; display: flex;
   align-items: center; justify-content: center;
+  padding: 20px;
   opacity: 0; pointer-events: none;
-  transition: opacity .25s;
+  transition: opacity .25s ease;
 }
 .modal-backdrop.open { opacity: 1; pointer-events: all; }
 
 .modal {
   background: var(--navy-mid);
-  border: 1px solid var(--border-gold);
+  border: 1px solid rgba(184,154,92,.22);
+  border-radius: 14px;
+  box-shadow: 0 24px 56px rgba(0,0,0,.45);
   width: 660px; max-width: 96vw;
   max-height: 88vh; overflow-y: auto;
   display: flex; flex-direction: column;
   transform: translateY(16px);
-  transition: transform .25s;
+  transition: transform .25s ease;
 }
 .modal-backdrop.open .modal { transform: translateY(0); }
 
@@ -716,6 +816,12 @@ textarea, input, select { font-family: var(--fb); }
   font-size: 13px; color: var(--silver); opacity: .6;
 }
 
+.approval-item { background: var(--navy-light); border: 1px solid rgba(255,255,255,.05); padding: 16px; }
+.approval-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.approval-task { font-size: 13px; font-weight: 400; color: var(--white); }
+.approval-by { font-size: 11px; color: var(--silver); margin-top: 4px; }
+.approval-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
 /* workload bar */
 .wl-wrap { margin-top: 4px; }
 .wl-bar { height: 3px; background: rgba(255,255,255,.07); border-radius: 2px; }
@@ -744,11 +850,11 @@ textarea, input, select { font-family: var(--fb); }
   .three-col { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 820px) {
-  :root { --sidebar-w: 0px; }
-  #sidebar { transform: translateX(-100%); }
-  #sidebar.mobile-open { transform: translateX(0); width: 256px; }
+  :root { --sidebar: 0; }
+  #sidebar { transform: translateX(-100%); width: 260px; }
+  #sidebar.mobile-open { transform: translateX(0); }
   #main { margin-left: 0; }
-  #topbar { padding: 0 16px; }
+  .topbar, #topbar { padding: 12px 16px; }
   #content { padding: 16px; }
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .two-col, .one-two, .three-col { grid-template-columns: 1fr; }
@@ -774,86 +880,51 @@ textarea, input, select { font-family: var(--fb); }
      SIDEBAR
 ══════════════════════════════════════ -->
 <nav id="sidebar" role="navigation" aria-label="Main navigation">
-
-  <!-- Logo -->
   <div class="sb-logo">
-    <img class="sb-logo-img" src="images/favicon-logo-transparent.png" alt="SSA logo" loading="lazy" />
-    <div class="sb-logo-text">
-      <span class="sb-lg-title">SSA Ops</span>
-      <span class="sb-lg-sub">Board Platform</span>
+    <img src="images/favicon-logo-transparent.png" alt="SSA logo" loading="lazy" />
+    <div class="sb-logo-txt">
+      <span>SSA Ops</span>
+      <span>Board Platform</span>
     </div>
   </div>
-
-  <!-- User -->
   <div class="sb-user">
     <div class="sb-user-name" id="sb-greeting">Hey Member,</div>
     <div class="sb-user-role" id="sb-role">Board Member</div>
-    <div class="sb-user-div" id="sb-div">Board Division</div>
+    <div class="sb-user-dept" id="sb-div">Board Division</div>
   </div>
-
-  <!-- Navigation -->
   <div class="sb-nav">
-    <div class="sb-nav-section">Tasks</div>
-    <div class="sb-nav-item active" onclick="navigate('tasks')" data-page="tasks">
-      <span class="sni">≡</span> My Tasks
-    </div>
-    <div class="sb-nav-item" onclick="navigate('urgent')" data-page="urgent">
-      <span class="sni">U</span> Urgent
-      <span class="sb-nav-badge" id="badge-urgent">1</span>
-    </div>
-    <div class="sb-nav-item" onclick="navigate('current')" data-page="current">
-      <span class="sni">C</span> Current
-    </div>
-    <div class="sb-nav-item" onclick="navigate('upcoming')" data-page="upcoming">
-      <span class="sni">N</span> Upcoming
-    </div>
-    <div class="sb-nav-item" onclick="navigate('past')" data-page="past">
-      <span class="sni">P</span> Past
-    </div>
-    <div class="sb-nav-item" onclick="navigate('failed')" data-page="failed">
-      <span class="sni">✕</span> Failed
-    </div>
-
-    <div class="sb-nav-section">Views</div>
-    <div class="sb-nav-item" onclick="navigate('dependency')" data-page="dependency">
-      <span class="sni">D</span> Dependency Graph
-    </div>
-    <div class="sb-nav-item" onclick="navigate('calendar')" data-page="calendar">
-      <span class="sni">K</span> Calendar
-    </div>
-    <div class="sb-nav-item" onclick="navigate('events')" data-page="events">
-      <span class="sni">E</span> Events
-    </div>
-    <div class="sb-nav-item" onclick="navigate('submit')" data-page="submit">
-      <span class="sni">S</span> Submit Work
-    </div>
+    <div class="sb-section-label">My Work</div>
+    <div class="sb-item active" onclick="navigate('tasks')" data-page="tasks"><span class="sb-icon">◈</span>My Tasks</div>
+    <div class="sb-item" onclick="navigate('urgent')" data-page="urgent"><span class="sb-icon">⚠</span>Urgent<span class="sb-badge" id="badge-urgent">0</span></div>
+    <div class="sb-item" onclick="navigate('current')" data-page="current"><span class="sb-icon">≡</span>Current</div>
+    <div class="sb-item" onclick="navigate('upcoming')" data-page="upcoming"><span class="sb-icon">N</span>Upcoming</div>
+    <div class="sb-item" onclick="navigate('past')" data-page="past"><span class="sb-icon">P</span>Past</div>
+    <div class="sb-item" onclick="navigate('failed')" data-page="failed"><span class="sb-icon">✕</span>Failed</div>
+    <div class="sb-section-label">Views</div>
+    <div class="sb-item" onclick="navigate('dependency')" data-page="dependency"><span class="sb-icon">⊹</span>Dependency Graph</div>
+    <div class="sb-item" onclick="navigate('calendar')" data-page="calendar"><span class="sb-icon">◻</span>Calendar</div>
+    <div class="sb-item" onclick="navigate('events')" data-page="events"><span class="sb-icon">◆</span>Events</div>
+    <div class="sb-item" onclick="navigate('reports')" data-page="reports"><span class="sb-icon">▣</span>Reports</div>
+    <div class="sb-item" onclick="navigate('submit')" data-page="submit"><span class="sb-icon">→</span>Submit Work</div>
   </div>
-
   <div class="sb-footer">
-    <span class="poll-dot"></span>Live sync every 30s
+    <div style="font-size:10px;color:var(--silver)"><span class="poll-dot"></span>Syncing every 30s</div>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════
-     MAIN
-══════════════════════════════════════ -->
 <main id="main" role="main">
-
-  <!-- Topbar -->
-  <header id="topbar">
-    <div style="display:flex;align-items:center;">
-      <button id="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
-      <span class="topbar-title" id="topbar-title">Board Member Workspace</span>
+  <div class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button id="menu-btn" type="button" aria-label="Open menu" onclick="document.getElementById('sidebar').classList.toggle('mobile-open')">≡</button>
+      <h1 id="page-title">My Tasks</h1>
     </div>
     <div class="topbar-right">
-      <button class="btn btn-ghost btn-sm" onclick="navigate('tasks')">Home</button>
-      <button class="btn btn-outline btn-sm" onclick="goLoginPage()">Login Page</button>
-      <button class="btn btn-gold btn-sm" onclick="quickCompleteTask()">Complete Task</button>
+      <button class="btn btn-outline" onclick="navigate('tasks')">Home</button>
+      <button class="btn btn-outline" onclick="goLoginPage()">Login Page</button>
+      <button class="btn btn-gold" onclick="quickCompleteTask()">Complete Task</button>
     </div>
-  </header>
-
-  <!-- ── CONTENT ── -->
-  <div id="content">
+  </div>
+  <div id="content" style="padding:32px;flex:1">
 
     <!-- ══════════════════════════════
          PAGE: MY TASKS (dashboard)
@@ -869,32 +940,21 @@ textarea, input, select { font-family: var(--fb); }
       <!-- KPI row -->
       <div class="kpi-row" id="kpi-row"></div>
 
-      <!-- Tasks + Dependency -->
-      <div class="two-col">
-
-        <!-- Left: role-aware task list -->
-        <div>
+      <!-- Tasks then Dependency (stacked, full width) -->
+      <div class="page-stack">
+        <div class="page-stack-item">
           <div class="section-eyebrow">Role-Aware Tasks</div>
           <div class="section-title">Your Current Board Work</div>
           <div class="section-sub">Tasks assigned to you. Locked tasks are visible for planning.</div>
           <div class="task-list" id="main-task-list"></div>
         </div>
-
-        <!-- Right: dependency graph -->
-        <div>
+        <div class="page-stack-item">
           <div class="section-eyebrow">Workflow</div>
           <div class="section-title">Dependency Graph</div>
           <div class="section-sub">Your tasks are highlighted. Click any node to inspect.</div>
           <div class="dep-graph-wrap" id="dep-graph-main"></div>
         </div>
-
-      </div>
-
-      <!-- Submission form + Events -->
-      <div class="two-col">
-
-        <!-- Left: submission form -->
-        <div>
+        <div class="page-stack-item">
           <div class="section-eyebrow">Delivery</div>
           <div class="section-title">Task Completion Submission</div>
           <div class="section-sub">Submit a completed task for VP review.</div>
@@ -902,15 +962,12 @@ textarea, input, select { font-family: var(--fb); }
             <div id="submission-form-inner"></div>
           </div>
         </div>
-
-        <!-- Right: upcoming events + deadlines -->
-        <div>
+        <div class="page-stack-item">
           <div class="section-eyebrow">Schedule</div>
           <div class="section-title">Upcoming Events &amp; Deadlines</div>
           <div class="section-sub">Events your role is active on.</div>
           <div id="events-deadlines-col"></div>
         </div>
-
       </div>
     </section>
 
@@ -1026,6 +1083,19 @@ textarea, input, select { font-family: var(--fb); }
     </section>
 
     <!-- ══════════════════════════════
+         PAGE: REPORTS (escalation inbox)
+    ══════════════════════════════ -->
+    <section class="page" id="page-reports">
+      <div class="breadcrumb"><span class="bc-active">Executive</span> › <span>Reports</span></div>
+      <div class="section-eyebrow">Oversight</div>
+      <div class="section-title">Vice President Reports Inbox</div>
+      <div class="section-sub">Escalations and executive review items from division leadership.</div>
+      <div class="card" style="padding:20px">
+        <div id="reports-list" style="display:flex;flex-direction:column;gap:10px;margin-top:0"></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
          PAGE: SUBMIT WORK
     ══════════════════════════════ -->
     <section class="page" id="page-submit">
@@ -1033,22 +1103,20 @@ textarea, input, select { font-family: var(--fb); }
       <div class="section-eyebrow">Completion</div>
       <div class="section-title">Submit a Completed Task</div>
       <div class="section-sub">Fill this in fully. Your VP reviews every submission before approving. Incomplete submissions will be returned.</div>
-      <div class="two-col">
-        <div class="card" id="submit-form-card"></div>
-        <div>
-          <div class="info-banner">
-            <span class="info-banner-icon" style="color:var(--gold)">◈</span>
-            <div class="info-banner-text">
-              <strong style="color:var(--white);display:block;margin-bottom:4px">What makes a good submission?</strong>
-              Be specific about what you did, not just that you did it. If you created files, include links. If there were blockers, say so. The next person in the chain relies on your summary to understand context they didn't have. Write for them.
-            </div>
-          </div>
-          <div class="card">
-            <div class="section-eyebrow">Downstream</div>
-            <div style="font-family:var(--fd);font-size:17px;color:var(--white);margin-bottom:12px">Tasks that unlock after this</div>
-            <div class="task-list" id="downstream-tasks"></div>
+      <div class="page-stack">
+        <div class="info-banner" style="margin-bottom:0">
+          <span class="info-banner-icon" style="color:var(--gold)">◈</span>
+          <div class="info-banner-text">
+            <strong style="color:var(--white);display:block;margin-bottom:4px">What makes a good submission?</strong>
+            Be specific about what you did, not just that you did it. If you created files, include links. If there were blockers, say so. The next person in the chain relies on your summary to understand context they didn't have. Write for them.
           </div>
         </div>
+        <div class="card">
+          <div class="section-eyebrow">Downstream</div>
+          <div style="font-family:var(--fd);font-size:17px;color:var(--white);margin-bottom:12px">Tasks that unlock after this</div>
+          <div class="task-list" id="downstream-tasks"></div>
+        </div>
+        <div class="card" id="submit-form-card"></div>
       </div>
     </section>
 
@@ -1066,7 +1134,6 @@ textarea, input, select { font-family: var(--fb); }
     </div>
     <div class="modal-body" id="task-modal-body"></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('task-modal')">Close</button>
       <button class="btn btn-outline btn-sm" id="task-modal-action" onclick="">Action</button>
     </div>
   </div>
@@ -1095,6 +1162,17 @@ textarea, input, select { font-family: var(--fb); }
 
 <!-- Toast -->
 <div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Task selector for completion form (board) -->
+<div class="modal-backdrop" id="task-select-modal" role="dialog" aria-modal="true" aria-label="Select task">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-header-title">Select a task to complete</span>
+      <button class="modal-close" onclick="closeModal('task-select-modal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="task-select-list" style="max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════
      DATA + LOGIC
@@ -1178,17 +1256,26 @@ function ensureBoardAccess(me) {
   return true;
 }
 
+const PHASE_ORDER = ["Planning", "Pre-Event", "Execution", "Wrap-up"];
 function buildPhaseChains(tasks, dependencies) {
-  const byId = new Map(tasks.map((t) => [t.id, t]));
-  const incoming = new Map(tasks.map((t) => [t.id, 0]));
+  const taskIdsInGraph = new Set();
+  dependencies.forEach((d) => {
+    taskIdsInGraph.add(d.task_id);
+    taskIdsInGraph.add(d.depends_on_task_id);
+  });
+  const tasksInGraph = tasks.filter((t) => taskIdsInGraph.has(t.id));
+  if (tasksInGraph.length === 0) return [];
+
+  const incoming = new Map(tasksInGraph.map((t) => [t.id, 0]));
   const outgoing = new Map();
   dependencies.forEach((d) => {
+    if (!taskIdsInGraph.has(d.task_id) || !taskIdsInGraph.has(d.depends_on_task_id)) return;
     incoming.set(d.task_id, (incoming.get(d.task_id) || 0) + 1);
     const arr = outgoing.get(d.depends_on_task_id) || [];
     arr.push(d.task_id);
     outgoing.set(d.depends_on_task_id, arr);
   });
-  const queue = tasks.filter((t) => (incoming.get(t.id) || 0) === 0).map((t) => t.id);
+  const queue = tasksInGraph.filter((t) => (incoming.get(t.id) || 0) === 0).map((t) => t.id);
   const level = new Map(queue.map((id) => [id, 0]));
   while (queue.length) {
     const cur = queue.shift();
@@ -1199,25 +1286,31 @@ function buildPhaseChains(tasks, dependencies) {
       if ((incoming.get(n) || 0) === 0) queue.push(n);
     });
   }
-  const grouped = new Map();
-  tasks.forEach((t) => {
-    const lv = level.get(t.id) || 0;
-    const row = grouped.get(lv) || [];
-    row.push(t);
-    grouped.set(lv, row);
+  const phaseName = (t) => (t.phase && PHASE_ORDER.includes(t.phase)) ? t.phase : "Other";
+  const byPhase = new Map();
+  PHASE_ORDER.forEach((p) => byPhase.set(p, []));
+  byPhase.set("Other", []);
+  tasksInGraph.forEach((t) => {
+    const p = phaseName(t);
+    const list = byPhase.get(p) || [];
+    list.push(t);
+    byPhase.set(p, list);
   });
-  return [...grouped.keys()]
-    .sort((a, b) => a - b)
-    .map((lv) => ({
-      phase: `Phase ${lv + 1} — Workflow`,
-      nodes: (grouped.get(lv) || []).map((t) => ({
+  const orderedPhases = [...PHASE_ORDER, "Other"].filter((p) => (byPhase.get(p) || []).length > 0);
+  return orderedPhases.map((phase) => {
+    const list = (byPhase.get(phase) || []).slice();
+    list.sort((a, b) => (level.get(a.id) || 0) - (level.get(b.id) || 0));
+    return {
+      phase: phase === "Other" ? "Other" : phase,
+      nodes: list.map((t) => ({
         title: t.title,
         div: t.department,
         owner: t.owner_name,
         status: toUiStatus(t.status),
         mine: t.owner_email === USER.email
       }))
-    }));
+    };
+  });
 }
 
 function buildCalendarEvents(events, tasks) {
@@ -1313,6 +1406,7 @@ async function hydrateBoardData() {
         time: `${t.meeting_date || ""} ${t.meeting_time || ""}`.trim(),
         location: t.meeting_location || "TBD"
       } : null,
+      meeting_link: t.meeting_link || "",
       dep: deps,
       description: t.description || "",
       summary: t.previous_summary || "",
@@ -1348,6 +1442,7 @@ async function initBoardLive() {
     renderEventsPage();
     renderCalendar();
     renderDownstream();
+    renderReportsLive();
     startPolling(async () => {
       const hydrated = await hydrateBoardData();
       if (!hydrated) return;
@@ -1362,6 +1457,7 @@ async function initBoardLive() {
       renderEventsPage();
       renderCalendar();
       renderDownstream();
+      renderReportsLive();
     });
   } catch (_e) {
     clearSession();
@@ -1405,6 +1501,7 @@ function goLoginPage() {
 }
 
 async function removeTask(id) {
+  if (USER.permission === 'board') return;
   try {
     await apiDelete(`/api/tasks/${id}`);
     showToast("Task deleted");
@@ -1425,6 +1522,7 @@ async function removeTask(id) {
 }
 
 async function removeEvent(id) {
+  if (USER.permission === 'board') return;
   try {
     await apiDelete(`/api/events/${id}`);
     showToast("Event deleted");
@@ -1447,28 +1545,31 @@ async function removeEvent(id) {
 /* ─────────────────────────────────────
    NAVIGATION
 ───────────────────────────────────── */
+const PAGE_TITLES = {
+  tasks: 'My Tasks',
+  urgent: 'Urgent',
+  current: 'Current',
+  upcoming: 'Upcoming',
+  past: 'Past',
+  failed: 'Failed',
+  dependency: 'Dependency Graph',
+  calendar: 'Calendar',
+  events: 'Events',
+  reports: 'Reports',
+  submit: 'Submit Work'
+};
+
 function navigate(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const el = document.getElementById('page-' + pageId);
   if (el) el.classList.add('active');
 
-  document.querySelectorAll('.sb-nav-item').forEach(n => n.classList.remove('active'));
+  const titleEl = document.getElementById('page-title');
+  if (titleEl) titleEl.textContent = PAGE_TITLES[pageId] || pageId;
+
+  document.querySelectorAll('.sb-item').forEach(n => n.classList.remove('active'));
   const navItem = document.querySelector(`[data-page="${pageId}"]`);
   if (navItem) navItem.classList.add('active');
-
-  const titles = {
-    tasks: 'Board Member Workspace',
-    urgent: 'Urgent Tasks',
-    current: 'Current Tasks',
-    upcoming: 'Upcoming Tasks',
-    past: 'Past Tasks',
-    failed: 'Failed Tasks',
-    dependency: 'Dependency Graph',
-    calendar: 'Calendar',
-    events: 'Active Events',
-    submit: 'Submit Completed Work',
-  };
-  document.getElementById('topbar-title').textContent = titles[pageId] || 'Board Member Workspace';
 
   // close sidebar on mobile
   if (window.innerWidth <= 820) {
@@ -1532,7 +1633,14 @@ function renderAllTaskLists() {
   const done    = mine.filter(t => t.status === 'done');
   const failed  = mine.filter(t => t.status === 'failed');
 
-  renderTaskList('main-task-list',  [...urgent, ...current, ...locked.slice(0, 2)]);
+  const mainCombined = [...urgent, ...current, ...locked.slice(0, 2)];
+  const mainIds = new Set();
+  const mainTasks = mainCombined.filter(t => {
+    if (mainIds.has(t.id)) return false;
+    mainIds.add(t.id);
+    return true;
+  });
+  renderTaskList('main-task-list',  mainTasks);
   renderTaskList('urgent-list',     urgent);
   renderTaskList('current-list',    current);
   renderTaskList('upcoming-list',   locked);
@@ -1552,7 +1660,9 @@ function renderTaskList(containerId, tasks, showEmpty = false) {
   el.innerHTML = tasks.map(t => buildTaskCard(t)).join('');
 }
 
-function buildTaskCard(t) {
+function buildTaskCard(t, opts) {
+  opts = opts || {};
+  const hideDatesForBoard = opts.forBoardEvents === true && USER.permission === 'board';
   const statusCls = {
     overdue: 'tc-overdue', current: '', locked: 'tc-locked',
     done: 'tc-done', failed: 'tc-failed', pending: 'tc-pending',
@@ -1576,7 +1686,6 @@ function buildTaskCard(t) {
   const canComplete = t.status === 'current' && t.assigned_email === USER.email;
   const isLocked    = t.status === 'locked';
 
-  // build dep chain if locked
   let depHtml = '';
   if (isLocked && t.dep && t.dep.length) {
     depHtml = `<div class="tc-dep-banner">
@@ -1590,7 +1699,7 @@ function buildTaskCard(t) {
         <div class="dep-chip active">Your task</div>
       </div>
     </div>`;
-  } else if (isLocked) {
+  } else if (isLocked && !hideDatesForBoard) {
     depHtml = `<div class="tc-lock-banner">
       <span style="opacity:.45">LOCK</span>
       Unlocks ${t.unlock} — visible now so you can prepare
@@ -1608,6 +1717,11 @@ function buildTaskCard(t) {
     ? `<button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); openCompletionForm(${t.id})">Submit Complete</button>`
     : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openTaskModal(${t.id})">Click to Review</button>`;
 
+  const showBadge = !hideDatesForBoard;
+  const showDueUnlocks = !hideDatesForBoard;
+  const metaDue = showDueUnlocks ? `<div class="tc-meta-item"><span class="tc-meta-label">Due</span><span class="tc-meta-val">${t.due}</span></div>` : '';
+  const metaUnlocks = showDueUnlocks ? `<div class="tc-meta-item"><span class="tc-meta-label">Unlocks</span><span class="tc-meta-val">${t.unlock}</span></div>` : '';
+
   return `
     <article class="task-card ${statusCls}" onclick="openTaskModal(${t.id})">
       <div class="tc-inner">
@@ -1617,7 +1731,7 @@ function buildTaskCard(t) {
             <div class="tc-event">${t.event || 'Standalone Task'}</div>
           </div>
           <div class="tc-right">
-            <span class="badge ${badgeCls}">${badgeLabel}</span>
+            ${showBadge ? `<span class="badge ${badgeCls}">${badgeLabel}</span>` : ''}
             <span class="prio ${prioCls}">${t.priority}</span>
           </div>
         </div>
@@ -1626,14 +1740,8 @@ function buildTaskCard(t) {
             <span class="tc-meta-label">Dept</span>
             <span class="tc-meta-val">${t.dept}</span>
           </div>
-          <div class="tc-meta-item">
-            <span class="tc-meta-label">Due</span>
-            <span class="tc-meta-val">${t.due}</span>
-          </div>
-          <div class="tc-meta-item">
-            <span class="tc-meta-label">Unlocks</span>
-            <span class="tc-meta-val">${t.unlock}</span>
-          </div>
+          ${metaDue}
+          ${metaUnlocks}
           ${t.assigned_email !== USER.email ? `<div class="tc-meta-item"><span class="tc-meta-label">Owner</span><span class="tc-meta-val">${t.assigned}</span></div>` : ''}
         </div>
         <div class="tc-footer">
@@ -1655,6 +1763,8 @@ function renderDepGraph(containerId, compact) {
   if (!el) return;
   const chains = compact ? (DEP_CHAINS.length > 2 ? DEP_CHAINS.slice(2) : DEP_CHAINS) : DEP_CHAINS;
 
+  const truncateTitle = (s, max) => { if (!s || typeof s !== 'string') return ''; return s.length <= max ? s : s.slice(0, max - 1) + '…'; };
+  const TITLE_MAX = 36;
   el.innerHTML = chains.map(phase => `
     <div class="dep-phase">
       <div class="dep-phase-label">${phase.phase}</div>
@@ -1662,7 +1772,7 @@ function renderDepGraph(containerId, compact) {
         ${phase.nodes.map((n, i) => `
           <div class="dep-node ${nodeClass(n)}" onclick="openNodeInspect('${escHtml(n.title)}','${n.div}','${n.owner}','${n.status}')">
             <div class="dep-node-div">${n.div}</div>
-            <div class="dep-node-title">${n.title}</div>
+            <div class="dep-node-title">${truncateTitle(n.title, TITLE_MAX)}</div>
             <div class="dep-node-owner">${n.owner}</div>
           </div>
           ${i < phase.nodes.length - 1 ? '<span class="dep-arrow-icon">→</span>' : ''}`).join('')}
@@ -1715,56 +1825,258 @@ function openNodeInspect(title, div, owner, status) {
 function renderSubmissionForm(containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
+  const currentTasks = TASKS.filter(t => t.status === 'current' && t.assigned_email === USER.email);
+  const firstTask = currentTasks[0] || null;
+  const taskOptions = currentTasks.map((t, i) => `<option value="${t.id}"${i === 0 ? ' selected' : ''}>${t.title}</option>`).join('');
   el.innerHTML = `
-    <div class="form-group">
-      <label class="form-label" for="${containerId}-task-sel">Task Being Completed</label>
-      <select class="form-select" id="${containerId}-task-sel">
-        <option value="">— Select task —</option>
-        ${TASKS.filter(t => t.status === 'current' && t.assigned_email === USER.email).map(t => `<option value="${t.id}">${t.title}</option>`).join('')}
-      </select>
+    <div class="comp-steps">
+      <div class="comp-step active"><div class="comp-step-num">1</div><div class="comp-step-label">Task & Summary</div></div>
+      <div class="comp-step"><div class="comp-step-num">2</div><div class="comp-step-label">Links & Files</div></div>
+      <div class="comp-step"><div class="comp-step-num">3</div><div class="comp-step-label">Handoff Notes</div></div>
+      <div class="comp-step"><div class="comp-step-num">4</div><div class="comp-step-label">Review & Submit</div></div>
     </div>
-    <div class="form-group">
-      <label class="form-label" for="${containerId}-summary">Summary — What did you do?</label>
-      <textarea class="form-textarea" id="${containerId}-summary" style="min-height:100px"
-        placeholder="Describe specifically what was completed, how, and what the deliverable is. Write for the next person in the chain."></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="margin-bottom:0">
-        <label class="form-label" for="${containerId}-links">Proof Links (one per line)</label>
-        <textarea class="form-textarea" id="${containerId}-links" style="min-height:66px"
-          placeholder="https://drive.google.com/&#10;https://docs.google.com/"></textarea>
+    <input type="hidden" id="${containerId}-task-sel" value="${firstTask ? firstTask.id : ''}" />
+    <div class="task-sel-card" id="${containerId}-task-card" onclick="openTaskSelectModal('${containerId}')" style="cursor:pointer">
+      <div class="tsc-left">
+        <div class="tsc-event" id="${containerId}-tsc-event">${firstTask ? (firstTask.event || 'Task') : '—'}</div>
+        <div class="tsc-title" id="${containerId}-tsc-title">${firstTask ? firstTask.title : 'Select a task'}</div>
+        <div class="tsc-meta">
+          <div class="tsc-meta-item"><span class="tsc-ml">Due</span><span class="tsc-mv" id="${containerId}-tsc-due">${firstTask ? firstTask.due : '—'}</span></div>
+          <div class="tsc-meta-item"><span class="tsc-ml">Priority</span><span class="tsc-mv" id="${containerId}-tsc-prio">${firstTask ? (firstTask.priority || 'Medium') : '—'}</span></div>
+          <div class="tsc-meta-item"><span class="tsc-ml">Owner</span><span class="tsc-mv" id="${containerId}-tsc-owner">${firstTask ? firstTask.assigned : USER.full}</span></div>
+        </div>
       </div>
-      <div class="form-group" style="margin-bottom:0">
-        <label class="form-label" for="${containerId}-blockers">Blockers / Open Issues</label>
-        <textarea class="form-textarea" id="${containerId}-blockers" style="min-height:66px"
-          placeholder="Anything that slowed you down or needs follow-up?"></textarea>
+      <div class="tsc-right">
+        <span class="badge-comp ${firstTask && firstTask.status === 'overdue' ? 'b-over' : 'b-cur'}" id="${containerId}-tsc-badge">${firstTask && firstTask.status === 'overdue' ? 'Overdue' : 'In Progress'}</span>
+        <button type="button" class="tsc-change" onclick="event.preventDefault();event.stopPropagation();openTaskSelectModal('${containerId}')">${firstTask ? 'Change Task' : 'Select Task'}</button>
       </div>
     </div>
-    <div class="form-group" style="margin-top:14px">
-      <label class="form-label">Difficulty</label>
-      <div class="difficulty-row" id="${containerId}-stars">
-        ${[1,2,3,4,5].map(n => `<span class="diff-star" data-val="${n}" onclick="setDiff('${containerId}',${n})">*</span>`).join('')}
+    <div class="comp-form-stack">
+      <div class="comp-form-side">
+        <div class="comp-side-card">
+          <div class="comp-sl">Good Submission</div>
+          <div class="comp-side-card-sub">What makes your submission useful to reviewers and the next person.</div>
+          <div class="comp-checklist">
+            <div class="comp-cl-item"><span class="comp-cl-icon done">✓</span><span>Be specific about <em>what</em> you did, not just that you did it</span></div>
+            <div class="comp-cl-item"><span class="comp-cl-icon todo">○</span><span>Include at least one link or file as proof</span></div>
+            <div class="comp-cl-item"><span class="comp-cl-icon todo">○</span><span>Name any blockers or open issues</span></div>
+            <div class="comp-cl-item"><span class="comp-cl-icon todo">○</span><span>Write the handoff note for the next person</span></div>
+          </div>
+        </div>
+        <div class="comp-side-card" id="${containerId}-downstream-card">
+          <div class="comp-sl">Unlocks After This</div>
+          <div class="comp-side-card-sub">Tasks that unlock once your submission is approved.</div>
+          <div class="comp-downstream-list" id="${containerId}-downstream-list"></div>
+        </div>
       </div>
-    </div>
-    <div class="drop-zone" id="${containerId}-drop"
-      ondragover="dragOver(event,'${containerId}-drop')"
-      ondragleave="dragLeave('${containerId}-drop')"
-      ondrop="dropFile(event,'${containerId}-drop')">
-      <div class="drop-icon">Upload</div>
-      <div class="drop-text">Drag files here or <span style="color:var(--gold);cursor:pointer" onclick="document.getElementById('${containerId}-file').click()">click to upload</span></div>
-      <div class="drop-sub">PDF, images, video, documents</div>
-      <input type="file" id="${containerId}-file" multiple style="display:none" onchange="handleFileInput(this,'${containerId}-drop')" />
-    </div>
-    <button class="btn btn-gold" style="width:100%" onclick="submitWork('${containerId}')">Submit for VP Review</button>
-    <div class="submit-helper">
-      Your submission goes to your VP for review. If approved, the next tasks in the dependency chain unlock automatically. If returned for redo, you will receive specific revision notes. Submissions are logged permanently.
+      <div class="comp-form-main">
+        <div class="comp-sl">Summary</div>
+        <div class="comp-fg">
+          <label class="comp-fl">What did you do?</label>
+          <div class="comp-fl-sub">Describe specifically what was completed. Write for the next person in the chain.</div>
+          <textarea class="comp-fi comp-fta" id="${containerId}-summary" oninput="updateCompCharCount('${containerId}','summary','summary-count');updateCompSteps('${containerId}')" placeholder="e.g. Built the full 8-week rehearsal schedule. Room bookings confirmed. Google Sheet distributed to all dancers."></textarea>
+          <div class="comp-char-note" id="${containerId}-summary-count">0 / 400 recommended</div>
+        </div>
+        <div class="comp-sl">Completion Quality</div>
+        <div class="comp-quality-row">
+          <button type="button" class="comp-q-btn" data-q="smooth" onclick="setCompQuality('${containerId}',this)"><div class="comp-q-icon">✓</div><div class="comp-q-label">Smooth</div></button>
+          <button type="button" class="comp-q-btn" data-q="rough" onclick="setCompQuality('${containerId}',this)"><div class="comp-q-icon">△</div><div class="comp-q-label">Rough but done</div></button>
+          <button type="button" class="comp-q-btn" data-q="blocker" onclick="setCompQuality('${containerId}',this)"><div class="comp-q-icon">⚠</div><div class="comp-q-label">Had blockers</div></button>
+        </div>
+        <div class="comp-dv"></div>
+        <div class="comp-sl">Proof Links</div>
+        <div class="comp-fl-sub" style="margin-bottom:10px">Add Google Drive links, Docs, or any direct URL as proof.</div>
+        <textarea class="comp-fi comp-fta-sm" id="${containerId}-links" oninput="updateCompSteps('${containerId}')" placeholder="https://drive.google.com/...&#10;https://docs.google.com/..."></textarea>
+        <div class="comp-dv"></div>
+        <div class="comp-sl">Blockers / Open Issues</div>
+        <textarea class="comp-fi comp-fta-sm" id="${containerId}-blockers" oninput="updateCompSteps('${containerId}')" placeholder="Anything that slowed you down or needs follow-up?"></textarea>
+        <div class="comp-dv"></div>
+        <div class="comp-sl">File Attachments</div>
+        <div class="comp-drop-zone" id="${containerId}-drop" ondragover="dragOver(event,'${containerId}-drop')" ondragleave="dragLeave('${containerId}-drop')" ondrop="dropFile(event,'${containerId}-drop');updateCompSteps('${containerId}')" onclick="document.getElementById('${containerId}-file').click()">
+          <div class="comp-dz-text"><strong>Click to upload</strong> or drag and drop</div>
+          <div class="comp-dz-sub">PDF, PNG, JPG, DOCX · Max 50 MB per file</div>
+          <input type="file" id="${containerId}-file" multiple style="display:none" onchange="handleFileInput(this,'${containerId}-drop');updateCompSteps('${containerId}')" />
+        </div>
+        <div class="comp-form-footer">
+          <div class="comp-ff-note"><strong>Ready to submit?</strong> Your VP will be notified immediately. If approved, downstream tasks unlock. If returned for redo, you'll get revision notes.</div>
+          <div class="comp-ff-btns">
+            <button type="button" class="btn btn-ghost" onclick="navigate('tasks')">Cancel</button>
+            <button type="button" class="btn btn-gold" onclick="submitWork('${containerId}')">Submit for VP Review</button>
+          </div>
+        </div>
+      </div>
     </div>`;
+  updateCompletionTaskCard(containerId);
+  renderCompletionDownstream(containerId);
+  updateCompSteps(containerId);
+}
+
+function openTaskSelectModal(prefix) {
+  const listEl = document.getElementById('task-select-list');
+  if (!listEl) return;
+  const currentTasks = TASKS.filter(t => t.status === 'current' && t.assigned_email === USER.email);
+  listEl.innerHTML = currentTasks.length
+    ? currentTasks.map(t => `
+        <div class="task-select-opt" onclick="pickTaskForCompletion('${prefix}',${t.id});closeModal('task-select-modal')" style="padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s">
+          <div style="font-weight:500;color:var(--white)">${t.title}</div>
+          <div style="font-size:11px;color:var(--silver);margin-top:4px">${t.event || 'Task'} · ${t.assigned || ''}</div>
+        </div>`).join('')
+    : '<div style="padding:20px;color:var(--silver);text-align:center">No tasks available to complete.</div>';
+  openModal('task-select-modal');
+}
+
+function pickTaskForCompletion(prefix, taskId) {
+  const hid = document.getElementById(prefix + '-task-sel');
+  if (hid) hid.value = String(taskId);
+  updateCompletionTaskCard(prefix);
+  renderCompletionDownstream(prefix);
+  updateCompSteps(prefix);
+  const btn = document.querySelector(`#${prefix}-task-card .tsc-change`);
+  if (btn) btn.textContent = 'Change Task';
+}
+
+function updateCompSteps(prefix) {
+  const steps = document.querySelectorAll('.comp-step');
+  if (!steps.length) return;
+  const taskSel = document.getElementById(prefix + '-task-sel');
+  const taskId = taskSel ? Number(taskSel.value) : 0;
+  const summary = (document.getElementById(prefix + '-summary') || {}).value || '';
+  const links = (document.getElementById(prefix + '-links') || {}).value || '';
+  const fileInput = document.getElementById(prefix + '-file');
+  const hasFiles = fileInput && fileInput.files && fileInput.files.length > 0;
+  const blockers = (document.getElementById(prefix + '-blockers') || {}).value || '';
+  let active = 0;
+  if (!taskId) active = 0;
+  else if (!summary.trim()) active = 1;
+  else if (!links.trim() && !hasFiles) active = 2;
+  else active = 3;
+  steps.forEach((s, i) => {
+    s.classList.toggle('active', i === active);
+    s.classList.toggle('done', i < active);
+  });
+}
+
+function updateCompCharCount(prefix, field, countId) {
+  const ta = document.getElementById(prefix + '-' + field);
+  const cnt = document.getElementById(prefix + '-' + countId);
+  if (!ta || !cnt) return;
+  const n = ta.value.length;
+  cnt.textContent = n + ' / 400 recommended';
+  cnt.className = 'comp-char-note' + (n > 400 ? ' warn' : '');
+}
+
+function setCompQuality(prefix, btn) {
+  const row = btn.closest('.comp-quality-row');
+  if (!row) return;
+  const cls = 'on-' + (btn.dataset.q || '');
+  if (btn.classList.contains(cls)) {
+    btn.classList.remove(cls);
+    return;
+  }
+  row.querySelectorAll('.comp-q-btn').forEach(b => b.classList.remove('on-smooth', 'on-rough', 'on-blocker'));
+  btn.classList.add(cls);
+}
+
+function updateCompletionTaskCard(prefix) {
+  const sel = document.getElementById(prefix + '-task-sel');
+  if (!sel) return;
+  const id = Number(sel.value);
+  const t = TASKS.find(x => x.id === id);
+  const card = document.getElementById(prefix + '-task-card');
+  if (!card) return;
+  const set = (suffix, text) => { const el = document.getElementById(prefix + suffix); if (el) el.textContent = text || '—'; };
+  const btn = card.querySelector('.tsc-change');
+  if (t) {
+    set('-tsc-event', t.event || 'Task');
+    set('-tsc-title', t.title);
+    set('-tsc-due', t.due || '—');
+    set('-tsc-prio', (t.priority || 'Medium'));
+    set('-tsc-owner', t.assigned || USER.full);
+    const badge = document.getElementById(prefix + '-tsc-badge');
+    if (badge) {
+      badge.textContent = t.status === 'overdue' ? 'Overdue' : 'In Progress';
+      badge.className = 'badge-comp ' + (t.status === 'overdue' ? 'b-over' : 'b-cur');
+    }
+    if (btn) btn.textContent = 'Change Task';
+  } else {
+    set('-tsc-event', '—');
+    set('-tsc-title', 'Select a task');
+    set('-tsc-due', '—');
+    set('-tsc-prio', '—');
+    set('-tsc-owner', USER.full);
+    const badge = document.getElementById(prefix + '-tsc-badge');
+    if (badge) { badge.textContent = 'In Progress'; badge.className = 'badge-comp b-cur'; }
+    if (btn) btn.textContent = 'Select Task';
+  }
+  renderCompletionDownstream(prefix);
+}
+
+function renderCompletionDownstream(prefix) {
+  const sel = document.getElementById(prefix + '-task-sel');
+  const listEl = document.getElementById(prefix + '-downstream-list');
+  if (!sel || !listEl) return;
+  const id = Number(sel.value);
+  const t = TASKS.find(x => x.id === id);
+  const downstreamIds = t && (t.downstream || []).length ? new Set(t.downstream) : new Set();
+  const downstream = TASKS.filter(x => downstreamIds.has(x.id)).slice(0, 4);
+  listEl.innerHTML = downstream.length
+    ? downstream.map(d => `<div class="comp-ds-item ${d.status === 'locked' ? 'comp-ds-locked' : ''}"><div class="comp-ds-dept">${d.dept || d.division || '—'}</div><div class="comp-ds-title">${d.title}</div><div class="comp-ds-meta">${d.due || '—'} · ${d.assigned || '—'}</div></div>`).join('')
+    : '<div class="comp-ds-meta" style="opacity:.7">No downstream tasks</div>';
+}
+
+function renderReportsLive() {
+  const root = document.getElementById('reports-list');
+  if (!root) return;
+  const reports = (typeof DASHBOARD !== 'undefined' && DASHBOARD && DASHBOARD.reports) ? DASHBOARD.reports : [];
+  root.innerHTML = reports.length
+    ? reports.map((r) => {
+        const meta = `${r.event_name || 'No event'}${r.task_title ? ' · ' + r.task_title : ''} · ${r.created_at ? new Date(r.created_at).toLocaleString() : ''}`;
+        const actions = USER.permission === 'president'
+          ? `<div class="approval-actions">
+              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'reviewed')">Mark Reviewed</button>
+              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'needs_clarification')">Clarify</button>
+              <button class="btn btn-red" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'archived')">Archive</button>
+            </div>`
+          : '';
+        return `<div class="approval-item">
+          <div class="approval-header">
+            <div>
+              <div class="approval-task">${(r.reason || '').replace(/</g, '&lt;')}</div>
+              <div class="approval-by">${(r.submitted_by_name || '').replace(/</g, '&lt;')} · ${(r.submitted_by_role || '').replace(/</g, '&lt;')} · ${(r.division || '').replace(/</g, '&lt;')}</div>
+              <div style="font-size:11px;color:var(--silver);margin-top:6px">${(r.notes || '').replace(/</g, '&lt;')}</div>
+              <div style="font-size:10px;color:var(--gold);margin-top:6px">${meta.replace(/</g, '&lt;')}</div>
+            </div>
+            ${actions}
+          </div>
+        </div>`;
+      }).join('')
+    : '<div style="font-size:13px;color:var(--silver);padding:12px">No VP reports submitted yet.</div>';
+}
+
+function updateReportStatus(reportId, status) {
+  if (USER.permission !== 'president') return;
+  apiPatch('/api/reports/' + reportId, { status }).then(() => {
+    showToast('Report updated.');
+    hydrateBoardData().then(() => { renderReportsLive(); });
+  }).catch(() => showToast('Unable to update report.'));
 }
 
 function setDiff(prefix, val) {
-  document.querySelectorAll(`#${prefix}-stars .diff-star`).forEach(s => {
-    s.classList.toggle('active', parseInt(s.dataset.val) <= val);
-  });
+  const starsEl = document.getElementById(prefix + '-stars');
+  if (!starsEl) return;
+  const isComp = starsEl.querySelector('.comp-dstar');
+  if (isComp) {
+    starsEl.querySelectorAll('.comp-dstar').forEach(s => {
+      s.classList.toggle('on', parseInt(s.dataset.v) <= val);
+    });
+    const labels = ['', 'Smooth', 'Easy', 'Moderate', 'Challenging', 'Very Hard'];
+    const lbl = document.getElementById(prefix + '-diff-label');
+    if (lbl) lbl.textContent = labels[val] || 'Not rated';
+  } else {
+    starsEl.querySelectorAll('.diff-star').forEach(s => {
+      s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+    });
+  }
 }
 
 function dragOver(e, id) {
@@ -1778,25 +2090,66 @@ function dropFile(e, id) {
   e.preventDefault();
   dragLeave(id);
   const files = Array.from(e.dataTransfer.files || []);
-  const names = files.map(f => f.name).join(', ');
   const prefix = id.replace(/-drop$/, "");
   STAGED_FILES[prefix] = files;
-  if (names) showToast(`Files staged: ${names}`);
+  const zone = document.getElementById(id);
+  const input = document.getElementById(prefix + '-file');
+  if (input) {
+    const dt = new DataTransfer();
+    files.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+  }
+  if (zone) {
+    zone.classList.remove('upload-loading','upload-warning','upload-error');
+    const text = zone.querySelector('.drop-text') || zone.querySelector('.comp-dz-text');
+    if (files.length) {
+      zone.classList.add('upload-done');
+      if (text) text.textContent = files.map(f => f.name).join(', ');
+    } else {
+      if (text) {
+        if (zone.classList.contains('comp-drop-zone')) {
+          text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
+        } else {
+          text.innerHTML = 'Drag files here or <span style="color:var(--gold);cursor:pointer" onclick="document.getElementById(\'' + prefix + '-file\').click()">click to upload</span>';
+        }
+      }
+    }
+  }
+  if (files.length) showToast(`Files staged: ${files.length} file(s)`);
 }
 function handleFileInput(input, dropId) {
+  const zone = document.getElementById(dropId);
   const files = Array.from(input.files || []);
-  const names = files.map(f => f.name).join(', ');
   const prefix = dropId.replace(/-drop$/, "");
   STAGED_FILES[prefix] = files;
-  if (names) showToast(`Files staged: ${names}`);
+  if (zone) {
+    zone.classList.remove('upload-loading','upload-done','upload-warning','upload-error');
+    const text = zone.querySelector('.drop-text') || zone.querySelector('.comp-dz-text');
+    if (files.length) {
+      zone.classList.add('upload-done');
+      if (text) text.textContent = files.map(f => f.name).join(', ');
+    } else {
+      if (text) {
+        if (zone.classList.contains('comp-drop-zone')) {
+          text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
+        } else {
+          text.innerHTML = 'Drag files here or <span style="color:var(--gold);cursor:pointer" onclick="document.getElementById(\'' + prefix + '-file\').click()">click to upload</span>';
+        }
+      }
+    }
+  }
+  if (files.length) showToast(`Files staged: ${files.length} file(s)`);
 }
 
 function submitWork(prefix) {
-  const task = Number(document.getElementById(`${prefix}-task-sel`).value);
-  const summary = document.getElementById(`${prefix}-summary`).value.trim();
-  const links = document.getElementById(`${prefix}-links`).value.trim();
-  const blockers = document.getElementById(`${prefix}-blockers`).value.trim();
-  const stars = [...document.querySelectorAll(`#${prefix}-stars .diff-star.active`)].length;
+  const taskEl = document.getElementById(prefix + '-task-sel');
+  const task = taskEl ? Number(taskEl.value) : 0;
+  const summaryEl = document.getElementById(prefix + '-summary');
+  const summary = summaryEl ? summaryEl.value.trim() : '';
+  const linksEl = document.getElementById(prefix + '-links');
+  const links = linksEl ? linksEl.value.trim() : '';
+  const blockersEl = document.getElementById(prefix + '-blockers');
+  const blockers = blockersEl ? blockersEl.value.trim() : '';
   if (!task)    { showToast('Select a task first'); return; }
   if (!summary) { showToast('Summary cannot be empty'); return; }
   openConfirmModal(
@@ -1807,10 +2160,13 @@ function submitWork(prefix) {
       try {
         const form = new FormData();
         form.append("summary", summary);
-        form.append("proof_links", links);
-        form.append("blockers", blockers);
-        form.append("difficulty", String(stars || 1));
+        form.append("proofLinks", links);
+        form.append("comments", blockers);
         (STAGED_FILES[prefix] || []).forEach((f) => form.append("attachments", f));
+        const fileInput = document.getElementById(prefix + '-file');
+        if (fileInput && fileInput.files && fileInput.files.length) {
+          for (let i = 0; i < fileInput.files.length; i++) form.append("attachments", fileInput.files[i]);
+        }
         await apiPostMultipart(`/api/tasks/${task}/submit-form`, form);
         STAGED_FILES[prefix] = [];
         showToast('Submitted and sent for VP review');
@@ -1898,6 +2254,7 @@ function renderEventsDeadlines() {
 function renderEventsPage() {
   const el = document.getElementById('events-full-list');
   if (!el) return;
+  const isBoard = USER.permission === 'board';
   el.innerHTML = EVENTS.map(e => `
     <div class="card" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
@@ -1905,8 +2262,8 @@ function renderEventsPage() {
           <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">${e.date} · ${e.venue}</div>
           <div style="font-family:var(--fd);font-size:24px;color:var(--white);margin-bottom:6px">${e.name}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${e.tags.map(t => `<span class="ev-tag">${t}</span>`).join('')}
-            ${e.overdue ? `<span class="ev-tag ev-tag-red">${e.overdue} Overdue</span>` : ''}
+            ${e.tags.map(tag => `<span class="ev-tag">${tag}</span>`).join('')}
+            ${!isBoard && e.overdue ? `<span class="ev-tag ev-tag-red">${e.overdue} Overdue</span>` : ''}
           </div>
           ${(USER.permission === "president" || USER.permission === "vp")
             ? `<div style="margin-top:10px"><button class="btn btn-red btn-sm" onclick="openConfirmModal('Delete this event?','Linked tasks will also be impacted.', 'Delete', () => removeEvent(${e.id}))">Delete Event</button></div>`
@@ -1918,15 +2275,15 @@ function renderEventsPage() {
         </div>
       </div>
       <div class="progress-bar" style="margin-bottom:16px"><div class="progress-fill" style="width:${e.progress}%"></div></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr${isBoard ? '' : ' 1fr'};gap:8px;font-size:12px">
         <div class="card-sm"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--gold);margin-bottom:4px">Your Tasks</div><span style="font-size:22px;font-family:var(--fd)">${e.yourTasks}</span></div>
         <div class="card-sm"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--green);margin-bottom:4px">Done</div><span style="font-size:22px;font-family:var(--fd);color:var(--green)">${e.yourDone}</span></div>
-        <div class="card-sm"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${e.overdue ? 'var(--red)' : 'var(--silver)'};margin-bottom:4px">Overdue</div><span style="font-size:22px;font-family:var(--fd);color:${e.overdue ? 'var(--red)' : 'var(--silver)'}">${e.overdue}</span></div>
+        ${!isBoard ? `<div class="card-sm"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${e.overdue ? 'var(--red)' : 'var(--silver)'};margin-bottom:4px">Overdue</div><span style="font-size:22px;font-family:var(--fd);color:${e.overdue ? 'var(--red)' : 'var(--silver)'}">${e.overdue}</span></div>` : ''}
       </div>
       <div style="margin-top:14px">
-        <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin-bottom:8px">Your Tasks on This Event</div>
+        <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin-bottom:8px">All Tasks for This Event</div>
         <div class="task-list">
-          ${TASKS.filter(t => t.event === e.name && t.assigned_email === USER.email).map(t => buildTaskCard(t)).join('') || '<div class="empty-state">No tasks assigned.</div>'}
+          ${TASKS.filter(t => t.event === e.name).map(t => buildTaskCard(t, { forBoardEvents: true })).join('') || '<div class="empty-state">No tasks for this event.</div>'}
         </div>
       </div>
     </div>`).join('');
@@ -2043,6 +2400,11 @@ function openTaskModal(id) {
       <div class="detail-label">Meeting</div>
       <div class="detail-val">${t.meeting.time} · ${t.meeting.location}</div>
     </div>` : '';
+  const meetingLinkHtml = t.meeting_link ? `
+    <div class="detail-row">
+      <div class="detail-label">Meeting Link</div>
+      <div class="detail-val"><a href="${t.meeting_link}" target="_blank" rel="noopener noreferrer" style="color:var(--gold-light)">${t.meeting_link}</a></div>
+    </div>` : '';
 
   document.getElementById('task-modal-title').textContent = t.title;
   document.getElementById('task-modal-body').innerHTML = `
@@ -2056,9 +2418,10 @@ function openTaskModal(id) {
     <div class="detail-row"><div class="detail-label">Assigned To</div><div class="detail-val">${t.assigned}</div></div>
     <div class="detail-row"><div class="detail-label">Due Date</div><div class="detail-val">${t.due}</div></div>
     <div class="detail-row"><div class="detail-label">Unlock Date</div><div class="detail-val">${t.unlock}</div></div>
-    ${meetHtml}${depHtml}${summaryHtml}`;
+    ${meetHtml}${meetingLinkHtml}${depHtml}${summaryHtml}`;
 
   const canComplete = t.status === 'current' && t.assigned_email === USER.email;
+  /* Board: complete only. President/VP: can delete. */
   const canManage = USER.permission === "president" || USER.permission === "vp";
   const actionBtn = document.getElementById('task-modal-action');
   if (canManage) {
@@ -2088,9 +2451,11 @@ function openCompletionForm(id) {
   const t = TASKS.find(x => x.id === id);
   if (!t) return;
   navigate('submit');
-  // pre-select the task in the dropdown
   const sel = document.getElementById('submit-form-card-task-sel');
-  if (sel) sel.value = id;
+  if (sel) sel.value = String(id);
+  updateCompletionTaskCard('submit-form-card');
+  renderCompletionDownstream('submit-form-card');
+  updateCompSteps('submit-form-card');
   showToast(`Ready to submit: ${t.title}`);
 }
 

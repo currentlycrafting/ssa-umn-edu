@@ -554,14 +554,41 @@ function renderAdminForms() {
   `;
 }
 
+function getUploadZone(section, index, field) {
+  const root = document.getElementById('admin-dynamic-forms');
+  if (!root) return null;
+  return root.querySelector(
+    `[data-upload-zone][data-section="${section}"][data-index="${index}"][data-field="${field}"]`
+  );
+}
+
+function setUploadState(zone, state, text) {
+  if (!zone || !zone.classList) return;
+  zone.classList.remove('upload-loading', 'upload-done', 'upload-warning', 'upload-error');
+  if (state) zone.classList.add('upload-' + state);
+  if (text !== undefined && zone.querySelector) {
+    const strong = zone.querySelector('strong');
+    if (strong) strong.textContent = text;
+  }
+}
+
 function processImageUpload(file, section, index, field) {
-  if (!file || !file.type.startsWith('image/')) return;
+  const zone = getUploadZone(section, index, field);
+  if (!file || !file.type.startsWith('image/')) {
+    if (zone) setUploadState(zone, 'none', 'Drag and drop image here');
+    return;
+  }
+  setUploadState(zone, 'loading', 'Uploading…');
   const reader = new FileReader();
   reader.onload = () => {
     if (!siteData[section]?.[index]) return;
     siteData[section][index][field] = String(reader.result || '');
+    setUploadState(zone, 'done', file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)');
     renderAllDynamicSections();
     renderAdminForms();
+  };
+  reader.onerror = () => {
+    setUploadState(zone, 'error', 'Upload failed, try again');
   };
   reader.readAsDataURL(file);
 }

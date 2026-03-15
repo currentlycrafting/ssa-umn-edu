@@ -159,6 +159,8 @@ function initDb() {
   ensureColumn("tasks", "attachments_json", "TEXT");
   ensureColumn("tasks", "redo_rules", "TEXT");
   ensureColumn("tasks", "escalation_rules", "TEXT");
+  ensureColumn("tasks", "meeting_link", "TEXT");
+  ensureColumn("tasks", "phase", "TEXT");
 
   // Keep auth domain policy aligned with @umn.edu access.
   db.exec(`
@@ -285,15 +287,6 @@ function seedUsers() {
       view_type: "board",
       vp_type: "internal"
     },
-    {
-      email: "ep.creative@umn.edu",
-      full_name: "Rahma Jama",
-      role_title: "Executive Producer, Somali Night — Creative",
-      department: "Internal Division",
-      permission_level: "board",
-      view_type: "board",
-      vp_type: "internal"
-    },
     // External Division
     {
       email: "brand.marketing@umn.edu",
@@ -330,6 +323,15 @@ function seedUsers() {
       permission_level: "board",
       view_type: "board",
       vp_type: "external"
+    },
+    {
+      email: "ep.creative@umn.edu",
+      full_name: "Rahma Jama",
+      role_title: "Executive Producer, Somali Night — Creative",
+      department: "External Division",
+      permission_level: "board",
+      view_type: "board",
+      vp_type: "external"
     }
   ];
 
@@ -344,10 +346,16 @@ function seedUsers() {
       view_type = excluded.view_type,
       vp_type = excluded.vp_type
   `);
+  const seededEmails = seeded.map((u) => u.email);
+  const placeholders = seededEmails.map(() => "?").join(",");
+  const deleteNotSeeded = db.prepare(
+    `DELETE FROM users WHERE email NOT IN (${placeholders})`
+  );
   const tx = db.transaction(() => {
     seeded.forEach((u) => upsert.run(u));
+    deleteNotSeeded.run(...seededEmails);
   });
   tx();
 }
 
-module.exports = { db, initDb };
+module.exports = { db, initDb, seedUsers };

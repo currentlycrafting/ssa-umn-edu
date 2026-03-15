@@ -5,7 +5,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const { OAuth2Client } = require("google-auth-library");
 const multer = require("multer");
-const { initDb, db } = require("./sqlite");
+const { initDb, db, seedUsers } = require("./sqlite");
 
 dotenv.config();
 initDb();
@@ -409,6 +409,9 @@ function getUserFromSession(token) {
 }
 
 function selectDashboardData(user) {
+  const users = listUsersInScope(user);
+  const seededEmails = new Set(users.map((u) => u.email));
+
   const rolePredicate =
     user.permission_level === "president"
       ? "1=1"
@@ -422,8 +425,8 @@ function selectDashboardData(user) {
       SELECT
         id, event_id, title, description, owner_email, owner_name, owner_role,
         department, status, unlock_at, due_at, priority, visibility, vp_scope,
-        meeting_date, meeting_time, meeting_location, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules
+        meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
+        notes, attachments_json, redo_rules, escalation_rules, phase
       FROM tasks
       WHERE ${rolePredicate}
       ORDER BY datetime(due_at) ASC
@@ -431,10 +434,11 @@ function selectDashboardData(user) {
     `
     )
     .all({ email: user.email, vpType: user.vp_type });
+  const onlySeededTasks = rawTasks.filter((t) => seededEmails.has(t.owner_email));
   const tasks =
     user.permission_level === "president"
-      ? rawTasks.map((t) => (t.status === "locked" ? { ...t, status: "current" } : t))
-      : rawTasks;
+      ? onlySeededTasks.map((t) => (t.status === "locked" ? { ...t, status: "current" } : t))
+      : onlySeededTasks;
 
   const eventsRaw = db
     .prepare(
@@ -457,7 +461,7 @@ function selectDashboardData(user) {
     constraints_json: safeJsonParse(e.constraints_json, {})
   }));
 
-  const dependencies = db
+  const rawDeps = db
     .prepare(
       `
       SELECT td.task_id, td.depends_on_task_id
@@ -468,10 +472,13 @@ function selectDashboardData(user) {
     `
     )
     .all({ email: user.email, vpType: user.vp_type });
+  const taskIds = new Set(tasks.map((t) => t.id));
+  const dependencies = rawDeps.filter(
+    (d) => taskIds.has(d.task_id) && taskIds.has(d.depends_on_task_id)
+  );
 
-  const users = listUsersInScope(user);
   const reports =
-    user.permission_level === "president" || user.view_type === "president"
+    user.permission_level === "president" || user.view_type === "president" || user.view_type === "board"
       ? db
           .prepare(
             `
@@ -603,6 +610,26 @@ app.get("/api/dashboard", (req, res) => {
   res.json({ user, ...data });
 });
 
+app.get("/api/tasks/all-for-prereq", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.permission_level !== "vp" && user.view_type !== "president" && user.view_type !== "vp") {
+    return res.status(403).json({ error: "Admin access required." });
+  }
+  const tasks = db
+    .prepare(
+      `
+      SELECT id, title, owner_email, owner_name, owner_role, department, status
+      FROM tasks
+      ORDER BY title ASC
+      LIMIT 500
+    `
+    )
+    .all();
+  res.json({ tasks });
+});
+
 app.get("/api/submissions/pending", (req, res) => {
   const token = req.header("x-session-token") || req.query.token;
   const user = getUserFromSession(token);
@@ -622,6 +649,7 @@ app.get("/api/submissions/pending", (req, res) => {
         t.title, t.owner_name, t.department, t.status
       FROM task_submissions s
       JOIN tasks t ON t.id = s.task_id
+      JOIN users u ON u.email = t.owner_email
       WHERE t.status = 'pending_review'
       ORDER BY datetime(s.created_at) DESC
       LIMIT 200
@@ -701,6 +729,18 @@ app.post("/api/tasks/:id/submit", (req, res) => {
   ).run(String(summary), taskId);
 
   res.json({ ok: true });
+});
+
+// Generic upload for president/VP (e.g. task attachments in edit modal)
+app.post("/api/upload", upload.array("files", 10), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.permission_level !== "vp") {
+    return res.status(403).json({ error: "Admin access required." });
+  }
+  const paths = (req.files || []).map((f) => `/uploads/${f.filename}`);
+  res.json({ paths });
 });
 
 app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res) => {
@@ -943,6 +983,62 @@ app.get("/api/notifications", (req, res) => {
       });
     });
 
+  const twoDaysMs = 2 * 24 * 60 * 60 * 1000;
+  data.tasks
+    .filter((t) => {
+      const rules = String(t.escalation_rules || "").toLowerCase();
+      if (!rules || rules === "none") return false;
+      const due = new Date(t.due_at).getTime();
+      if (!Number.isFinite(due) || due > now) return false;
+      const pastTwoDays = now - due >= twoDaysMs;
+      if (t.status === "completed") return false;
+      if (rules.includes("notify_vp_2days") && pastTwoDays) {
+        const dept = (t.department || "").toLowerCase();
+        const isInternal = dept.includes("internal");
+        if (user.permission_level === "vp" || user.view_type === "vp") {
+          const vpType = (user.vp_type || "internal").toLowerCase();
+          if (vpType === "internal" && isInternal) return true;
+          if (vpType === "external" && !isInternal) return true;
+        }
+      }
+      if (rules.includes("escalate_to_president") && pastTwoDays && (user.permission_level === "president" || user.view_type === "president")) return true;
+      if (rules.includes("auto_remind") && (t.owner_email || "").toLowerCase() === (user.email || "").toLowerCase()) return true;
+      return false;
+    })
+    .slice(0, 10)
+    .forEach((t) => {
+      const rules = String(t.escalation_rules || "").toLowerCase();
+      const dept = (t.department || "").toLowerCase();
+      const isInternal = dept.includes("internal");
+      if (rules.includes("notify_vp_2days") && (user.permission_level === "vp" || user.view_type === "vp")) {
+        const vpType = (user.vp_type || "internal").toLowerCase();
+        if ((vpType === "internal" && isInternal) || (vpType === "external" && !isInternal)) {
+          items.push({
+            type: "escalation_vp",
+            title: `Notify VP: ${t.title}`,
+            sub: `${t.owner_name} · ${t.department} · overdue`,
+            at: t.due_at
+          });
+        }
+      }
+      if (rules.includes("escalate_to_president") && (user.permission_level === "president" || user.view_type === "president")) {
+        items.push({
+          type: "escalation_president",
+          title: `Escalate: ${t.title}`,
+          sub: `${t.owner_name} · due ${new Date(t.due_at).toLocaleDateString()}`,
+          at: t.due_at
+        });
+      }
+      if (rules.includes("auto_remind") && (t.owner_email || "").toLowerCase() === (user.email || "").toLowerCase()) {
+        items.push({
+          type: "remind_assignee",
+          title: `Reminder: ${t.title}`,
+          sub: `Due ${new Date(t.due_at).toLocaleDateString()}`,
+          at: t.due_at
+        });
+      }
+    });
+
   items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
   res.json({
     count: items.length,
@@ -1076,7 +1172,7 @@ app.post("/api/events/generate", async (req, res) => {
   }));
   const prompt = `
 You are planning operations tasks for a student organization board.
-Return JSON with this shape:
+Return JSON with this exact shape only (no extra fields, no trailing commas):
 {
   "tasks": [
     {
@@ -1088,18 +1184,27 @@ Return JSON with this shape:
       "dueOffsetDaysBeforeEvent": number,
       "priority": "low|medium|high|urgent",
       "dependsOnTitles": ["string"],
-      "description": "string"
+      "description": "string",
+      "phase": "Planning|Pre-Event|Execution|Wrap-up",
+      "goals": "string",
+      "successCriteria": "string",
+      "whatWeDontWant": "string"
     }
   ]
 }
 
-Use ONLY real people/roles from this board roster when assigning tasks. Do not invent vague roles.
+Rules:
+- Use ONLY real roles from the board roster. Use exact role titles.
+- phase: use exactly one of Planning, Pre-Event, Execution, Wrap-up (this maps to the dependency graph).
+- title: clear, specific task name (one short sentence or phrase; descriptive, not vague).
+- description: 2–4 sentences: scope, context, what the task involves, and why it matters.
+- goals: 1–2 sentences on what we're trying to achieve with this task.
+- successCriteria: 1–2 sentences on how we know this task is done well (concrete outcomes).
+- whatWeDontWant: 1–2 sentences on what to avoid or common pitfalls.
+Keep the full JSON valid and complete. Do not truncate.
+
 Board roster:
 ${JSON.stringify(actualBoard, null, 2)}
-
-If a role exists in the roster, use that exact role title.
-Prefer assigning tasks to the most relevant real role for the work.
-Generate meaningful recurring event templates and sequencing, not placeholder templates.
 
 Event details:
 ${JSON.stringify(payload, null, 2)}
@@ -1149,14 +1254,14 @@ ${JSON.stringify(payload, null, 2)}
               parts: [
                 {
                   text:
-                    `${prompt}\n\nReturn ONLY valid JSON. Do not include markdown fences, prose, or extra text.`
+                    `${prompt}\n\nReturn ONLY valid JSON. No markdown, no prose, no extra text. Ensure the entire JSON is complete (no cut-off descriptions).`
                 }
               ]
             }
           ],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 2400,
+            maxOutputTokens: 8192,
             responseMimeType: "application/json"
           }
         })
@@ -1201,7 +1306,7 @@ ${JSON.stringify(payload, null, 2)}
             ],
             generationConfig: {
               temperature: 0,
-              maxOutputTokens: 2400,
+              maxOutputTokens: 8192,
               responseMimeType: "application/json"
             }
           })
@@ -1271,10 +1376,10 @@ app.post("/api/events/publish", (req, res) => {
     INSERT INTO tasks (
       event_id, title, description, owner_email, owner_name, owner_role,
       department, status, unlock_at, due_at, priority, visibility, vp_scope,
-        meeting_date, meeting_time, meeting_location, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules
+        meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
+        notes, attachments_json, redo_rules, escalation_rules, phase
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `
   );
   const insertDep = db.prepare(
@@ -1335,11 +1440,13 @@ app.post("/api/events/publish", (req, res) => {
         task.meeting_date ? String(task.meeting_date) : null,
         task.meeting_time ? String(task.meeting_time) : null,
         task.meeting_location ? String(task.meeting_location) : null,
+        task.meeting_link ? String(task.meeting_link) : null,
         String(task.previous_summary || ""),
         String(task.notes || ""),
         toJson(task.attachments || []),
         String(task.redo_rules || ""),
-        String(task.escalation_rules || "")
+        String(task.escalation_rules || ""),
+        String(task.phase || "")
       ).lastInsertRowid;
 
       insertedRows.push({
@@ -1455,6 +1562,7 @@ app.post("/api/tasks/assign", (req, res) => {
     meeting_date,
     meeting_time,
     meeting_location,
+    meeting_link,
     notes,
     attachments,
     redo_rules,
@@ -1531,10 +1639,10 @@ app.post("/api/tasks/assign", (req, res) => {
       INSERT INTO tasks (
         event_id, title, description, owner_email, owner_name, owner_role,
         department, status, unlock_at, due_at, priority, visibility, vp_scope,
-        meeting_date, meeting_time, meeting_location, previous_summary,
+        meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
         notes, attachments_json, redo_rules, escalation_rules
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
     )
     .run(
@@ -1554,6 +1662,7 @@ app.post("/api/tasks/assign", (req, res) => {
       meeting_date ? String(meeting_date) : null,
       meeting_time ? String(meeting_time) : null,
       meeting_location ? String(meeting_location) : null,
+      meeting_link ? String(meeting_link) : null,
       "",
       String(notes || ""),
       toJson(Array.isArray(attachments) ? attachments : []),
@@ -1647,6 +1756,7 @@ app.patch("/api/tasks/:id", (req, res) => {
       meeting_date = COALESCE(@meeting_date, meeting_date),
       meeting_time = COALESCE(@meeting_time, meeting_time),
       meeting_location = COALESCE(@meeting_location, meeting_location),
+      meeting_link = COALESCE(@meeting_link, meeting_link),
       notes = COALESCE(@notes, notes),
       attachments_json = COALESCE(@attachments_json, attachments_json),
       redo_rules = COALESCE(@redo_rules, redo_rules),
@@ -1671,6 +1781,7 @@ app.patch("/api/tasks/:id", (req, res) => {
     meeting_date: body.meeting_date ? String(body.meeting_date) : null,
     meeting_time: body.meeting_time ? String(body.meeting_time) : null,
     meeting_location: body.meeting_location ? String(body.meeting_location) : null,
+    meeting_link: body.meeting_link ? String(body.meeting_link) : null,
     notes: body.notes ? String(body.notes) : null,
     attachments_json: body.attachments ? toJson(body.attachments) : null,
     redo_rules: body.redo_rules ? String(body.redo_rules) : null,
@@ -1783,6 +1894,48 @@ app.patch("/api/events/:id", (req, res) => {
           ]
         : []
   });
+});
+
+app.get("/api/admin/seed-users-snippet", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  try {
+    const sqlitePath = path.join(__dirname, "sqlite.js");
+    const content = fs.readFileSync(sqlitePath, "utf8");
+    res.json({ content, filename: "sqlite.js" });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to read file." });
+  }
+});
+
+app.post("/api/admin/run-seed", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  try {
+    seedUsers();
+    res.json({ ok: true, message: "Seed users run successfully." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Seed failed." });
+  }
+});
+
+app.get("/api/admin/github-repo", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  const url = process.env.GITHUB_REPO || null;
+  res.json({ url });
 });
 
 app.delete("/api/events/:id", (req, res) => {

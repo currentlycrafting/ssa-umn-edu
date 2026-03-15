@@ -32,6 +32,8 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .sb-item:hover{color:var(--white);background:rgba(255,255,255,.03);border-left-color:rgba(184,154,92,.3)}
 .sb-item.active{color:var(--white);background:rgba(184,154,92,.08);border-left-color:var(--gold)}
 .sb-icon{font-size:13px;width:16px;text-align:center;flex-shrink:0}
+input[type="date"],input[type="time"],input[type="datetime-local"]{background:var(--navy-light)!important;color:var(--white)!important;accent-color:var(--gold);}
+input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webkit-calendar-picker-indicator,input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7;}
 .sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:500;padding:2px 6px;border-radius:2px}
 .sb-badge.gold{background:var(--gold);color:var(--navy)}
 .sb-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.05)}
@@ -102,20 +104,23 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .dep-node.active-node{border-color:var(--gold);background:rgba(184,154,92,.08)}.dep-node.locked-node{opacity:.45}
 .dep-dept{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
 .dep-arrow{font-size:16px;color:rgba(184,154,92,.4);flex-shrink:0}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay{position:fixed;inset:0;background:rgba(5,8,15,.88);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--navy-mid);border:1px solid rgba(184,154,92,.2);width:600px;max-width:94vw;max-height:86vh;overflow-y:auto}
-.modal-header{padding:22px 26px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-mid);z-index:5}
+.modal{background:var(--navy-mid);border:1px solid rgba(184,154,92,.22);border-radius:14px;box-shadow:0 24px 56px rgba(0,0,0,.45);width:600px;max-width:94vw;max-height:86vh;overflow-y:auto}
+.modal-header{padding:22px 26px;border-bottom:1px solid rgba(255,255,255,.06);border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-mid);z-index:5}
 .modal-title{font-family:var(--font-display);font-size:22px;color:var(--white)}
-.modal-close{background:transparent;border:1px solid rgba(255,255,255,.15);width:28px;height:28px;color:var(--silver);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.modal-close:hover{border-color:var(--red);color:var(--red)}
+.modal-close{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);border-radius:8px;width:32px;height:32px;color:var(--silver);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{border-color:var(--red);color:var(--red);background:rgba(192,80,77,.1)}
 .modal-body{padding:24px;display:flex;flex-direction:column;gap:16px}
-.modal-footer{padding:14px 24px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:14px;background:var(--navy-mid);position:sticky;bottom:0;flex-wrap:wrap}
+.modal-footer{padding:16px 24px;border-top:1px solid rgba(255,255,255,.06);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;align-items:center;gap:12px;background:var(--navy-mid);position:sticky;bottom:0;flex-wrap:wrap}
+.modal-footer .btn-outline,.modal-footer .btn-gold{border-radius:10px;padding:10px 20px}
 .fg{display:flex;flex-direction:column;gap:6px}
 .fg label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--silver)}
-.fg input,.fg select,.fg textarea{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.14);padding:13px 14px;font-family:var(--font-body);font-size:13px;color:var(--white);min-height:48px;border-radius:6px;outline:none;transition:border-color .3s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
-.fg select option{background:var(--navy-mid)}.fg textarea{min-height:80px;resize:vertical}.fg select{min-height:48px}
+.fg input,.fg select,.fg textarea{background:var(--navy-light);border:1px solid rgba(255,255,255,.12);padding:13px 16px;font-family:var(--font-body);font-size:13px;color:var(--white);min-height:48px;border-radius:10px;outline:none;transition:border-color .25s,box-shadow .2s;box-shadow:0 1px 2px rgba(0,0,0,.15);resize:vertical}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,154,92,.2)}
+.fg select option{background:var(--navy-mid);color:var(--white)}
+.fg textarea{min-height:80px}
+.fg select{min-height:48px;cursor:pointer}
 .info-block{background:var(--navy);border:1px solid rgba(255,255,255,.05);padding:14px}
 .info-label{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
 .info-val{font-size:13px;color:var(--silver);line-height:1.65}
@@ -139,6 +144,203 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .perf-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}::-webkit-scrollbar-thumb{background:rgba(184,154,92,.3);border-radius:2px}
 @media(max-width:860px){#sidebar{display:none}#main{margin-left:0}.stat-row{grid-template-columns:1fr 1fr}.two-col,.three-col{grid-template-columns:1fr}}
+/* Assign/Edit task modals (same UI as president) */
+.at-modal{width:720px;max-width:100%;background:var(--navy-mid);border:1px solid rgba(184,154,92,.22);display:flex;flex-direction:column;border-radius:14px;overflow:hidden;}
+.at-header{padding:22px 28px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;}
+.at-htitle{font-family:var(--font-display);font-size:26px;font-weight:400;color:var(--white);}
+.at-hsub{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-top:3px;}
+.at-close{background:transparent;border:1px solid rgba(255,255,255,.12);width:30px;height:30px;color:var(--silver);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;border-radius:6px;}
+.at-close:hover{border-color:#c0504d;color:#c0504d;}
+.at-body{padding:24px 28px;display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:640px;}
+.at-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.at-fl{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-family:var(--font-body);}
+.at-fi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:10px 13px;font-family:var(--font-body);font-size:13px;color:var(--white);outline:none;transition:border-color .25s;width:100%;border-radius:8px;}
+.at-fi:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,154,92,.2);}
+.at-fi::placeholder{color:rgba(154,159,173,.38);}
+.at-fta{min-height:80px;resize:vertical;}
+select.at-fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9fad'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.at-divider{height:1px;background:rgba(255,255,255,.06);margin:4px 0 20px;}
+.at-sec-label{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--silver);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.at-sec-label::before{content:'';display:block;width:16px;height:1px;background:var(--gold);}
+.at-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;}
+.at-role-chip{padding:10px 13px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;border-radius:8px;}
+.at-role-chip:hover{border-color:rgba(184,154,92,.3);background:rgba(184,154,92,.04);}
+.at-role-chip.selected{border-color:var(--gold);background:rgba(184,154,92,.1);}
+.at-rc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.at-rc-div{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver);margin-bottom:1px;}
+.at-rc-name{font-size:12px;color:var(--white);}
+.at-suggest-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);padding:14px;margin-bottom:18px;border-radius:8px;}
+.at-suggest-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.at-suggest-title{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);}
+.at-suggest-list{display:flex;flex-direction:column;gap:4px;}
+.at-suggest-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.05);cursor:pointer;transition:all .2s;border-radius:6px;}
+.at-suggest-item:hover{border-color:rgba(184,154,92,.25);background:rgba(184,154,92,.04);}
+.at-suggest-item.selected{border-color:var(--gold);background:rgba(184,154,92,.1);}
+.at-si-rank{font-family:var(--font-display);font-size:20px;font-weight:300;color:rgba(184,154,92,.35);width:20px;flex-shrink:0;}
+.at-si-name{font-size:12px;color:var(--white);margin-bottom:2px;}
+.at-si-role{font-size:10px;color:var(--silver);}
+.at-prereq-list{display:flex;flex-direction:column;gap:4px;margin-bottom:18px;}
+.at-prereq-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:all .2s;border-radius:6px;}
+.at-prereq-item:hover{border-color:rgba(184,154,92,.2);background:rgba(255,255,255,.02);}
+.at-prereq-item.checked{border-color:rgba(184,154,92,.3);background:rgba(184,154,92,.07);}
+.at-prereq-cb{width:14px;height:14px;border:1px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;border-radius:3px;}
+.at-prereq-item.checked .at-prereq-cb{border-color:var(--gold);background:var(--gold);}
+.at-prereq-dept{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:1px;}
+.at-prereq-name{font-size:12px;color:var(--white);}
+.at-prereq-assignee{font-size:10px;color:var(--silver);margin-top:2px;}
+.at-prereq-status{margin-left:auto;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:2px 8px;border-radius:4px;}
+.at-ps-done{background:rgba(76,175,125,.12);color:#4caf7d;}
+.at-ps-active{background:rgba(184,154,92,.12);color:var(--gold);}
+.at-ps-locked{background:rgba(255,255,255,.05);color:var(--silver);}
+.at-prio-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:18px;}
+.at-prio-btn{padding:8px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:10px;letter-spacing:.16em;text-transform:uppercase;text-align:center;color:var(--silver);transition:all .2s;background:transparent;border-radius:6px;}
+.at-prio-btn:hover{border-color:rgba(255,255,255,.2);}
+.at-prio-btn.active-urgent{border-color:#c0504d;color:#c0504d;background:rgba(192,80,77,.1);}
+.at-prio-btn.active-high{border-color:#d4914a;color:#d4914a;background:rgba(212,145,74,.1);}
+.at-prio-btn.active-standard{border-color:var(--gold);color:var(--gold);background:rgba(184,154,92,.1);}
+.at-prio-btn.active-low{border-color:rgba(255,255,255,.2);color:var(--stone);background:rgba(255,255,255,.04);}
+.at-footer{padding:16px 28px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--navy-mid);}
+.at-footer-left{font-size:11px;color:var(--silver);}
+.at-footer-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.at-btn-assign{background:var(--gold);color:var(--navy);padding:9px 24px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border:none;border-radius:8px;}
+.at-btn-assign:hover{background:var(--gold-light);}
+.at-progress-track{height:2px;background:rgba(255,255,255,.07);margin-bottom:22px;}
+.at-progress-val{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .4s;border-radius:2px;}
+.at-body .at-cols{margin-bottom:14px;}
+.at-body .at-divider.at-divider-tight{margin:6px 0;}
+.at-body .at-sec-tight{margin-top:2px;}
+.at-body .at-sec-tight .at-sec-label{margin-bottom:8px;}
+/* Assign/Edit modal: form fields 1:1 with president (override generic .fg) */
+.at-body .fg{display:flex;flex-direction:column;gap:6px;}
+.at-body .fg label.at-fl{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-family:var(--font-body);}
+.at-body .fg input.at-fi,
+.at-body .fg select.at-fi,
+.at-body .fg textarea.at-fi{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  padding:10px 13px;
+  font-family:var(--font-body);
+  font-size:13px;
+  color:var(--white);
+  outline:none;
+  transition:border-color .25s;
+  width:100%;
+  border-radius:8px;
+  min-height:unset;
+  box-shadow:none;
+  resize:vertical;
+}
+.at-body .fg input.at-fi:focus,
+.at-body .fg select.at-fi:focus,
+.at-body .fg textarea.at-fi:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,154,92,.2);}
+.at-body .fg input.at-fi::placeholder,
+.at-body .fg textarea.at-fi::placeholder{color:rgba(154,159,173,.38);}
+.at-body .fg select.at-fi{
+  cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9fad'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:32px;
+  min-height:40px;
+}
+.at-body .fg textarea.at-fi.at-fta{min-height:80px;}
+.at-body .fg input[type="date"].at-fi,
+.at-body .fg input[type="time"].at-fi,
+.at-body .fg input[type="datetime-local"].at-fi{background:rgba(255,255,255,.04)!important;color:var(--white)!important;}
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;}
+.st-btn{padding:11px 10px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.st-btn:hover{border-color:rgba(255,255,255,.2);}
+.st-dot{width:8px;height:8px;border-radius:50%;}
+.st-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#9a9fad;}
+.st-btn.active .st-label{font-weight:500;}
+.st-btn[data-s="current"].active{border-color:#b89a5c;background:rgba(184,154,92,.08);}
+.st-btn[data-s="locked"].active{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.04);}
+.st-btn[data-s="pending_review"].active{border-color:rgba(123,163,212,.45);background:rgba(123,163,212,.08);}
+.st-btn[data-s="redo"].active{border-color:rgba(212,145,74,.45);background:rgba(212,145,74,.08);}
+.st-btn[data-s="completed"].active{border-color:rgba(76,175,125,.45);background:rgba(76,175,125,.08);}
+.st-btn[data-s="overdue"].active{border-color:rgba(192,80,77,.45);background:rgba(192,80,77,.08);}
+.pre-list{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.pre-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:all .2s;}
+.pre-item:hover{border-color:rgba(184,154,92,.2);background:rgba(255,255,255,.02);}
+.pre-item.chk{border-color:rgba(184,154,92,.3);background:rgba(184,154,92,.06);}
+.pre-cb{width:14px;height:14px;border:1px solid rgba(255,255,255,.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.pre-item.chk .pre-cb{border-color:#b89a5c;background:#b89a5c;}
+.pre-cb-dot{width:6px;height:6px;background:#0b0f1c;display:none;}
+.pre-item.chk .pre-cb-dot{display:block;}
+.pre-dept{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#b89a5c;margin-bottom:1px;}
+.pre-name{font-size:12px;color:#f8f6f2;}
+.pre-assignee{font-size:10px;color:#9a9fad;margin-top:2px;}
+.ps{margin-left:auto;font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:2px 8px;flex-shrink:0;}
+.ps-done{background:rgba(76,175,125,.12);color:#4caf7d;}
+.ps-act{background:rgba(184,154,92,.12);color:#b89a5c;}
+.ps-lock{background:rgba(255,255,255,.05);color:#9a9fad;}
+.task-id-badge{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#9a9fad;border:1px solid rgba(255,255,255,.07);padding:4px 10px;}
+.btn-del{background:transparent;border:1px solid rgba(192,80,77,.3);color:#c0504d;padding:9px 22px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;}
+.btn-del:hover{background:rgba(192,80,77,.08);}
+.rule-btn-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.rule-btn{padding:8px 14px;border:1px solid rgba(255,255,255,.08);cursor:pointer;font-size:11px;color:#9a9fad;transition:all .2s;}
+.rule-btn:hover{border-color:rgba(184,154,92,.3);color:#c4bdb0;}
+.rule-btn.sel{border-color:#b89a5c;background:rgba(184,154,92,.1);color:#d4b87a;}
+.vp-meeting-link-wrap{margin-top:20px;}
+#report-reason,#report-event,#report-task{padding:12px 14px;min-height:44px;box-sizing:border-box;}
+
+/* Escalate page (from static design) */
+#page-escalate .esc-wrap{max-width:720px;margin:0 auto;}
+#page-escalate .esc-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
+#page-escalate .esc-eyebrow{font-size:9px;letter-spacing:.38em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px;}
+#page-escalate .esc-eyebrow::before{content:'';display:block;width:20px;height:1px;background:var(--gold);}
+#page-escalate .esc-breadcrumb{font-size:10px;color:var(--silver);letter-spacing:.06em;}
+#page-escalate .esc-breadcrumb span{color:var(--gold);}
+#page-escalate .esc-heading{margin-bottom:28px;}
+#page-escalate .esc-title{font-family:var(--font-display);font-size:34px;font-weight:400;color:var(--white);line-height:1.1;margin-bottom:10px;}
+#page-escalate .esc-desc{font-size:13px;color:var(--silver);line-height:1.75;max-width:580px;}
+#page-escalate .sev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px;}
+#page-escalate .sev-btn{padding:14px 12px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:6px;text-align:left;}
+#page-escalate .sev-btn:hover{border-color:rgba(255,255,255,.18);}
+#page-escalate .sev-btn.active-crit{border-color:var(--red);background:var(--red-dim);}
+#page-escalate .sev-btn.active-high{border-color:var(--amber);background:var(--amber-dim);}
+#page-escalate .sev-btn.active-std{border-color:var(--gold);background:rgba(184,154,92,.08);}
+#page-escalate .sev-dot-row{display:flex;align-items:center;gap:6px;}
+#page-escalate .sev-dot{width:7px;height:7px;border-radius:50%;}
+#page-escalate .sev-sev{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--silver);}
+#page-escalate .sev-btn.active-crit .sev-sev{color:var(--red);}
+#page-escalate .sev-btn.active-high .sev-sev{color:var(--amber);}
+#page-escalate .sev-btn.active-std .sev-sev{color:var(--gold);}
+#page-escalate .sev-name{font-size:13px;color:var(--white);font-weight:400;}
+#page-escalate .sev-sub{font-size:10px;color:var(--silver);line-height:1.5;}
+#page-escalate .esc-banner{padding:12px 16px;border-left:3px solid;display:flex;align-items:flex-start;gap:10px;margin-bottom:22px;display:none;}
+#page-escalate .esc-banner.show{display:flex;}
+#page-escalate .esc-banner-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+#page-escalate .esc-banner-text{font-size:12px;line-height:1.65;}
+#page-escalate .esc-dv{height:1px;background:rgba(255,255,255,.06);margin:4px 0 20px;}
+#page-escalate .esc-sl{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--silver);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+#page-escalate .esc-sl::before{content:'';display:block;width:16px;height:1px;background:var(--gold);}
+#page-escalate .esc-row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+#page-escalate .esc-fg{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+#page-escalate .esc-fl{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);}
+#page-escalate .esc-fi{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:10px 13px;font-family:var(--font-body);font-size:13px;color:var(--white);outline:none;transition:border-color .25s;width:100%;border-radius:8px;box-sizing:border-box;}
+#page-escalate .esc-fi:focus{border-color:var(--gold);}
+#page-escalate .esc-fi::placeholder{color:rgba(154,159,173,.38);}
+#page-escalate .esc-fta{min-height:110px;resize:vertical;line-height:1.65;}
+#page-escalate select.esc-fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9fad'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+#page-escalate select.esc-fi option{background:var(--navy-mid);color:var(--white);}
+#page-escalate .esc-char-hint{font-size:10px;color:var(--silver);text-align:right;margin-top:4px;}
+#page-escalate .esc-char-hint.warn{color:var(--amber);}
+#page-escalate .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:20px;}
+#page-escalate .type-chip{padding:9px 12px;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;font-size:11px;color:var(--silver);text-align:center;letter-spacing:.06em;}
+#page-escalate .type-chip:hover{border-color:rgba(255,255,255,.2);color:var(--white);}
+#page-escalate .type-chip.on{border-color:var(--gold);color:var(--gold-light);background:rgba(184,154,92,.09);}
+#page-escalate .esc-footer{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:18px;border-top:1px solid rgba(255,255,255,.06);flex-wrap:wrap;gap:14px;}
+#page-escalate .esc-footer-note{font-size:11px;color:var(--silver);max-width:380px;line-height:1.6;}
+#page-escalate .esc-footer-note strong{color:var(--white);}
+#page-escalate .esc-footer-btns{display:flex;gap:8px;flex-shrink:0;}
+#page-escalate .esc-btn-cancel{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--silver);padding:10px 24px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:8px;}
+#page-escalate .esc-btn-cancel:hover{border-color:rgba(255,255,255,.25);color:var(--white);}
+#page-escalate .esc-btn-send{background:var(--gold);color:var(--navy);padding:10px 24px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border:none;border-radius:8px;}
+#page-escalate .esc-btn-send:hover{background:var(--gold-light);}
+#page-escalate .esc-btn-send.crit{background:var(--red);color:#fff;}
+#page-escalate .esc-btn-send.crit:hover{background:#a83d3a;}
 </style>
 </head>
 <body>
@@ -178,7 +380,7 @@ const VP_CONFIG = {
     <div class="sb-section-label" id="div-nav-label">My Division</div>
     <div class="sb-item" onclick="showPage('members')"><span class="sb-icon">◉</span>Division Members</div>
     <div class="sb-item" onclick="showPage('div-tasks')"><span class="sb-icon">≋</span>Division Tasks</div>
-    <div class="sb-item" onclick="showPage('assign')"><span class="sb-icon">→</span>Assign Tasks</div>
+    <div class="sb-item" onclick="vpOpenAssignModal()"><span class="sb-icon">→</span>Assign Tasks</div>
 
     <div class="sb-section-label">Events</div>
     <div class="sb-item" onclick="showPage('events')"><span class="sb-icon">◆</span>Active Events</div>
@@ -187,6 +389,7 @@ const VP_CONFIG = {
 
     <div class="sb-section-label">Reports</div>
     <div class="sb-item" id="sb-item-suggestions" onclick="showPage('suggestions')"><span class="sb-icon">◇</span>Suggestion Box</div>
+    <div class="sb-item" id="sb-item-reports" onclick="showPage('reports')"><span class="sb-icon">▣</span>Report Box <span class="sb-badge" id="reports-badge" style="display:none">0</span></div>
     <div class="sb-item" onclick="showPage('escalate')"><span class="sb-icon">★</span>Escalate to President</div>
   </div>
   <div class="sb-footer">
@@ -321,6 +524,7 @@ const VP_CONFIG = {
           </div>
           <div class="fg"><label>Linked Event</label><select id="assign-event"></select></div>
           <div class="fg"><label>Unlock Date</label><input type="datetime-local" id="assign-unlock"/></div>
+          <div class="fg"><label>Meeting Link (optional)</label><input type="url" id="assign-meeting-link" placeholder="https://zoom.us/j/..."/></div>
           <div class="fg"><label>Description</label><textarea id="assign-description" placeholder="Describe scope and completion criteria"></textarea></div>
           <div class="fg"><label>Prerequisite Tasks</label><div style="font-size:11px;color:var(--silver)">Select prerequisite tasks to chain dependency flow and lock this task until ready.</div><div id="assign-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
         </div>
@@ -387,30 +591,162 @@ const VP_CONFIG = {
     </div>
   </div>
 
+  <!-- ── REPORT BOX (division notifications) ── -->
+  <div class="page" id="page-reports">
+    <div class="breadcrumb" id="reports-bc"><span>Reports</span> / Report Box</div>
+    <div class="card">
+      <div class="section-label">Division</div>
+      <div style="font-family:var(--font-display);font-size:22px;color:var(--white);margin-bottom:8px">Division Notifications</div>
+      <div style="font-size:13px;color:var(--silver);margin-bottom:20px">Pending reviews, overdue tasks, escalations, and reminders for your division.</div>
+      <div id="reports-list"></div>
+    </div>
+  </div>
+
   <!-- ── ESCALATE ── -->
   <div class="page" id="page-escalate">
-    <div class="breadcrumb"><span>Reports</span> / Escalate to President</div>
-    <div class="card" style="max-width:600px">
-      <div class="section-label">Escalation</div>
-      <div style="font-family:var(--font-display);font-size:22px;color:var(--white);margin-bottom:8px">Flag for Executive Review</div>
-      <div style="font-size:13px;color:var(--silver);margin-bottom:24px;line-height:1.7">Use this when an issue exceeds your authority to resolve — strategic conflicts, cross-division blockers, serious accountability concerns, or resource decisions that need executive sign-off.</div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="fg"><label>Issue Type</label>
-          <select id="report-reason"><option>Cross-Division Blocker</option><option>Accountability Concern</option><option>Resource Decision</option><option>Strategic Conflict</option><option>Deadline Risk</option></select>
+    <div class="esc-wrap">
+      <div class="esc-topbar">
+        <div class="esc-eyebrow">Escalation</div>
+        <div class="esc-breadcrumb"><span>Vice President</span> › Escalate to President</div>
+      </div>
+      <div class="esc-heading">
+        <div class="esc-title">Flag for Executive Review</div>
+        <div class="esc-desc">Use this when an issue exceeds your authority to resolve — strategic conflicts, cross-division blockers, serious accountability concerns, or resource decisions that need executive sign-off. The President is notified immediately.</div>
+      </div>
+      <div class="esc-sl">Escalation Severity</div>
+      <div class="sev-grid">
+        <div class="sev-btn" data-sev="critical" onclick="vpSetSev(this)">
+          <div class="sev-dot-row"><div class="sev-dot" style="background:var(--red)"></div><span class="sev-sev">Critical</span></div>
+          <div class="sev-name">Needs Immediate Action</div>
+          <div class="sev-sub">Event at risk, serious breach, or hard deadline conflict requiring same-day resolution.</div>
         </div>
-        <div class="form-row">
-          <div class="fg"><label>Linked Event</label><select id="report-event"></select></div>
-          <div class="fg"><label>Linked Task</label><select id="report-task"></select></div>
+        <div class="sev-btn active-high" data-sev="high" onclick="vpSetSev(this)">
+          <div class="sev-dot-row"><div class="sev-dot" style="background:var(--amber)"></div><span class="sev-sev">High</span></div>
+          <div class="sev-name">Escalation Required</div>
+          <div class="sev-sub">Issue is real and time-sensitive but not yet causing immediate failure. Needs presidential input.</div>
         </div>
-        <div class="fg"><label>Summary</label><textarea id="report-notes" placeholder="What happened, what you've done, and what needs presidential decision..." style="min-height:100px"></textarea></div>
-        <div class="fg"><label>Recommended Action</label>
-          <input id="report-action" type="text" placeholder="What are you recommending the President do?"/>
+        <div class="sev-btn" data-sev="standard" onclick="vpSetSev(this)">
+          <div class="sev-dot-row"><div class="sev-dot" style="background:var(--gold)"></div><span class="sev-sev">Standard</span></div>
+          <div class="sev-name">Awaiting Decision</div>
+          <div class="sev-sub">Strategic or resource decision that VP cannot make unilaterally. No immediate risk.</div>
         </div>
-        <button class="btn btn-gold" style="align-self:flex-start" onclick="sendEscalation()">Send Escalation</button>
+      </div>
+      <div class="esc-banner" id="sev-banner">
+        <span class="esc-banner-icon" id="sev-icon"></span>
+        <span class="esc-banner-text" id="sev-text"></span>
+      </div>
+      <div class="esc-dv"></div>
+      <div class="esc-sl">Issue Type</div>
+      <input type="hidden" id="report-reason" value="Cross-Division Blocker" />
+      <div class="type-grid">
+        <div class="type-chip on" data-reason="Cross-Division Blocker" onclick="vpTogType(this)">Cross-Division Blocker</div>
+        <div class="type-chip" data-reason="Accountability Concern" onclick="vpTogType(this)">Accountability Concern</div>
+        <div class="type-chip" data-reason="Resource Decision" onclick="vpTogType(this)">Resource Decision</div>
+        <div class="type-chip" data-reason="Strategic Conflict" onclick="vpTogType(this)">Strategic Conflict</div>
+        <div class="type-chip" data-reason="Deadline Risk" onclick="vpTogType(this)">Deadline Risk</div>
+        <div class="type-chip" data-reason="Personnel Issue" onclick="vpTogType(this)">Personnel Issue</div>
+      </div>
+      <div class="esc-dv"></div>
+      <div class="esc-sl">Escalation Detail</div>
+      <div class="esc-fg">
+        <label class="esc-fl">What happened and what have you done?</label>
+        <textarea class="esc-fi esc-fta" id="report-notes" oninput="vpEscCountChars('report-notes','report-notes-hint')" placeholder="Be specific. Describe the situation, what you have already tried to resolve it, why it cannot be resolved at your level, and what decision you need the President to make."></textarea>
+        <div class="esc-char-hint" id="report-notes-hint">0 / 800 recommended</div>
+      </div>
+      <div class="esc-fg">
+        <label class="esc-fl">Your Recommended Action</label>
+        <textarea class="esc-fi" style="min-height:72px;resize:vertical" id="report-action" oninput="vpEscCountChars('report-action','report-action-hint')" placeholder="What are you recommending the President do? Be direct — a specific ask is more useful than a vague request."></textarea>
+        <div class="esc-char-hint" id="report-action-hint">0 / 200 recommended</div>
+      </div>
+      <div class="esc-footer">
+        <div class="esc-footer-note" id="esc-footer-note"><strong>High severity</strong> — The President will be notified immediately. Escalations are logged permanently and visible to executive leadership.</div>
+        <div class="esc-footer-btns">
+          <button type="button" class="esc-btn-cancel" onclick="showPage('overview')">Cancel</button>
+          <button type="button" class="esc-btn-send" id="esc-send-btn" onclick="sendEscalation()">Send Escalation</button>
+        </div>
       </div>
     </div>
   </div>
 </main>
+
+<!-- VP ASSIGN TASK MODAL (same UI as president) -->
+<div class="modal-overlay" id="vpAssignTaskModal">
+  <div class="modal at-modal" style="max-width:720px">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Assign Task</div>
+        <div class="at-hsub" id="vp-assign-hsub">Division · SSA Board Platform</div>
+      </div>
+      <button class="at-close" type="button" onclick="closeModal('vpAssignTaskModal')">✕</button>
+    </div>
+    <div class="at-body">
+      <div class="at-progress-track"><div class="at-progress-val" id="vp-assign-progress" style="width:20%"></div></div>
+      <input type="hidden" id="vp-assign-priority" value="standard" />
+      <select id="vp-assign-role" style="display:none" aria-hidden="true"><option value="">—</option></select>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Task Title</label>
+          <input class="at-fi" id="vp-assign-title" type="text" placeholder="e.g. Launch promotional campaign" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Linked Event</label>
+          <select class="at-fi" id="vp-assign-event"><option value="">Standalone</option></select>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:4px;margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row">
+        <button type="button" class="at-prio-btn" data-prio="urgent" onclick="vpSetAssignPrio(this)">Urgent</button>
+        <button type="button" class="at-prio-btn" data-prio="high" onclick="vpSetAssignPrio(this)">High</button>
+        <button type="button" class="at-prio-btn active-standard" data-prio="standard" onclick="vpSetAssignPrio(this)">Standard</button>
+        <button type="button" class="at-prio-btn" data-prio="low" onclick="vpSetAssignPrio(this)">Low</button>
+      </div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Due Date</label>
+          <input class="at-fi" id="vp-assign-due" type="date" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Unlock Date</label>
+          <input class="at-fi" id="vp-assign-unlock" type="datetime-local" />
+        </div>
+      </div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Assign to Role</div>
+      <div class="at-role-grid" id="vp-assign-role-chips"></div>
+      <div class="at-suggest-wrap">
+        <div class="at-suggest-hdr">
+          <span class="at-suggest-title">Smart Suggestions</span>
+          <span class="at-suggest-title" style="font-size:10px;color:var(--silver)">Sorted by role fit + workload (your division)</span>
+        </div>
+        <div class="at-suggest-list" id="vp-assign-suggestions">
+          <div style="font-size:12px;color:var(--silver);padding:8px 0">Select a role to load suggestions.</div>
+        </div>
+      </div></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:12px;margin-top:-8px">Task auto-locks until all selected prerequisites are complete. You can select tasks from any division.</div>
+      <div class="at-prereq-list" id="vp-assign-dependencies"></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Description</div>
+      <div class="fg">
+        <textarea class="at-fi at-fta" id="vp-assign-description" placeholder="Describe the scope, what done looks like, and any context the assignee needs."></textarea>
+      </div>
+      </div>
+      <div class="fg vp-meeting-link-wrap">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="vp-assign-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="vpValidateMeetingLink(this)" />
+        <span class="meeting-link-err" id="vp-assign-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
+      </div>
+    </div>
+    <div class="at-footer">
+      <div class="at-footer-left" id="vp-assign-footer-hint">Select a role and assignee above (division members only).</div>
+      <div class="at-footer-right">
+        <button type="button" class="btn btn-outline" onclick="closeModal('vpAssignTaskModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="vpAssignTask()">Assign Task</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- REDO MODAL -->
 <div class="modal-overlay" id="redoModal">
@@ -487,47 +823,83 @@ const VP_CONFIG = {
 </div>
 
 <div class="modal-overlay" id="vpTaskEditModal">
-  <div class="modal" style="max-width:900px">
-    <div class="modal-header">
-      <div class="modal-title">Edit Task</div>
-      <button class="modal-close" onclick="closeModal('vpTaskEditModal')">✕</button>
+  <div class="modal at-modal">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Edit Task</div>
+        <div class="at-hsub" id="vp-edit-task-header-sub">Division · SSA Board Platform</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="task-id-badge" id="vp-edit-task-id-badge">TASK-000</span>
+        <button class="at-close" type="button" onclick="closeModal('vpTaskEditModal')">✕</button>
+      </div>
     </div>
-    <div class="modal-body">
+    <div class="at-body">
       <input type="hidden" id="vp-edit-task-id" />
-      <div class="form-row">
-        <div class="fg"><label>Task Title</label><input id="vp-edit-task-title" type="text" /></div>
-        <div class="fg"><label>Assigned Person</label><select id="vp-edit-task-assignee"></select></div>
+      <select id="vp-edit-task-status" style="display:none"><option value="current">Current</option><option value="locked">Locked</option><option value="pending_review">Pending Review</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select>
+      <select id="vp-edit-task-priority" style="display:none"><option value="urgent">Urgent</option><option value="high">High</option><option value="standard">Standard</option><option value="low">Low</option></select>
+      <div class="at-sec-label">Task Status</div>
+      <div class="status-grid" id="vp-edit-task-status-grid">
+        <div class="st-btn" data-s="current" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#b89a5c"></div><div class="st-label">Current</div></div>
+        <div class="st-btn" data-s="locked" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:rgba(255,255,255,.25)"></div><div class="st-label">Locked</div></div>
+        <div class="st-btn" data-s="pending_review" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#7ba3d4"></div><div class="st-label">Pending Review</div></div>
+        <div class="st-btn" data-s="redo" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#d4914a"></div><div class="st-label">Redo</div></div>
+        <div class="st-btn" data-s="completed" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#4caf7d"></div><div class="st-label">Completed</div></div>
+        <div class="st-btn" data-s="overdue" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#c0504d"></div><div class="st-label">Overdue</div></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Assigned Role</label><input id="vp-edit-task-role" type="text" /></div>
-        <div class="fg"><label>Assigned Division</label><input id="vp-edit-task-division" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Task Details</div>
+      <div class="at-cols">
+        <div class="fg"><label class="at-fl">Task Title</label><input class="at-fi" id="vp-edit-task-title" type="text" placeholder="Task title" /></div>
+        <div class="fg"><label class="at-fl">Linked Event</label><select class="at-fi" id="vp-edit-task-event"><option value="">Standalone</option></select></div>
       </div>
-      <div class="fg"><label>Description</label><textarea id="vp-edit-task-description"></textarea></div>
-      <div class="form-row">
-        <div class="fg"><label>Linked Event</label><select id="vp-edit-task-event"></select></div>
-        <div class="fg"><label>Priority</label><select id="vp-edit-task-priority"><option value="standard">Standard</option><option value="high">High</option><option value="urgent">Urgent</option><option value="critical">Critical</option></select></div>
+      <div class="fg" style="margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row" id="vp-edit-task-prio-row">
+        <div class="at-prio-btn" data-p="urgent" onclick="vpSetEditPrio(this)">Urgent</div>
+        <div class="at-prio-btn" data-p="high" onclick="vpSetEditPrio(this)">High</div>
+        <div class="at-prio-btn" data-p="standard" onclick="vpSetEditPrio(this)">Standard</div>
+        <div class="at-prio-btn" data-p="low" onclick="vpSetEditPrio(this)">Low</div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Unlock Date / Time</label><input id="vp-edit-task-unlock" type="datetime-local" /></div>
-        <div class="fg"><label>Due Date</label><input id="vp-edit-task-due" type="datetime-local" /></div>
+      <div class="at-cols">
+        <div class="fg"><label class="at-fl">Due Date</label><input class="at-fi" id="vp-edit-task-due" type="datetime-local" /></div>
+        <div class="fg"><label class="at-fl">Unlock Date</label><input class="at-fi" id="vp-edit-task-unlock" type="datetime-local" /></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Status</label><select id="vp-edit-task-status"><option value="current">Current</option><option value="locked">Locked</option><option value="pending_review">Pending Review</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select></div>
-        <div class="fg"><label>Meeting Date</label><input id="vp-edit-task-meeting-date" type="date" /></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Meeting Time</label><input id="vp-edit-task-meeting-time" type="time" /></div>
-        <div class="fg"><label>Meeting Location</label><input id="vp-edit-task-meeting-location" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Assigned</div>
+      <div class="at-cols">
+        <div class="fg"><label class="at-fl">Assigned Person</label><select class="at-fi" id="vp-edit-task-assignee"></select></div>
+        <div class="fg"><label class="at-fl">Assigned Role</label><input class="at-fi" id="vp-edit-task-role" type="text" /></div>
       </div>
-      <div class="fg"><label>Dependencies</label><div style="font-size:11px;color:var(--silver)">Use this to update how the task appears in dependency graph sequencing.</div><div id="vp-edit-task-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
-      <div class="fg"><label>Attachments</label><textarea id="vp-edit-task-attachments"></textarea></div>
-      <div class="fg"><label>Notes</label><textarea id="vp-edit-task-notes"></textarea></div>
-      <div class="fg"><label>Redo Rules</label><textarea id="vp-edit-task-redo-rules"></textarea></div>
-      <div class="fg"><label>Escalation Rules</label><textarea id="vp-edit-task-escalation-rules"></textarea></div>
+      <div class="at-cols">
+        <div class="fg"><label class="at-fl">Assigned Division</label><input class="at-fi" id="vp-edit-task-division" type="text" /></div>
+        <div class="fg"></div>
+      </div>
+      </div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:10px;margin-top:-6px">Task auto-locks until all selected prerequisites are complete. You can select tasks from any division.</div>
+      <div class="pre-list" id="vp-edit-task-dependencies"></div>
+      </div>
+      <div class="at-divider"></div>
+      <div class="at-sec-label">Description</div>
+      <div class="fg"><textarea class="at-fi at-fta" id="vp-edit-task-description" placeholder="Describe scope, deliverables, and what done looks like."></textarea></div>
+      <div class="fg vp-meeting-link-wrap">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="vp-edit-task-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="vpValidateMeetingLink(this)" />
+        <span class="meeting-link-err" id="vp-edit-task-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('vpTaskEditModal')">Cancel</button>
-      <button class="btn btn-gold" onclick="saveVpTaskEdit()">Save Task</button>
+    <div class="at-footer">
+      <div class="at-footer-left" id="vp-edit-task-footer-hint" style="font-size:11px;color:var(--silver)">Assigned to · Status</div>
+      <div class="at-footer-right" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn-del" onclick="vpDeleteTaskFromEditModal()">Delete Task</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('vpTaskEditModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="vpSaveTaskEdit()">Save Changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -839,6 +1211,7 @@ function inspectTask(id) {
       <div class="info-block"><div class="info-label">Status</div><div class="info-val">${t.status}</div></div>
       ${t.description ? `<div class="info-block"><div class="info-label">Description</div><div class="info-val">${t.description}</div></div>` : ''}
       ${t.notes ? `<div class="info-block"><div class="info-label">Notes</div><div class="info-val">${t.notes}</div></div>` : ''}
+      ${t.meeting_link ? `<div class="info-block"><div class="info-label">Meeting Link</div><div class="info-val"><a href="${t.meeting_link}" target="_blank" rel="noopener noreferrer" style="color:var(--gold-light)">${t.meeting_link}</a></div></div>` : ''}
       ${t.summary ? `<div class="info-block"><div class="info-label">Completion Summary</div><div class="info-val">${t.summary}</div></div>` : ''}
     </div>`;
   const approveBtn = document.getElementById('inspect-approve-btn');
@@ -859,6 +1232,7 @@ function showPage(id) {
     'assign':'Smart Assignment','events':'Active Events',
     'dependency':'Dependency Graph','calendar':'Calendar',
     'suggestions':'Suggestion Box',
+    'reports':'Report Box',
     'escalate':'Escalate to President',
   };
   document.getElementById('page-title').textContent = titles[id] || id;
@@ -900,7 +1274,192 @@ init();
 
   let dashboard = null;
   let selectedAssigneeEmail = "";
+  let selectedVpAssigneeEmail = "";
   let pendingVpConfirmAction = null;
+
+  window.vpOpenAssignModal = async function vpOpenAssignModal() {
+    if (!dashboard) return;
+    const divName = (dashboard.user && dashboard.user.department) ? dashboard.user.department : (VP_CONFIG.division || "Division");
+    const hsub = document.getElementById("vp-assign-hsub");
+    if (hsub) hsub.textContent = divName + " · SSA Board Platform";
+    const eventSelect = document.getElementById("vp-assign-event");
+    if (eventSelect) {
+      eventSelect.innerHTML = "<option value=\"\">Standalone</option>" + (dashboard.events || []).map((e) => `<option value="${e.id}">${e.name}</option>`).join("");
+    }
+    const users = dashboard.users || [];
+    const roleSet = new Map();
+    users.forEach((u) => { if (u.role_title && !roleSet.has(u.role_title)) roleSet.set(u.role_title, u.department); });
+    const roles = Array.from(roleSet.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    const roleSelect = document.getElementById("vp-assign-role");
+    if (roleSelect) {
+      roleSelect.innerHTML = "<option value=\"\">— Select role —</option>" + roles.map(([r]) => `<option value="${r.replace(/"/g, "&quot;")}">${r}</option>`).join("");
+    }
+    const chipsRoot = document.getElementById("vp-assign-role-chips");
+    if (chipsRoot) {
+      chipsRoot.innerHTML = roles.map(([roleTitle, dept]) => {
+        const div = (dept || "").indexOf("External") !== -1 ? "External" : (dept || "").indexOf("Internal") !== -1 ? "Internal" : "Executive";
+        const dotColor = div === "External" ? "#4caf7d" : div === "Internal" ? "#7ba3d4" : "var(--gold)";
+        return `<div class="at-role-chip" data-role="${roleTitle.replace(/"/g, "&quot;")}" onclick="vpSelectAssignRole(this)"><div class="at-rc-dot" style="background:${dotColor}"></div><div><div class="at-rc-div">${div}</div><div class="at-rc-name">${roleTitle}</div></div></div>`;
+      }).join("");
+    }
+    const depsRoot = document.getElementById("vp-assign-dependencies");
+    if (depsRoot) {
+      depsRoot.innerHTML = "<div style=\"font-size:12px;color:var(--silver);padding:8px 0\">Loading prerequisites (any division)…</div>";
+      try {
+        const data = await apiGet("/api/tasks/all-for-prereq");
+        const allTasks = data.tasks || [];
+        depsRoot.innerHTML = allTasks.map((t) => {
+          const status = t.status === "completed" ? "Done" : ["current", "pending_review", "redo"].includes(t.status) ? "In Progress" : "Locked";
+          const psClass = t.status === "completed" ? "at-ps-done" : ["current", "pending_review", "redo"].includes(t.status) ? "at-ps-active" : "at-ps-locked";
+          const dept = (t.owner_role || t.department || "").replace(/</g, "&lt;");
+          const assigneeLine = (t.owner_name || "").replace(/</g, "&lt;") + (t.owner_role ? " · " + (t.owner_role || "").replace(/</g, "&lt;") : "");
+          return `<div class="at-prereq-item" data-task-id="${t.id}" onclick="vpToggleAssignPrereq(this)"><input type="checkbox" value="${t.id}" class="vp-assign-dep-cb" style="position:absolute;opacity:0;width:0;height:0;margin:0" /><div class="at-prereq-cb"><div style="width:6px;height:6px;background:var(--navy);border-radius:1px;display:none" class="at-prereq-cb-inner"></div></div><div><div class="at-prereq-dept">${dept}</div><div class="at-prereq-name">${(t.title || "").replace(/</g, "&lt;")}</div><div class="at-prereq-assignee">${assigneeLine}</div></div><span class="at-prereq-status ${psClass}">${status}</span></div>`;
+        }).join("");
+      } catch (_) {
+        depsRoot.innerHTML = "<div style=\"font-size:12px;color:var(--silver)\">Could not load prerequisites.</div>";
+      }
+    }
+    document.getElementById("vp-assign-title").value = "";
+    document.getElementById("vp-assign-priority").value = "standard";
+    document.querySelectorAll("#vp-assign-role-chips + .at-suggest-wrap").forEach(() => {});
+    document.querySelectorAll("#vpAssignTaskModal .at-prio-btn").forEach((b) => b.classList.remove("active-urgent", "active-high", "active-standard", "active-low"));
+    const stdBtn = document.querySelector("#vpAssignTaskModal .at-prio-btn[data-prio=\"standard\"]");
+    if (stdBtn) stdBtn.classList.add("active-standard");
+    document.getElementById("vp-assign-description").value = "";
+    document.getElementById("vp-assign-due").value = "";
+    document.getElementById("vp-assign-unlock").value = "";
+    document.getElementById("vp-assign-meeting-link").value = "";
+    selectedVpAssigneeEmail = "";
+    document.getElementById("vp-assign-suggestions").innerHTML = "<div style=\"font-size:12px;color:var(--silver);padding:8px 0\">Select a role to load suggestions.</div>";
+    vpUpdateAssignFooterHint();
+    openModal("vpAssignTaskModal");
+  };
+
+  window.vpSetAssignPrio = function vpSetAssignPrio(el) {
+    if (!el) return;
+    const p = el.getAttribute("data-prio");
+    document.getElementById("vp-assign-priority").value = p || "standard";
+    document.querySelectorAll("#vpAssignTaskModal .at-prio-btn").forEach((b) => b.classList.remove("active-urgent", "active-high", "active-standard", "active-low"));
+    el.classList.add("active-" + (p === "urgent" ? "urgent" : p === "high" ? "high" : p === "low" ? "low" : "standard"));
+  };
+
+  window.vpSelectAssignRole = function vpSelectAssignRole(el) {
+    if (!el) return;
+    const role = el.getAttribute("data-role") || "";
+    document.querySelectorAll("#vp-assign-role-chips .at-role-chip").forEach((c) => c.classList.remove("selected"));
+    el.classList.add("selected");
+    document.getElementById("vp-assign-role").value = role;
+    vpLoadAssignSuggestions();
+    vpUpdateAssignFooterHint();
+  };
+
+  async function vpLoadAssignSuggestions() {
+    const role = document.getElementById("vp-assign-role")?.value?.trim();
+    const root = document.getElementById("vp-assign-suggestions");
+    if (!root) return;
+    if (!role) {
+      root.innerHTML = "<div style=\"font-size:12px;color:var(--silver);padding:8px 0\">Select a role to load suggestions.</div>";
+      return;
+    }
+    root.innerHTML = "<div style=\"font-size:12px;color:var(--silver);padding:8px 0\">Loading…</div>";
+    try {
+      const resp = await apiGet("/api/assign/suggestions?role=" + encodeURIComponent(role));
+      const list = resp.suggestions || [];
+      root.innerHTML = list.length ? list.map((m, i) => `<div class="at-suggest-item" data-email="${(m.email || "").replace(/"/g, "&quot;")}" data-name="${(m.full_name || "").replace(/"/g, "&quot;")}" data-role="${(m.role_title || "").replace(/"/g, "&quot;")}" onclick="vpSelectAssignSuggestion(this)"><div class="at-si-rank">${i + 1}</div><div class="at-si-info"><div class="at-si-name">${m.full_name}</div><div class="at-si-role">${m.role_title} · ${m.department || ""}</div></div></div>`).join("") : "<div style=\"font-size:12px;color:var(--silver)\">No suggestions for this role in your division.</div>";
+    } catch (_) {
+      root.innerHTML = "<div style=\"font-size:12px;color:var(--red)\">Could not load suggestions.</div>";
+    }
+    vpUpdateAssignFooterHint();
+  }
+
+  window.vpSelectAssignSuggestion = function vpSelectAssignSuggestion(el) {
+    if (!el) return;
+    selectedVpAssigneeEmail = el.getAttribute("data-email") || "";
+    document.querySelectorAll("#vp-assign-suggestions .at-suggest-item").forEach((s) => s.classList.remove("selected"));
+    el.classList.add("selected");
+    vpUpdateAssignFooterHint();
+  };
+
+  window.vpValidateMeetingLink = function vpValidateMeetingLink(inputEl) {
+    if (!inputEl) return true;
+    const val = (inputEl.value || "").trim();
+    const errId = inputEl.id + "-err";
+    const errEl = document.getElementById(errId);
+    if (!val) {
+      if (errEl) { errEl.style.display = "none"; errEl.textContent = ""; }
+      return true;
+    }
+    const lower = val.toLowerCase();
+    const valid = lower.startsWith("https://") || lower.startsWith("http://")
+      ? (lower.includes("zoom.us") || lower.includes("meet.google.com") || lower.includes("teams.microsoft.com") || lower.includes("webex.com") || /^https?:\/\/[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(val))
+      : false;
+    if (errEl) {
+      errEl.style.display = valid ? "none" : "block";
+      errEl.textContent = valid ? "" : "Enter a valid meeting link (e.g. Zoom, Google Meet, Teams, or Webex).";
+    }
+    return valid;
+  };
+
+  window.vpUpdateAssignFooterHint = function vpUpdateAssignFooterHint() {
+    const hint = document.getElementById("vp-assign-footer-hint");
+    if (!hint) return;
+    const role = document.getElementById("vp-assign-role")?.value?.trim();
+    if (!role) { hint.textContent = "Select a role and assignee above (division members only)."; return; }
+    if (selectedVpAssigneeEmail) {
+      const sel = document.querySelector("#vp-assign-suggestions .at-suggest-item.selected");
+      hint.textContent = "Assignee: " + (sel ? sel.getAttribute("data-name") : selectedVpAssigneeEmail);
+    } else hint.textContent = "Select a role and click a suggestion to choose assignee (division only).";
+  };
+
+  window.vpToggleAssignPrereq = function vpToggleAssignPrereq(el) {
+    if (!el) return;
+    const cb = el.querySelector("input.vp-assign-dep-cb");
+    const inner = el.querySelector(".at-prereq-cb-inner");
+    if (cb) cb.checked = !cb.checked;
+    el.classList.toggle("checked", cb && cb.checked);
+    if (inner) inner.style.display = cb && cb.checked ? "block" : "none";
+  };
+
+  window.vpAssignTask = async function vpAssignTask() {
+    const title = document.getElementById("vp-assign-title")?.value?.trim();
+    const role = document.getElementById("vp-assign-role")?.value?.trim();
+    const due = document.getElementById("vp-assign-due")?.value;
+    const priority = document.getElementById("vp-assign-priority")?.value || "standard";
+    const eventId = document.getElementById("vp-assign-event")?.value || "";
+    const unlockAt = document.getElementById("vp-assign-unlock")?.value || "";
+    const description = document.getElementById("vp-assign-description")?.value?.trim() || "Assigned by VP.";
+    const meetingLink = document.getElementById("vp-assign-meeting-link")?.value?.trim() || "";
+    const meetingInput = document.getElementById("vp-assign-meeting-link");
+    if (meetingInput && meetingInput.value && !vpValidateMeetingLink(meetingInput)) {
+      showToast("Please enter a valid meeting link (Zoom, Google Meet, Teams, or Webex).");
+      return;
+    }
+    const dependency_task_ids = [...(document.querySelectorAll("#vp-assign-dependencies input.vp-assign-dep-cb:checked") || [])].map((el) => Number(el.value)).filter(Boolean);
+    if (!title || !role) {
+      showToast("Fill task title and role.");
+      return;
+    }
+    const dueAt = due ? new Date(due + "T23:59:00") : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    try {
+      await apiPost("/api/tasks/assign", {
+        title,
+        role,
+        due_at: dueAt.toISOString(),
+        priority,
+        description,
+        assignee_email: selectedVpAssigneeEmail || undefined,
+        event_id: eventId || undefined,
+        unlock_at: unlockAt ? new Date(unlockAt).toISOString() : undefined,
+        meeting_link: meetingLink || undefined,
+        dependency_task_ids
+      });
+      showToast("Task assigned.");
+      closeModal("vpAssignTaskModal");
+      await hydrate();
+    } catch (e) {
+      showToast(String(e?.message || "Unable to assign task."));
+    }
+  };
 
   function taskHtmlLive(t) {
     const cls =
@@ -995,14 +1554,69 @@ init();
     const taskRoot = document.getElementById("report-task");
     if (eventRoot) {
       eventRoot.innerHTML = `<option value="">No linked event</option>${(dashboard?.events || [])
-        .map((e) => `<option value="${e.id}">${e.name}</option>`)
+        .map((e) => `<option value="${e.id}">${(e.name || "").replace(/</g, "&lt;")}</option>`)
         .join("")}`;
     }
     if (taskRoot) {
       taskRoot.innerHTML = `<option value="">No linked task</option>${(dashboard?.tasks || [])
-        .map((t) => `<option value="${t.id}">${t.title}</option>`)
+        .map((t) => `<option value="${t.id}">${(t.title || "").replace(/</g, "&lt;")}</option>`)
         .join("")}`;
     }
+  }
+
+  const VP_ESC_SEV = {
+    critical: { btnCls: "active-crit", bannerColor: "var(--red)", bannerBg: "var(--red-dim)", icon: "⚠", text: "Critical escalation — the President will be alerted immediately. Reserve this level for genuine emergencies where delay causes real organizational damage.", footerNote: "<strong>Critical severity</strong> — President is notified immediately and expected to respond within the hour. Use only when delay causes real failure.", btnCls2: "crit", btnLabel: "Send Critical Escalation" },
+    high: { btnCls: "active-high", bannerColor: "var(--amber)", bannerBg: "var(--amber-dim)", icon: "◑", text: "High escalation — time-sensitive but not an immediate emergency. The President will review this within the day.", footerNote: "<strong>High severity</strong> — The President will be notified immediately. Escalations are logged permanently and visible to executive leadership.", btnCls2: "", btnLabel: "Send Escalation" },
+    standard: { btnCls: "active-std", bannerColor: "var(--gold)", bannerBg: "rgba(184,154,92,.07)", icon: "◈", text: "Standard escalation — no immediate risk. The President will review and respond at their next availability.", footerNote: "<strong>Standard severity</strong> — The President will be notified and will review at their next availability. No immediate urgency flagged.", btnCls2: "", btnLabel: "Send Escalation" }
+  };
+  let vpEscCurSev = "high";
+
+  window.vpSetSev = function vpSetSev(el) {
+    if (!el) return;
+    document.querySelectorAll("#page-escalate .sev-btn").forEach((b) => b.className = "sev-btn");
+    const sev = el.getAttribute("data-sev") || "high";
+    vpEscCurSev = sev;
+    const cfg = VP_ESC_SEV[sev] || VP_ESC_SEV.high;
+    el.classList.add(cfg.btnCls);
+    const banner = document.getElementById("sev-banner");
+    if (banner) {
+      banner.style.borderLeftColor = cfg.bannerColor;
+      banner.style.background = cfg.bannerBg;
+      banner.style.color = cfg.bannerColor;
+      banner.classList.add("show");
+    }
+    const iconEl = document.getElementById("sev-icon");
+    const textEl = document.getElementById("sev-text");
+    if (iconEl) iconEl.textContent = cfg.icon;
+    if (textEl) textEl.textContent = cfg.text;
+    const noteEl = document.getElementById("esc-footer-note");
+    if (noteEl) noteEl.innerHTML = cfg.footerNote;
+    const btn = document.getElementById("esc-send-btn");
+    if (btn) { btn.className = "esc-btn-send " + cfg.btnCls2; btn.textContent = cfg.btnLabel; }
+  };
+
+  window.vpTogType = function vpTogType(el) {
+    if (!el) return;
+    const reason = el.getAttribute("data-reason") || "";
+    document.querySelectorAll("#page-escalate .type-chip").forEach((c) => c.classList.remove("on"));
+    el.classList.add("on");
+    const hid = document.getElementById("report-reason");
+    if (hid) hid.value = reason;
+  };
+
+  window.vpEscCountChars = function vpEscCountChars(taId, hintId) {
+    const ta = document.getElementById(taId);
+    const hint = document.getElementById(hintId);
+    if (!ta || !hint) return;
+    const max = taId === "report-notes" ? 800 : 200;
+    const n = (ta.value || "").length;
+    hint.textContent = n + " / " + max + " recommended";
+    hint.className = "esc-char-hint" + (n > max ? " warn" : "");
+  };
+
+  function vpEscInitSev() {
+    const highBtn = document.querySelector("#page-escalate .sev-btn[data-sev=\"high\"]");
+    if (highBtn && typeof window.vpSetSev === "function") window.vpSetSev(highBtn);
   }
 
   async function hydrate() {
@@ -1049,6 +1663,7 @@ init();
           meeting_date: t.meeting_date || "",
           meeting_time: t.meeting_time || "",
           meeting_location: t.meeting_location || "",
+          meeting_link: t.meeting_link || "",
           status: t.status === "completed" ? "done" : t.status === "pending_review" ? "pending" : t.status,
           summary: t.previous_summary || "",
           description: t.description || "",
@@ -1117,6 +1732,12 @@ init();
     if (apprBadge) apprBadge.textContent = String(notifications.stats?.pendingReview || 0);
     const overBadge = document.getElementById("over-badge");
     if (overBadge) overBadge.textContent = String(notifications.stats?.overdue || 0);
+    const reportsBadge = document.getElementById("reports-badge");
+    const reportCount = (notifications.items || []).length;
+    if (reportsBadge) {
+      reportsBadge.textContent = String(reportCount);
+      reportsBadge.style.display = reportCount ? "inline-flex" : "none";
+    }
     const assignEvent = document.getElementById("assign-event");
     if (assignEvent) {
       assignEvent.innerHTML = `<option value="">Standalone</option>${dashboard.events
@@ -1228,7 +1849,11 @@ init();
     }
 
     renderOperationalCalendar(document.getElementById("cal-content"), dashboard.events, dashboard.tasks);
-    renderDependencyGraph(document.getElementById("dep-graph"), dashboard.tasks, dashboard.dependencies);
+    const deps = dashboard.dependencies || [];
+    const depTaskIds = new Set();
+    deps.forEach((d) => { depTaskIds.add(d.task_id); depTaskIds.add(d.depends_on_task_id); });
+    const tasksWithDeps = (dashboard.tasks || []).filter((t) => depTaskIds.has(t.id));
+    renderDependencyGraph(document.getElementById("dep-graph"), tasksWithDeps, deps);
   }
 
   async function renderSuggestionsBox() {
@@ -1262,10 +1887,48 @@ init();
     }
   }
 
+  async function renderReportsBox() {
+    const list = document.getElementById("reports-list");
+    const badge = document.getElementById("reports-badge");
+    if (!list) return;
+    list.innerHTML = '<div style="color:var(--silver);padding:16px">Loading…</div>';
+    try {
+      const data = await apiGet("/api/notifications");
+      const items = data.items || [];
+      if (badge) {
+        badge.textContent = String(items.length);
+        badge.style.display = items.length ? "inline-flex" : "none";
+      }
+      list.innerHTML =
+        items.length === 0
+          ? '<div style="color:var(--silver);font-size:13px;padding:16px">No notifications for your division right now.</div>'
+          : items
+              .map(
+                (i) => `
+        <div class="approval-item" style="margin-bottom:12px;border-left:3px solid ${i.type === "overdue" ? "var(--red)" : i.type === "pending_review" ? "var(--blue)" : i.type === "escalation_vp" || i.type === "escalation_president" ? "var(--amber)" : i.type === "remind_assignee" ? "var(--gold)" : "var(--silver)"}">
+          <div class="approval-header">
+            <div>
+              <div class="approval-task">${String(i.title || "").replace(/</g, "&lt;")}</div>
+              <div class="approval-by">${String(i.sub || "").replace(/</g, "&lt;")}</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--silver);margin-top:4px">${i.at ? new Date(i.at).toLocaleString() : ""}</div>
+        </div>
+      `
+              )
+              .join("");
+    } catch (e) {
+      list.innerHTML = '<div style="color:var(--red);font-size:13px;padding:16px">Could not load notifications.</div>';
+      if (badge) badge.style.display = "none";
+    }
+  }
+
   const origShowPage = window.showPage;
   window.showPage = function (id) {
     if (typeof origShowPage === "function") origShowPage(id);
     if (id === "suggestions") renderSuggestionsBox();
+    if (id === "reports") renderReportsBox();
+    if (id === "escalate" && typeof vpEscInitSev === "function") vpEscInitSev();
   };
 
   window.approveTaskLive = async function approveTaskLive(taskId) {
@@ -1334,7 +1997,8 @@ init();
       dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
     const dueAt = new Date(`${finalDueDate}T23:59:00`);
     try {
-      await apiPost("/api/tasks/assign", {
+      const meetingLink = document.getElementById("assign-meeting-link")?.value?.trim() || "";
+    await apiPost("/api/tasks/assign", {
         title,
         role,
         due_at: dueAt.toISOString(),
@@ -1343,6 +2007,7 @@ init();
         assignee_email: selectedAssigneeEmail || undefined,
         event_id: eventId || undefined,
         unlock_at: unlockAt ? new Date(unlockAt).toISOString() : undefined,
+        meeting_link: meetingLink || undefined,
         dependency_task_ids
       });
       showToast("Task assigned.");
@@ -1360,11 +2025,55 @@ init();
     }
   };
 
+  window.vpSetEditStatus = function vpSetEditStatus(el) {
+    if (!el) return;
+    const s = el.getAttribute("data-s") || "current";
+    document.getElementById("vp-edit-task-status").value = s;
+    document.querySelectorAll("#vp-edit-task-status-grid .st-btn").forEach((b) => b.classList.remove("active"));
+    el.classList.add("active");
+  };
+
+  window.vpSetEditPrio = function vpSetEditPrio(el) {
+    if (!el) return;
+    const p = el.getAttribute("data-p") || "standard";
+    document.getElementById("vp-edit-task-priority").value = p;
+    document.querySelectorAll("#vp-edit-task-prio-row .at-prio-btn").forEach((b) => b.classList.remove("active-urgent", "active-high", "active-standard", "active-low"));
+    el.classList.add("active-" + (p === "urgent" ? "urgent" : p === "high" ? "high" : p === "low" ? "low" : "standard"));
+  };
+
+  window.vpToggleEditDep = function vpToggleEditDep(el) {
+    if (!el) return;
+    const cb = el.querySelector('input[type="checkbox"]');
+    if (cb) { cb.checked = !cb.checked; el.classList.toggle("chk", cb.checked); }
+  };
+
+  window.vpToggleRuleBtn = function vpToggleRuleBtn(el, kind) {
+    if (!el || kind !== "escalation") return;
+    const rule = el.getAttribute("data-rule");
+    const wrap = document.getElementById("vp-edit-task-escalation-rules-wrap");
+    const hidden = document.getElementById("vp-edit-task-escalation-rules");
+    if (rule === "none") {
+      wrap.querySelectorAll(".rule-btn").forEach((b) => b.classList.remove("sel"));
+      el.classList.add("sel");
+      if (hidden) hidden.value = "none";
+      return;
+    }
+    wrap.querySelectorAll(".rule-btn[data-rule=\"none\"]").forEach((b) => b.classList.remove("sel"));
+    el.classList.toggle("sel");
+    const sel = wrap ? [...wrap.querySelectorAll(".rule-btn.sel")].filter((b) => b.getAttribute("data-rule") !== "none").map((b) => b.getAttribute("data-rule")).filter(Boolean) : [];
+    if (hidden) hidden.value = sel.length ? sel.join(",") : "";
+  };
+
   window.editTaskLive = async function editTaskLive() {
     if (!inspectId) return;
     const t = (dashboard?.tasks || []).find((x) => x.id === inspectId);
+    if (!t) return;
     closeModal("inspectModal");
+    const divName = (dashboard?.user && dashboard.user.department) ? dashboard.user.department : (VP_CONFIG.division || "Division");
     document.getElementById("vp-edit-task-id").value = String(t.id);
+    document.getElementById("vp-edit-task-id-badge").textContent = "TASK-" + String(t.id).padStart(3, "0");
+    const headerSub = document.getElementById("vp-edit-task-header-sub");
+    if (headerSub) headerSub.textContent = divName + " · SSA Board Platform";
     document.getElementById("vp-edit-task-title").value = t.title || "";
     document.getElementById("vp-edit-task-role").value = t.owner_role || "";
     document.getElementById("vp-edit-task-division").value = t.department || "";
@@ -1373,13 +2082,12 @@ init();
     document.getElementById("vp-edit-task-status").value = t.status || "current";
     document.getElementById("vp-edit-task-unlock").value = t.unlock_at ? new Date(t.unlock_at).toISOString().slice(0,16) : "";
     document.getElementById("vp-edit-task-due").value = t.due_at ? new Date(t.due_at).toISOString().slice(0,16) : "";
-    document.getElementById("vp-edit-task-meeting-date").value = t.meeting_date || "";
-    document.getElementById("vp-edit-task-meeting-time").value = t.meeting_time || "";
-    document.getElementById("vp-edit-task-meeting-location").value = t.meeting_location || "";
-    document.getElementById("vp-edit-task-notes").value = t.notes || "";
-    document.getElementById("vp-edit-task-attachments").value = t.attachments_json || "[]";
-    document.getElementById("vp-edit-task-redo-rules").value = t.redo_rules || "";
-    document.getElementById("vp-edit-task-escalation-rules").value = t.escalation_rules || "";
+    document.getElementById("vp-edit-task-meeting-link").value = t.meeting_link || "";
+    document.querySelectorAll("#vp-edit-task-status-grid .st-btn").forEach((b) => { b.classList.toggle("active", b.getAttribute("data-s") === (t.status || "current")); });
+    document.querySelectorAll("#vp-edit-task-prio-row .at-prio-btn").forEach((b) => {
+      b.classList.remove("active-urgent", "active-high", "active-standard", "active-low");
+      if (b.getAttribute("data-p") === (t.priority || "standard")) b.classList.add("active-" + (t.priority === "urgent" ? "urgent" : t.priority === "high" ? "high" : t.priority === "low" ? "low" : "standard"));
+    });
     const eventRoot = document.getElementById("vp-edit-task-event");
     eventRoot.innerHTML = `<option value="">Standalone</option>${(dashboard?.events || [])
       .map((e) => `<option value="${e.id}">${e.name}</option>`)
@@ -1387,15 +2095,54 @@ init();
     eventRoot.value = t.event_id ? String(t.event_id) : "";
     const assigneeRoot = document.getElementById("vp-edit-task-assignee");
     assigneeRoot.innerHTML = (dashboard?.users || [])
-      .map((u) => `<option value="${u.email}">${u.full_name} · ${u.role_title}</option>`)
+      .map((u) => `<option value="${(u.email || "").replace(/"/g, "&quot;")}" data-role="${(u.role_title || "").replace(/"/g, "&quot;")}" data-department="${(u.department || "").replace(/"/g, "&quot;")}">${(u.full_name || "").replace(/</g, "&lt;")} · ${(u.role_title || "").replace(/</g, "&lt;")}</option>`)
       .join("");
     assigneeRoot.value = t.owner_email || "";
+    assigneeRoot.onchange = function() {
+      const opt = assigneeRoot.options[assigneeRoot.selectedIndex];
+      if (opt) {
+        document.getElementById("vp-edit-task-role").value = opt.getAttribute("data-role") || "";
+        document.getElementById("vp-edit-task-division").value = opt.getAttribute("data-department") || "";
+      }
+    };
     const depIds = new Set((dashboard?.dependencies || []).filter((d) => d.task_id === t.id).map((d) => d.depends_on_task_id));
-    document.getElementById("vp-edit-task-dependencies").innerHTML = (dashboard?.tasks || [])
-      .filter((x) => x.id !== t.id)
-      .map((x) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px"><input type="checkbox" value="${x.id}" ${depIds.has(x.id) ? "checked" : ""}/> <span>${x.title}</span></label>`)
-      .join("");
+    function prereqStatus(task) {
+      const s = (task.status || "current").toLowerCase();
+      if (s === "completed") return { class: "ps-done", label: "Done" };
+      if (s === "current" || s === "pending_review" || s === "redo") return { class: "ps-act", label: "In Progress" };
+      return { class: "ps-lock", label: "Locked" };
+    }
+    const depsRoot = document.getElementById("vp-edit-task-dependencies");
+    depsRoot.innerHTML = "<div style=\"font-size:12px;color:var(--silver);padding:8px 0\">Loading prerequisites (any division)…</div>";
+    try {
+      const data = await apiGet("/api/tasks/all-for-prereq");
+      const allTasks = (data.tasks || []).filter((x) => x.id !== t.id);
+      depsRoot.innerHTML = allTasks.map((x) => {
+        const ps = prereqStatus(x);
+        const chk = depIds.has(x.id) ? " chk" : "";
+        const assigneeLine = (x.owner_name || "").replace(/</g, "&lt;") + (x.owner_role ? " · " + (x.owner_role || "").replace(/</g, "&lt;") : "");
+        return `<div class="pre-item${chk}" onclick="vpToggleEditDep(this)"><div class="pre-cb"><div class="pre-cb-dot"></div></div><div><div class="pre-dept">${(x.department || x.owner_role || "—").replace(/</g, "&lt;")}</div><div class="pre-name">${(x.title || "").replace(/</g, "&lt;")}</div><div class="pre-assignee">${assigneeLine}</div></div><span class="ps ${ps.class}">${ps.label}</span><input type="checkbox" value="${x.id}" ${depIds.has(x.id) ? "checked" : ""} style="position:absolute;opacity:0;width:0;height:0;pointer-events:none" /></div>`;
+      }).join("");
+    } catch (_) {
+      depsRoot.innerHTML = "<div style=\"font-size:12px;color:var(--silver)\">Could not load prerequisites.</div>";
+    }
     openModal("vpTaskEditModal");
+  };
+
+  window.vpDeleteTaskFromEditModal = function vpDeleteTaskFromEditModal() {
+    const taskId = Number(document.getElementById("vp-edit-task-id")?.value || 0);
+    if (!taskId) return;
+    openVpStyledConfirm("Delete this task permanently from workflow?", async () => {
+      const token = getSessionToken();
+      const res = await fetch("/api/tasks/" + taskId, { method: "DELETE", headers: { "x-session-token": token } });
+      if (!res.ok) {
+        showToast("Unable to delete task.");
+        return;
+      }
+      closeModal("vpTaskEditModal");
+      showToast("Task deleted.");
+      await hydrate();
+    });
   };
 
   window.deleteTaskLive = async function deleteTaskLive() {
@@ -1451,10 +2198,15 @@ init();
     openModal("vpEventEditModal");
   };
 
-  window.saveVpTaskEdit = async function saveVpTaskEdit() {
-    const taskId = Number(document.getElementById("vp-edit-task-id").value || 0);
+  window.vpSaveTaskEdit = window.saveVpTaskEdit = async function vpSaveTaskEdit() {
+    const taskId = Number(document.getElementById("vp-edit-task-id")?.value || 0);
     if (!taskId) return;
-    const dependency_task_ids = [...document.querySelectorAll("#vp-edit-task-dependencies input:checked")].map((el) => Number(el.value));
+    const meetingInput = document.getElementById("vp-edit-task-meeting-link");
+    if (meetingInput && meetingInput.value && !vpValidateMeetingLink(meetingInput)) {
+      showToast("Please enter a valid meeting link (Zoom, Google Meet, Teams, or Webex).");
+      return;
+    }
+    const dependency_task_ids = [...(document.querySelectorAll("#vp-edit-task-dependencies input:checked") || [])].map((el) => Number(el.value)).filter(Boolean);
     try {
       await apiPatch(`/api/tasks/${taskId}`, {
         title: document.getElementById("vp-edit-task-title").value,
@@ -1467,13 +2219,11 @@ init();
         unlock_at: document.getElementById("vp-edit-task-unlock").value ? new Date(document.getElementById("vp-edit-task-unlock").value).toISOString() : null,
         priority: document.getElementById("vp-edit-task-priority").value,
         status: document.getElementById("vp-edit-task-status").value,
-        meeting_date: document.getElementById("vp-edit-task-meeting-date").value,
-        meeting_time: document.getElementById("vp-edit-task-meeting-time").value,
-        meeting_location: document.getElementById("vp-edit-task-meeting-location").value,
-        notes: document.getElementById("vp-edit-task-notes").value,
-        attachments: JSON.parse(document.getElementById("vp-edit-task-attachments").value || "[]"),
-        redo_rules: document.getElementById("vp-edit-task-redo-rules").value,
-        escalation_rules: document.getElementById("vp-edit-task-escalation-rules").value,
+        meeting_date: "",
+        meeting_time: "",
+        meeting_location: "",
+        meeting_link: document.getElementById("vp-edit-task-meeting-link").value,
+        notes: "",
         dependency_task_ids
       });
       closeModal("vpTaskEditModal");
@@ -1509,16 +2259,32 @@ init();
   };
 
   window.sendEscalation = async function sendEscalationLive() {
+    const reason = (document.getElementById("report-reason") && document.getElementById("report-reason").value) || "";
+    const notesEl = document.getElementById("report-notes");
+    const notesRaw = notesEl ? notesEl.value : "";
+    if (!reason.trim() || !notesRaw.trim()) {
+      showToast("Please select an issue type and provide escalation details.");
+      return;
+    }
+    const severityPrefix = typeof vpEscCurSev !== "undefined" ? "[Severity: " + (vpEscCurSev.charAt(0).toUpperCase() + vpEscCurSev.slice(1)) + "] " : "";
+    const notes = severityPrefix + notesRaw.trim();
     try {
       await apiPost("/api/reports", {
-        reason: document.getElementById("report-reason").value,
-        event_id: document.getElementById("report-event").value || null,
-        task_id: document.getElementById("report-task").value || null,
-        notes: document.getElementById("report-notes").value,
-        recommended_action: document.getElementById("report-action").value
+        reason: reason.trim(),
+        event_id: (document.getElementById("report-event") && document.getElementById("report-event").value) || null,
+        task_id: (document.getElementById("report-task") && document.getElementById("report-task").value) || null,
+        notes,
+        recommended_action: (document.getElementById("report-action") && document.getElementById("report-action").value) || ""
       });
-      document.getElementById("report-notes").value = "";
-      document.getElementById("report-action").value = "";
+      if (notesEl) notesEl.value = "";
+      const actionEl = document.getElementById("report-action");
+      if (actionEl) actionEl.value = "";
+      const hint1 = document.getElementById("report-notes-hint");
+      const hint2 = document.getElementById("report-action-hint");
+      if (hint1) hint1.textContent = "0 / 800 recommended";
+      if (hint2) hint2.textContent = "0 / 200 recommended";
+      if (hint1) hint1.className = "esc-char-hint";
+      if (hint2) hint2.className = "esc-char-hint";
       showToast("Report sent to Executive President.");
     } catch (_e) {
       showToast("Unable to send report.");
