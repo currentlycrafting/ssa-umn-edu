@@ -2584,22 +2584,56 @@ app.post("/api/site/push-board", (req, res) => {
   }
 });
 
-// Push newsletter-images and site-content (newsletter entries) to GitHub.
-app.post("/api/site/push-newsletter", (req, res) => {
+// Push newsletter (data/newsletter.json + newsletter-images) via GitHub API (same as Index & Board).
+app.post("/api/site/push-newsletter", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push newsletter." });
+  const githubToken = process.env.GITHUB_TOKEN;
+  if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
+  const repoUrl = process.env.GITHUB_REPO || "";
+  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
+  if (!match) return res.status(400).json({ error: "GITHUB_REPO is missing or invalid." });
+  const [, owner, repo] = match;
+  const branch = process.env.GITHUB_BRANCH || "main";
+  const gh = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}?ref=${encodeURIComponent(branch)}`;
+  const ghPut = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}`;
+  const headers = { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}`, "Content-Type": "application/json" };
   try {
-    ensureGitIdentity();
-    const newsletterRel = path.relative(__dirname, newsletterPath);
-    const addPaths = ["newsletter-images", "site-content.json", newsletterRel].filter(Boolean).join(" ");
-    execSync(`git add ${addPaths} 2>/dev/null || true`, { cwd: __dirname });
-    execSync("git commit -m \"Update newsletter content\" --allow-empty", { cwd: __dirname });
-    execSync("git push", { cwd: __dirname });
+    const newsletterRepoPath = path.relative(__dirname, newsletterPath).replace(/\\/g, "/");
+    const newsletterRaw = fs.readFileSync(newsletterPath, "utf8");
+    const newsletterB64 = Buffer.from(newsletterRaw, "utf8").toString("base64");
+    const getNl = await fetch(gh(newsletterRepoPath), { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } });
+    const getNlData = await getNl.json();
+    const shaNl = getNlData && getNlData.sha ? getNlData.sha : null;
+    const putNlBody = { message: "Update newsletter content from SSA Ops", content: newsletterB64, branch };
+    if (shaNl) putNlBody.sha = shaNl;
+    const putNl = await fetch(ghPut(newsletterRepoPath), { method: "PUT", headers, body: JSON.stringify(putNlBody) });
+    if (!putNl.ok) {
+      const errData = await putNl.json().catch(() => ({}));
+      return res.status(502).json({ error: errData.message || "GitHub API error (newsletter.json)." });
+    }
+    const imageFiles = fs.existsSync(newsletterImagesDir) ? fs.readdirSync(newsletterImagesDir).filter((f) => /\.(png|jpg|jpeg|webp|gif)$/i.test(f)) : [];
+    for (const filename of imageFiles) {
+      const filePath = path.join(newsletterImagesDir, filename);
+      const repoPath = `newsletter-images/${filename}`;
+      const buf = fs.readFileSync(filePath);
+      const contentB64 = buf.toString("base64");
+      const getImg = await fetch(gh(repoPath), { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } });
+      const getImgData = await getImg.json();
+      const shaImg = getImgData && getImgData.sha ? getImgData.sha : null;
+      const putImgBody = { message: "Update newsletter image from SSA Ops", content: contentB64, branch };
+      if (shaImg) putImgBody.sha = shaImg;
+      const putImg = await fetch(ghPut(repoPath), { method: "PUT", headers, body: JSON.stringify(putImgBody) });
+      if (!putImg.ok) {
+        const errData = await putImg.json().catch(() => ({}));
+        return res.status(502).json({ error: errData.message || `GitHub API error (${filename}).` });
+      }
+    }
     res.json({ ok: true, message: "Newsletter content pushed to GitHub." });
   } catch (e) {
-    res.status(500).json({ error: (e.stderr && e.stderr.toString()) || e.message || "Push failed. Ensure git is configured and remote is set." });
+    res.status(500).json({ error: e.message || "Push failed." });
   }
 });
 
