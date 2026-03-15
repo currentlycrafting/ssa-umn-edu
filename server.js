@@ -256,7 +256,7 @@ app.use(express.json({ limit: "2mb" }));
 app.use("/gallery", express.static(galleryDir, { maxAge: "1y", immutable: true }));
 app.use("/board-images", express.static(boardImagesDir, { maxAge: "1y", immutable: true }));
 app.use("/logo-images", express.static(logoImagesDir, { maxAge: "1y", immutable: true }));
-app.use("/newsletter-images", express.static(newsletterImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/newsletter-images", express.static(newsletterImagesDir, { maxAge: 0 }));
 app.use("/about-ssa-images", express.static(aboutSsaImagesDir, { maxAge: "1y", immutable: true }));
 // Legacy path kept for backward compatibility during migration.
 app.use("/images", express.static(legacyImagesDir, { maxAge: "1y", immutable: true }));
@@ -2541,6 +2541,15 @@ app.post("/api/site/push", async (req, res) => {
   }
 });
 
+function ensureGitIdentity() {
+  const email = (process.env.GIT_USER_EMAIL || "ops@ssa-website.local").replace(/"/g, '\\"');
+  const name = (process.env.GIT_USER_NAME || "SSA Ops").replace(/"/g, '\\"');
+  try {
+    execSync(`git config user.email "${email}"`, { cwd: __dirname });
+    execSync(`git config user.name "${name}"`, { cwd: __dirname });
+  } catch (_e) {}
+}
+
 // Push only gallery folder to GitHub (git).
 app.post("/api/site/push-gallery", (req, res) => {
   const token = req.header("x-session-token");
@@ -2548,6 +2557,7 @@ app.post("/api/site/push-gallery", (req, res) => {
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push gallery." });
   try {
+    ensureGitIdentity();
     execSync("git add gallery 2>/dev/null || true", { cwd: __dirname });
     execSync("git commit -m \"Update gallery content\" --allow-empty", { cwd: __dirname });
     execSync("git push", { cwd: __dirname });
@@ -2564,6 +2574,7 @@ app.post("/api/site/push-board", (req, res) => {
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push board." });
   try {
+    ensureGitIdentity();
     execSync("git add board-images site-content.json 2>/dev/null || true", { cwd: __dirname });
     execSync("git commit -m \"Update board member content\" --allow-empty", { cwd: __dirname });
     execSync("git push", { cwd: __dirname });
@@ -2580,6 +2591,7 @@ app.post("/api/site/push-newsletter", (req, res) => {
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push newsletter." });
   try {
+    ensureGitIdentity();
     const newsletterRel = path.relative(__dirname, newsletterPath);
     const addPaths = ["newsletter-images", "site-content.json", newsletterRel].filter(Boolean).join(" ");
     execSync(`git add ${addPaths} 2>/dev/null || true`, { cwd: __dirname });

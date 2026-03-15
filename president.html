@@ -2468,6 +2468,7 @@ function renderNewsletterPreview() {
   var baseUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, '') || '') + '/';
   wrap.innerHTML = presidentNewsletters.map(function (n) {
     var imgSrc = n.image ? (n.image.startsWith('/') ? (window.location.origin + n.image) : (baseUrl + n.image)) : '';
+    if (imgSrc && n._ts) imgSrc += '?t=' + n._ts;
     var desc = (n.description || '').slice(0, 280);
     if ((n.description || '').length > 280) desc += '…';
     desc = desc.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/\n/g, '<br />');
@@ -2512,6 +2513,7 @@ function renderNewsletterEditorList() {
     listEl.innerHTML = '<p style="font-size:12px;color:var(--silver)">No newsletter entries yet. Click “Add newsletter entry” to create one.</p>';
     return;
   }
+  var baseUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, '') || '') + '/';
   var html = presidentNewsletters.map(function (n, i) {
     var id = (n.id || '').replace(/"/g, '&quot;');
     var title = (n.title || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -2521,7 +2523,8 @@ function renderNewsletterEditorList() {
     var image = (n.image || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     var link = (n.link || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     var sec = (n.secondaryLink || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    var imgSrc = image ? (image.startsWith('/') ? (window.location.origin + image) : image) : '';
+    var imgSrc = image ? (image.startsWith('/') ? (window.location.origin + image) : (baseUrl + image)) : '';
+    if (imgSrc && n._ts) imgSrc += '?t=' + n._ts;
     return '<div class="newsletter-editor-card" data-index="' + i + '" style="background:var(--navy-light);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
       '<span style="font-size:11px;letter-spacing:.1em;color:var(--gold);">Entry ' + (i + 1) + '</span>' +
@@ -2561,7 +2564,9 @@ window.newsletterUploadImage = function newsletterUploadImage(index) {
       .then(function (data) {
         if (data.path && presidentNewsletters[idx]) {
           presidentNewsletters[idx].image = data.path;
+          presidentNewsletters[idx]._ts = Date.now();
           renderNewsletterEditorList();
+          renderNewsletterPreview();
           showToast('Image uploaded.');
         } else { showToast(data.error || 'Upload failed'); }
       })
