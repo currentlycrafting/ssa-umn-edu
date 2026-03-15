@@ -2028,6 +2028,7 @@ app.post("/api/admin/seed-users-push", async (req, res) => {
     return res.status(400).json({ error: "GITHUB_REPO is missing or invalid (e.g. https://github.com/owner/repo)." });
   }
   const [, owner, repo] = match;
+  const branch = process.env.GITHUB_BRANCH || "main";
   try {
     const sqlitePath = path.join(__dirname, "sqlite.js");
     const fullContent = fs.readFileSync(sqlitePath, "utf8");
@@ -2036,12 +2037,11 @@ app.post("/api/admin/seed-users-push", async (req, res) => {
       return res.status(400).json({ error: "Could not find seedUsers() in sqlite.js to replace." });
     }
     const getRes = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/sqlite.js`,
+      `https://api.github.com/repos/${owner}/${repo}/contents/sqlite.js?ref=${encodeURIComponent(branch)}`,
       { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } }
     );
     const getData = await getRes.json();
     const sha = getData && getData.sha ? getData.sha : null;
-    const branch = process.env.GITHUB_BRANCH || "main";
     const body = {
       message: "Update seedUsers() from SSA Ops",
       content: Buffer.from(newFullContent, "utf8").toString("base64"),
@@ -2124,7 +2124,7 @@ app.post("/api/site/push", async (req, res) => {
     const content = readSiteContent();
     const jsonStr = JSON.stringify(content, null, 2);
     const getRes = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/data/site-content.json`,
+      `https://api.github.com/repos/${owner}/${repo}/contents/data/site-content.json?ref=${encodeURIComponent(branch)}`,
       { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } }
     );
     const getData = await getRes.json();
