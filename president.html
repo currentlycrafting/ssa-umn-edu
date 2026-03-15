@@ -85,6 +85,9 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .site-drop-zone{border:1px dashed rgba(184,154,92,.35);background:var(--navy-light);border-radius:10px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .2s}
 .site-drop-zone:hover,.site-drop-zone.drag-over{border-color:var(--gold);background:rgba(184,154,92,.08)}
 .site-drop-zone.upload-done{border-style:solid;border-color:rgba(76,175,125,.4);background:rgba(76,175,125,.08)}
+.site-gallery-drop-wide{width:100%;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+.site-gallery-drop-wide .site-dz-text{font-size:16px}
+.site-gallery-drop-wide .site-dz-sub{margin-top:6px}
 .site-dz-text{font-size:12px;color:var(--silver)}
 .site-dz-text strong{color:var(--gold-light)}
 .site-dz-sub{font-size:10px;color:rgba(154,159,173,.5);margin-top:4px}
@@ -92,7 +95,14 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 .site-gallery-item img{width:100%;height:100%;object-fit:cover}
 .site-gallery-remove{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:4px;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:.9}
 .site-gallery-remove:hover{opacity:1}
-.site-board-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);padding:16px;border-radius:10px;display:grid;grid-template-columns:100px 1fr auto;gap:16px;align-items:start}
+.site-gallery-row{display:flex;align-items:center;gap:8px}
+.site-gallery-order-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.site-gallery-move{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:var(--navy);color:var(--gold);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s, color .2s}
+.site-gallery-move:hover{background:var(--gold);color:var(--navy)}
+.site-board-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.06);padding:16px;border-radius:10px;display:grid;grid-template-columns:auto 100px 1fr auto;gap:16px;align-items:start}
+.site-board-order-btns{display:flex;flex-direction:column;gap:4px;padding-top:4px}
+.site-board-move{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:var(--navy);color:var(--gold);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s, color .2s}
+.site-board-move:hover{background:var(--gold);color:var(--navy)}
 .site-board-photo-wrap{width:100px;height:100px;border-radius:8px;overflow:hidden;background:var(--navy);position:relative}
 .site-board-photo-wrap img{width:100%;height:100%;object-fit:cover}
 .site-board-upload{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--gold);cursor:pointer;opacity:0;transition:opacity .2s}
@@ -802,43 +812,35 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="card">
       <div class="section-label">Index gallery</div>
       <div class="card-title">Photos on homepage</div>
-      <div class="card-sub">Temporary gallery: add or remove below. When ready, open full gallery to review and click Save gallery to apply. Then push to GitHub.</div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
-        <button type="button" class="btn btn-gold" onclick="openModal('site-gallery-modal');renderSiteGalleryList()">View full gallery</button>
-        <span style="font-size:11px;color:var(--silver)">Add below or in full gallery, then Save gallery</span>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:16px">
-        <div class="site-drop-zone" id="site-gallery-drop" style="width:220px;flex-shrink:0" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryDrop(event)" onclick="document.getElementById('site-gallery-file').click()">
+      <div class="card-sub">Gallery is loaded from the <code>gallery/</code> folder. Index shows 3 photos; Full Gallery shows all. Add or remove below — changes are immediate. Then push to GitHub.</div>
+      <div class="site-gallery-drop-wrap" style="margin-bottom:16px">
+        <div class="site-drop-zone site-gallery-drop-wide" id="site-gallery-drop" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryDrop(event)" onclick="document.getElementById('site-gallery-file').click()">
           <div class="site-dz-text" id="site-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
-          <div class="site-dz-sub">PNG, JPG · one image</div>
+          <div class="site-dz-sub">PNG, JPG</div>
           <input type="file" id="site-gallery-file" accept="image/*" style="display:none" onchange="siteGalleryFileChosen(this)" />
         </div>
-        <label style="display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:11px;color:var(--silver)">Alt text</span>
-          <input type="text" id="site-gallery-alt" placeholder="e.g. SSA event" style="background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:8px 12px;border-radius:6px;color:var(--white);font-size:12px;min-width:160px" />
-        </label>
-        <button type="button" class="btn btn-gold" onclick="siteAddGalleryPhoto()">Add to temporary gallery</button>
       </div>
       <div id="site-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
-      <button type="button" class="btn btn-outline" onclick="siteSaveGallery()">Save gallery</button>
-      <span id="site-gallery-save-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="sitePushGalleryToGitHub()">Push Gallery Content to Github</button>
+        <span id="site-push-gallery-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
     </div>
     <div class="card" style="margin-top:24px">
       <div class="section-label">Board section (Executive Board on index)</div>
       <div class="card-title">Edit members</div>
-      <div class="card-sub">Board photos are stored in <code>board-images/</code>. Edit fields, then save and push.</div>
+      <div class="card-sub">Board is loaded from <code>board-images/</code>. Add (upload photo + name/role) or remove, reorder with ↺↻, then push.</div>
       <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
-        <button type="button" class="btn btn-gold" onclick="openModal('site-board-modal');renderSiteBoardList()">View Board</button>
-        <span style="font-size:11px;color:var(--silver)">Manage add/edit/delete from one board view</span>
+        <button type="button" class="btn btn-gold" onclick="openViewBoard()">View Board</button>
       </div>
       <div id="site-board-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
         <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
-        <button type="button" class="btn btn-gold" onclick="siteSaveBoard()">Save board</button>
+        <button type="button" class="btn btn-outline" onclick="siteSaveBoard()">Refresh from folder</button>
       </div>
       <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
-        <button type="button" class="btn btn-gold" onclick="sitePushToGitHub()">Push site content to GitHub</button>
-        <span id="site-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+        <button type="button" class="btn btn-gold" onclick="sitePushBoardToGitHub()">Push Member Content to Github</button>
+        <span id="site-push-board-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
       </div>
     </div>
   </div>
@@ -860,13 +862,13 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
   </div>
 </main>
 
-<!-- ══ MODAL: Full gallery (temporary view — add/remove then Save gallery) ══ -->
+<!-- ══ MODAL: View Gallery (same as index — add/remove from gallery folder) ══ -->
 <div class="modal-overlay" id="site-gallery-modal">
   <div class="modal" style="max-width:720px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
     <div class="mh" style="flex-shrink:0">
       <div>
-        <div class="mh-title">Full gallery (temporary)</div>
-        <div class="mh-sub">Add or remove photos. Click Save gallery to apply this set to the site.</div>
+        <div class="mh-title">View Gallery</div>
+        <div class="mh-sub">Same as index: 3 on homepage, rest in Full Gallery. Add or remove — saved to gallery folder immediately.</div>
       </div>
       <button type="button" class="modal-close" onclick="closeModal('site-gallery-modal')" style="margin:0">✕</button>
     </div>
@@ -878,8 +880,8 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
       </div>
       <div id="site-gallery-modal-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px"></div>
       <div style="display:flex;gap:10px;align-items:center">
-        <button type="button" class="btn btn-gold" onclick="siteSaveGallery();closeModal('site-gallery-modal')">Save gallery</button>
-        <button type="button" class="btn btn-outline" onclick="closeModal('site-gallery-modal')">Cancel</button>
+        <button type="button" class="btn btn-gold" onclick="siteSaveGallery()">Done</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('site-gallery-modal')">Close</button>
       </div>
     </div>
   </div>
@@ -899,7 +901,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
       <div id="site-board-modal-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
       <div style="display:flex;gap:10px;align-items:center">
         <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
-        <button type="button" class="btn btn-gold" onclick="siteSaveBoard();closeModal('site-board-modal')">Save board</button>
+        <button type="button" class="btn btn-gold" onclick="siteSaveBoard();closeModal('site-board-modal')">Done</button>
       </div>
     </div>
   </div>
@@ -2036,20 +2038,11 @@ window.pushSeedToGitHub = async function pushSeedToGitHub() {
 let siteContentGallery = [];
 let siteContentBoard = [];
 window.loadSiteContentPage = async function loadSiteContentPage() {
-  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
   try {
-    const [pubRes, boardRes] = await Promise.all([
-      fetch('/api/public/site-content'),
-      token ? fetch('/api/site/board', { headers: { 'x-session-token': token } }) : Promise.resolve(null)
-    ]);
+    const pubRes = await fetch('/api/public/site-content');
     const pub = pubRes.ok ? await pubRes.json() : {};
     siteContentGallery = pub.galleryImages || [];
-    if (boardRes && boardRes.ok) {
-      const b = await boardRes.json();
-      siteContentBoard = b.boardMembers || [];
-    } else {
-      siteContentBoard = pub.boardMembers || [];
-    }
+    siteContentBoard = pub.boardMembers || [];
     renderSiteGalleryList();
     renderSiteBoardList();
   } catch (_e) {
@@ -2059,23 +2052,64 @@ window.loadSiteContentPage = async function loadSiteContentPage() {
     renderSiteBoardList();
   }
 };
+window.openViewBoard = async function openViewBoard() {
+  try {
+    const res = await fetch('/api/public/site-content');
+    const data = await res.json().catch(function () { return {}; });
+    if (res.ok && Array.isArray(data.boardMembers)) {
+      siteContentBoard = data.boardMembers;
+      renderSiteBoardList();
+      openModal('site-board-modal');
+    } else {
+      siteContentBoard = [];
+      renderSiteBoardList();
+      openModal('site-board-modal');
+    }
+  } catch (e) {
+    showToast(e.message || 'Could not load board.');
+  }
+};
 function renderSiteGalleryList() {
+  var filename = function (img) { return (img.src || '').split('/').pop() || ''; };
+  function itemHtml(img, i) {
+    var src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : (img.src || '');
+    var fn = (filename(img) || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    var moveUp = i > 0 ? '<button type="button" class="site-gallery-move" onclick="siteMoveGalleryPhoto(' + i + ', -1)" title="Move up" aria-label="Move up">↺</button>' : '';
+    var moveDown = i < siteContentGallery.length - 1 ? '<button type="button" class="site-gallery-move" onclick="siteMoveGalleryPhoto(' + i + ', 1)" title="Move down" aria-label="Move down">↻</button>' : '';
+    return '<div class="site-gallery-row">' +
+      '<div class="site-gallery-order-btns">' + moveUp + moveDown + '</div>' +
+      '<div class="site-gallery-item"><img src="' + (src || '') + '" alt="" /><button type="button" class="site-gallery-remove" data-filename="' + fn + '" onclick="siteRemoveGalleryPhoto(this.getAttribute(\'data-filename\'))" aria-label="Remove">×</button></div>' +
+      '</div>';
+  }
   var html = siteContentGallery.length === 0
-    ? '<span style="font-size:12px;color:var(--silver)">No photos yet. Add above or in full gallery.</span>'
-    : siteContentGallery.map(function (img) {
-        var src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : (img.src || '');
-        var id = (img.id || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        return '<div class="site-gallery-item"><img src="' + (src || '') + '" alt="" /><button type="button" class="site-gallery-remove" data-gallery-id="' + id + '" onclick="siteRemoveGalleryPhoto(this.getAttribute(\'data-gallery-id\'))" aria-label="Remove">×</button></div>';
-      }).join('');
+    ? '<span style="font-size:12px;color:var(--silver)">No photos yet. Add above or in View Gallery.</span>'
+    : siteContentGallery.map(function (img, i) { return itemHtml(img, i); }).join('');
   var el = document.getElementById('site-gallery-list');
   if (el) el.innerHTML = html;
   var modalList = document.getElementById('site-gallery-modal-list');
-  if (modalList) modalList.innerHTML = siteContentGallery.length === 0 ? '<span style="font-size:12px;color:var(--silver)">No photos. Click or drag to add.</span>' : siteContentGallery.map(function (img) {
-    var src = img.src && img.src.startsWith('/') ? (window.location.origin + img.src) : (img.src || '');
-    var id = (img.id || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    return '<div class="site-gallery-item"><img src="' + (src || '') + '" alt="" /><button type="button" class="site-gallery-remove" data-gallery-id="' + id + '" onclick="siteRemoveGalleryPhoto(this.getAttribute(\'data-gallery-id\'))" aria-label="Remove">×</button></div>';
-  }).join('');
+  if (modalList) modalList.innerHTML = siteContentGallery.length === 0 ? '<span style="font-size:12px;color:var(--silver)">No photos. Click or drag to add.</span>' : siteContentGallery.map(function (img, i) { return itemHtml(img, i); }).join('');
 }
+window.siteMoveGalleryPhoto = function siteMoveGalleryPhoto(index, delta) {
+  var next = index + delta;
+  if (next < 0 || next >= siteContentGallery.length) return;
+  var arr = siteContentGallery.slice();
+  var t = arr[index];
+  arr[index] = arr[next];
+  arr[next] = t;
+  siteContentGallery = arr;
+  renderSiteGalleryList();
+  var order = siteContentGallery.map(function (img) { return img.src || ''; }).filter(Boolean);
+  if (order.length === 0) return;
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) return;
+  fetch('/api/site/gallery-order', {
+    method: 'PUT',
+    headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ galleryOrder: order })
+  }).then(function (r) { return r.json(); }).then(function (data) {
+    if (data.galleryImages) { siteContentGallery = data.galleryImages; renderSiteGalleryList(); showToast('Order saved.'); }
+  }).catch(function () {});
+};
 function siteGalleryDragOver(e) {
   e.preventDefault();
   e.currentTarget.classList.add('drag-over');
@@ -2086,34 +2120,40 @@ function siteGalleryDragLeave(e) {
 function siteGalleryDrop(e) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
-  const file = e.dataTransfer.files && e.dataTransfer.files[0];
+  var file = e.dataTransfer.files && e.dataTransfer.files[0];
   if (file && file.type.indexOf('image/') === 0) {
-    const input = document.getElementById('site-gallery-file');
-    if (input) {
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      input.files = dt.files;
-      const zone = document.getElementById('site-gallery-drop');
-      const text = document.getElementById('site-gallery-dz-text');
-      if (zone) zone.classList.add('upload-done');
-      if (text) text.textContent = file.name;
-    }
+    siteAddGalleryPhotoFromFile(file).then(function () {
+      var zone = document.getElementById('site-gallery-drop');
+      var text = document.getElementById('site-gallery-dz-text');
+      if (zone) zone.classList.remove('upload-done');
+      if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
+      showToast('Photo added.');
+    }).catch(function (err) { showToast(err.message || 'Upload failed'); });
   }
 }
 function siteGalleryFileChosen(input) {
-  const file = input.files && input.files[0];
-  const zone = document.getElementById('site-gallery-drop');
-  const text = document.getElementById('site-gallery-dz-text');
-  if (zone) zone.classList.remove('upload-done');
-  if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
-  if (file) {
-    if (zone) zone.classList.add('upload-done');
-    if (text) text.textContent = file.name;
-  }
+  var file = input.files && input.files[0];
+  if (!file) return;
+  input.value = '';
+  siteAddGalleryPhotoFromFile(file).then(function () {
+    var zone = document.getElementById('site-gallery-drop');
+    var text = document.getElementById('site-gallery-dz-text');
+    if (zone) zone.classList.remove('upload-done');
+    if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop';
+    showToast('Photo added.');
+  }).catch(function (err) { showToast(err.message || 'Upload failed'); });
 }
-window.siteRemoveGalleryPhoto = function siteRemoveGalleryPhoto(id) {
-  siteContentGallery = siteContentGallery.filter(function (img) { return (img.id || '') !== id; });
-  renderSiteGalleryList();
+window.siteRemoveGalleryPhoto = function siteRemoveGalleryPhoto(filename) {
+  if (!filename) return;
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { showToast('You must be logged in.'); return; }
+  fetch('/api/site/gallery/file/' + encodeURIComponent(filename), { method: 'DELETE', headers: { 'x-session-token': token } })
+    .then(function (r) { return r.json().catch(function () { return {}; }); })
+    .then(function (data) {
+      if (data.galleryImages) { siteContentGallery = data.galleryImages; renderSiteGalleryList(); showToast('Photo removed.'); }
+      else { showToast('Remove failed.'); }
+    })
+    .catch(function () { showToast('Remove failed.'); });
 };
 function renderSiteBoardList() {
   const boardHtml = siteContentBoard.map(function (m, i) {
@@ -2121,7 +2161,10 @@ function renderSiteBoardList() {
     const name = (m.name || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const role = (m.role || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const major = (m.major || m.bio || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    var moveUp = i > 0 ? '<button type="button" class="site-board-move" onclick="siteMoveBoardMember(' + i + ', -1)" title="Move up" aria-label="Move up">↺</button>' : '';
+    var moveDown = i < siteContentBoard.length - 1 ? '<button type="button" class="site-board-move" onclick="siteMoveBoardMember(' + i + ', 1)" title="Move down" aria-label="Move down">↻</button>' : '';
     return '<div class="site-board-card">' +
+      '<div class="site-board-order-btns">' + moveUp + moveDown + '</div>' +
       '<div class="site-board-photo-wrap">' +
       '<img src="' + (imgSrc || '') + '" alt="" onerror="this.style.display=\'none\'" />' +
       '<div class="site-board-upload" onclick="siteBoardPhotoClick(' + i + ')">Change photo</div>' +
@@ -2163,13 +2206,16 @@ function siteBoardPhotoInputEl() {
       if (!file || !siteContentBoard[idx]) return;
       var fd = new FormData();
       fd.append('photo', file);
+      fd.append('name', siteContentBoard[idx].name || '');
+      fd.append('role', siteContentBoard[idx].role || '');
       var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
       fetch('/api/site/board/upload', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.path) {
-            siteContentBoard[idx].image = data.path;
-            renderSiteBoardList();
+            fetch('/api/public/site-content').then(function (r) { return r.json(); }).then(function (content) {
+              if (content.boardMembers) { siteContentBoard = content.boardMembers; renderSiteBoardList(); showToast('Photo saved to folder.'); }
+            });
           }
         })
         .catch(function () {});
@@ -2183,18 +2229,18 @@ window.siteBoardPhotoClick = function siteBoardPhotoClick(index) {
   input.setAttribute('data-board-index', String(index));
   input.click();
 };
-function siteAddGalleryPhotoFromFile(file, altText) {
+function siteAddGalleryPhotoFromFile(file) {
   if (!file || !(file.type || '').match(/^image\//)) return Promise.reject(new Error('Choose an image.'));
   var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
   if (!token) return Promise.reject(new Error('You must be logged in.'));
   var fd = new FormData();
   fd.append('photo', file);
-  return fetch('/api/site/gallery/upload', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
+  return fetch('/api/site/gallery', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
     .then(function (r) { return r.json(); })
     .then(function (data) {
-      if (data.path && data.path) {
-        var id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : 'g-' + Date.now();
-        siteContentGallery.push({ id: id, src: data.path, alt: altText || 'SSA event' });
+      if (data.path || (data.galleryImages && data.galleryImages.length)) {
+        if (data.galleryImages) siteContentGallery = data.galleryImages;
+        else siteContentGallery.push({ id: 'gallery-' + (file.name || ''), src: data.path, alt: '' });
         renderSiteGalleryList();
       } else {
         throw new Error(data.error || 'Upload failed');
@@ -2236,68 +2282,66 @@ function siteGalleryModalDrop(e) {
 function siteGalleryModalFileChosen(input) {
   var file = input.files && input.files[0];
   if (!file) return;
-  siteAddGalleryPhotoFromFile(file, 'SSA event').then(function () {
+  siteAddGalleryPhotoFromFile(file).then(function () {
     input.value = '';
     var zone = document.getElementById('site-gallery-modal-drop');
     var text = document.getElementById('site-gallery-modal-dz-text');
     if (zone) zone.classList.remove('upload-done');
     if (text) text.innerHTML = '<strong>Click to upload</strong> or drag and drop a photo';
+    showToast('Photo added.');
   }).catch(function (err) { showToast(err.message || 'Upload failed'); });
 }
 window.siteSaveGallery = async function siteSaveGallery() {
-  var statusEl = document.getElementById('site-gallery-save-status');
-  if (statusEl) statusEl.textContent = 'Saving…';
-  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-  try {
-    var res = await fetch('/api/site/gallery', {
-      method: 'PUT',
-      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ galleryImages: siteContentGallery })
-    });
-    var data = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw new Error(data.error || 'Save failed');
-    if (statusEl) statusEl.textContent = 'Saved.';
-    showToast('Gallery saved.');
-  } catch (e) {
-    if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
-    showToast(e.message || 'Save failed');
-  }
+  loadSiteContentPage();
+  closeModal('site-gallery-modal');
+  showToast('Gallery refreshed.');
 };
-window.sitePushToGitHub = async function sitePushToGitHub() {
-  const statusEl = document.getElementById('site-push-status');
+window.sitePushGalleryToGitHub = async function sitePushGalleryToGitHub() {
+  const statusEl = document.getElementById('site-push-gallery-status');
   if (statusEl) statusEl.textContent = 'Pushing…';
   const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
   try {
-    const res = await fetch('/api/site/push', { method: 'POST', headers: { 'x-session-token': token } });
+    const res = await fetch('/api/site/push-gallery', { method: 'POST', headers: { 'x-session-token': token } });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Push failed');
     if (statusEl) statusEl.textContent = 'Pushed.';
+    showToast('Gallery content pushed to GitHub.');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
+    showToast(e.message || 'Push failed');
+  }
+};
+window.sitePushBoardToGitHub = async function sitePushBoardToGitHub() {
+  const statusEl = document.getElementById('site-push-board-status');
+  if (statusEl) statusEl.textContent = 'Pushing…';
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  try {
+    const res = await fetch('/api/site/push-board', { method: 'POST', headers: { 'x-session-token': token } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Push failed');
+    if (statusEl) statusEl.textContent = 'Pushed.';
+    showToast('Member content pushed to GitHub.');
   } catch (e) {
     if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
     showToast(e.message || 'Push failed');
   }
 };
 window.siteSaveBoard = async function siteSaveBoard() {
-  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-  if (!token) { showToast('You must be logged in.'); return; }
   try {
-    const res = await fetch('/api/site/board', {
-      method: 'PUT',
-      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ boardMembers: siteContentBoard })
-    });
+    const res = await fetch('/api/public/site-content');
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Save failed');
-    siteContentBoard = data.boardMembers || [];
-    renderSiteBoardList();
-    showToast('Board saved.');
+    if (res.ok && Array.isArray(data.boardMembers)) {
+      siteContentBoard = data.boardMembers;
+      renderSiteBoardList();
+      showToast('Board refreshed from folder.');
+    }
   } catch (e) {
-    showToast(e.message || 'Save failed');
+    showToast(e.message || 'Refresh failed');
   }
 };
 window.siteAddBoardMember = function siteAddBoardMember() {
   siteContentBoard.push({
-    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'mb-' + Date.now(),
+    id: 'new-' + Date.now(),
     name: '',
     role: 'Executive Board Member',
     major: '',
@@ -2305,9 +2349,50 @@ window.siteAddBoardMember = function siteAddBoardMember() {
   });
   renderSiteBoardList();
 };
-window.siteRemoveBoardMember = function siteRemoveBoardMember(index) {
-  siteContentBoard.splice(index, 1);
+window.siteMoveBoardMember = function siteMoveBoardMember(index, delta) {
+  var next = index + delta;
+  if (next < 0 || next >= siteContentBoard.length) return;
+  var arr = siteContentBoard.slice();
+  var t = arr[index];
+  arr[index] = arr[next];
+  arr[next] = t;
+  siteContentBoard = arr;
   renderSiteBoardList();
+  var order = siteContentBoard.map(function (m) { return m.image || ''; }).filter(Boolean);
+  if (order.length === 0) return;
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) return;
+  fetch('/api/site/board-order', {
+    method: 'PUT',
+    headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ boardOrder: order })
+  }).then(function (r) { return r.json(); }).then(function (data) {
+    if (data.boardMembers) { siteContentBoard = data.boardMembers; renderSiteBoardList(); showToast('Order saved.'); }
+  }).catch(function () {});
+};
+window.siteRemoveBoardMember = function siteRemoveBoardMember(index) {
+  var member = siteContentBoard[index];
+  if (!member) return;
+  var filename = (member.image || '').split('/').pop();
+  if (!filename) {
+    siteContentBoard.splice(index, 1);
+    renderSiteBoardList();
+    return;
+  }
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { showToast('You must be logged in.'); return; }
+  fetch('/api/site/board/file/' + encodeURIComponent(filename), { method: 'DELETE', headers: { 'x-session-token': token } })
+    .then(function (r) { return r.json().catch(function () { return {}; }); })
+    .then(function (data) {
+      if (data.boardMembers) {
+        siteContentBoard = data.boardMembers;
+        renderSiteBoardList();
+        showToast('Member removed from folder.');
+      } else {
+        showToast('Remove failed.');
+      }
+    })
+    .catch(function () { showToast('Remove failed.'); });
 };
 
 // ── CLICK OUTSIDE MODAL ───────────────────────────────────────────────────

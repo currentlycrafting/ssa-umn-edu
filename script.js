@@ -45,7 +45,7 @@ const defaultData = {
     { id: crypto.randomUUID(), name: 'Ikhlas Abdi', role: 'Outreach Coordinator', major: '', image: 'board-images/Ikhlas Abdi - Outreach Coordinator.png' },
     { id: crypto.randomUUID(), name: 'Ifrah Ali', role: 'Treasurer', major: '', image: 'board-images/Ifrah Ali - Treasurer.png' },
     { id: crypto.randomUUID(), name: 'Layla Salad', role: 'Co-Event Coordinator', major: '', image: 'board-images/Layla Salad - Co-Event Coordinator.png' },
-    { id: crypto.randomUUID(), name: 'Ahmed Abdul', role: 'Co-Event Coordinator', major: '', image: 'board-images/Ahmed Abdul - Co-Event Coordinator.png' },
+    { id: crypto.randomUUID(), name: 'Ahlam Abdul', role: 'Co-Event Coordinator', major: '', image: 'board-images/Ahlam Abdul - Co-Event Coordinator.png' },
     { id: crypto.randomUUID(), name: 'Salma Tawane', role: 'Secretary', major: '', image: 'board-images/Salma Tawane - Secretary.png' },
     { id: crypto.randomUUID(), name: 'Maida Ahmed', role: 'Co-Public Relations', major: '', image: 'board-images/Maida Ahmed - Co-Public Relations.png' },
     { id: crypto.randomUUID(), name: 'Ashaar Ali', role: 'Co-Public Relations', major: '', image: 'board-images/Ashaar Ali - Co-Public Relations.png' }
@@ -219,15 +219,25 @@ function renderNewsletters() {
 }
 
 function getBoardMembers() {
-  const members = (serverSiteContent.boardMembers && serverSiteContent.boardMembers.length)
-    ? serverSiteContent.boardMembers
-    : siteData.boardMembers;
+  const fromServer = serverSiteContent.boardMembers;
+  const fromLocal = siteData.boardMembers;
+  const members =
+    fromServer && fromServer.length
+      ? fromServer
+      : fromLocal && fromLocal.length
+        ? fromLocal
+        : structuredClone(defaultData.boardMembers);
   return (members || []).filter((m) => String(m.image || '').replace(/^\/+/, '').startsWith('board-images/'));
 }
 function getGalleryImages() {
-  const images = (serverSiteContent.galleryImages && serverSiteContent.galleryImages.length)
-    ? serverSiteContent.galleryImages
-    : siteData.galleryImages;
+  const fromServer = serverSiteContent.galleryImages;
+  const fromLocal = siteData.galleryImages;
+  const images =
+    fromServer && fromServer.length
+      ? fromServer
+      : fromLocal && fromLocal.length
+        ? fromLocal
+        : structuredClone(defaultData.galleryImages);
   return (images || []).filter((img) => String(img.src || '').replace(/^\/+/, '').startsWith('gallery/'));
 }
 
@@ -249,17 +259,19 @@ function renderBoard() {
         lowerName.includes('ashaar') ||
         lowerName.includes('salma') ||
         lowerName.includes('aisha') ||
-        lowerName.includes('dahir')
+        lowerName.includes('dahir') ||
+        lowerName.includes('ahlam')
       ) {
         mobileClasses.push('leader-photo-mobile-higher');
       }
+      const imageSrc = member.image ? member.image.replace(/^\//, '') : '';
       return `
       <div class="leader-card">
         <div class="leader-card-image">
-          <img src="${escapeHtml(member.image)}" alt="${escapeHtml(member.name)}" class="${mobileClasses.join(' ')}" loading="lazy" />
+          <img src="${escapeHtml(imageSrc)}" alt="${escapeHtml(member.name)}" class="${mobileClasses.join(' ')}" loading="lazy" />
           <div class="leader-card-overlay">
             <div class="leader-name">${escapeHtml(member.name)}</div>
-            <div class="leader-role">${escapeHtml(member.role)}</div>
+            <div class="leader-role">${escapeHtml(member.role || 'Executive Board Member')}</div>
           </div>
         </div>
         <div class="leader-card-info">
@@ -280,13 +292,13 @@ function renderGallery() {
       .map(
         (img) => `
       <div class="gallery-item">
-        <img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt || 'SSA gallery image')}" loading="lazy" />
+        <img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt || '')}" />
       </div>`
       )
       .join('');
 
   const images = getGalleryImages();
-  homeGrid.innerHTML = renderItems(images.slice(0, 6));
+  homeGrid.innerHTML = renderItems(images.slice(0, 3));
   fullGrid.innerHTML = renderItems(images);
 }
 
@@ -730,6 +742,23 @@ function renderAllDynamicSections() {
   renderBoard();
 }
 
+function loadSiteContentFromServer() {
+  fetch('/api/public/site-content')
+    .then((r) => r.ok ? r.json() : null)
+    .then((data) => {
+      if (data) {
+        if (Array.isArray(data.galleryImages)) serverSiteContent.galleryImages = data.galleryImages;
+        if (Array.isArray(data.boardMembers)) serverSiteContent.boardMembers = data.boardMembers;
+        renderBoard();
+        renderGallery();
+      }
+    })
+    .catch(() => {
+      renderBoard();
+      renderGallery();
+    });
+}
+
 function setupAdminPanel() {
   const panel = document.getElementById('admin-panel');
   const entry = document.getElementById('admin-entry');
@@ -894,20 +923,6 @@ function setupGalleryLightbox() {
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && lightbox?.classList.contains('open')) closeLightbox();
   });
-}
-
-function loadSiteContentFromServer() {
-  fetch('/api/public/site-content')
-    .then((r) => r.ok ? r.json() : null)
-    .then((data) => {
-      if (data && (data.galleryImages || data.boardMembers)) {
-        if (Array.isArray(data.galleryImages)) serverSiteContent.galleryImages = data.galleryImages;
-        if (Array.isArray(data.boardMembers)) serverSiteContent.boardMembers = data.boardMembers;
-        renderBoard();
-        renderGallery();
-      }
-    })
-    .catch(() => {});
 }
 
 function init() {

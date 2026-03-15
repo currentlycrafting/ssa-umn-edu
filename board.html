@@ -871,6 +871,23 @@ textarea, input, select { font-family: var(--fb); }
   transition: border-color .2s;
 }
 #menu-btn:hover { border-color: var(--gold); }
+.site-drop-zone{border:1px dashed rgba(184,154,92,.35);background:var(--navy-light);border-radius:10px;padding:20px 16px;text-align:center;cursor:pointer;transition:all .2s}
+.site-drop-zone:hover,.site-drop-zone.drag-over{border-color:var(--gold);background:rgba(184,154,92,.08)}
+.site-gallery-drop-wide{width:100%;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px}
+.site-gallery-drop-wide .site-dz-text{font-size:16px}
+.site-gallery-drop-wide .site-dz-sub{margin-top:6px}
+.site-dz-text{font-size:12px;color:var(--silver)}
+.site-dz-text strong{color:var(--gold-light)}
+.site-dz-sub{font-size:10px;color:rgba(154,159,173,.5);margin-top:4px}
+.site-gallery-item{position:relative;width:100px;height:100px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.site-gallery-item img{width:100%;height:100%;object-fit:cover}
+.site-gallery-remove{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:4px;background:var(--red);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:.9}
+.site-gallery-remove:hover{opacity:1}
+.site-gallery-row{display:flex;align-items:center;gap:8px}
+.site-gallery-order-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.site-gallery-move{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:var(--navy);color:var(--gold);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s, color .2s}
+.site-gallery-move:hover{background:var(--gold);color:var(--navy)}
+.section-sub code{font-size:11px;color:var(--gold-light)}
 </style>
 </head>
 
@@ -906,7 +923,7 @@ textarea, input, select { font-family: var(--fb); }
     <div class="sb-item" onclick="navigate('events')" data-page="events"><span class="sb-icon">◆</span>Events</div>
     <div class="sb-item" onclick="navigate('reports')" data-page="reports"><span class="sb-icon">▣</span>Reports</div>
     <div class="sb-item" onclick="navigate('submit')" data-page="submit"><span class="sb-icon">→</span>Submit Work</div>
-    <div class="sb-item" onclick="navigate('site-gallery')" data-page="site-gallery"><span class="sb-icon">◷</span>Index gallery</div>
+    <div class="sb-item" onclick="navigate('site-gallery')" data-page="site-gallery"><span class="sb-icon">◷</span>Index</div>
   </div>
   <div class="sb-footer">
     <div style="font-size:10px;color:var(--silver)"><span class="poll-dot"></span>Syncing every 30s</div>
@@ -1122,26 +1139,26 @@ textarea, input, select { font-family: var(--fb); }
     </section>
 
     <!-- ══════════════════════════════
-         PAGE: INDEX GALLERY (add photos to homepage)
+         PAGE: INDEX (gallery — photos on homepage)
     ══════════════════════════════ -->
     <section class="page" id="page-site-gallery">
-      <div class="breadcrumb"><span class="bc-active">Site</span> › <span>Index gallery</span></div>
-      <div class="section-eyebrow">Homepage</div>
-      <div class="section-title">Add a photo to the index gallery</div>
-      <div class="section-sub">Board, VP, and President can add photos. President pushes to GitHub from President → Index & Board.</div>
+      <div class="breadcrumb"><span class="bc-active">Index</span> › <span>Photos on homepage</span></div>
+      <div class="section-eyebrow">Index gallery</div>
+      <div class="section-title">Photos on homepage</div>
+      <div class="section-sub">Gallery is loaded from the <code>gallery/</code> folder. Index shows 3 photos; Full Gallery shows all. Add or remove below — changes are immediate. Then push to GitHub.</div>
       <div class="card" style="margin-top:16px">
-        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:16px">
-          <label style="display:flex;flex-direction:column;gap:4px">
-            <span style="font-size:11px;color:var(--silver)">Photo</span>
-            <input type="file" id="board-gallery-file" accept="image/*" style="font-size:11px;color:var(--stone)" />
-          </label>
-          <label style="display:flex;flex-direction:column;gap:4px">
-            <span style="font-size:11px;color:var(--silver)">Alt text</span>
-            <input type="text" id="board-gallery-alt" placeholder="e.g. SSA event" style="background:var(--navy);border:1px solid rgba(255,255,255,.1);padding:8px 12px;border-radius:6px;color:var(--white);font-size:12px;min-width:160px" />
-          </label>
-          <button type="button" class="btn btn-gold" onclick="boardSiteAddGalleryPhoto()">Add to gallery</button>
+        <div class="site-gallery-drop-wrap" style="margin-bottom:16px">
+          <div class="site-drop-zone site-gallery-drop-wide" id="board-gallery-drop" ondragover="boardGalleryDragOver(event)" ondragleave="boardGalleryDragLeave(event)" ondrop="boardGalleryDrop(event)" onclick="document.getElementById('board-gallery-file').click()">
+            <div class="site-dz-text" id="board-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
+            <div class="site-dz-sub">PNG, JPG</div>
+            <input type="file" id="board-gallery-file" accept="image/*" style="display:none" onchange="boardGalleryFileChosen(this)" />
+          </div>
         </div>
-        <div id="board-gallery-list" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <div id="board-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
+        <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+          <button type="button" class="btn btn-gold" onclick="boardPushGalleryToGitHub()">Push Gallery Content to Github</button>
+          <span id="board-push-gallery-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+        </div>
       </div>
     </section>
 
@@ -1224,8 +1241,20 @@ let DASHBOARD = { tasks: [], events: [], dependencies: [] };
 let STAGED_FILES = {};
 
 /* ─────────────────────────────────────
-   INDEX GALLERY (board can add photos)
+   INDEX GALLERY (board can add/remove/reorder; president pushes)
 ───────────────────────────────────── */
+var boardGalleryImagesCurrent = [];
+function boardGalleryFilename(img) { return (img.src || '').split('/').pop() || ''; }
+function boardGalleryItemHtml(img, i, total) {
+  var src = (img.src && img.src.startsWith('/')) ? (window.location.origin + img.src) : (img.src || '');
+  var fn = (boardGalleryFilename(img) || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  var moveUp = i > 0 ? '<button type="button" class="site-gallery-move" onclick="boardMoveGalleryPhoto(' + i + ', -1)" title="Move up" aria-label="Move up">↺</button>' : '';
+  var moveDown = i < total - 1 ? '<button type="button" class="site-gallery-move" onclick="boardMoveGalleryPhoto(' + i + ', 1)" title="Move down" aria-label="Move down">↻</button>' : '';
+  return '<div class="site-gallery-row">' +
+    '<div class="site-gallery-order-btns">' + moveUp + moveDown + '</div>' +
+    '<div class="site-gallery-item"><img src="' + src + '" alt="" /><button type="button" class="site-gallery-remove" data-filename="' + fn + '" onclick="boardRemoveGalleryPhoto(this.getAttribute(\'data-filename\'))" aria-label="Remove">×</button></div>' +
+    '</div>';
+}
 window.boardLoadSiteGalleryPage = async function boardLoadSiteGalleryPage() {
   try {
     const r = await fetch('/api/public/site-content');
@@ -1233,39 +1262,88 @@ window.boardLoadSiteGalleryPage = async function boardLoadSiteGalleryPage() {
     const list = document.getElementById('board-gallery-list');
     if (!list) return;
     const images = data.galleryImages || [];
+    boardGalleryImagesCurrent = images;
     if (images.length === 0) {
       list.innerHTML = '<span style="font-size:12px;color:var(--silver)">No photos yet. Add one above.</span>';
       return;
     }
-    list.innerHTML = images.map(function (img) {
-      const src = (img.src && img.src.startsWith('/')) ? (window.location.origin + img.src) : (img.src || '');
-      return '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1)"><img src="' + src + '" alt="" style="width:100%;height:100%;object-fit:cover" /></div>';
-    }).join('');
+    list.innerHTML = images.map(function (img, i) { return boardGalleryItemHtml(img, i, images.length); }).join('');
   } catch (_e) {
     const list = document.getElementById('board-gallery-list');
     if (list) list.innerHTML = '<span style="font-size:12px;color:var(--silver)">Could not load gallery.</span>';
   }
 };
-window.boardSiteAddGalleryPhoto = async function boardSiteAddGalleryPhoto() {
-  const fileInput = document.getElementById('board-gallery-file');
-  const altInput = document.getElementById('board-gallery-alt');
-  const file = fileInput && fileInput.files && fileInput.files[0];
-  if (!file) { if (typeof showToast === 'function') showToast('Choose a photo first.'); return; }
-  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+window.boardMoveGalleryPhoto = async function boardMoveGalleryPhoto(index, delta) {
+  var arr = boardGalleryImagesCurrent.slice();
+  var next = index + delta;
+  if (next < 0 || next >= arr.length) return;
+  var t = arr[index]; arr[index] = arr[next]; arr[next] = t;
+  var order = arr.map(function (img) { return img.src || ''; }).filter(Boolean);
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
   if (!token) { if (typeof showToast === 'function') showToast('You must be logged in.'); return; }
-  const fd = new FormData();
-  fd.append('photo', file);
-  fd.append('alt', (altInput && altInput.value) ? altInput.value : 'SSA event');
   try {
-    const res = await fetch('/api/site/gallery', { method: 'POST', headers: { 'x-session-token': token }, body: fd });
-    const data = await res.json().catch(function () { return {}; });
-    if (!res.ok) throw new Error(data.error || 'Upload failed');
-    if (typeof showToast === 'function') showToast('Photo added to gallery.');
-    fileInput.value = '';
-    if (altInput) altInput.value = '';
+    var res = await fetch('/api/site/gallery-order', { method: 'PUT', headers: { 'x-session-token': token, 'Content-Type': 'application/json' }, body: JSON.stringify({ galleryOrder: order }) });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Reorder failed');
+    if (typeof showToast === 'function') showToast('Order saved.');
     boardLoadSiteGalleryPage();
+  } catch (e) { if (typeof showToast === 'function') showToast(e.message || 'Reorder failed'); }
+};
+window.boardGalleryDragOver = function boardGalleryDragOver(e) { e.preventDefault(); e.stopPropagation(); var z = document.getElementById('board-gallery-drop'); if (z) z.classList.add('drag-over'); };
+window.boardGalleryDragLeave = function boardGalleryDragLeave(e) { e.preventDefault(); var z = document.getElementById('board-gallery-drop'); if (z) z.classList.remove('drag-over'); };
+window.boardGalleryDrop = function boardGalleryDrop(e) {
+  e.preventDefault(); e.stopPropagation();
+  var z = document.getElementById('board-gallery-drop'); if (z) z.classList.remove('drag-over');
+  var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f && f.type && f.type.indexOf('image/') === 0) boardUploadGalleryFile(f);
+};
+window.boardGalleryFileChosen = function boardGalleryFileChosen(input) {
+  var f = input && input.files && input.files[0];
+  if (f) boardUploadGalleryFile(f);
+  input.value = '';
+};
+window.boardUploadGalleryFile = async function boardUploadGalleryFile(file) {
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { if (typeof showToast === 'function') showToast('You must be logged in.'); return; }
+  var fd = new FormData(); fd.append('photo', file); fd.append('alt', 'SSA event');
+  var dz = document.getElementById('board-gallery-dz-text');
+  if (dz) dz.textContent = 'Uploading…';
+  try {
+    var res = await fetch('/api/site/gallery', { method: 'POST', headers: { 'x-session-token': token }, body: fd });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    if (typeof showToast === 'function') showToast('Photo added.');
+    boardLoadSiteGalleryPage();
+  } catch (err) {
+    if (typeof showToast === 'function') showToast(err.message || 'Upload failed');
+  }
+  if (dz) { dz.innerHTML = '<strong>Click to upload</strong> or drag and drop'; }
+};
+window.boardRemoveGalleryPhoto = async function boardRemoveGalleryPhoto(filename) {
+  if (!filename) return;
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { if (typeof showToast === 'function') showToast('You must be logged in.'); return; }
+  try {
+    var res = await fetch('/api/site/gallery/file/' + encodeURIComponent(filename), { method: 'DELETE', headers: { 'x-session-token': token } });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Remove failed');
+    if (typeof showToast === 'function') showToast('Photo removed.');
+    boardLoadSiteGalleryPage();
+  } catch (e) { if (typeof showToast === 'function') showToast(e.message || 'Remove failed'); }
+};
+window.boardPushGalleryToGitHub = async function boardPushGalleryToGitHub() {
+  var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) { if (typeof showToast === 'function') showToast('You must be logged in.'); return; }
+  var el = document.getElementById('board-push-gallery-status');
+  if (el) el.textContent = 'Pushing…';
+  try {
+    var res = await fetch('/api/site/push-gallery', { method: 'POST', headers: { 'x-session-token': token } });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Push failed');
+    if (el) el.textContent = data.message || 'Pushed.';
   } catch (e) {
-    if (typeof showToast === 'function') showToast(e.message || 'Upload failed');
+    if (el) el.textContent = '';
+    if (typeof showToast === 'function') showToast(e.message || 'Push failed');
   }
 };
 
@@ -1628,7 +1706,7 @@ const PAGE_TITLES = {
   events: 'Events',
   reports: 'Reports',
   submit: 'Submit Work',
-  'site-gallery': 'Index gallery'
+  'site-gallery': 'Index'
 };
 
 function navigate(pageId) {

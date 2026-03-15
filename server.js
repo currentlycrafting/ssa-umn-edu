@@ -1,6 +1,7 @@
 const path = require("path");
 const crypto = require("crypto");
 const fs = require("fs");
+const { execSync } = require("child_process");
 const express = require("express");
 const dotenv = require("dotenv");
 const { OAuth2Client } = require("google-auth-library");
@@ -31,6 +32,34 @@ const logoImagesDir = path.join(__dirname, "logo-images");
 const newsletterImagesDir = path.join(__dirname, "newsletter-images");
 const aboutSsaImagesDir = path.join(__dirname, "about-ssa-images");
 
+// Parse "Name - Role.png" filenames in board-images to build default board
+function defaultBoardFromFolder() {
+  try {
+    ensureDir(boardImagesDir);
+    const files = fs
+      .readdirSync(boardImagesDir)
+      .filter((name) => isImageFilename(name) && name.includes(" - "));
+    return files
+      .sort()
+      .map((name, idx) => {
+        const base = name.replace(/\.(png|jpg|jpeg|webp|gif)$/i, "");
+        const sep = " - ";
+        const i = base.lastIndexOf(sep);
+        const memberName = i >= 0 ? base.slice(0, i).trim() : base;
+        const role = i >= 0 ? base.slice(i + sep.length).trim() : "Executive Board Member";
+        return {
+          id: `bm-${idx + 1}`,
+          name: memberName,
+          role: role || "Executive Board Member",
+          major: "",
+          image: `board-images/${name}`,
+        };
+      });
+  } catch (_e) {
+    return [];
+  }
+}
+
 const CONFIRMED_BOARD = [
   { id: "bm-1", name: "Aisha Dakol", role: "Vice President", major: "", image: "board-images/Aisha Dakol - Vice President.png" },
   { id: "bm-2", name: "Dahir Munye", role: "President", major: "", image: "board-images/Dahir Munye - President.png" },
@@ -39,7 +68,7 @@ const CONFIRMED_BOARD = [
   { id: "bm-5", name: "Ikhlas Abdi", role: "Outreach Coordinator", major: "", image: "board-images/Ikhlas Abdi - Outreach Coordinator.png" },
   { id: "bm-6", name: "Ifrah Ali", role: "Treasurer", major: "", image: "board-images/Ifrah Ali - Treasurer.png" },
   { id: "bm-7", name: "Layla Salad", role: "Co-Event Coordinator", major: "", image: "board-images/Layla Salad - Co-Event Coordinator.png" },
-  { id: "bm-8", name: "Ahmed Abdul", role: "Co-Event Coordinator", major: "", image: "board-images/Ahmed Abdul - Co-Event Coordinator.png" },
+  { id: "bm-8", name: "Ahlam Abdul", role: "Co-Event Coordinator", major: "", image: "board-images/Ahlam Abdul - Co-Event Coordinator.png" },
   { id: "bm-9", name: "Salma Tawane", role: "Secretary", major: "", image: "board-images/Salma Tawane - Secretary.png" },
   { id: "bm-10", name: "Maida Ahmed", role: "Co-Public Relations", major: "", image: "board-images/Maida Ahmed - Co-Public Relations.png" },
   { id: "bm-11", name: "Ashaar Ali", role: "Co-Public Relations", major: "", image: "board-images/Ashaar Ali - Co-Public Relations.png" }
@@ -100,6 +129,8 @@ function migrateLegacyImageAssets() {
 }
 
 function defaultBoardMembers() {
+  const fromFolder = defaultBoardFromFolder();
+  if (fromFolder.length > 0) return fromFolder.map((m, idx) => ({ ...m, id: m.id || `bm-${idx + 1}` }));
   return CONFIRMED_BOARD.map((m) => ({
     ...m,
     image: m.image || `board-images/${boardFilenameFromName(m.name)}`
@@ -112,7 +143,7 @@ function defaultGalleryFromFolder() {
       .readdirSync(galleryDir)
       .filter(isImageFilename)
       .sort()
-      .map((name) => ({ id: `gallery-${name}`, src: `gallery/${name}`, alt: "SSA event" }));
+      .map((name) => ({ id: `gallery-${name}`, src: `gallery/${name}`, alt: "" }));
   } catch (_e) {
     return [];
   }
@@ -141,43 +172,52 @@ function normalizeGalleryImage(image, idx) {
 }
 
 function readSiteContent() {
-  let galleryImages = [];
-  let boardMembers = [];
+  let galleryImages = defaultGalleryFromFolder();
+  let boardMembers = defaultBoardFromFolder();
+  let boardOrder = [];
+  let galleryOrder = [];
   try {
     if (fs.existsSync(siteContentPath)) {
       const raw = fs.readFileSync(siteContentPath, "utf8");
       const data = JSON.parse(raw);
-      galleryImages = Array.isArray(data.galleryImages) ? data.galleryImages.map(normalizeGalleryImage) : [];
-      boardMembers = Array.isArray(data.boardMembers) ? data.boardMembers.map(normalizeBoardMember) : [];
+      boardOrder = Array.isArray(data.boardOrder) ? data.boardOrder : [];
+      galleryOrder = Array.isArray(data.galleryOrder) ? data.galleryOrder : [];
     }
   } catch (_e) {}
-  if (!galleryImages.length) galleryImages = defaultGalleryFromFolder();
-  if (!boardMembers.length) boardMembers = defaultBoardMembers();
-  // Hard enforce section-specific folder sources.
-  galleryImages = galleryImages.filter((g) => normalizeRelPath(g.src).startsWith("gallery/"));
-  boardMembers = boardMembers.map((m, idx) => {
-    const fixed = normalizeBoardMember(m, idx);
-    if (!normalizeRelPath(fixed.image).startsWith("board-images/")) {
-      fixed.image = `board-images/${path.basename(fixed.image || boardFilenameFromName(fixed.name))}`;
+  if (galleryOrder.length) {
+    const byPath = new Map(galleryImages.map((g) => [normalizeRelPath(g.src), g]));
+    const ordered = [];
+    for (const p of galleryOrder) {
+      const key = normalizeRelPath(p);
+      if (byPath.has(key)) {
+        ordered.push(byPath.get(key));
+        byPath.delete(key);
+      }
     }
-    return fixed;
-  });
-  return { galleryImages, boardMembers };
+    byPath.forEach((g) => ordered.push(g));
+    galleryImages = ordered.map((g, idx) => normalizeGalleryImage(g, idx));
+  }
+  if (boardOrder.length) {
+    const byPath = new Map(boardMembers.map((m) => [normalizeRelPath(m.image), m]));
+    const ordered = [];
+    for (const p of boardOrder) {
+      const key = normalizeRelPath(p);
+      if (byPath.has(key)) {
+        ordered.push(byPath.get(key));
+        byPath.delete(key);
+      }
+    }
+    byPath.forEach((m) => ordered.push(m));
+    boardMembers = ordered;
+  }
+  return { galleryImages, boardMembers, boardOrder, galleryOrder };
 }
 function writeSiteContent(data) {
   const payload = {
-    galleryImages: Array.isArray(data.galleryImages)
-      ? data.galleryImages.map(normalizeGalleryImage).filter((g) => normalizeRelPath(g.src).startsWith("gallery/"))
-      : [],
-    boardMembers: Array.isArray(data.boardMembers)
-      ? data.boardMembers.map(normalizeBoardMember).map((m) => {
-          const fixed = { ...m };
-          if (!normalizeRelPath(fixed.image).startsWith("board-images/")) {
-            fixed.image = `board-images/${path.basename(fixed.image || boardFilenameFromName(fixed.name))}`;
-          }
-          return fixed;
-        })
-      : []
+    galleryImages: [],
+    boardMembers: [],
+    boardOrder: Array.isArray(data.boardOrder) ? data.boardOrder : [],
+    galleryOrder: Array.isArray(data.galleryOrder) ? data.galleryOrder : []
   };
   fs.writeFileSync(siteContentPath, JSON.stringify(payload, null, 2), "utf8");
   return payload;
@@ -2251,7 +2291,16 @@ app.post("/api/site/board/upload", upload.single("photo"), (req, res) => {
   try {
     const ext = path.extname(file.originalname || "") || ".png";
     const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
-    const destName = `board-${crypto.randomUUID()}${safeExt}`;
+    const name = String(req.body && req.body.name || "").trim();
+    const role = String(req.body && req.body.role || "").trim();
+    let destName;
+    if (name && role) {
+      const safeName = name.replace(/[<>:"/\\|?*]/g, "").trim() || "member";
+      const safeRole = role.replace(/[<>:"/\\|?*]/g, "").trim() || "Executive Board Member";
+      destName = `${safeName} - ${safeRole}${safeExt}`;
+    } else {
+      destName = `board-${crypto.randomUUID()}${safeExt}`;
+    }
     const destPath = path.join(boardImagesDir, destName);
     if (!fs.existsSync(boardImagesDir)) fs.mkdirSync(boardImagesDir, { recursive: true });
     fs.copyFileSync(file.path, destPath);
@@ -2261,20 +2310,17 @@ app.post("/api/site/board/upload", upload.single("photo"), (req, res) => {
   }
 });
 
-// Replace entire gallery (save temporary/staging gallery)
+// Gallery: always loaded from folder. PUT kept for backwards compat but read uses folder.
 app.put("/api/site/gallery", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can edit gallery." });
-  const { galleryImages } = req.body || {};
-  if (!Array.isArray(galleryImages)) return res.status(400).json({ error: "Request body must include galleryImages array." });
   const content = readSiteContent();
-  content.galleryImages = galleryImages;
-  writeSiteContent(content);
   res.json({ ok: true, galleryImages: content.galleryImages });
 });
 
+// Add one image to gallery folder (no alt; list comes from folder).
 app.post("/api/site/gallery", upload.single("photo"), (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
@@ -2282,54 +2328,103 @@ app.post("/api/site/gallery", upload.single("photo"), (req, res) => {
   if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can add gallery photos." });
   const file = req.file;
   if (!file) return res.status(400).json({ error: "No photo file uploaded." });
-  const alt = (req.body && req.body.alt) ? String(req.body.alt).trim() : "SSA event";
-  const content = readSiteContent();
-  const id = crypto.randomUUID();
-  const ext = path.extname(file.originalname || "") || ".png";
-  const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
-  const destName = `gallery-${crypto.randomUUID()}${safeExt}`;
-  const destPath = path.join(galleryDir, destName);
-  if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
-  fs.copyFileSync(file.path, destPath);
-  content.galleryImages.push({ id, src: `gallery/${destName}`, alt });
-  writeSiteContent(content);
-  res.json({ ok: true, galleryImages: content.galleryImages });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const base = (file.originalname || "").replace(/\.[^.]+$/, "").replace(/[<>:"/\\|?*]/g, "") || "gallery";
+    const destName = `${base}${safeExt}`;
+    const destPath = path.join(galleryDir, destName);
+    if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    const content = readSiteContent();
+    res.json({ ok: true, path: `gallery/${destName}`, galleryImages: content.galleryImages });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to save image." });
+  }
 });
 
-app.delete("/api/site/gallery/:id", (req, res) => {
+// Delete one image from gallery folder by filename (basename only).
+app.delete("/api/site/gallery/file/:filename", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can remove gallery photos." });
-  const id = req.params.id;
-  if (!id) return res.status(400).json({ error: "Missing image id." });
-  const content = readSiteContent();
-  const before = content.galleryImages.length;
-  content.galleryImages = content.galleryImages.filter((img) => img.id !== id);
-  if (content.galleryImages.length === before) return res.status(404).json({ error: "Gallery image not found." });
-  writeSiteContent(content);
-  res.json({ ok: true, galleryImages: content.galleryImages });
+  const raw = req.params.filename;
+  const filename = path.basename(raw);
+  if (!filename || filename.startsWith(".")) return res.status(400).json({ error: "Invalid filename." });
+  const filePath = path.join(galleryDir, filename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: "File not found." });
+  try {
+    fs.unlinkSync(filePath);
+    const content = readSiteContent();
+    res.json({ ok: true, galleryImages: content.galleryImages });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Delete failed." });
+  }
 });
 
 app.get("/api/site/board", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  const content = readSiteContent();
-  res.json({ boardMembers: content.boardMembers });
+  const boardMembers = defaultBoardFromFolder();
+  res.json({ boardMembers });
 });
 
-app.put("/api/site/board", (req, res) => {
+// Delete one file from board-images folder (same pattern as gallery).
+app.delete("/api/site/board/file/:filename", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!isPresident(user)) return res.status(403).json({ error: "Only president can edit the board section." });
-  const { boardMembers } = req.body || {};
-  if (!Array.isArray(boardMembers)) return res.status(400).json({ error: "Request body must include boardMembers array." });
-  const content = readSiteContent();
-  content.boardMembers = boardMembers;
-  writeSiteContent(content);
-  res.json({ ok: true, boardMembers: content.boardMembers });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can remove board members." });
+  const raw = req.params.filename;
+  const filename = path.basename(raw);
+  if (!filename || filename.startsWith(".")) return res.status(400).json({ error: "Invalid filename." });
+  const filePath = path.join(boardImagesDir, filename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: "File not found." });
+  try {
+    fs.unlinkSync(filePath);
+    const boardMembers = defaultBoardFromFolder();
+    res.json({ ok: true, boardMembers });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Delete failed." });
+  }
+});
+
+app.put("/api/site/board-order", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can reorder board." });
+  const { boardOrder } = req.body || {};
+  if (!Array.isArray(boardOrder)) return res.status(400).json({ error: "Request body must include boardOrder array." });
+  try {
+    const content = readSiteContent();
+    content.boardOrder = boardOrder.map((p) => String(p || "").trim()).filter(Boolean);
+    writeSiteContent(content);
+    const next = readSiteContent();
+    res.json({ ok: true, boardMembers: next.boardMembers });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Save failed." });
+  }
+});
+
+app.put("/api/site/gallery-order", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can reorder gallery." });
+  const { galleryOrder } = req.body || {};
+  if (!Array.isArray(galleryOrder)) return res.status(400).json({ error: "Request body must include galleryOrder array." });
+  try {
+    const content = readSiteContent();
+    content.galleryOrder = galleryOrder.map((p) => String(p || "").trim()).filter(Boolean);
+    writeSiteContent(content);
+    const next = readSiteContent();
+    res.json({ ok: true, galleryImages: next.galleryImages });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Save failed." });
+  }
 });
 
 app.post("/api/site/push", async (req, res) => {
@@ -2378,6 +2473,38 @@ app.post("/api/site/push", async (req, res) => {
     res.json({ ok: true, message: "Site content pushed to GitHub." });
   } catch (e) {
     res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+// Push only gallery folder to GitHub (git).
+app.post("/api/site/push-gallery", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push gallery." });
+  try {
+    execSync("git add gallery 2>/dev/null || true", { cwd: __dirname });
+    execSync("git commit -m \"Update gallery content\" --allow-empty", { cwd: __dirname });
+    execSync("git push", { cwd: __dirname });
+    res.json({ ok: true, message: "Gallery content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: (e.stderr && e.stderr.toString()) || e.message || "Push failed. Ensure git is configured and remote is set." });
+  }
+});
+
+// Push board-images folder and site-content (board order) to GitHub (git).
+app.post("/api/site/push-board", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push board." });
+  try {
+    execSync("git add board-images site-content.json 2>/dev/null || true", { cwd: __dirname });
+    execSync("git commit -m \"Update board member content\" --allow-empty", { cwd: __dirname });
+    execSync("git push", { cwd: __dirname });
+    res.json({ ok: true, message: "Member content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: (e.stderr && e.stderr.toString()) || e.message || "Push failed. Ensure git is configured and remote is set." });
   }
 });
 
