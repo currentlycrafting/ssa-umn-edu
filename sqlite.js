@@ -216,7 +216,7 @@ function seedUsers() {
     // Executive Division
     {
       email: "said0106@umn.edu",
-      full_name: "Salman Said",
+      full_name: "Salman Khadar",
       role_title: "Executive President",
       department: "Executive Division",
       permission_level: "president",
