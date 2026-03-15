@@ -1,12 +1,283 @@
 {
-  "galleryImages": [],
+  "galleryImages": [
+    {
+      "id": "img-0dc25009-1aba-427c-a34f-f0138ee17abd-removebg-preview_copy-2e6af5ac-2857-4c71-ba33-da113003a0bf.png",
+      "src": "gallery/0dc25009-1aba-427c-a34f-f0138ee17abd-removebg-preview_copy-2e6af5ac-2857-4c71-ba33-da113003a0bf.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_0556-5d957b7a-d29f-4dbf-8090-2d1fecbb695a.png",
+      "src": "gallery/100_0556-5d957b7a-d29f-4dbf-8090-2d1fecbb695a.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_0590-a7715620-22f8-45cc-9d10-6c90a634de5f.png",
+      "src": "gallery/100_0590-a7715620-22f8-45cc-9d10-6c90a634de5f.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_0591-57b947a7-32e2-438b-8312-a561a871c9db.png",
+      "src": "gallery/100_0591-57b947a7-32e2-438b-8312-a561a871c9db.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_0626-e774bf69-7387-47a2-975c-e4ffb9c4ac80.png",
+      "src": "gallery/100_0626-e774bf69-7387-47a2-975c-e4ffb9c4ac80.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_0628-dce7edc1-e2da-4068-af8d-b446fd4107a9.png",
+      "src": "gallery/100_0628-dce7edc1-e2da-4068-af8d-b446fd4107a9.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_0736-a1198205-08bf-43b3-b961-3919d842379d.png",
+      "src": "gallery/100_0736-a1198205-08bf-43b3-b961-3919d842379d.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_0748-d66cb08f-b82f-4421-85e6-a7c04c19e243.png",
+      "src": "gallery/100_0748-d66cb08f-b82f-4421-85e6-a7c04c19e243.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1012-71860fb2-dc0b-4ef4-b923-ef1edda295ba.png",
+      "src": "gallery/100_1012-71860fb2-dc0b-4ef4-b923-ef1edda295ba.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1179-b7bd434a-fa9a-4b92-b115-dc695ee82e60.png",
+      "src": "gallery/100_1179-b7bd434a-fa9a-4b92-b115-dc695ee82e60.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1724-79fac5d9-c824-40e6-b78e-240b41a5edcf.png",
+      "src": "gallery/100_1724-79fac5d9-c824-40e6-b78e-240b41a5edcf.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1726-8ead709b-0b37-43d9-91a3-2410f0fc9e1b.png",
+      "src": "gallery/100_1726-8ead709b-0b37-43d9-91a3-2410f0fc9e1b.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1727-4ca31c50-3130-4821-bec9-bb49ac0ddb1e.png",
+      "src": "gallery/100_1727-4ca31c50-3130-4821-bec9-bb49ac0ddb1e.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1734-8fbf727c-9ca3-45b6-9494-ac75e6be534e.png",
+      "src": "gallery/100_1734-8fbf727c-9ca3-45b6-9494-ac75e6be534e.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1737-3a4d4bc6-b18b-4703-8fc6-f83244c3664c.png",
+      "src": "gallery/100_1737-3a4d4bc6-b18b-4703-8fc6-f83244c3664c.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1751-183423a3-6338-4ecf-82fe-faf357943ea8.png",
+      "src": "gallery/100_1751-183423a3-6338-4ecf-82fe-faf357943ea8.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1753-f253cb3c-cd86-4f31-8efc-6a2a97fbfe89.png",
+      "src": "gallery/100_1753-f253cb3c-cd86-4f31-8efc-6a2a97fbfe89.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1757-8f2a737d-0eed-4416-b7ba-573d60044558.png",
+      "src": "gallery/100_1757-8f2a737d-0eed-4416-b7ba-573d60044558.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1759-d5380cf9-ea10-404d-b7a8-0cec3b367a23.png",
+      "src": "gallery/100_1759-d5380cf9-ea10-404d-b7a8-0cec3b367a23.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1763-c08cd8a0-b995-4dcc-83be-d4dd9d63ec19.png",
+      "src": "gallery/100_1763-c08cd8a0-b995-4dcc-83be-d4dd9d63ec19.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1764-bb9d05c5-66d0-4a7a-908f-9ed6f6c02df3.png",
+      "src": "gallery/100_1764-bb9d05c5-66d0-4a7a-908f-9ed6f6c02df3.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1765-6276f656-bc7d-4391-8fc7-6e42d8ee971e.png",
+      "src": "gallery/100_1765-6276f656-bc7d-4391-8fc7-6e42d8ee971e.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1773-3e53c74a-8e3a-4828-a1cc-cdc4b7a75972.png",
+      "src": "gallery/100_1773-3e53c74a-8e3a-4828-a1cc-cdc4b7a75972.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1780-b3c0ec7f-f917-433f-ba9b-71a73bb05f90.png",
+      "src": "gallery/100_1780-b3c0ec7f-f917-433f-ba9b-71a73bb05f90.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-100_1920-7cba73e9-f11f-45db-a69e-a400955d7432.png",
+      "src": "gallery/100_1920-7cba73e9-f11f-45db-a69e-a400955d7432.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-ahmed-abdul-co-event-coordinator.png",
+      "src": "gallery/ahmed-abdul-co-event-coordinator.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-aisha-dakol-vice-president.png",
+      "src": "gallery/aisha-dakol-vice-president.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-ashaar-ali-co-public-relations.png",
+      "src": "gallery/ashaar-ali-co-public-relations.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-dahir-munye-president.png",
+      "src": "gallery/dahir-munye-president.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-february-newsletter.png",
+      "src": "gallery/february-newsletter.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-ifrah-ali-treasurer.png",
+      "src": "gallery/ifrah-ali-treasurer.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-ikhlas-abdi-outreach-coordinator.png",
+      "src": "gallery/ikhlas-abdi-outreach-coordinator.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_0776-6da79056-3273-4df1-8f50-b73606120877.png",
+      "src": "gallery/IMG_0776-6da79056-3273-4df1-8f50-b73606120877.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_2978-db443af7-655d-42cf-9f25-3e23a63374de.png",
+      "src": "gallery/IMG_2978-db443af7-655d-42cf-9f25-3e23a63374de.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_3252-da12d712-770e-4f2c-9917-06a22fca8739.png",
+      "src": "gallery/IMG_3252-da12d712-770e-4f2c-9917-06a22fca8739.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_3253-9aa7fb1b-d417-4558-9a16-18b43870cf47.png",
+      "src": "gallery/IMG_3253-9aa7fb1b-d417-4558-9a16-18b43870cf47.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_3267-9ac91dc2-23a9-4b4f-8b46-908f56fbe45e.png",
+      "src": "gallery/IMG_3267-9ac91dc2-23a9-4b4f-8b46-908f56fbe45e.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_3565-003f4feb-e0d2-45bc-befa-518f013e50e1.png",
+      "src": "gallery/IMG_3565-003f4feb-e0d2-45bc-befa-518f013e50e1.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_5082-60e70f2b-288e-4974-966c-c9efa0156cf9.png",
+      "src": "gallery/IMG_5082-60e70f2b-288e-4974-966c-c9efa0156cf9.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_5097-b2a0fa62-f94c-43c8-aed7-62d438bf9089.png",
+      "src": "gallery/IMG_5097-b2a0fa62-f94c-43c8-aed7-62d438bf9089.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_5334-a34db345-51e4-45bd-a24f-ec3bbfe4b21b.png",
+      "src": "gallery/IMG_5334-a34db345-51e4-45bd-a24f-ec3bbfe4b21b.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108.png",
+      "src": "gallery/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_6105-769ac347-fb9b-4e42-931f-b92b18456f13.png",
+      "src": "gallery/IMG_6105-769ac347-fb9b-4e42-931f-b92b18456f13.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_6106-0ea29d18-bd68-4dbd-a6cd-6614a0458ea6.png",
+      "src": "gallery/IMG_6106-0ea29d18-bd68-4dbd-a6cd-6614a0458ea6.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_6108-ecd59a4d-acac-4a7f-ade8-cde636eaf361.png",
+      "src": "gallery/IMG_6108-ecd59a4d-acac-4a7f-ade8-cde636eaf361.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_6147-f682ea2a-6b0d-41ca-9fff-49fce6c4599b.png",
+      "src": "gallery/IMG_6147-f682ea2a-6b0d-41ca-9fff-49fce6c4599b.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-IMG_9187-0c719813-8fa1-4633-9864-439f284ab0ff.png",
+      "src": "gallery/IMG_9187-0c719813-8fa1-4633-9864-439f284ab0ff.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-layla-salad-co-event-coordinator.png",
+      "src": "gallery/layla-salad-co-event-coordinator.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-maida-ahmed-co-public-relations.png",
+      "src": "gallery/maida-ahmed-co-public-relations.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-pngtree-instagram-icon-png-image_6315974-removebg-preview-42ae1f8f-9c07-45ed-a331-e43078b279c7.png",
+      "src": "gallery/pngtree-instagram-icon-png-image_6315974-removebg-preview-42ae1f8f-9c07-45ed-a331-e43078b279c7.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-ruweyda-warsame-co-committee-chair.png",
+      "src": "gallery/ruweyda-warsame-co-committee-chair.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-salma-tawane-secretary.png",
+      "src": "gallery/salma-tawane-secretary.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-salman-said-updated.png",
+      "src": "gallery/salman-said-updated.png",
+      "alt": "SSA event"
+    },
+    {
+      "id": "img-somali-night-2026-poster-v3.png",
+      "src": "gallery/somali-night-2026-poster-v3.png",
+      "alt": "SSA event"
+    }
+  ],
   "boardMembers": [
     {
       "id": "7d69b78e-05a7-46c8-87b6-7a7f1b725da1",
       "name": "",
-      "role": "",
-      "bio": "Executive Board Member",
-      "image": ""
+      "role": "Executive Board Member",
+      "major": "Executive Board Member",
+      "image": "board-images/.png"
     }
   ]
 }

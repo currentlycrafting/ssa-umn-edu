@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SSA Ops — Executive President</title>
-<link rel="icon" type="image/png" href="images/favicon-32.png?v=3" />
-<link rel="shortcut icon" type="image/png" href="images/favicon-32.png?v=3" />
+<link rel="icon" type="image/png" href="logo-images/logo.png?v=3" />
+  <link rel="shortcut icon" type="image/png" href="logo-images/logo.png?v=3" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDmbwcgEO1GmqNNAKsDFTOmK196a26eY8M&libraries=places&callback=initVenuePlaces" async defer></script>
 <style>
@@ -608,7 +608,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div class="sb-logo">
-    <img src="images/favicon-logo-transparent.png" alt="SSA" loading="lazy" />
+    <img src="logo-images/logo.png" alt="SSA" loading="lazy" />
     <div class="sb-logo-txt"><span>SSA Ops</span><span>Board Platform</span></div>
   </div>
   <div class="sb-user">
@@ -826,7 +826,11 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="card" style="margin-top:24px">
       <div class="section-label">Board section (Executive Board on index)</div>
       <div class="card-title">Edit members</div>
-      <div class="card-sub">Edit photos, names, roles, and bios below. Changes are temporary until you click Save board; then Push site content to GitHub to publish.</div>
+      <div class="card-sub">Board photos are stored in <code>board-images/</code>. Edit fields, then save and push.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="openModal('site-board-modal');renderSiteBoardList()">View Board</button>
+        <span style="font-size:11px;color:var(--silver)">Manage add/edit/delete from one board view</span>
+      </div>
       <div id="site-board-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
         <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
@@ -876,6 +880,26 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
       <div style="display:flex;gap:10px;align-items:center">
         <button type="button" class="btn btn-gold" onclick="siteSaveGallery();closeModal('site-gallery-modal')">Save gallery</button>
         <button type="button" class="btn btn-outline" onclick="closeModal('site-gallery-modal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: View Board (add/edit/delete board members) ══ -->
+<div class="modal-overlay" id="site-board-modal">
+  <div class="modal" style="max-width:760px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mh" style="flex-shrink:0">
+      <div>
+        <div class="mh-title">View Board</div>
+        <div class="mh-sub">Edit board members. Fields: photo, full name, role, major.</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeModal('site-board-modal')" style="margin:0">✕</button>
+    </div>
+    <div style="padding:0 24px 24px;overflow-y:auto;flex:1">
+      <div id="site-board-modal-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
+        <button type="button" class="btn btn-gold" onclick="siteSaveBoard();closeModal('site-board-modal')">Save board</button>
       </div>
     </div>
   </div>
@@ -2092,13 +2116,11 @@ window.siteRemoveGalleryPhoto = function siteRemoveGalleryPhoto(id) {
   renderSiteGalleryList();
 };
 function renderSiteBoardList() {
-  const el = document.getElementById('site-board-list');
-  if (!el) return;
-  el.innerHTML = siteContentBoard.map(function (m, i) {
+  const boardHtml = siteContentBoard.map(function (m, i) {
     const imgSrc = (m.image && m.image.startsWith('/')) ? (window.location.origin + m.image) : (m.image || '');
     const name = (m.name || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const role = (m.role || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    const bio = (m.bio || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const major = (m.major || m.bio || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     return '<div class="site-board-card">' +
       '<div class="site-board-photo-wrap">' +
       '<img src="' + (imgSrc || '') + '" alt="" onerror="this.style.display=\'none\'" />' +
@@ -2107,12 +2129,16 @@ function renderSiteBoardList() {
       '<div class="site-board-fields">' +
       '<input type="text" data-board-index="' + i + '" data-board-field="name" value="' + name + '" placeholder="Name" />' +
       '<input type="text" data-board-index="' + i + '" data-board-field="role" value="' + role + '" placeholder="Role" />' +
-      '<input type="text" data-board-index="' + i + '" data-board-field="bio" value="' + bio + '" placeholder="Bio" />' +
+      '<input type="text" data-board-index="' + i + '" data-board-field="major" value="' + major + '" placeholder="Major" />' +
       '</div>' +
       '<button type="button" class="btn btn-outline" style="padding:6px 12px;font-size:10px" onclick="siteRemoveBoardMember(' + i + ')">Remove</button>' +
       '</div>';
   }).join('');
-  el.querySelectorAll('input[data-board-index]').forEach(function (input) {
+  const el = document.getElementById('site-board-list');
+  if (el) el.innerHTML = boardHtml;
+  const modalEl = document.getElementById('site-board-modal-list');
+  if (modalEl) modalEl.innerHTML = boardHtml;
+  document.querySelectorAll('#site-board-list input[data-board-index], #site-board-modal-list input[data-board-index]').forEach(function (input) {
     input.addEventListener('input', function () {
       const idx = parseInt(input.dataset.boardIndex, 10);
       const field = input.dataset.boardField;
@@ -2136,13 +2162,13 @@ function siteBoardPhotoInputEl() {
       siteBoardPhotoInput.removeAttribute('data-board-index');
       if (!file || !siteContentBoard[idx]) return;
       var fd = new FormData();
-      fd.append('files', file);
+      fd.append('photo', file);
       var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
-      fetch('/api/upload', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
+      fetch('/api/site/board/upload', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-          if (data.paths && data.paths[0]) {
-            siteContentBoard[idx].image = data.paths[0];
+          if (data.path) {
+            siteContentBoard[idx].image = data.path;
             renderSiteBoardList();
           }
         })
@@ -2270,7 +2296,13 @@ window.siteSaveBoard = async function siteSaveBoard() {
   }
 };
 window.siteAddBoardMember = function siteAddBoardMember() {
-  siteContentBoard.push({ id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'mb-' + Date.now(), name: '', role: '', bio: 'Executive Board Member', image: '' });
+  siteContentBoard.push({
+    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'mb-' + Date.now(),
+    name: '',
+    role: 'Executive Board Member',
+    major: '',
+    image: ''
+  });
   renderSiteBoardList();
 };
 window.siteRemoveBoardMember = function siteRemoveBoardMember(index) {

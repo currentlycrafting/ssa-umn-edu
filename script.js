@@ -10,7 +10,7 @@ const defaultData = {
       date: 'February 2026',
       description:
         'On February 23rd, we hosted our annual Ramadan dinner for the Somali student boards in collaboration with SIBAT, SAPHS, SIS, SSC, and SPDA. We were honored to have Sheikh Hamad as our guest speaker. He gave a meaningful lecture on Islam, youth, and how to balance faith and school life. It was a beautiful evening of community, reflection, and connection during Ramadan.\n\nOn February 24th, we were honored to speak at the BSU annual Unity Dinner. Their event was dedicated to celebrating community and being together.\n\nOn February 26th, we hosted our Muslim Ramadan Dinner in collaboration with MPMA, AMC, MAS, and MBA. The evening was a meaningful opportunity to reflect and come together as a community during this blessed month. We were especially honored to welcome Ahmed Billo as our guest speaker.\n\nOn February 20th, we held Melting Points: ICE Out in collaboration with Mi Gente and the Black Student Union. We discussed how the presence of ICE on campus is impacting our respective communities and the student body as a whole. Students came together to vent, discuss, and find community.',
-      image: 'images/february-newsletter.png',
+      image: 'newsletter-images/newsletter.png',
       link: 'https://www.instagram.com/p/DVmjjfGDhtk/',
       secondaryLink: 'https://www.instagram.com/p/DVsD4UoDmTX/'
     }
@@ -38,50 +38,35 @@ const defaultData = {
     }
   ],
   boardMembers: [
-    { id: crypto.randomUUID(), name: 'Dahir Munye', role: 'President', bio: 'Executive Board Member', image: 'images/dahir-munye-president.png' },
-    { id: crypto.randomUUID(), name: 'Aisha Dakol', role: 'Vice President', bio: 'Executive Board Member', image: 'images/aisha-dakol-vice-president.png' },
-    { id: crypto.randomUUID(), name: 'Ifrah Ali', role: 'Treasurer', bio: 'Executive Board Member', image: 'images/ifrah-ali-treasurer.png' },
-    { id: crypto.randomUUID(), name: 'Salma Tawane', role: 'Secretary', bio: 'Executive Board Member', image: 'images/salma-tawane-secretary.png' },
-    { id: crypto.randomUUID(), name: 'Ahmed Abdul', role: 'Co-Event Coordinator', bio: 'Executive Board Member', image: 'images/ahmed-abdul-co-event-coordinator.png' },
-    { id: crypto.randomUUID(), name: 'Layla Salad', role: 'Co-Event Coordinator', bio: 'Executive Board Member', image: 'images/layla-salad-co-event-coordinator.png' },
-    { id: crypto.randomUUID(), name: 'Ashaar Ali', role: 'Co-Public Relations', bio: 'Executive Board Member', image: 'images/ashaar-ali-co-public-relations.png' },
-    { id: crypto.randomUUID(), name: 'Maida Ahmed', role: 'Co-Public Relations', bio: 'Executive Board Member', image: 'images/maida-ahmed-co-public-relations.png' },
-    { id: crypto.randomUUID(), name: 'Ikhlas Abdi', role: 'Outreach Coordinator', bio: 'Executive Board Member', image: 'images/ikhlas-abdi-outreach-coordinator.png' },
-    { id: crypto.randomUUID(), name: 'Ruweyda Warsame', role: 'Co-Committee Chair', bio: 'Executive Board Member', image: 'images/ruweyda-warsame-co-committee-chair.png' },
-    { id: crypto.randomUUID(), name: 'Salman Said', role: 'Co-Committee Chair', bio: 'Executive Board Member', image: 'images/salman-said-updated.png' }
+    { id: crypto.randomUUID(), name: 'Aisha Dakol', role: 'Vice President', major: '', image: 'board-images/Aisha Dakol - Vice President.png' },
+    { id: crypto.randomUUID(), name: 'Dahir Munye', role: 'President', major: '', image: 'board-images/Dahir Munye - President.png' },
+    { id: crypto.randomUUID(), name: 'Salman Said', role: 'Co-Committee Chair', major: '', image: 'board-images/Salman Said - Co-Committee Chair.png' },
+    { id: crypto.randomUUID(), name: 'Ruweyda Warsame', role: 'Co-Committee Chair', major: '', image: 'board-images/Ruweyda Warsame - Co-Committee Chair.png' },
+    { id: crypto.randomUUID(), name: 'Ikhlas Abdi', role: 'Outreach Coordinator', major: '', image: 'board-images/Ikhlas Abdi - Outreach Coordinator.png' },
+    { id: crypto.randomUUID(), name: 'Ifrah Ali', role: 'Treasurer', major: '', image: 'board-images/Ifrah Ali - Treasurer.png' },
+    { id: crypto.randomUUID(), name: 'Layla Salad', role: 'Co-Event Coordinator', major: '', image: 'board-images/Layla Salad - Co-Event Coordinator.png' },
+    { id: crypto.randomUUID(), name: 'Ahmed Abdul', role: 'Co-Event Coordinator', major: '', image: 'board-images/Ahmed Abdul - Co-Event Coordinator.png' },
+    { id: crypto.randomUUID(), name: 'Salma Tawane', role: 'Secretary', major: '', image: 'board-images/Salma Tawane - Secretary.png' },
+    { id: crypto.randomUUID(), name: 'Maida Ahmed', role: 'Co-Public Relations', major: '', image: 'board-images/Maida Ahmed - Co-Public Relations.png' },
+    { id: crypto.randomUUID(), name: 'Ashaar Ali', role: 'Co-Public Relations', major: '', image: 'board-images/Ashaar Ali - Co-Public Relations.png' }
   ],
   galleryImages: [
-    { id: crypto.randomUUID(), src: 'images/100_0590-a7715620-22f8-45cc-9d10-6c90a634de5f.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/100_0556-5d957b7a-d29f-4dbf-8090-2d1fecbb695a.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/100_1179-b7bd434a-fa9a-4b92-b115-dc695ee82e60.png', alt: 'SSA group photo' },
-    { id: crypto.randomUUID(), src: 'images/100_1756-6dd33dfc-a3d1-48dd-8da6-aa48cbf2bd6d.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/100_0591-57b947a7-32e2-438b-8312-a561a871c9db.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/100_1725-a9e13e0a-ed12-4f1a-b6b6-3613f75056df.png', alt: 'SSA stage' },
-    { id: crypto.randomUUID(), src: 'images/100_0748-d66cb08f-b82f-4421-85e6-a7c04c19e243.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/100_1920-7cba73e9-f11f-45db-a69e-a400955d7432.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/100_1726-8ead709b-0b37-43d9-91a3-2410f0fc9e1b.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/100_1737-3a4d4bc6-b18b-4703-8fc6-f83244c3664c.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/100_0736-a1198205-08bf-43b3-b961-3919d842379d.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/100_0626-e774bf69-7387-47a2-975c-e4ffb9c4ac80.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/100_1727-4ca31c50-3130-4821-bec9-bb49ac0ddb1e.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/100_1753-f253cb3c-cd86-4f31-8efc-6a2a97fbfe89.png', alt: 'SSA cultural event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3252-da12d712-770e-4f2c-9917-06a22fca8739.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/100_0628-dce7edc1-e2da-4068-af8d-b446fd4107a9.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/100_1757-8f2a737d-0eed-4416-b7ba-573d60044558.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3267-9ac91dc2-23a9-4b4f-8b46-908f56fbe45e.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/100_1724-79fac5d9-c824-40e6-b78e-240b41a5edcf.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/100_1751-183423a3-6338-4ecf-82fe-faf357943ea8.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3253-9aa7fb1b-d417-4558-9a16-18b43870cf47.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6106-0ea29d18-bd68-4dbd-a6cd-6614a0458ea6.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_2978-db443af7-655d-42cf-9f25-3e23a63374de.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/IMG_5097-b2a0fa62-f94c-43c8-aed7-62d438bf9089.png', alt: 'SSA Nationals' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6147-f682ea2a-6b0d-41ca-9fff-49fce6c4599b.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/IMG_5082-60e70f2b-288e-4974-966c-c9efa0156cf9.png', alt: 'SSA community' },
-    { id: crypto.randomUUID(), src: 'images/IMG_0776-6da79056-3273-4df1-8f50-b73606120877.png', alt: 'SSA members' },
-    { id: crypto.randomUUID(), src: 'images/IMG_3565-003f4feb-e0d2-45bc-befa-518f013e50e1.png', alt: 'SSA gathering' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6105-769ac347-fb9b-4e42-931f-b92b18456f13.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_6108-ecd59a4d-acac-4a7f-ade8-cde636eaf361.png', alt: 'SSA event' },
-    { id: crypto.randomUUID(), src: 'images/IMG_9187-0c719813-8fa1-4633-9864-439f284ab0ff.png', alt: 'SSA event' }
+    { id: crypto.randomUUID(), src: 'gallery/100_0556.JPG', alt: 'SSA community' },
+    { id: crypto.randomUUID(), src: 'gallery/100_0591.JPG', alt: 'SSA community' },
+    { id: crypto.randomUUID(), src: 'gallery/100_0626.JPG', alt: 'SSA community' },
+    { id: crypto.randomUUID(), src: 'gallery/100_0628.JPG', alt: 'SSA community' },
+    { id: crypto.randomUUID(), src: 'gallery/100_0913.JPEG', alt: 'SSA group photo' },
+    { id: crypto.randomUUID(), src: 'gallery/100_1012.JPG', alt: 'SSA event' },
+    { id: crypto.randomUUID(), src: 'gallery/100_1179.JPG', alt: 'SSA event' },
+    { id: crypto.randomUUID(), src: 'gallery/100_1734.JPG', alt: 'SSA event' },
+    { id: crypto.randomUUID(), src: 'gallery/100_1759.JPG', alt: 'SSA event' },
+    { id: crypto.randomUUID(), src: 'gallery/100_1763.JPG', alt: 'SSA event' },
+    { id: crypto.randomUUID(), src: 'gallery/IMG_3253.JPG', alt: 'SSA members' },
+    { id: crypto.randomUUID(), src: 'gallery/IMG_3565.jpeg', alt: 'SSA gathering' },
+    { id: crypto.randomUUID(), src: 'gallery/IMG_6147.JPG', alt: 'SSA gathering' },
+    { id: crypto.randomUUID(), src: 'gallery/guys02.JPG', alt: 'SSA community' },
+    { id: crypto.randomUUID(), src: 'gallery/khalid-hanan.JPG', alt: 'SSA members' },
+    { id: crypto.randomUUID(), src: 'gallery/team01.JPG', alt: 'SSA event' }
   ],
   directText: {},
   editableLinks: {},
@@ -234,12 +219,16 @@ function renderNewsletters() {
 }
 
 function getBoardMembers() {
-  if (serverSiteContent.boardMembers && serverSiteContent.boardMembers.length) return serverSiteContent.boardMembers;
-  return siteData.boardMembers;
+  const members = (serverSiteContent.boardMembers && serverSiteContent.boardMembers.length)
+    ? serverSiteContent.boardMembers
+    : siteData.boardMembers;
+  return (members || []).filter((m) => String(m.image || '').replace(/^\/+/, '').startsWith('board-images/'));
 }
 function getGalleryImages() {
-  if (serverSiteContent.galleryImages && serverSiteContent.galleryImages.length) return serverSiteContent.galleryImages;
-  return siteData.galleryImages;
+  const images = (serverSiteContent.galleryImages && serverSiteContent.galleryImages.length)
+    ? serverSiteContent.galleryImages
+    : siteData.galleryImages;
+  return (images || []).filter((img) => String(img.src || '').replace(/^\/+/, '').startsWith('gallery/'));
 }
 
 function renderBoard() {
@@ -274,7 +263,7 @@ function renderBoard() {
           </div>
         </div>
         <div class="leader-card-info">
-          <p>${escapeHtml(member.bio)}</p>
+          <p>${escapeHtml(member.major || member.bio || 'Executive Board Member')}</p>
         </div>
       </div>`;
     })

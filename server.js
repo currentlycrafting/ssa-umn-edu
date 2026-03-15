@@ -24,23 +24,160 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
 
 const siteContentPath = path.join(dataDir, "site-content.json");
+const legacyImagesDir = path.join(__dirname, "images");
+const galleryDir = path.join(__dirname, "gallery");
+const boardImagesDir = path.join(__dirname, "board-images");
+const logoImagesDir = path.join(__dirname, "logo-images");
+const newsletterImagesDir = path.join(__dirname, "newsletter-images");
+const aboutSsaImagesDir = path.join(__dirname, "about-ssa-images");
+
+const CONFIRMED_BOARD = [
+  { id: "bm-1", name: "Aisha Dakol", role: "Vice President", major: "", image: "board-images/Aisha Dakol - Vice President.png" },
+  { id: "bm-2", name: "Dahir Munye", role: "President", major: "", image: "board-images/Dahir Munye - President.png" },
+  { id: "bm-3", name: "Salman Said", role: "Co-Committee Chair", major: "", image: "board-images/Salman Said - Co-Committee Chair.png" },
+  { id: "bm-4", name: "Ruweyda Warsame", role: "Co-Committee Chair", major: "", image: "board-images/Ruweyda Warsame - Co-Committee Chair.png" },
+  { id: "bm-5", name: "Ikhlas Abdi", role: "Outreach Coordinator", major: "", image: "board-images/Ikhlas Abdi - Outreach Coordinator.png" },
+  { id: "bm-6", name: "Ifrah Ali", role: "Treasurer", major: "", image: "board-images/Ifrah Ali - Treasurer.png" },
+  { id: "bm-7", name: "Layla Salad", role: "Co-Event Coordinator", major: "", image: "board-images/Layla Salad - Co-Event Coordinator.png" },
+  { id: "bm-8", name: "Ahmed Abdul", role: "Co-Event Coordinator", major: "", image: "board-images/Ahmed Abdul - Co-Event Coordinator.png" },
+  { id: "bm-9", name: "Salma Tawane", role: "Secretary", major: "", image: "board-images/Salma Tawane - Secretary.png" },
+  { id: "bm-10", name: "Maida Ahmed", role: "Co-Public Relations", major: "", image: "board-images/Maida Ahmed - Co-Public Relations.png" },
+  { id: "bm-11", name: "Ashaar Ali", role: "Co-Public Relations", major: "", image: "board-images/Ashaar Ali - Co-Public Relations.png" }
+];
+
+function ensureDir(dirPath) {
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+}
+function normalizeRelPath(p) {
+  return String(p || "").replace(/^\/+/, "");
+}
+function copyIfMissing(src, dest) {
+  try {
+    if (fs.existsSync(src) && !fs.existsSync(dest)) fs.copyFileSync(src, dest);
+  } catch (_e) {}
+}
+function isImageFilename(name) {
+  return /\.(png|jpg|jpeg|webp|gif)$/i.test(name);
+}
+function boardFilenameFromName(name) {
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") + ".png";
+}
+
+function migrateLegacyImageAssets() {
+  ensureDir(galleryDir);
+  ensureDir(boardImagesDir);
+  ensureDir(logoImagesDir);
+  ensureDir(newsletterImagesDir);
+  ensureDir(aboutSsaImagesDir);
+  if (!fs.existsSync(legacyImagesDir)) return;
+  const files = fs.readdirSync(legacyImagesDir);
+  const boardSet = new Set([
+    "aisha-dakol-vice-president.png",
+    "dahir-munye-president.png",
+    "salman-said-updated.png",
+    "ruweyda-warsame-co-committee-chair.png",
+    "ikhlas-abdi-outreach-coordinator.png",
+    "ifrah-ali-treasurer.png",
+    "layla-salad-co-event-coordinator.png",
+    "ahlam-abdul.png",
+    "salma-tawane-secretary.png",
+    "maida-ahmed-co-public-relations.png"
+  ]);
+  for (const name of files) {
+    if (!isImageFilename(name) && !/\.svg$/i.test(name)) continue;
+    const src = path.join(legacyImagesDir, name);
+    let destDir = galleryDir;
+    if (/instagram|logo|favicon|lock-icon|ssa-logo/i.test(name)) destDir = logoImagesDir;
+    else if (/newsletter|february-newsletter/i.test(name)) destDir = newsletterImagesDir;
+    else if (/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108|about/i.test(name)) destDir = aboutSsaImagesDir;
+    else if (boardSet.has(name)) destDir = boardImagesDir;
+    copyIfMissing(src, path.join(destDir, name));
+  }
+}
+
+function defaultBoardMembers() {
+  return CONFIRMED_BOARD.map((m) => ({
+    ...m,
+    image: m.image || `board-images/${boardFilenameFromName(m.name)}`
+  }));
+}
+function defaultGalleryFromFolder() {
+  try {
+    ensureDir(galleryDir);
+    return fs
+      .readdirSync(galleryDir)
+      .filter(isImageFilename)
+      .sort()
+      .map((name) => ({ id: `gallery-${name}`, src: `gallery/${name}`, alt: "SSA event" }));
+  } catch (_e) {
+    return [];
+  }
+}
+function normalizeBoardMember(member, idx) {
+  const m = member || {};
+  let img = normalizeRelPath(m.image || "");
+  if (img.startsWith("images/")) img = `board-images/${path.basename(img)}`;
+  return {
+    id: m.id || `bm-${idx + 1}`,
+    name: String(m.name || "").trim(),
+    role: String(m.role || "Executive Board Member").trim(),
+    major: String(m.major || m.bio || "").trim(),
+    image: img
+  };
+}
+function normalizeGalleryImage(image, idx) {
+  const g = image || {};
+  let src = normalizeRelPath(g.src || "");
+  if (src.startsWith("images/")) src = `gallery/${path.basename(src)}`;
+  return {
+    id: g.id || `g-${idx + 1}`,
+    src,
+    alt: String(g.alt || "SSA event")
+  };
+}
+
 function readSiteContent() {
+  let galleryImages = [];
+  let boardMembers = [];
   try {
     if (fs.existsSync(siteContentPath)) {
       const raw = fs.readFileSync(siteContentPath, "utf8");
       const data = JSON.parse(raw);
-      return {
-        galleryImages: Array.isArray(data.galleryImages) ? data.galleryImages : [],
-        boardMembers: Array.isArray(data.boardMembers) ? data.boardMembers : []
-      };
+      galleryImages = Array.isArray(data.galleryImages) ? data.galleryImages.map(normalizeGalleryImage) : [];
+      boardMembers = Array.isArray(data.boardMembers) ? data.boardMembers.map(normalizeBoardMember) : [];
     }
   } catch (_e) {}
-  return { galleryImages: [], boardMembers: [] };
+  if (!galleryImages.length) galleryImages = defaultGalleryFromFolder();
+  if (!boardMembers.length) boardMembers = defaultBoardMembers();
+  // Hard enforce section-specific folder sources.
+  galleryImages = galleryImages.filter((g) => normalizeRelPath(g.src).startsWith("gallery/"));
+  boardMembers = boardMembers.map((m, idx) => {
+    const fixed = normalizeBoardMember(m, idx);
+    if (!normalizeRelPath(fixed.image).startsWith("board-images/")) {
+      fixed.image = `board-images/${path.basename(fixed.image || boardFilenameFromName(fixed.name))}`;
+    }
+    return fixed;
+  });
+  return { galleryImages, boardMembers };
 }
 function writeSiteContent(data) {
   const payload = {
-    galleryImages: data.galleryImages || [],
-    boardMembers: data.boardMembers || []
+    galleryImages: Array.isArray(data.galleryImages)
+      ? data.galleryImages.map(normalizeGalleryImage).filter((g) => normalizeRelPath(g.src).startsWith("gallery/"))
+      : [],
+    boardMembers: Array.isArray(data.boardMembers)
+      ? data.boardMembers.map(normalizeBoardMember).map((m) => {
+          const fixed = { ...m };
+          if (!normalizeRelPath(fixed.image).startsWith("board-images/")) {
+            fixed.image = `board-images/${path.basename(fixed.image || boardFilenameFromName(fixed.name))}`;
+          }
+          return fixed;
+        })
+      : []
   };
   fs.writeFileSync(siteContentPath, JSON.stringify(payload, null, 2), "utf8");
   return payload;
@@ -55,9 +192,19 @@ function isPresident(user) {
   return (user.permission_level || user.view_type) === "president";
 }
 
+migrateLegacyImageAssets();
+// Persist a normalized site-content file once on startup so legacy image paths migrate cleanly.
+writeSiteContent(readSiteContent());
+
 app.use(express.json({ limit: "2mb" }));
-// Cache images for 1 year so photos load faster on repeat visits (filenames are content-addressed).
-app.use("/images", express.static(path.join(__dirname, "images"), { maxAge: "1y", immutable: true }));
+// Cache image assets for 1 year (asset file names are content-addressed in most flows).
+app.use("/gallery", express.static(galleryDir, { maxAge: "1y", immutable: true }));
+app.use("/board-images", express.static(boardImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/logo-images", express.static(logoImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/newsletter-images", express.static(newsletterImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/about-ssa-images", express.static(aboutSsaImagesDir, { maxAge: "1y", immutable: true }));
+// Legacy path kept for backward compatibility during migration.
+app.use("/images", express.static(legacyImagesDir, { maxAge: "1y", immutable: true }));
 app.use(express.static(path.join(__dirname)));
 app.use("/uploads", express.static(uploadsDir));
 
@@ -2073,7 +2220,7 @@ app.post("/api/admin/seed-users-push", async (req, res) => {
 });
 
 // ---------- Site content (gallery + board): board/VP/president add gallery; president edits board & pushes ----------
-// Upload one image for gallery (does not persist to site content; client adds to staging then PUT gallery)
+// Upload one image for gallery; save to gallery/ and return its path.
 app.post("/api/site/gallery/upload", upload.single("photo"), (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
@@ -2081,7 +2228,37 @@ app.post("/api/site/gallery/upload", upload.single("photo"), (req, res) => {
   if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can add gallery photos." });
   const file = req.file;
   if (!file) return res.status(400).json({ error: "No photo file uploaded." });
-  res.json({ path: `/uploads/${file.filename}` });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const destName = `gallery-${crypto.randomUUID()}${safeExt}`;
+    const destPath = path.join(galleryDir, destName);
+    if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    res.json({ path: `gallery/${destName}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to save image." });
+  }
+});
+
+app.post("/api/site/board/upload", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can upload board photos." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const destName = `board-${crypto.randomUUID()}${safeExt}`;
+    const destPath = path.join(boardImagesDir, destName);
+    if (!fs.existsSync(boardImagesDir)) fs.mkdirSync(boardImagesDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    res.json({ path: `board-images/${destName}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to save board photo." });
+  }
 });
 
 // Replace entire gallery (save temporary/staging gallery)
@@ -2108,7 +2285,13 @@ app.post("/api/site/gallery", upload.single("photo"), (req, res) => {
   const alt = (req.body && req.body.alt) ? String(req.body.alt).trim() : "SSA event";
   const content = readSiteContent();
   const id = crypto.randomUUID();
-  content.galleryImages.push({ id, src: `/uploads/${file.filename}`, alt });
+  const ext = path.extname(file.originalname || "") || ".png";
+  const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+  const destName = `gallery-${crypto.randomUUID()}${safeExt}`;
+  const destPath = path.join(galleryDir, destName);
+  if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
+  fs.copyFileSync(file.path, destPath);
+  content.galleryImages.push({ id, src: `gallery/${destName}`, alt });
   writeSiteContent(content);
   res.json({ ok: true, galleryImages: content.galleryImages });
 });
