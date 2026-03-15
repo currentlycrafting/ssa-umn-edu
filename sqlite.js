@@ -244,7 +244,7 @@ function seedUsers() {
     // Internal Division
     {
       email: "ops.director@umn.edu",
-      full_name: "Abdi Warsame",
+      full_name: "Abdi Ali",
       role_title: "Director of Operations",
       department: "Internal Division",
       permission_level: "board",
