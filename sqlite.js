@@ -161,6 +161,8 @@ function initDb() {
   ensureColumn("tasks", "escalation_rules", "TEXT");
   ensureColumn("tasks", "meeting_link", "TEXT");
   ensureColumn("tasks", "phase", "TEXT");
+  ensureColumn("reports", "escalated_to", "TEXT NOT NULL DEFAULT 'president'");
+  ensureColumn("reports", "target_vp_type", "TEXT");
 
   // Keep auth domain policy aligned with @umn.edu access.
   db.exec(`

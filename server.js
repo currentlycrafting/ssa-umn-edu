@@ -247,6 +247,13 @@ function isPresident(user) {
   return (user.permission_level || user.view_type) === "president";
 }
 
+function canEditNewsletter(user) {
+  if (!user) return false;
+  if (user.permission_level === "president" || user.view_type === "president") return true;
+  const role = String(user.role_title || "").trim().toLowerCase();
+  return role === "director of operations";
+}
+
 migrateLegacyImageAssets();
 // Persist a normalized site-content file once on startup so legacy image paths migrate cleanly.
 writeSiteContent(readSiteContent());
@@ -711,25 +718,66 @@ function selectDashboardData(user) {
     (d) => taskIds.has(d.task_id) && taskIds.has(d.depends_on_task_id)
   );
 
-  const reports =
-    user.permission_level === "president" || user.view_type === "president" || user.view_type === "board"
-      ? db
-          .prepare(
-            `
-            SELECT
-              r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
-              r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
-              r.status, r.clarification_notes, r.created_at,
-              e.name AS event_name, t.title AS task_title
-            FROM reports r
-            LEFT JOIN events e ON e.id = r.event_id
-            LEFT JOIN tasks t ON t.id = r.task_id
-            ORDER BY datetime(r.created_at) DESC
-            LIMIT 200
-          `
-          )
-          .all()
-      : [];
+  let reports = [];
+  if (user.permission_level === "president" || user.view_type === "president") {
+    reports = db
+      .prepare(
+        `
+        SELECT
+          r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
+          r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
+          r.status, r.clarification_notes, r.created_at,
+          r.escalated_to, r.target_vp_type,
+          e.name AS event_name, t.title AS task_title
+        FROM reports r
+        LEFT JOIN events e ON e.id = r.event_id
+        LEFT JOIN tasks t ON t.id = r.task_id
+        WHERE COALESCE(r.escalated_to, 'president') = 'president'
+        ORDER BY datetime(r.created_at) DESC
+        LIMIT 200
+      `
+      )
+      .all();
+  } else if (user.permission_level === "vp" || user.view_type === "vp") {
+    reports = db
+      .prepare(
+        `
+        SELECT
+          r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
+          r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
+          r.status, r.clarification_notes, r.created_at,
+          r.escalated_to, r.target_vp_type,
+          e.name AS event_name, t.title AS task_title
+        FROM reports r
+        LEFT JOIN events e ON e.id = r.event_id
+        LEFT JOIN tasks t ON t.id = r.task_id
+        WHERE (r.submitted_by_email = ?)
+           OR (COALESCE(r.escalated_to, 'president') = 'vp' AND r.target_vp_type = ?)
+        ORDER BY datetime(r.created_at) DESC
+        LIMIT 200
+      `
+      )
+      .all(user.email, user.vp_type || "");
+  } else if (user.permission_level === "board" || user.view_type === "board") {
+    reports = db
+      .prepare(
+        `
+        SELECT
+          r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
+          r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
+          r.status, r.clarification_notes, r.created_at,
+          r.escalated_to, r.target_vp_type,
+          e.name AS event_name, t.title AS task_title
+        FROM reports r
+        LEFT JOIN events e ON e.id = r.event_id
+        LEFT JOIN tasks t ON t.id = r.task_id
+        WHERE r.submitted_by_email = ?
+        ORDER BY datetime(r.created_at) DESC
+        LIMIT 200
+      `
+      )
+      .all(user.email);
+  }
 
   return { tasks, events, dependencies, users, reports };
 }
@@ -1295,8 +1343,10 @@ app.post("/api/reports", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!(user.permission_level === "vp" || user.view_type === "vp")) {
-    return res.status(403).json({ error: "VP access required." });
+  const isVp = user.permission_level === "vp" || user.view_type === "vp";
+  const isBoard = user.permission_level === "board" || user.view_type === "board";
+  if (!isVp && !isBoard) {
+    return res.status(403).json({ error: "VP or board access required to submit reports." });
   }
 
   const body = req.body || {};
@@ -1306,14 +1356,18 @@ app.post("/api/reports", (req, res) => {
     return res.status(400).json({ error: "Reason and notes are required." });
   }
 
+  const escalatedTo = isVp ? "president" : "vp";
+  const targetVpType = isVp ? null : (user.vp_type || null);
+
   const info = db
     .prepare(
       `
       INSERT INTO reports (
         submitted_by_email, submitted_by_name, submitted_by_role, division,
-        event_id, task_id, reason, notes, recommended_action, status, clarification_notes
+        event_id, task_id, reason, notes, recommended_action, status, clarification_notes,
+        escalated_to, target_vp_type
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?)
     `
     )
     .run(
@@ -1326,7 +1380,9 @@ app.post("/api/reports", (req, res) => {
       reason,
       notes,
       String(body.recommended_action || ""),
-      String(body.clarification_notes || "")
+      String(body.clarification_notes || ""),
+      escalatedTo,
+      targetVpType
     );
 
   res.json({ ok: true, id: info.lastInsertRowid });
@@ -1336,28 +1392,41 @@ app.patch("/api/reports/:id", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!(user.permission_level === "president" || user.view_type === "president")) {
-    return res.status(403).json({ error: "President access required." });
-  }
+  const isPresident = user.permission_level === "president" || user.view_type === "president";
+  const isVp = user.permission_level === "vp" || user.view_type === "vp";
 
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid report id." });
-  const body = req.body || {};
-  db.prepare(
-    `
-    UPDATE reports
-    SET
-      status = COALESCE(@status, status),
-      clarification_notes = COALESCE(@clarification_notes, clarification_notes)
-    WHERE id = @id
-  `
-  ).run({
-    id,
-    status: body.status ? String(body.status) : null,
-    clarification_notes: body.clarification_notes ? String(body.clarification_notes) : null
-  });
 
-  res.json({ ok: true });
+  if (isPresident) {
+    db.prepare(
+      `UPDATE reports SET status = COALESCE(@status, status), clarification_notes = COALESCE(@clarification_notes, clarification_notes) WHERE id = @id`
+    ).run({
+      id,
+      status: req.body?.status ? String(req.body.status) : null,
+      clarification_notes: req.body?.clarification_notes ? String(req.body.clarification_notes) : null
+    });
+    return res.json({ ok: true });
+  }
+
+  if (isVp) {
+    const row = db.prepare(
+      `SELECT id, escalated_to, target_vp_type FROM reports WHERE id = ?`
+    ).get(id);
+    if (!row) return res.status(404).json({ error: "Report not found." });
+    const forThisVp = (row.escalated_to === "vp" && row.target_vp_type === (user.vp_type || ""));
+    if (!forThisVp) return res.status(403).json({ error: "You can only update reports sent to your division." });
+    db.prepare(
+      `UPDATE reports SET status = COALESCE(@status, status), clarification_notes = COALESCE(@clarification_notes, clarification_notes) WHERE id = @id`
+    ).run({
+      id,
+      status: req.body?.status ? String(req.body.status) : null,
+      clarification_notes: req.body?.clarification_notes ? String(req.body.clarification_notes) : null
+    });
+    return res.json({ ok: true });
+  }
+
+  return res.status(403).json({ error: "President or VP access required to update reports." });
 });
 
 // Submit suggestion from join.html (public, no auth)
@@ -2449,7 +2518,7 @@ app.put("/api/site/newsletters", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!isPresident(user)) return res.status(403).json({ error: "Only president can edit newsletters." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only president or Director of Operations can edit newsletters." });
   const { newsletters } = req.body || {};
   if (!Array.isArray(newsletters)) return res.status(400).json({ error: "Request body must include newsletters array." });
   try {
@@ -2478,7 +2547,7 @@ app.post("/api/site/newsletter-image", upload.single("photo"), (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!isPresident(user)) return res.status(403).json({ error: "Only president can upload newsletter images." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only president or Director of Operations can upload newsletter images." });
   const file = req.file;
   if (!file) return res.status(400).json({ error: "No photo file uploaded." });
   try {
@@ -2591,7 +2660,7 @@ app.post("/api/site/push-newsletter", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push newsletter." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only president or Director of Operations can push newsletter." });
   const githubToken = process.env.GITHUB_TOKEN;
   if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
   const repoUrl = process.env.GITHUB_REPO || "";

@@ -822,6 +822,63 @@ textarea, input, select { font-family: var(--fb); }
 .approval-by { font-size: 11px; color: var(--silver); margin-top: 4px; }
 .approval-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
+/* Report to VP page (same UI as VP escalate) */
+#page-report-to-vp .esc-wrap { max-width: 720px; margin: 0 auto; }
+#page-report-to-vp .esc-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
+#page-report-to-vp .esc-eyebrow { font-size: 9px; letter-spacing: .38em; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+#page-report-to-vp .esc-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--gold); }
+#page-report-to-vp .esc-breadcrumb { font-size: 10px; color: var(--silver); letter-spacing: .06em; }
+#page-report-to-vp .esc-breadcrumb span { color: var(--gold); }
+#page-report-to-vp .esc-heading { margin-bottom: 28px; }
+#page-report-to-vp .esc-title { font-family: var(--fd); font-size: 34px; font-weight: 400; color: var(--white); line-height: 1.1; margin-bottom: 10px; }
+#page-report-to-vp .esc-desc { font-size: 13px; color: var(--silver); line-height: 1.75; max-width: 580px; }
+#page-report-to-vp .sev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 22px; }
+#page-report-to-vp .sev-btn { padding: 14px 12px; border: 1px solid rgba(255,255,255,.08); cursor: pointer; transition: all .2s; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+#page-report-to-vp .sev-btn:hover { border-color: rgba(255,255,255,.18); }
+#page-report-to-vp .sev-btn.active-crit { border-color: var(--red); background: var(--red-dim); }
+#page-report-to-vp .sev-btn.active-high { border-color: var(--amber); background: var(--amber-dim); }
+#page-report-to-vp .sev-btn.active-std { border-color: var(--gold); background: rgba(184,154,92,.08); }
+#page-report-to-vp .sev-dot-row { display: flex; align-items: center; gap: 6px; }
+#page-report-to-vp .sev-dot { width: 7px; height: 7px; border-radius: 50%; }
+#page-report-to-vp .sev-sev { font-size: 8px; letter-spacing: .22em; text-transform: uppercase; color: var(--silver); }
+#page-report-to-vp .sev-btn.active-crit .sev-sev { color: var(--red); }
+#page-report-to-vp .sev-btn.active-high .sev-sev { color: var(--amber); }
+#page-report-to-vp .sev-btn.active-std .sev-sev { color: var(--gold); }
+#page-report-to-vp .sev-name { font-size: 13px; color: var(--white); font-weight: 400; }
+#page-report-to-vp .sev-sub { font-size: 10px; color: var(--silver); line-height: 1.5; }
+#page-report-to-vp .esc-banner { padding: 12px 16px; border-left: 3px solid; display: none; align-items: flex-start; gap: 10px; margin-bottom: 22px; }
+#page-report-to-vp .esc-banner.show { display: flex; }
+#page-report-to-vp .esc-banner-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+#page-report-to-vp .esc-banner-text { font-size: 12px; line-height: 1.65; }
+#page-report-to-vp .esc-dv { height: 1px; background: rgba(255,255,255,.06); margin: 4px 0 20px; }
+#page-report-to-vp .esc-sl { font-size: 8px; letter-spacing: .32em; text-transform: uppercase; color: var(--silver); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+#page-report-to-vp .esc-sl::before { content: ''; display: block; width: 16px; height: 1px; background: var(--gold); }
+#page-report-to-vp .esc-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+#page-report-to-vp .esc-fg { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+#page-report-to-vp .esc-fl { font-size: 9px; letter-spacing: .28em; text-transform: uppercase; color: var(--gold); }
+#page-report-to-vp .esc-fi { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); padding: 10px 13px; font-family: var(--fb); font-size: 13px; color: var(--white); outline: none; transition: border-color .25s; width: 100%; border-radius: 8px; box-sizing: border-box; }
+#page-report-to-vp .esc-fi:focus { border-color: var(--gold); }
+#page-report-to-vp .esc-fi::placeholder { color: rgba(154,159,173,.38); }
+#page-report-to-vp .esc-fta { min-height: 110px; resize: vertical; line-height: 1.65; }
+#page-report-to-vp select.esc-fi { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9fad'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+#page-report-to-vp select.esc-fi option { background: var(--navy-mid); color: var(--white); }
+#page-report-to-vp .esc-char-hint { font-size: 10px; color: var(--silver); text-align: right; margin-top: 4px; }
+#page-report-to-vp .esc-char-hint.warn { color: var(--amber); }
+#page-report-to-vp .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 20px; }
+#page-report-to-vp .type-chip { padding: 9px 12px; border: 1px solid rgba(255,255,255,.08); cursor: pointer; transition: all .2s; font-size: 11px; color: var(--silver); text-align: center; letter-spacing: .06em; }
+#page-report-to-vp .type-chip:hover { border-color: rgba(255,255,255,.2); color: var(--white); }
+#page-report-to-vp .type-chip.on { border-color: var(--gold); color: var(--gold-light); background: rgba(184,154,92,.09); }
+#page-report-to-vp .esc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.06); flex-wrap: wrap; gap: 14px; }
+#page-report-to-vp .esc-footer-note { font-size: 11px; color: var(--silver); max-width: 380px; line-height: 1.6; }
+#page-report-to-vp .esc-footer-note strong { color: var(--white); }
+#page-report-to-vp .esc-footer-btns { display: flex; gap: 8px; flex-shrink: 0; }
+#page-report-to-vp .esc-btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,.12); color: var(--silver); padding: 10px 24px; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; cursor: pointer; border-radius: 8px; }
+#page-report-to-vp .esc-btn-cancel:hover { border-color: rgba(255,255,255,.25); color: var(--white); }
+#page-report-to-vp .esc-btn-send { background: var(--gold); color: var(--navy); padding: 10px 24px; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; cursor: pointer; border: none; border-radius: 8px; }
+#page-report-to-vp .esc-btn-send:hover { background: var(--gold-light); }
+#page-report-to-vp .esc-btn-send.crit { background: var(--red); color: #fff; }
+#page-report-to-vp .esc-btn-send.crit:hover { background: #a83d3a; }
+
 /* workload bar */
 .wl-wrap { margin-top: 4px; }
 .wl-bar { height: 3px; background: rgba(255,255,255,.07); border-radius: 2px; }
@@ -922,6 +979,9 @@ textarea, input, select { font-family: var(--fb); }
     <div class="sb-item" onclick="navigate('calendar')" data-page="calendar"><span class="sb-icon">◻</span>Calendar</div>
     <div class="sb-item" onclick="navigate('events')" data-page="events"><span class="sb-icon">◆</span>Events</div>
     <div class="sb-item" onclick="navigate('reports')" data-page="reports"><span class="sb-icon">▣</span>Reports</div>
+    <div class="sb-item" onclick="navigate('report-to-vp')" data-page="report-to-vp"><span class="sb-icon">↑</span>Report to VP</div>
+    <div class="sb-section-label" id="board-newsletter-section-label" style="display:none">Newsletter</div>
+    <div class="sb-item" id="sb-item-newsletter" onclick="navigate('newsletter')" data-page="newsletter" style="display:none"><span class="sb-icon">◐</span>Edit Newsletter</div>
     <div class="sb-item" onclick="navigate('submit')" data-page="submit"><span class="sb-icon">→</span>Submit Work</div>
     <div class="sb-item" onclick="navigate('site-gallery')" data-page="site-gallery"><span class="sb-icon">◷</span>Index</div>
   </div>
@@ -1101,15 +1161,120 @@ textarea, input, select { font-family: var(--fb); }
     </section>
 
     <!-- ══════════════════════════════
-         PAGE: REPORTS (escalation inbox)
+         PAGE: REPORTS (my reports to VP)
     ══════════════════════════════ -->
     <section class="page" id="page-reports">
-      <div class="breadcrumb"><span class="bc-active">Executive</span> › <span>Reports</span></div>
-      <div class="section-eyebrow">Oversight</div>
-      <div class="section-title">Vice President Reports Inbox</div>
-      <div class="section-sub">Escalations and executive review items from division leadership.</div>
+      <div class="breadcrumb"><span class="bc-active">Views</span> › <span>Reports</span></div>
+      <div class="section-eyebrow">Division</div>
+      <div class="section-title">Your Reports to Your Division VP</div>
+      <div class="section-sub">Reports you have sent to your Vice President. Only you and your VP see these.</div>
+      <div class="card" style="padding:20px;margin-bottom:16px">
+        <a href="javascript:void(0)" class="btn btn-gold" onclick="navigate('report-to-vp')">Report to your Division VP</a>
+      </div>
       <div class="card" style="padding:20px">
         <div id="reports-list" style="display:flex;flex-direction:column;gap:10px;margin-top:0"></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         PAGE: REPORT TO VP (escalation form – same UI as VP)
+    ══════════════════════════════ -->
+    <section class="page" id="page-report-to-vp">
+      <div class="esc-wrap">
+        <div class="esc-topbar">
+          <div class="esc-eyebrow">Report</div>
+          <div class="esc-breadcrumb"><span>Board</span> › Report to your Division VP</div>
+        </div>
+        <div class="esc-heading">
+          <div class="esc-title">Report to Your Division Vice President</div>
+          <div class="esc-desc">Use this when you need your VP’s decision, unblocking, or guidance — blockers, resource needs, or issues you can’t resolve on your own. Your report goes only to your division’s Vice President.</div>
+        </div>
+        <div class="esc-sl">Severity</div>
+        <div class="sev-grid">
+          <div class="sev-btn" data-sev="critical" onclick="boardEscSetSev(this)">
+            <div class="sev-dot-row"><div class="sev-dot" style="background:var(--red)"></div><span class="sev-sev">Critical</span></div>
+            <div class="sev-name">Needs Immediate Action</div>
+            <div class="sev-sub">Event at risk or hard deadline conflict requiring same-day resolution.</div>
+          </div>
+          <div class="sev-btn active-high" data-sev="high" onclick="boardEscSetSev(this)">
+            <div class="sev-dot-row"><div class="sev-dot" style="background:var(--amber)"></div><span class="sev-sev">High</span></div>
+            <div class="sev-name">Escalation Required</div>
+            <div class="sev-sub">Time-sensitive issue that needs VP input soon.</div>
+          </div>
+          <div class="sev-btn" data-sev="standard" onclick="boardEscSetSev(this)">
+            <div class="sev-dot-row"><div class="sev-dot" style="background:var(--gold)"></div><span class="sev-sev">Standard</span></div>
+            <div class="sev-name">Awaiting Decision</div>
+            <div class="sev-sub">Decision or guidance needed when your VP is available.</div>
+          </div>
+        </div>
+        <div class="esc-banner" id="board-sev-banner">
+          <span class="esc-banner-icon" id="board-sev-icon"></span>
+          <span class="esc-banner-text" id="board-sev-text"></span>
+        </div>
+        <div class="esc-dv"></div>
+        <div class="esc-sl">Issue Type</div>
+        <input type="hidden" id="board-report-reason" value="Cross-Division Blocker" />
+        <div class="type-grid">
+          <div class="type-chip on" data-reason="Cross-Division Blocker" onclick="boardEscTogType(this)">Cross-Division Blocker</div>
+          <div class="type-chip" data-reason="Accountability Concern" onclick="boardEscTogType(this)">Accountability Concern</div>
+          <div class="type-chip" data-reason="Resource Decision" onclick="boardEscTogType(this)">Resource Decision</div>
+          <div class="type-chip" data-reason="Strategic Conflict" onclick="boardEscTogType(this)">Strategic Conflict</div>
+          <div class="type-chip" data-reason="Deadline Risk" onclick="boardEscTogType(this)">Deadline Risk</div>
+          <div class="type-chip" data-reason="Personnel Issue" onclick="boardEscTogType(this)">Personnel Issue</div>
+        </div>
+        <div class="esc-dv"></div>
+        <div class="esc-sl">Link to event or task (optional)</div>
+        <div class="esc-row2">
+          <select id="board-report-event" class="esc-fi"><option value="">No linked event</option></select>
+          <select id="board-report-task" class="esc-fi"><option value="">No linked task</option></select>
+        </div>
+        <div class="esc-dv"></div>
+        <div class="esc-sl">Report Detail</div>
+        <div class="esc-fg">
+          <label class="esc-fl">What happened and what have you done?</label>
+          <textarea class="esc-fi esc-fta" id="board-report-notes" oninput="boardEscCountChars('board-report-notes','board-report-notes-hint')" placeholder="Be specific. Describe the situation, what you have tried, and what you need from your VP."></textarea>
+          <div class="esc-char-hint" id="board-report-notes-hint">0 / 800 recommended</div>
+        </div>
+        <div class="esc-fg">
+          <label class="esc-fl">Your Recommended Action</label>
+          <textarea class="esc-fi" style="min-height:72px;resize:vertical" id="board-report-action" oninput="boardEscCountChars('board-report-action','board-report-action-hint')" placeholder="What do you recommend your VP do? Be direct."></textarea>
+          <div class="esc-char-hint" id="board-report-action-hint">0 / 200 recommended</div>
+        </div>
+        <div class="esc-footer">
+          <div class="esc-footer-note" id="board-esc-footer-note"><strong>High severity</strong> — Your Division VP will be notified. Reports are visible only to you and your VP.</div>
+          <div class="esc-footer-btns">
+            <button type="button" class="esc-btn-cancel" onclick="navigate('reports')">Cancel</button>
+            <button type="button" class="esc-btn-send" id="board-esc-send-btn" onclick="sendReportToVP()">Send Report to VP</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         PAGE: NEWSLETTER (Director of Operations only)
+    ══════════════════════════════ -->
+    <section class="page" id="page-newsletter">
+      <div class="breadcrumb"><span class="bc-active">Views</span> › <span>Newsletter</span></div>
+      <div class="section-eyebrow">Community Newsletter</div>
+      <div class="section-title">Edit newsletter entries</div>
+      <div class="section-sub">Preview and edit the newsletter section for the homepage. Content is from <code>data/newsletter.json</code>. Push to GitHub to publish.</div>
+      <div class="card" style="margin-bottom:24px">
+        <div class="section-label">Current newsletter on site</div>
+        <div id="newsletter-preview-wrap" style="margin-top:16px;display:flex;flex-direction:column;gap:16px"></div>
+        <div style="margin-top:16px">
+          <button type="button" class="btn btn-outline" onclick="openNewsletterFullView()">View entire newsletter</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:16px">
+          <button type="button" class="btn btn-gold" onclick="newsletterAddEntry()">+ Add newsletter entry</button>
+          <button type="button" class="btn btn-outline" style="margin-left:10px" onclick="loadNewsletterPage()">Refresh</button>
+        </div>
+        <div id="newsletter-editor-list" style="display:flex;flex-direction:column;gap:20px"></div>
+        <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+          <button type="button" class="btn btn-gold" onclick="newsletterPushToGitHub()">Push Newsletter to Github</button>
+          <span id="newsletter-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+        </div>
       </div>
     </section>
 
@@ -1164,6 +1329,16 @@ textarea, input, select { font-family: var(--fb); }
 
   </div><!-- /content -->
 </main>
+
+<!-- Newsletter: view entire (zoomed) -->
+<div class="modal-backdrop" id="newsletter-full-modal" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="modal-header" style="justify-content:flex-end">
+      <button class="modal-close" onclick="closeModal('newsletter-full-modal')" aria-label="Close">✕</button>
+    </div>
+    <div id="newsletter-full-modal-body" style="padding:0 24px 24px;overflow-y:auto;flex:1"></div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════
      MODAL: TASK DETAIL
@@ -1369,6 +1544,11 @@ function applyUser() {
   document.getElementById('sb-div').textContent       = USER.div;
   const crumb = document.getElementById("crumb-role");
   if (crumb) crumb.textContent = USER.role || USER.dept || "Board";
+  const isDirectorOfOps = (USER.role || '').trim().toLowerCase() === 'director of operations';
+  const nlSection = document.getElementById('board-newsletter-section-label');
+  const nlItem = document.getElementById('sb-item-newsletter');
+  if (nlSection) nlSection.style.display = isDirectorOfOps ? '' : 'none';
+  if (nlItem) nlItem.style.display = isDirectorOfOps ? 'flex' : 'none';
 }
 
 function toUiStatus(status) {
@@ -1705,6 +1885,8 @@ const PAGE_TITLES = {
   calendar: 'Calendar',
   events: 'Events',
   reports: 'Reports',
+  'report-to-vp': 'Report to VP',
+  newsletter: 'Edit Newsletter',
   submit: 'Submit Work',
   'site-gallery': 'Index'
 };
@@ -1726,6 +1908,11 @@ function navigate(pageId) {
     document.getElementById('sidebar').classList.remove('mobile-open');
   }
   if (pageId === 'site-gallery' && typeof boardLoadSiteGalleryPage === 'function') boardLoadSiteGalleryPage();
+  if (pageId === 'report-to-vp') {
+    if (typeof populateBoardReportSelectors === 'function') populateBoardReportSelectors();
+    if (typeof boardEscInitSev === 'function') boardEscInitSev();
+  }
+  if (pageId === 'newsletter' && typeof loadNewsletterPage === 'function') loadNewsletterPage();
 }
 
 function toggleSidebar() {
@@ -2201,7 +2388,7 @@ function renderReportsLive() {
           </div>
         </div>`;
       }).join('')
-    : '<div style="font-size:13px;color:var(--silver);padding:12px">No VP reports submitted yet.</div>';
+    : '<div style="font-size:13px;color:var(--silver);padding:12px">No reports sent yet.</div>';
 }
 
 function updateReportStatus(reportId, status) {
@@ -2211,6 +2398,289 @@ function updateReportStatus(reportId, status) {
     hydrateBoardData().then(() => { renderReportsLive(); });
   }).catch(() => showToast('Unable to update report.'));
 }
+
+/* ─── Board: Report to VP (same logic as VP escalate) ─── */
+function populateBoardReportSelectors() {
+  const eventRoot = document.getElementById('board-report-event');
+  const taskRoot = document.getElementById('board-report-task');
+  const events = (typeof DASHBOARD !== 'undefined' && DASHBOARD && DASHBOARD.events) ? DASHBOARD.events : [];
+  const tasks = (typeof DASHBOARD !== 'undefined' && DASHBOARD && DASHBOARD.tasks) ? DASHBOARD.tasks : [];
+  if (eventRoot) eventRoot.innerHTML = '<option value="">No linked event</option>' + events.map((e) => '<option value="' + e.id + '">' + (e.name || '').replace(/</g, '&lt;') + '</option>').join('');
+  if (taskRoot) taskRoot.innerHTML = '<option value="">No linked task</option>' + tasks.map((t) => '<option value="' + t.id + '">' + (t.title || '').replace(/</g, '&lt;') + '</option>').join('');
+}
+
+const BOARD_ESC_SEV = {
+  critical: { btnCls: 'active-crit', bannerColor: 'var(--red)', bannerBg: 'var(--red-dim)', icon: '⚠', text: 'Critical — your VP will be alerted immediately.', footerNote: '<strong>Critical</strong> — Your Division VP is notified immediately.', btnCls2: 'crit', btnLabel: 'Send Critical Report' },
+  high: { btnCls: 'active-high', bannerColor: 'var(--amber)', bannerBg: 'var(--amber-dim)', icon: '◑', text: 'High — time-sensitive. Your VP will review soon.', footerNote: '<strong>High severity</strong> — Your Division VP will be notified. Reports are visible only to you and your VP.', btnCls2: '', btnLabel: 'Send Report to VP' },
+  standard: { btnCls: 'active-std', bannerColor: 'var(--gold)', bannerBg: 'rgba(184,154,92,.07)', icon: '◈', text: 'Standard — your VP will review when available.', footerNote: '<strong>Standard</strong> — Your VP will review at their next availability.', btnCls2: '', btnLabel: 'Send Report to VP' }
+};
+let boardEscCurSev = 'high';
+
+function boardEscSetSev(el) {
+  if (!el) return;
+  document.querySelectorAll('#page-report-to-vp .sev-btn').forEach((b) => b.className = 'sev-btn');
+  const sev = el.getAttribute('data-sev') || 'high';
+  boardEscCurSev = sev;
+  const cfg = BOARD_ESC_SEV[sev] || BOARD_ESC_SEV.high;
+  el.classList.add(cfg.btnCls);
+  const banner = document.getElementById('board-sev-banner');
+  if (banner) { banner.style.borderLeftColor = cfg.bannerColor; banner.style.background = cfg.bannerBg; banner.style.color = cfg.bannerColor; banner.classList.add('show'); }
+  const iconEl = document.getElementById('board-sev-icon'); if (iconEl) iconEl.textContent = cfg.icon;
+  const textEl = document.getElementById('board-sev-text'); if (textEl) textEl.textContent = cfg.text;
+  const noteEl = document.getElementById('board-esc-footer-note'); if (noteEl) noteEl.innerHTML = cfg.footerNote;
+  const btn = document.getElementById('board-esc-send-btn'); if (btn) { btn.className = 'esc-btn-send ' + cfg.btnCls2; btn.textContent = cfg.btnLabel; }
+}
+
+function boardEscTogType(el) {
+  if (!el) return;
+  document.querySelectorAll('#page-report-to-vp .type-chip').forEach((c) => c.classList.remove('on'));
+  el.classList.add('on');
+  const hid = document.getElementById('board-report-reason');
+  if (hid) hid.value = el.getAttribute('data-reason') || '';
+}
+
+function boardEscCountChars(taId, hintId) {
+  const ta = document.getElementById(taId);
+  const hint = document.getElementById(hintId);
+  if (!ta || !hint) return;
+  const max = taId === 'board-report-notes' ? 800 : 200;
+  const n = (ta.value || '').length;
+  hint.textContent = n + ' / ' + max + ' recommended';
+  hint.className = 'esc-char-hint' + (n > max ? ' warn' : '');
+}
+
+function boardEscInitSev() {
+  const highBtn = document.querySelector('#page-report-to-vp .sev-btn[data-sev="high"]');
+  if (highBtn && typeof boardEscSetSev === 'function') boardEscSetSev(highBtn);
+}
+
+async function sendReportToVP() {
+  const reason = (document.getElementById('board-report-reason') && document.getElementById('board-report-reason').value) || '';
+  const notesEl = document.getElementById('board-report-notes');
+  const notesRaw = notesEl ? notesEl.value : '';
+  if (!reason.trim() || !notesRaw.trim()) {
+    showToast('Please select an issue type and provide report details.');
+    return;
+  }
+  const severityPrefix = '[Severity: ' + (boardEscCurSev.charAt(0).toUpperCase() + boardEscCurSev.slice(1)) + '] ';
+  const notes = severityPrefix + notesRaw.trim();
+  try {
+    await apiPost('/api/reports', {
+      reason: reason.trim(),
+      event_id: (document.getElementById('board-report-event') && document.getElementById('board-report-event').value) || null,
+      task_id: (document.getElementById('board-report-task') && document.getElementById('board-report-task').value) || null,
+      notes,
+      recommended_action: (document.getElementById('board-report-action') && document.getElementById('board-report-action').value) || ''
+    });
+    if (notesEl) notesEl.value = '';
+    const actionEl = document.getElementById('board-report-action');
+    if (actionEl) actionEl.value = '';
+    const h1 = document.getElementById('board-report-notes-hint'); if (h1) h1.textContent = '0 / 800 recommended';
+    const h2 = document.getElementById('board-report-action-hint'); if (h2) h2.textContent = '0 / 200 recommended';
+    showToast('Report sent to your Division VP.');
+    navigate('reports');
+    await hydrateBoardData();
+    renderReportsLive();
+  } catch (_e) {
+    showToast('Unable to send report.');
+  }
+}
+
+/* ─── Newsletter editor (Director of Operations only; same API as president/VP) ─── */
+var presidentNewsletters = [];
+var newsletterImageInput = null;
+window.loadNewsletterPage = async function loadNewsletterPage() {
+  var listEl = document.getElementById('newsletter-editor-list');
+  if (!listEl) return;
+  try {
+    var res = await fetch('/api/public/site-content');
+    var data = res.ok ? await res.json() : {};
+    presidentNewsletters = Array.isArray(data.newsletters) ? data.newsletters.slice() : [];
+  } catch (_e) {
+    presidentNewsletters = [];
+  }
+  renderNewsletterEditorList();
+  renderNewsletterPreview();
+};
+function renderNewsletterPreview() {
+  var wrap = document.getElementById('newsletter-preview-wrap');
+  if (!wrap) return;
+  if (presidentNewsletters.length === 0) {
+    wrap.innerHTML = '<p style="font-size:12px;color:var(--silver)">No newsletter entries yet. Add entries below to see the preview.</p>';
+    return;
+  }
+  var baseUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, '') || '') + '/';
+  wrap.innerHTML = presidentNewsletters.map(function (n) {
+    var imgSrc = n.image ? (n.image.startsWith('/') ? window.location.origin + n.image : baseUrl + n.image) : '';
+    if (imgSrc && n._ts) imgSrc += '?t=' + n._ts;
+    var desc = (n.description || '').slice(0, 280);
+    if ((n.description || '').length > 280) desc += '…';
+    desc = desc.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/\n/g, '<br />');
+    var title = (n.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    var date = (n.date || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    return '<div style="background:var(--navy);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;display:grid;grid-template-columns:min(180px,100%) 1fr;gap:20px;align-items:start">' +
+      (imgSrc ? '<div style="aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:var(--navy-light)"><img src="' + imgSrc + '" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display=\'none\'" /></div>' : '<div style="aspect-ratio:4/5;border-radius:8px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--silver)">No image</div>') +
+      '<div><div style="font-family:var(--fd);font-size:20px;color:var(--white);margin-bottom:4px">' + title + '</div>' +
+      '<div style="font-size:11px;color:var(--gold-light);letter-spacing:.08em;margin-bottom:10px">' + date + '</div>' +
+      '<p style="font-size:13px;color:var(--stone);line-height:1.6;margin-bottom:0">' + desc + '</p></div></div>';
+  }).join('');
+}
+window.openNewsletterFullView = function openNewsletterFullView() {
+  var body = document.getElementById('newsletter-full-modal-body');
+  var modal = document.getElementById('newsletter-full-modal');
+  if (!body || !modal) return;
+  if (presidentNewsletters.length === 0) {
+    body.innerHTML = '<p style="font-size:13px;color:var(--silver)">No newsletter entries to show.</p>';
+    openModal('newsletter-full-modal');
+    return;
+  }
+  var baseUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, '') || '') + '/';
+  body.innerHTML = presidentNewsletters.map(function (n) {
+    var imgSrc = n.image ? (n.image.startsWith('/') ? window.location.origin + n.image : baseUrl + n.image) : '';
+    var desc = (n.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/\n/g, '<br />');
+    var title = (n.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    var date = (n.date || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    return '<div style="background:var(--navy);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:24px;margin-bottom:20px">' +
+      '<div style="font-family:var(--fd);font-size:22px;color:var(--white);margin-bottom:6px">' + title + '</div>' +
+      '<div style="font-size:11px;color:var(--gold-light);letter-spacing:.08em;margin-bottom:16px">' + date + '</div>' +
+      (imgSrc ? '<div style="margin-bottom:16px;border-radius:8px;overflow:hidden;max-width:100%"><img src="' + imgSrc + '" alt="" style="width:100%;max-width:400px;height:auto;display:block" onerror="this.parentElement.style.display=\'none\'" /></div>' : '') +
+      '<div style="font-size:14px;color:var(--stone);line-height:1.7">' + desc + '</div></div>';
+  }).join('');
+  openModal('newsletter-full-modal');
+};
+function renderNewsletterEditorList() {
+  var listEl = document.getElementById('newsletter-editor-list');
+  if (!listEl) return;
+  if (presidentNewsletters.length === 0) {
+    listEl.innerHTML = '<p style="font-size:12px;color:var(--silver)">No newsletter entries yet. Click "Add newsletter entry" to create one.</p>';
+    return;
+  }
+  var baseUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, '') || '') + '/';
+  var html = presidentNewsletters.map(function (n, i) {
+    var title = (n.title || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var date = (n.date || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var desc = n.description || '';
+    var descAttr = desc.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    var image = (n.image || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var link = (n.link || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var sec = (n.secondaryLink || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    var imgSrc = image ? (image.startsWith('/') ? window.location.origin + image : baseUrl + image) : '';
+    if (imgSrc && n._ts) imgSrc += '?t=' + n._ts;
+    return '<div class="newsletter-editor-card" data-index="' + i + '" style="background:var(--navy-light);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+      '<span style="font-size:11px;letter-spacing:.1em;color:var(--gold)">Entry ' + (i + 1) + '</span>' +
+      '<button type="button" class="btn btn-outline" style="padding:4px 10px;font-size:10px" onclick="newsletterRemoveEntry(' + i + ')">Remove</button></div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Title</label><input type="text" data-nl-field="title" value="' + title + '" placeholder="e.g. February Newsletter" style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Date</label><input type="text" data-nl-field="date" value="' + date + '" placeholder="e.g. February 2026" style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Description</label><textarea data-nl-field="description" data-value="' + descAttr + '" rows="4" placeholder="Newsletter body text..." style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%;resize:vertical"></textarea></div>' +
+      (imgSrc ? '<div style="margin-bottom:10px"><img src="' + imgSrc + '" alt="" style="max-width:200px;max-height:120px;object-fit:contain;border-radius:8px" onerror="this.style.display=\'none\'" /></div>' : '') +
+      '<div style="margin-bottom:10px"><button type="button" class="btn btn-outline" style="padding:6px 12px;font-size:11px" onclick="newsletterUploadImage(' + i + ')">Upload new image</button></div>' +
+      '<div class="fg" style="margin-bottom:10px"><label>Primary link (e.g. Instagram)</label><input type="url" data-nl-field="link" value="' + link + '" placeholder="https://..." style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div>' +
+      '<div class="fg" style="margin-bottom:0"><label>Secondary link (optional)</label><input type="url" data-nl-field="secondaryLink" value="' + sec + '" placeholder="https://..." style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:8px;color:var(--white);font-size:13px;width:100%" /></div></div>';
+  }).join('');
+  listEl.innerHTML = html;
+  listEl.querySelectorAll('textarea[data-nl-field="description"]').forEach(function (ta) {
+    ta.value = ta.getAttribute('data-value') || '';
+    ta.removeAttribute('data-value');
+  });
+}
+window.newsletterUploadImage = function newsletterUploadImage(index) {
+  newsletterImageInput = newsletterImageInput || document.createElement('input');
+  newsletterImageInput.type = 'file';
+  newsletterImageInput.accept = 'image/*';
+  newsletterImageInput.setAttribute('data-nl-upload-index', String(index));
+  newsletterImageInput.onchange = function () {
+    var file = newsletterImageInput.files && newsletterImageInput.files[0];
+    if (!file) return;
+    var idx = parseInt(newsletterImageInput.getAttribute('data-nl-upload-index'), 10);
+    var token = getSessionToken();
+    if (!token) { showToast('You must be logged in.'); return; }
+    var fd = new FormData();
+    fd.append('photo', file);
+    fetch('/api/site/newsletter-image', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
+      .then(function (r) { return r.json().catch(function () { return {}; }); })
+      .then(function (data) {
+        if (data.path && presidentNewsletters[idx]) {
+          presidentNewsletters[idx].image = data.path;
+          presidentNewsletters[idx]._ts = Date.now();
+          renderNewsletterEditorList();
+          renderNewsletterPreview();
+          showToast('Image uploaded.');
+        } else { showToast(data.error || 'Upload failed'); }
+      })
+      .catch(function () { showToast('Upload failed'); });
+    newsletterImageInput.value = '';
+  };
+  newsletterImageInput.click();
+};
+window.newsletterAddEntry = function newsletterAddEntry() {
+  presidentNewsletters.push({
+    id: 'nl-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
+    title: '', date: '', description: '', image: '', link: '', secondaryLink: ''
+  });
+  renderNewsletterEditorList();
+};
+window.newsletterRemoveEntry = function newsletterRemoveEntry(index) {
+  presidentNewsletters.splice(index, 1);
+  renderNewsletterEditorList();
+};
+window.newsletterSave = async function newsletterSave() {
+  var listEl = document.getElementById('newsletter-editor-list');
+  if (!listEl) return;
+  var cards = listEl.querySelectorAll('.newsletter-editor-card');
+  var payload = [];
+  cards.forEach(function (card) {
+    var i = card.getAttribute('data-index');
+    var entry = presidentNewsletters[parseInt(i, 10)];
+    if (!entry) return;
+    var titleIn = card.querySelector('[data-nl-field="title"]');
+    var dateIn = card.querySelector('[data-nl-field="date"]');
+    var descIn = card.querySelector('[data-nl-field="description"]');
+    var linkIn = card.querySelector('[data-nl-field="link"]');
+    var secIn = card.querySelector('[data-nl-field="secondaryLink"]');
+    payload.push({
+      id: entry.id,
+      title: titleIn ? titleIn.value.trim() : '',
+      date: dateIn ? dateIn.value.trim() : '',
+      description: descIn ? descIn.value.trim() : '',
+      image: entry.image || 'newsletter-images/newsletter.png',
+      link: linkIn ? linkIn.value.trim() : '',
+      secondaryLink: secIn ? secIn.value.trim() : ''
+    });
+  });
+  var token = getSessionToken();
+  if (!token) { showToast('You must be logged in.'); return; }
+  try {
+    var res = await fetch('/api/site/newsletters', {
+      method: 'PUT',
+      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newsletters: payload })
+    });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    presidentNewsletters = Array.isArray(data.newsletters) ? data.newsletters : payload;
+    renderNewsletterPreview();
+    showToast('Newsletters saved.');
+  } catch (e) {
+    showToast(e.message || 'Save failed');
+  }
+};
+window.newsletterPushToGitHub = async function newsletterPushToGitHub() {
+  var token = getSessionToken();
+  if (!token) { showToast('You must be logged in.'); return; }
+  var statusEl = document.getElementById('newsletter-push-status');
+  if (statusEl) statusEl.textContent = 'Pushing…';
+  try {
+    var res = await fetch('/api/site/push-newsletter', { method: 'POST', headers: { 'x-session-token': token } });
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) throw new Error(data.error || 'Push failed');
+    if (statusEl) statusEl.textContent = data.message || 'Pushed to GitHub.';
+    showToast(data.message || 'Newsletter pushed to GitHub.');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = '';
+    showToast(e.message || 'Push failed');
+  }
+};
 
 function setDiff(prefix, val) {
   const starsEl = document.getElementById(prefix + '-stars');
