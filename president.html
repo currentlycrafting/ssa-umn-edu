@@ -2643,10 +2643,37 @@ window.newsletterSave = async function newsletterSave() {
 window.newsletterPushToGitHub = async function newsletterPushToGitHub() {
   var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
   if (!token) { showToast('You must be logged in.'); return; }
+  var listEl = document.getElementById('newsletter-editor-list');
+  if (!listEl) return;
+  var cards = listEl.querySelectorAll('.newsletter-editor-card');
+  var payload = [];
+  cards.forEach(function (card) {
+    var i = card.getAttribute('data-index');
+    var entry = presidentNewsletters[parseInt(i, 10)];
+    if (!entry) return;
+    var titleIn = card.querySelector('[data-nl-field="title"]');
+    var dateIn = card.querySelector('[data-nl-field="date"]');
+    var descIn = card.querySelector('[data-nl-field="description"]');
+    var linkIn = card.querySelector('[data-nl-field="link"]');
+    var secIn = card.querySelector('[data-nl-field="secondaryLink"]');
+    payload.push({
+      id: entry.id,
+      title: titleIn ? titleIn.value.trim() : '',
+      date: dateIn ? dateIn.value.trim() : '',
+      description: descIn ? descIn.value.trim() : '',
+      image: entry.image || 'newsletter-images/newsletter.png',
+      link: linkIn ? linkIn.value.trim() : '',
+      secondaryLink: secIn ? secIn.value.trim() : ''
+    });
+  });
   var statusEl = document.getElementById('newsletter-push-status');
   if (statusEl) statusEl.textContent = 'Pushing…';
   try {
-    var res = await fetch('/api/site/push-newsletter', { method: 'POST', headers: { 'x-session-token': token } });
+    var res = await fetch('/api/site/push-newsletter', {
+      method: 'POST',
+      headers: { 'x-session-token': token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newsletters: payload })
+    });
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok) throw new Error(data.error || 'Push failed');
     if (statusEl) statusEl.textContent = data.message || 'Pushed to GitHub.';

@@ -2655,7 +2655,7 @@ app.post("/api/site/push-board", (req, res) => {
   }
 });
 
-// Push newsletter (data/newsletter.json + newsletter-images) via GitHub API (same as Index & Board).
+// Push newsletter (data/newsletter.json + newsletter-images) via GitHub API. Writes request body to file first so commit has latest content.
 app.post("/api/site/push-newsletter", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
@@ -2672,6 +2672,24 @@ app.post("/api/site/push-newsletter", async (req, res) => {
   const ghPut = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}`;
   const headers = { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}`, "Content-Type": "application/json" };
   try {
+    const { newsletters: bodyNewsletters } = req.body || {};
+    if (Array.isArray(bodyNewsletters)) {
+      const normalized = bodyNewsletters.map((n) => ({
+        id: String(n.id || "").trim() || `nl-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        title: String(n.title || "").trim(),
+        date: String(n.date || "").trim(),
+        description: String(n.description || "").trim(),
+        image: String(n.image || "").trim(),
+        link: String(n.link || "").trim(),
+        secondaryLink: String(n.secondaryLink || "").trim()
+      }));
+      const dir = path.dirname(newsletterPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(newsletterPath, JSON.stringify(normalized, null, 2), "utf8");
+      const content = readSiteContent();
+      content.newsletters = normalized;
+      writeSiteContent(content);
+    }
     const newsletterRepoPath = path.relative(__dirname, newsletterPath).replace(/\\/g, "/");
     const newsletterRaw = fs.readFileSync(newsletterPath, "utf8");
     const newsletterB64 = Buffer.from(newsletterRaw, "utf8").toString("base64");
