@@ -786,7 +786,8 @@ app.post("/api/auth/google", async (req, res) => {
         error: "This email is not authorized in board role mappings."
       });
     }
-    if (!userMatchesRequestedWorkspace(mappedUser, role, profile || {})) {
+    const requestedRole = role != null && String(role).trim() !== "" ? role : null;
+    if (requestedRole != null && !userMatchesRequestedWorkspace(mappedUser, requestedRole, profile || {})) {
       return res.status(403).json({
         error: "This email is not authorized for the selected workspace mode."
       });
@@ -797,7 +798,7 @@ app.post("/api/auth/google", async (req, res) => {
       token,
       expiresAt,
       user: mappedUser,
-      redirect_to: resolveRedirectPath(mappedUser, role)
+      redirect_to: resolveRedirectPath(mappedUser, requestedRole)
     });
   } catch (error) {
     res.status(401).json({
@@ -818,7 +819,8 @@ app.post("/api/auth/dev", (req, res) => {
   if (!mappedUser) {
     return res.status(403).json({ error: "This email is not authorized in board role mappings." });
   }
-  if (!userMatchesRequestedWorkspace(mappedUser, role, profile || {})) {
+  const requestedRole = role != null && String(role).trim() !== "" ? role : null;
+  if (requestedRole != null && !userMatchesRequestedWorkspace(mappedUser, requestedRole, profile || {})) {
     return res.status(403).json({ error: "This email is not authorized for the selected workspace mode." });
   }
   const { token, expiresAt } = createSession(mappedUser);
@@ -826,7 +828,7 @@ app.post("/api/auth/dev", (req, res) => {
     token,
     expiresAt,
     user: mappedUser,
-    redirect_to: resolveRedirectPath(mappedUser, role)
+    redirect_to: resolveRedirectPath(mappedUser, requestedRole)
   });
 });
 

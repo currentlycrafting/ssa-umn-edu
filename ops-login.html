@@ -148,13 +148,6 @@
       </div>
 
       <div class="stack">
-        <label class="label" for="role-mode">Workspace Mode</label>
-        <select id="role-mode" class="input">
-          <option value="board">Board Member</option>
-          <option value="vp-internal">VP Internal Affairs</option>
-          <option value="vp-external">VP External Affairs</option>
-          <option value="president">Executive President</option>
-        </select>
         <label class="label" for="email">UMN Email</label>
         <input id="email" class="input" type="email" placeholder="you@umn.edu" />
         <button id="dev-login-btn" class="btn">Continue with Email</button>
@@ -219,7 +212,6 @@
         const errorEl = document.getElementById("error");
         errorEl.textContent = "";
         const email = document.getElementById("email").value.trim();
-        const role = document.getElementById("role-mode").value;
         const profile = collectBoardProfile();
         if (!email) {
           errorEl.textContent = "Enter a UMN email.";
@@ -233,7 +225,7 @@
           const res = await fetch("/api/auth/dev", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, role, profile })
+            body: JSON.stringify({ email, profile })
           });
           const data = await res.json();
           if (!res.ok) {
@@ -241,7 +233,7 @@
             return;
           }
           setSession(data);
-          routeByRole(data.user, role, data.redirect_to);
+          routeByRole(data.user, null, data.redirect_to);
         } catch (_e) {
           errorEl.textContent = "Unable to reach server.";
         }
@@ -250,13 +242,12 @@
       window.handleGoogleCredential = async (response) => {
         const errorEl = document.getElementById("error");
         errorEl.textContent = "";
-        const role = document.getElementById("role-mode").value;
         const profile = collectBoardProfile();
         try {
           const res = await fetch("/api/auth/google", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ credential: response.credential, role, profile })
+            body: JSON.stringify({ credential: response.credential, profile })
           });
           const data = await res.json();
           if (!res.ok) {
@@ -264,7 +255,7 @@
             return;
           }
           setSession(data);
-          routeByRole(data.user, role, data.redirect_to);
+          routeByRole(data.user, null, data.redirect_to);
         } catch (_e) {
           errorEl.textContent = "Unable to complete Google auth.";
         }
