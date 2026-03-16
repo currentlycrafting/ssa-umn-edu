@@ -878,7 +878,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     </div>
   </div>
 
-  <!-- ── PAGE: INDEX & BOARD (gallery + board section, push to GitHub) ── -->
+  <!-- ── PAGE: INDEX & BOARD (gallery + board section, homepage events, push to GitHub) ── -->
   <div class="page" id="page-site-content">
     <div class="breadcrumb"><span>Executive</span> / Index & Board</div>
     <div class="card">
@@ -913,6 +913,22 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
       <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
         <button type="button" class="btn btn-gold" onclick="sitePushBoardToGitHub()">Push Member Content to Github</button>
         <span id="site-push-board-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+    <div class="card" style="margin-top:24px">
+      <div class="section-label">Homepage events (Upcoming Events)</div>
+      <div class="card-title">Edit calendar items</div>
+      <div class="card-sub">
+        These appear in the <code>Upcoming Events</code> section on the public site. Edit day/month, title, description, tag, and optional RSVP button text + link,
+        then push to GitHub.
+      </div>
+      <div id="site-events-list" style="display:flex;flex-direction:column;gap:12px;margin:16px 0 20px"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
+        <button type="button" class="btn btn-outline" onclick="siteAddEvent()">+ Add event</button>
+      </div>
+      <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="sitePushEventsToGitHub()">Push Events to Github</button>
+        <span id="site-push-events-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
       </div>
     </div>
   </div>
@@ -2321,19 +2337,24 @@ window.pushSeedToGitHub = async function pushSeedToGitHub() {
 // ── INDEX & BOARD (site content) ───────────────────────────────────────────
 let siteContentGallery = [];
 let siteContentBoard = [];
+let siteContentEvents = [];
 window.loadSiteContentPage = async function loadSiteContentPage() {
   try {
     const pubRes = await fetch('/api/public/site-content');
     const pub = pubRes.ok ? await pubRes.json() : {};
     siteContentGallery = pub.galleryImages || [];
     siteContentBoard = pub.boardMembers || [];
+    siteContentEvents = Array.isArray(pub.events) ? pub.events : [];
     renderSiteGalleryList();
     renderSiteBoardList();
+    renderSiteEventsList();
   } catch (_e) {
     siteContentGallery = [];
     siteContentBoard = [];
+    siteContentEvents = [];
     renderSiteGalleryList();
     renderSiteBoardList();
+    renderSiteEventsList();
   }
 };
 window.openViewBoard = async function openViewBoard() {
@@ -2373,6 +2394,95 @@ function renderSiteGalleryList() {
   var modalList = document.getElementById('site-gallery-modal-list');
   if (modalList) modalList.innerHTML = siteContentGallery.length === 0 ? '<span style="font-size:12px;color:var(--silver)">No photos. Click or drag to add.</span>' : siteContentGallery.map(function (img, i) { return itemHtml(img, i); }).join('');
 }
+
+function renderSiteEventsList() {
+  var root = document.getElementById('site-events-list');
+  if (!root) return;
+  if (!Array.isArray(siteContentEvents) || siteContentEvents.length === 0) {
+    root.innerHTML = '<div style="font-size:12px;color:var(--silver)">No events yet. Click “Add event” to create one.</div>';
+    return;
+  }
+  var html = siteContentEvents.map(function (e, idx) {
+    var ev = e || {};
+    return '<div class="site-board-card">' +
+      '<div style="display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:start;width:100%">' +
+        '<div style="display:flex;flex-direction:column;gap:6px">' +
+          '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Day / Month</label>' +
+          '<div style="display:flex;gap:6px">' +
+            '<input type="text" maxlength="2" style="width:48px;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:6px 8px;color:var(--white);font-size:13px" value="' + (ev.day || '') + '" onchange="siteUpdateEventField(' + idx + ',\'day\',this.value)" />' +
+            '<input type="text" maxlength="3" style="width:64px;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:6px 8px;color:var(--white);font-size:13px;text-transform:uppercase" value="' + (ev.month || '') + '" onchange="siteUpdateEventField(' + idx + ',\'month\',this.value)" />' +
+          '</div>' +
+          '<label class="section-label" style="margin:10px 0 4px;font-size:8px;letter-spacing:.28em">Tag</label>' +
+          '<input type="text" style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:6px 8px;color:var(--white);font-size:12px" value="' + (ev.tag || '') + '" onchange="siteUpdateEventField(' + idx + ',\'tag\',this.value)" />' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;gap:8px">' +
+          '<div>' +
+            '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Title</label>' +
+            '<input type="text" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:13px" value="' + (ev.title || '') + '" onchange="siteUpdateEventField(' + idx + ',\'title\',this.value)" />' +
+          '</div>' +
+          '<div>' +
+            '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Description</label>' +
+            '<textarea style="width:100%;min-height:60px;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:12px;resize:vertical">' + (ev.description || '') + '</textarea>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">' +
+            '<div>' +
+              '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Button text</label>' +
+              '<input type="text" placeholder="RSVP FORM" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:12px" value="' + (ev.buttonText || '') + '" onchange="siteUpdateEventField(' + idx + ',\'buttonText\',this.value)" />' +
+            '</div>' +
+            '<div>' +
+              '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Button link</label>' +
+              '<input type="text" placeholder="https://…" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:12px" value="' + (ev.link || '') + '" onchange="siteUpdateEventField(' + idx + ',\'link\',this.value)" />' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="site-board-order-btns" style="margin-left:8px">' +
+        '<button type="button" class="site-board-move" onclick="siteMoveEvent(' + idx + ', -1)" title="Move up" aria-label="Move up">↺</button>' +
+        '<button type="button" class="site-board-move" onclick="siteMoveEvent(' + idx + ', 1)" title="Move down" aria-label="Move down">↻</button>' +
+        '<button type="button" class="site-board-move" onclick="siteDeleteEvent(' + idx + ')" title="Delete" aria-label="Delete">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  root.innerHTML = html;
+}
+
+window.siteAddEvent = function siteAddEvent() {
+  if (!Array.isArray(siteContentEvents)) siteContentEvents = [];
+  siteContentEvents.push({
+    id: 'ev-' + Date.now(),
+    day: '01',
+    month: 'Jan',
+    title: 'New Event',
+    description: 'Event description.',
+    tag: 'Event',
+    buttonText: '',
+    link: ''
+  });
+  renderSiteEventsList();
+};
+
+window.siteUpdateEventField = function siteUpdateEventField(index, field, value) {
+  if (!siteContentEvents[index]) return;
+  siteContentEvents[index][field] = value;
+  // live preview not wired to public site; just update in-memory list
+};
+
+window.siteMoveEvent = function siteMoveEvent(index, delta) {
+  var next = index + delta;
+  if (next < 0 || next >= siteContentEvents.length) return;
+  var arr = siteContentEvents.slice();
+  var t = arr[index];
+  arr[index] = arr[next];
+  arr[next] = t;
+  siteContentEvents = arr;
+  renderSiteEventsList();
+};
+
+window.siteDeleteEvent = function siteDeleteEvent(index) {
+  if (!siteContentEvents[index]) return;
+  siteContentEvents.splice(index, 1);
+  renderSiteEventsList();
+};
 window.siteMoveGalleryPhoto = function siteMoveGalleryPhoto(index, delta) {
   var next = index + delta;
   if (next < 0 || next >= siteContentGallery.length) return;
@@ -2590,6 +2700,28 @@ window.sitePushGalleryToGitHub = async function sitePushGalleryToGitHub() {
     if (!res.ok) throw new Error(data.error || 'Push failed');
     if (statusEl) statusEl.textContent = 'Pushed.';
     showToast('Gallery content pushed to GitHub.');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
+    showToast(e.message || 'Push failed');
+  }
+};
+window.sitePushEventsToGitHub = async function sitePushEventsToGitHub() {
+  const statusEl = document.getElementById('site-push-events-status');
+  if (statusEl) statusEl.textContent = 'Pushing…';
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  try {
+    const res = await fetch('/api/site/push-events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-session-token': token
+      },
+      body: JSON.stringify({ events: siteContentEvents || [] })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Push failed');
+    if (statusEl) statusEl.textContent = 'Pushed.';
+    showToast(data.message || 'Events pushed to GitHub.');
   } catch (e) {
     if (statusEl) statusEl.textContent = 'Error: ' + (e.message || '');
     showToast(e.message || 'Push failed');

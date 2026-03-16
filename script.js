@@ -74,7 +74,7 @@ const defaultData = {
 };
 
 let siteData = loadSiteData();
-let serverSiteContent = { galleryImages: null, boardMembers: null, newsletters: null };
+let serverSiteContent = { galleryImages: null, boardMembers: null, newsletters: null, events: null };
 let adminUnlocked = sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
 let directEditEnabled = false;
 let adminActiveTab = 'newsletters';
@@ -132,7 +132,12 @@ function renderEvents() {
   const eventsList = document.getElementById('events-list');
   if (!eventsList) return;
 
-  eventsList.innerHTML = siteData.events
+  const events =
+    Array.isArray(serverSiteContent.events) && serverSiteContent.events.length > 0
+      ? serverSiteContent.events
+      : siteData.events;
+
+  eventsList.innerHTML = events
     .map((event) => {
       const actionHtml = event.link
         ? `<div class="event-row-actions"><a href="${escapeHtml(event.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(event.buttonText || 'Learn More')}</a></div>`
@@ -754,9 +759,25 @@ function loadSiteContentFromServer() {
         if (Array.isArray(data.galleryImages)) serverSiteContent.galleryImages = data.galleryImages;
         if (Array.isArray(data.boardMembers)) serverSiteContent.boardMembers = data.boardMembers;
         if (Array.isArray(data.newsletters)) serverSiteContent.newsletters = data.newsletters;
+        if (Array.isArray(data.events)) {
+          serverSiteContent.events = data.events;
+          // Keep local editable copy in sync so inline admin forms match president dashboard events
+          siteData.events = data.events.map((e) => ({
+            id: e.id || crypto.randomUUID(),
+            day: e.day,
+            month: e.month,
+            title: e.title,
+            description: e.description,
+            tag: e.tag,
+            buttonText: e.buttonText,
+            link: e.link
+          }));
+          saveSiteData();
+        }
         renderBoard();
         renderGallery();
         renderNewsletters();
+        renderEvents();
       }
     })
     .catch(() => {
