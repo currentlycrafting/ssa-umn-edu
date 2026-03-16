@@ -239,6 +239,69 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 }
 .cb-item.checked{border-color:var(--gold);color:var(--gold);background:rgba(184,154,92,.08)}
 
+/* SITE EVENTS EDITOR (Index & Board) */
+.site-events-card{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  background:var(--navy-light);
+  border:1px solid rgba(255,255,255,.06);
+  padding:18px 16px;
+}
+.site-events-main{
+  display:grid;
+  grid-template-columns:minmax(0,160px) minmax(0,1fr);
+  gap:18px;
+  width:100%;
+}
+.site-events-col{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.site-events-label{
+  font-size:8px;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  color:var(--silver);
+  margin-bottom:4px;
+  font-family:var(--font-body);
+}
+.site-events-row{
+  display:flex;
+  gap:8px;
+}
+.site-events-input,
+.site-events-textarea{
+  background:var(--navy);
+  border:1px solid rgba(255,255,255,.12);
+  padding:8px 10px;
+  font-family:var(--font-body);
+  font-size:12px;
+  color:var(--off-white);
+  border-radius:8px;
+  outline:none;
+  transition:border-color .25s,box-shadow .2s;
+}
+.site-events-input::placeholder,
+.site-events-textarea::placeholder{
+  color:rgba(154,159,173,.6);
+}
+.site-events-input:focus,
+.site-events-textarea:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 0 2px rgba(184,154,92,.25);
+}
+.site-events-textarea{
+  min-height:70px;
+  resize:vertical;
+}
+.site-events-bottom{
+  display:grid;
+  grid-template-columns:minmax(0,180px) minmax(0,1fr);
+  gap:10px;
+}
+
 /* ASSIGN TASK MODAL (reference style) */
 .at-modal{width:720px;max-width:100%;background:var(--navy-mid);border:1px solid rgba(184,154,92,.22);display:flex;flex-direction:column;border-radius:14px;overflow:hidden;}
 .at-header{padding:22px 28px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;}
@@ -2404,39 +2467,43 @@ function renderSiteEventsList() {
   }
   var html = siteContentEvents.map(function (e, idx) {
     var ev = e || {};
-    return '<div class="site-board-card">' +
-      '<div style="display:grid;grid-template-columns:80px 1fr;gap:12px;align-items:start;width:100%">' +
-        '<div style="display:flex;flex-direction:column;gap:6px">' +
-          '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Day / Month</label>' +
-          '<div style="display:flex;gap:6px">' +
-            '<input type="text" maxlength="2" style="width:48px;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:6px 8px;color:var(--white);font-size:13px" value="' + (ev.day || '') + '" onchange="siteUpdateEventField(' + idx + ',\'day\',this.value)" />' +
-            '<input type="text" maxlength="3" style="width:64px;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:6px 8px;color:var(--white);font-size:13px;text-transform:uppercase" value="' + (ev.month || '') + '" onchange="siteUpdateEventField(' + idx + ',\'month\',this.value)" />' +
+    return '<div class="site-events-card">' +
+      '<div class="site-events-main">' +
+        '<div class="site-events-col">' +
+          '<div>' +
+            '<div class="site-events-label">Day / Month</div>' +
+            '<div class="site-events-row">' +
+              '<input type="text" maxlength="2" class="site-events-input" style="width:56px;text-align:center" value="' + (ev.day || '') + '" onchange="siteUpdateEventField(' + idx + ',\'day\',this.value)" />' +
+              '<input type="text" maxlength="3" class="site-events-input" style="width:72px;text-transform:uppercase;text-align:center" value="' + (ev.month || '') + '" onchange="siteUpdateEventField(' + idx + ',\'month\',this.value)" />' +
+            '</div>' +
           '</div>' +
-          '<label class="section-label" style="margin:10px 0 4px;font-size:8px;letter-spacing:.28em">Tag</label>' +
-          '<input type="text" style="background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:6px 8px;color:var(--white);font-size:12px" value="' + (ev.tag || '') + '" onchange="siteUpdateEventField(' + idx + ',\'tag\',this.value)" />' +
+          '<div>' +
+            '<div class="site-events-label">Tag</div>' +
+            '<input type="text" class="site-events-input" value="' + (ev.tag || '') + '" onchange="siteUpdateEventField(' + idx + ',\'tag\',this.value)" />' +
+          '</div>' +
         '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:8px">' +
+        '<div class="site-events-col">' +
           '<div>' +
-            '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Title</label>' +
-            '<input type="text" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:13px" value="' + (ev.title || '') + '" onchange="siteUpdateEventField(' + idx + ',\'title\',this.value)" />' +
+            '<div class="site-events-label">Title</div>' +
+            '<input type="text" class="site-events-input" style="width:100%" value="' + (ev.title || '') + '" onchange="siteUpdateEventField(' + idx + ',\'title\',this.value)" />' +
           '</div>' +
           '<div>' +
-            '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Description</label>' +
-            '<textarea style="width:100%;min-height:60px;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:12px;resize:vertical">' + (ev.description || '') + '</textarea>' +
+            '<div class="site-events-label">Description</div>' +
+            '<textarea class="site-events-textarea" style="width:100%" onchange="siteUpdateEventField(' + idx + ',\'description\',this.value)">' + (ev.description || '') + '</textarea>' +
           '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr 2fr;gap:8px">' +
+          '<div class="site-events-bottom">' +
             '<div>' +
-              '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Button text</label>' +
-              '<input type="text" placeholder="RSVP FORM" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:12px" value="' + (ev.buttonText || '') + '" onchange="siteUpdateEventField(' + idx + ',\'buttonText\',this.value)" />' +
+              '<div class="site-events-label">Button text</div>' +
+              '<input type="text" class="site-events-input" placeholder="RSVP FORM" value="' + (ev.buttonText || '') + '" onchange="siteUpdateEventField(' + idx + ',\'buttonText\',this.value)" />' +
             '</div>' +
             '<div>' +
-              '<label class="section-label" style="margin-bottom:4px;font-size:8px;letter-spacing:.28em">Button link</label>' +
-              '<input type="text" placeholder="https://…" style="width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.12);padding:8px 10px;color:var(--white);font-size:12px" value="' + (ev.link || '') + '" onchange="siteUpdateEventField(' + idx + ',\'link\',this.value)" />' +
+              '<div class="site-events-label">Button link</div>' +
+              '<input type="text" class="site-events-input" placeholder="https://…" value="' + (ev.link || '') + '" onchange="siteUpdateEventField(' + idx + ',\'link\',this.value)" />' +
             '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="site-board-order-btns" style="margin-left:8px">' +
+      '<div class="site-board-order-btns" style="margin-left:8px;margin-top:4px">' +
         '<button type="button" class="site-board-move" onclick="siteMoveEvent(' + idx + ', -1)" title="Move up" aria-label="Move up">↺</button>' +
         '<button type="button" class="site-board-move" onclick="siteMoveEvent(' + idx + ', 1)" title="Move down" aria-label="Move down">↻</button>' +
         '<button type="button" class="site-board-move" onclick="siteDeleteEvent(' + idx + ')" title="Delete" aria-label="Delete">✕</button>' +
