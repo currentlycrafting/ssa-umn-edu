@@ -228,6 +228,15 @@ function seedUsers() {
       vp_type: null
     },
     {
+      email: "dakol002@umn.edu",
+      full_name: "Aisha Dakol",
+      role_title: "Executive President",
+      department: "Executive Division",
+      permission_level: "president",
+      view_type: "president",
+      vp_type: null
+    },
+    {
       email: "osman471@umn.edu",
       full_name: "Suhaila Osman",
       role_title: "Vice President, Chief of Internal Affairs",
