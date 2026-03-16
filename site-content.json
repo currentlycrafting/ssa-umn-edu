@@ -42,5 +42,27 @@
       "link": "https://www.instagram.com/p/DVmjjfGDhtk/",
       "secondaryLink": "https://www.instagram.com/p/DVsD4UoDmTX/"
     }
+  ],
+  "events": [
+    {
+      "id": "ev-1",
+      "day": "03",
+      "month": "Apr",
+      "title": "Somali Night 2025",
+      "description": "Northrop Auditorium - Annual Flagship Cultural Production",
+      "tag": "Flagship",
+      "buttonText": "",
+      "link": ""
+    },
+    {
+      "id": "ev-2",
+      "day": "20",
+      "month": "Apr",
+      "title": "Senior Night Gala",
+      "description": "TBA",
+      "tag": "Members",
+      "buttonText": "RSVP Form",
+      "link": "https://docs.google.com/forms/d/e/1FAIpQLScq-2fmzfquFErTorYbyMY7rWBGcTAWJrTDQiOu_WGB3a6Jgw/viewform"
+    }
   ]
 }
