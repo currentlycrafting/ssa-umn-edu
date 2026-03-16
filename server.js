@@ -444,52 +444,84 @@ function recomputeTaskStatusesForEvent(eventId) {
     `
     )
     .all(eventId);
-  const depsByTask = new Map();
-  db.prepare(
-    `
-    SELECT task_id, depends_on_task_id
-    FROM task_dependencies
-    WHERE task_id IN (SELECT id FROM tasks WHERE event_id = ?)
-  `
-  )
-    .all(eventId)
-    .forEach((d) => {
-      const arr = depsByTask.get(d.task_id) || [];
-      arr.push(d.depends_on_task_id);
-      depsByTask.set(d.task_id, arr);
-    });
-  const statusById = new Map(tasks.map((t) => [t.id, t.status]));
   tasks.forEach((task) => {
     if (["completed", "pending_review", "redo"].includes(task.status)) return;
-    const deps = depsByTask.get(task.id) || [];
     const overdue = new Date(task.due_at).getTime() < Date.now();
-    let nextStatus = overdue ? "overdue" : "current";
-    if (deps.length && deps.some((depId) => statusById.get(depId) !== "completed")) {
-      nextStatus = overdue ? "overdue" : "locked";
-    }
+    const nextStatus = overdue ? "overdue" : "current";
     db.prepare(`UPDATE tasks SET status = ? WHERE id = ?`).run(nextStatus, task.id);
   });
+  recomputeEventProgress(eventId);
+}
+
+function firstIncompletePrerequisite(taskId) {
+  const rows = db
+    .prepare(
+      `
+      SELECT dep.id, dep.title, dep.status
+      FROM task_dependencies td
+      JOIN tasks dep ON dep.id = td.depends_on_task_id
+      WHERE td.task_id = ?
+    `
+    )
+    .all(taskId);
+  return rows.find((r) => r.status !== "completed") || null;
 }
 
 function wouldCreateCircularDependency(taskId, dependencyIds) {
+  const id = Number(taskId);
+  if (!Number.isFinite(id)) return true;
+  const proposedDeps = [...new Set((dependencyIds || []).map((x) => Number(x)).filter(Number.isFinite))];
+  if (proposedDeps.includes(id)) return true;
+
+  // Build forward prerequisite graph (task -> prerequisites).
   const graph = new Map();
   db.prepare(`SELECT task_id, depends_on_task_id FROM task_dependencies`)
     .all()
     .forEach((row) => {
-      const arr = graph.get(row.depends_on_task_id) || [];
-      arr.push(row.task_id);
-      graph.set(row.depends_on_task_id, arr);
+      const t = Number(row.task_id);
+      const d = Number(row.depends_on_task_id);
+      if (!Number.isFinite(t) || !Number.isFinite(d)) return;
+      const arr = graph.get(t) || [];
+      arr.push(d);
+      graph.set(t, arr);
     });
-  const stack = [...dependencyIds];
-  const seen = new Set();
-  while (stack.length) {
-    const current = Number(stack.pop());
-    if (!Number.isFinite(current) || seen.has(current)) continue;
-    if (current === taskId) return true;
-    seen.add(current);
-    (graph.get(current) || []).forEach((next) => stack.push(next));
-  }
-  return false;
+  // Replace this task's edges with the proposed dependency set.
+  graph.set(id, proposedDeps);
+
+  // A true cycle exists only if any proposed prerequisite can reach this task.
+  const reachesTask = (start) => {
+    const stack = [start];
+    const seen = new Set();
+    while (stack.length) {
+      const cur = Number(stack.pop());
+      if (!Number.isFinite(cur) || seen.has(cur)) continue;
+      if (cur === id) return true;
+      seen.add(cur);
+      (graph.get(cur) || []).forEach((next) => stack.push(next));
+    }
+    return false;
+  };
+  return proposedDeps.some((depId) => reachesTask(depId));
+}
+
+function recomputeEventProgress(eventId) {
+  const eid = Number(eventId);
+  if (!Number.isFinite(eid)) return;
+  const stats = db
+    .prepare(
+      `
+      SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed
+      FROM tasks
+      WHERE event_id = ?
+    `
+    )
+    .get(eid);
+  const total = Number(stats?.total || 0);
+  const completed = Number(stats?.completed || 0);
+  const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+  db.prepare(`UPDATE events SET progress = ? WHERE id = ?`).run(progress, eid);
 }
 
 function upsertUserByEmail(email, fullName, requestedRole, profile = {}) {
@@ -975,8 +1007,9 @@ app.post("/api/tasks/:id/submit", (req, res) => {
   if (task.owner_email !== user.email) {
     return res.status(403).json({ error: "You can only submit your own task." });
   }
-  if (new Date(task.unlock_at).getTime() > Date.now()) {
-    return res.status(400).json({ error: "Task is still locked." });
+  const blockedBy = task.status === "redo" ? null : firstIncompletePrerequisite(taskId);
+  if (blockedBy) {
+    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}` });
   }
 
   const {
@@ -1016,6 +1049,8 @@ app.post("/api/tasks/:id/submit", (req, res) => {
     WHERE id = ?
   `
   ).run(String(summary), taskId);
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true });
 });
@@ -1047,7 +1082,7 @@ app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res
   const task = db
     .prepare(
       `
-      SELECT id, owner_email, unlock_at
+      SELECT id, owner_email, status
       FROM tasks
       WHERE id = ?
     `
@@ -1059,8 +1094,9 @@ app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res
   if (task.owner_email !== user.email) {
     return res.status(403).json({ error: "You can only submit your own task." });
   }
-  if (new Date(task.unlock_at).getTime() > Date.now()) {
-    return res.status(400).json({ error: "Task is still locked." });
+  const blockedBy = task.status === "redo" ? null : firstIncompletePrerequisite(taskId);
+  if (blockedBy) {
+    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}` });
   }
 
   const body = req.body || {};
@@ -1099,6 +1135,8 @@ app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res
     WHERE id = ?
   `
   ).run(summary, taskId);
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true, uploaded: uploadedPaths });
 });
@@ -1121,6 +1159,8 @@ app.post("/api/tasks/:id/approve", (req, res) => {
     WHERE id = ?
   `
   ).run(taskId);
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true });
 });
@@ -1165,6 +1205,8 @@ app.post("/api/tasks/:id/redo", (req, res) => {
     `
     ).run(taskId);
   }
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true });
 });
@@ -1181,7 +1223,7 @@ app.get("/api/poll", (req, res) => {
     `
     UPDATE tasks
     SET status = 'overdue'
-    WHERE status IN ('current', 'locked', 'pending_review')
+    WHERE status IN ('current', 'redo')
       AND datetime(due_at) < datetime('now')
   `
   ).run();
@@ -1198,7 +1240,7 @@ app.get("/api/poll", (req, res) => {
       SELECT COUNT(*) AS count
       FROM tasks
       WHERE owner_email = ?
-        AND status IN ('current', 'locked', 'pending_review', 'redo')
+        AND status IN ('current', 'overdue', 'redo')
     `
     )
     .get(user.email).count;
@@ -1271,6 +1313,36 @@ app.get("/api/notifications", (req, res) => {
         at: e.event_date
       });
     });
+
+  const reportPings = db
+    .prepare(
+      `
+      SELECT id, reason, status, status_updated_at
+      FROM reports
+      WHERE submitted_by_email = ?
+        AND status IN ('reviewed', 'needs_clarification', 'archived')
+        AND status_updated_at IS NOT NULL
+        AND datetime(status_updated_at) >= datetime('now', '-14 day')
+      ORDER BY datetime(status_updated_at) DESC
+      LIMIT 20
+    `
+    )
+    .all(user.email);
+  reportPings.forEach((r) => {
+    const status = String(r.status || "").toLowerCase();
+    const title =
+      status === "needs_clarification"
+        ? `Clarification requested: ${r.reason}`
+        : status === "reviewed"
+        ? `Report reviewed: ${r.reason}`
+        : `Report archived: ${r.reason}`;
+    items.push({
+      type: status === "needs_clarification" ? "report_clarify" : status === "reviewed" ? "report_reviewed" : "report_archived",
+      title,
+      sub: "Update on your escalation report",
+      at: r.status_updated_at
+    });
+  });
 
   const twoDaysMs = 2 * 24 * 60 * 60 * 1000;
   data.tasks
@@ -1365,9 +1437,9 @@ app.post("/api/reports", (req, res) => {
       INSERT INTO reports (
         submitted_by_email, submitted_by_name, submitted_by_role, division,
         event_id, task_id, reason, notes, recommended_action, status, clarification_notes,
-        escalated_to, target_vp_type
+        escalated_to, target_vp_type, status_updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, NULL)
     `
     )
     .run(
@@ -1400,7 +1472,11 @@ app.patch("/api/reports/:id", (req, res) => {
 
   if (isPresident) {
     db.prepare(
-      `UPDATE reports SET status = COALESCE(@status, status), clarification_notes = COALESCE(@clarification_notes, clarification_notes) WHERE id = @id`
+      `UPDATE reports
+       SET status = COALESCE(@status, status),
+           clarification_notes = COALESCE(@clarification_notes, clarification_notes),
+           status_updated_at = CASE WHEN @status IS NULL THEN status_updated_at ELSE datetime('now') END
+       WHERE id = @id`
     ).run({
       id,
       status: req.body?.status ? String(req.body.status) : null,
@@ -1417,7 +1493,11 @@ app.patch("/api/reports/:id", (req, res) => {
     const forThisVp = (row.escalated_to === "vp" && row.target_vp_type === (user.vp_type || ""));
     if (!forThisVp) return res.status(403).json({ error: "You can only update reports sent to your division." });
     db.prepare(
-      `UPDATE reports SET status = COALESCE(@status, status), clarification_notes = COALESCE(@clarification_notes, clarification_notes) WHERE id = @id`
+      `UPDATE reports
+       SET status = COALESCE(@status, status),
+           clarification_notes = COALESCE(@clarification_notes, clarification_notes),
+           status_updated_at = CASE WHEN @status IS NULL THEN status_updated_at ELSE datetime('now') END
+       WHERE id = @id`
     ).run({
       id,
       status: req.body?.status ? String(req.body.status) : null,
@@ -1656,6 +1736,58 @@ function computeDateFromOffsets(eventDateIso, offsetDays) {
   return out;
 }
 
+/** Returns { error: string } if invalid, or null if valid. Ensures due not in past and unlock <= due. */
+function validateTaskDates(dueAt, unlockAt) {
+  const now = Date.now();
+  const dueMs = dueAt != null ? new Date(dueAt).getTime() : null;
+  const unlockMs = unlockAt != null ? new Date(unlockAt).getTime() : null;
+  if (dueMs != null && Number.isFinite(dueMs) && dueMs < now) return { error: "Due date cannot be in the past." };
+  if (dueMs != null && unlockMs != null && Number.isFinite(unlockMs) && unlockMs > dueMs) return { error: "Unlock date cannot be after due date." };
+  return null;
+}
+
+const PHASE_ORDER = ["Planning", "Pre-Event", "Execution", "Wrap-Up"];
+function normalizePhaseValue(phase) {
+  const p = String(phase || "").trim().toLowerCase();
+  if (p === "planning") return "Planning";
+  if (p === "pre-event" || p === "pre event") return "Pre-Event";
+  if (p === "execution") return "Execution";
+  if (p === "wrap-up" || p === "wrap up" || p === "wrapup") return "Wrap-Up";
+  return "Planning";
+}
+
+function pickAssignedTaskPhase(eventId, dependencyIds) {
+  const depIds = Array.isArray(dependencyIds)
+    ? dependencyIds.map((x) => Number(x)).filter((x) => Number.isFinite(x))
+    : [];
+  if (depIds.length) {
+    const placeholders = depIds.map(() => "?").join(",");
+    const depRows = db.prepare(`SELECT phase FROM tasks WHERE id IN (${placeholders})`).all(...depIds);
+    const maxIdx = depRows.reduce((acc, row) => {
+      const idx = PHASE_ORDER.indexOf(normalizePhaseValue(row.phase));
+      return Math.max(acc, idx < 0 ? 0 : idx);
+    }, 0);
+    return PHASE_ORDER[Math.min(maxIdx + 1, PHASE_ORDER.length - 1)];
+  }
+
+  const eid = Number(eventId);
+  if (Number.isFinite(eid)) {
+    const rows = db.prepare(`SELECT phase, status FROM tasks WHERE event_id = ?`).all(eid);
+    const planningRows = rows.filter((r) => normalizePhaseValue(r.phase) === "Planning");
+    const planningAllDone = planningRows.length > 0 && planningRows.every((r) => String(r.status || "").toLowerCase() === "completed");
+    if (planningAllDone) {
+      for (let i = 1; i < PHASE_ORDER.length; i += 1) {
+        const phase = PHASE_ORDER[i];
+        const hasUndone = rows.some(
+          (r) => normalizePhaseValue(r.phase) === phase && String(r.status || "").toLowerCase() !== "completed"
+        );
+        if (hasUndone) return phase;
+      }
+    }
+  }
+  return "Planning";
+}
+
 app.post("/api/events/publish", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
@@ -1669,6 +1801,16 @@ app.post("/api/events/publish", (req, res) => {
   }
   if (!Array.isArray(tasks) || tasks.length === 0) {
     return res.status(400).json({ error: "At least one task is required." });
+  }
+
+  // Validate task dates: no due in the past. Event-published tasks are never locked (no unlock date).
+  for (const task of tasks) {
+    const dueAt = task.due_at
+      ? new Date(task.due_at)
+      : computeDateFromOffsets(event.event_date, task.dueOffsetDaysBeforeEvent || 7);
+    if (dueAt.getTime() < Date.now()) {
+      return res.status(400).json({ error: "Due date cannot be in the past. Fix task dates before publishing." });
+    }
   }
 
   const insertEvent = db.prepare(
@@ -1726,12 +1868,11 @@ app.post("/api/events/publish", (req, res) => {
     tasks.forEach((task) => {
       const dept = String(task.department || "Board Operations");
       const assignee = resolveAssigneeForTask(task, user);
-      const unlockAt = task.unlock_at
-        ? new Date(task.unlock_at)
-        : computeDateFromOffsets(event.event_date, task.unlockOffsetDaysBeforeEvent || 14);
       const dueAt = task.due_at
         ? new Date(task.due_at)
         : computeDateFromOffsets(event.event_date, task.dueOffsetDaysBeforeEvent || 7);
+      // Event-published tasks are never locked: use a past unlock time so no time-lock applies.
+      const unlockAtIso = new Date(0).toISOString();
 
       const newTaskId = insertTask.run(
         eventId,
@@ -1742,7 +1883,7 @@ app.post("/api/events/publish", (req, res) => {
         assignee.ownerRole,
         assignee.department || dept,
         "current",
-        unlockAt.toISOString(),
+        unlockAtIso,
         dueAt.toISOString(),
         String(task.priority || "medium"),
         "board",
@@ -1816,7 +1957,7 @@ app.get("/api/assign/suggestions", (req, res) => {
       SELECT COUNT(*) AS count
       FROM tasks
       WHERE owner_email = ?
-        AND status IN ('current', 'locked', 'pending_review', 'redo')
+        AND status IN ('current', 'overdue', 'pending_review', 'redo')
     `
       )
       .get(m.email).count;
@@ -1886,8 +2027,14 @@ app.post("/api/tasks/assign", (req, res) => {
   if (!taskTitle || !roleTitle || !desc || !due_at) {
     return res.status(400).json({ error: "Title, role, due date, priority, and description are required." });
   }
+  if (desc.length < 40) {
+    return res.status(400).json({ error: "Description must be at least 40 characters." });
+  }
   const due = new Date(due_at);
   if (!Number.isFinite(due.getTime())) return res.status(400).json({ error: "Invalid due date." });
+  const unlockIsoForValidate = unlock_at ? new Date(unlock_at).toISOString() : null;
+  const dateErr = validateTaskDates(due_at, unlockIsoForValidate);
+  if (dateErr) return res.status(400).json({ error: dateErr.error });
 
   let userSql = `
     SELECT email, full_name, role_title, department, vp_type
@@ -1920,7 +2067,7 @@ app.post("/api/tasks/assign", (req, res) => {
           SELECT COUNT(*) AS count
           FROM tasks
           WHERE owner_email = ?
-            AND status IN ('current', 'locked', 'pending_review', 'redo')
+            AND status IN ('current', 'overdue', 'pending_review', 'redo')
         `
           )
           .get(c.email).count;
@@ -1932,17 +2079,10 @@ app.post("/api/tasks/assign", (req, res) => {
   const nowIso = new Date().toISOString();
   const dueIso = due.toISOString();
   const unlockIso = unlock_at ? new Date(unlock_at).toISOString() : nowIso;
-  const unlockMs = new Date(unlockIso).getTime();
-  const status =
-    new Date(dueIso).getTime() < Date.now()
-      ? "overdue"
-      : Array.isArray(dependency_task_ids) && dependency_task_ids.length
-      ? "locked"
-      : Number.isFinite(unlockMs) && unlockMs > Date.now()
-      ? "locked"
-      : "current";
+  const status = new Date(dueIso).getTime() < Date.now() ? "overdue" : "current";
   const vpScope = assignee.vp_type || (isVpUser ? user.vp_type : null);
 
+  const assignedPhase = pickAssignedTaskPhase(event_id, dependency_task_ids);
   const taskId = db
     .prepare(
       `
@@ -1950,9 +2090,9 @@ app.post("/api/tasks/assign", (req, res) => {
         event_id, title, description, owner_email, owner_name, owner_role,
         department, status, unlock_at, due_at, priority, visibility, vp_scope,
         meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules
+        notes, attachments_json, redo_rules, escalation_rules, phase
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
     )
     .run(
@@ -1977,7 +2117,8 @@ app.post("/api/tasks/assign", (req, res) => {
       String(notes || ""),
       toJson(Array.isArray(attachments) ? attachments : []),
       String(redo_rules || ""),
-      String(escalation_rules || "")
+      String(escalation_rules || ""),
+      assignedPhase
     ).lastInsertRowid;
 
   if (Array.isArray(dependency_task_ids)) {
@@ -2011,14 +2152,27 @@ app.patch("/api/tasks/:id", (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid task id." });
   const existing = db
-    .prepare(`SELECT id, event_id, vp_scope, owner_email FROM tasks WHERE id = ?`)
+    .prepare(`SELECT id, event_id, vp_scope, owner_email, due_at, unlock_at FROM tasks WHERE id = ?`)
     .get(id);
   if (!existing) return res.status(404).json({ error: "Task not found." });
   if ((user.permission_level === "vp" || user.view_type === "vp") && existing.vp_scope && existing.vp_scope !== user.vp_type) {
     return res.status(403).json({ error: "Task is outside your division scope." });
   }
+  // President and vice presidents may edit and change tasks even when locked (no lock check here).
 
   const body = req.body || {};
+  // When setting due_at, it cannot be in the past. Unlock cannot be after due. Allow editing already-overdue tasks without changing dates.
+  if (body.due_at != null) {
+    const dueMs = new Date(body.due_at).getTime();
+    if (Number.isFinite(dueMs) && dueMs < Date.now()) return res.status(400).json({ error: "Due date cannot be in the past." });
+  }
+  const effectiveDue = body.due_at != null ? body.due_at : existing.due_at;
+  const effectiveUnlock = body.unlock_at != null ? body.unlock_at : existing.unlock_at;
+  if (effectiveDue != null && effectiveUnlock != null) {
+    if (new Date(effectiveUnlock).getTime() > new Date(effectiveDue).getTime()) {
+      return res.status(400).json({ error: "Unlock date cannot be after due date." });
+    }
+  }
   let assignee = null;
   if (body.assignee_email || body.role || body.division) {
     const taskLike = {
@@ -2117,7 +2271,7 @@ app.delete("/api/tasks/:id", (req, res) => {
   if (!isAdminUser(user)) return res.status(403).json({ error: "Admin access required." });
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid task id." });
-  const existing = db.prepare(`SELECT id, vp_scope FROM tasks WHERE id = ?`).get(id);
+  const existing = db.prepare(`SELECT id, vp_scope, event_id FROM tasks WHERE id = ?`).get(id);
   if (!existing) return res.status(404).json({ error: "Task not found." });
   if ((user.permission_level === "vp" || user.view_type === "vp") && existing.vp_scope && existing.vp_scope !== user.vp_type) {
     return res.status(403).json({ error: "Task is outside your division scope." });
@@ -2126,6 +2280,7 @@ app.delete("/api/tasks/:id", (req, res) => {
   db.prepare(`DELETE FROM task_submissions WHERE task_id = ?`).run(id);
   db.prepare(`DELETE FROM redo_requests WHERE task_id = ?`).run(id);
   db.prepare(`DELETE FROM tasks WHERE id = ?`).run(id);
+  if (Number.isFinite(Number(existing.event_id))) recomputeEventProgress(Number(existing.event_id));
   res.json({ ok: true });
 });
 

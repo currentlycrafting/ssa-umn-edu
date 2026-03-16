@@ -4,8 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SSA Ops Login</title>
-    <link rel="icon" type="image/png" href="logo-images/logo.png?v=3" />
-    <link rel="shortcut icon" type="image/png" href="logo-images/logo.png?v=3" />
+    <link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap"
       rel="stylesheet"
@@ -309,6 +308,12 @@
         }, 300);
       })();
       document.getElementById("dev-login-btn").addEventListener("click", loginByEmail);
+      document.getElementById("email").addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.keyCode === 13) {
+          e.preventDefault();
+          loginByEmail();
+        }
+      });
     </script>
   </body>
 </html>

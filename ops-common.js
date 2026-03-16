@@ -152,11 +152,23 @@ function renderDependencyGraph(root, tasks, dependencies) {
     arr.push(t);
     grouped.set(level, arr);
   });
+  const STAGE_NAMES = ["Planning", "Pre-Event", "Execution", "Wrap-Up"];
+  const toStage = (level) => STAGE_NAMES[Math.min(Number(level) || 0, STAGE_NAMES.length - 1)];
+  const truncate = (s, max) => { if (!s || typeof s !== "string") return ""; return s.length <= max ? s : s.slice(0, max - 2) + ".."; };
+  const TITLE_MAX = 28;
   const orderedLevels = [...grouped.keys()].sort((a, b) => a - b);
-  root.innerHTML = orderedLevels.length
-    ? orderedLevels
-        .map((level, idx) => {
-          const nodes = (grouped.get(level) || [])
+  const byStage = new Map();
+  orderedLevels.forEach((level) => {
+    const stage = toStage(level);
+    const arr = byStage.get(stage) || [];
+    arr.push(...(grouped.get(level) || []));
+    byStage.set(stage, arr);
+  });
+  const stages = STAGE_NAMES.filter((s) => (byStage.get(s) || []).length > 0);
+  root.innerHTML = stages.length
+    ? stages
+        .map((stageName) => {
+          const nodes = (byStage.get(stageName) || [])
             .map((t) => {
               const cls =
                 t.status === "completed"
@@ -166,17 +178,17 @@ function renderDependencyGraph(root, tasks, dependencies) {
                   : t.status === "overdue"
                   ? "active-node"
                   : "locked-node";
-              return `<div class="dep-node ${cls}" onclick="inspectTask(${t.id})">
-                <div class="dep-dept">${t.department}</div>
-                <div style="font-size:13px;color:var(--white);margin-bottom:6px">${t.title}</div>
-                <div style="font-size:10px;color:var(--silver)">${t.owner_name || ""}</div>
-                <div style="font-size:10px;color:${t.status === "overdue" ? "var(--red)" : "var(--gold)"};margin-top:6px">${String(t.status || "").replaceAll("_", " ")}</div>
+              return `<div class="dep-node ${cls}" style="width:180px;min-width:180px;max-width:180px;min-height:88px;box-sizing:border-box;overflow:hidden" onclick="inspectTask(${t.id})">
+                <div class="dep-dept">${(t.department || "").slice(0, 20)}${(t.department || "").length > 20 ? ".." : ""}</div>
+                <div style="font-size:13px;color:var(--white);margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(t.title || "").replace(/"/g, "&quot;")}">${truncate(t.title, TITLE_MAX)}</div>
+                <div style="font-size:10px;color:var(--silver)">${truncate(t.owner_name || "", 18)}</div>
               </div>`;
             })
             .join("");
-          return `<div class="dep-row">${nodes}</div>${
-            idx < orderedLevels.length - 1 ? '<div class="dep-arrow">↓</div>' : ""
-          }`;
+          return `<div class="dep-stage-box" style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:16px;margin-bottom:14px;background:rgba(255,255,255,.02)">
+            <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin-bottom:10px">${stageName}</div>
+            <div class="dep-row" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start">${nodes}</div>
+          </div>`;
         })
         .join("")
     : "<div class='muted'>No dependency links yet.</div>";

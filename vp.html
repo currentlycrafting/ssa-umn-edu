@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SSA Ops — Vice President</title>
-<link rel="icon" type="image/png" href="logo-images/logo.png?v=3" />
-  <link rel="shortcut icon" type="image/png" href="logo-images/logo.png?v=3" />
+<link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -97,6 +96,19 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
 .member-stat-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--silver)}
 .wl-bar{height:4px;background:rgba(255,255,255,.08);margin-top:8px}.wl-fill{height:100%;transition:width .4s}
 .wl-ok{background:var(--green)}.wl-warn{background:var(--amber)}.wl-over{background:var(--red)}
+.dep-map-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:20px;flex-wrap:wrap}
+.dep-map-title-wrap{flex:1;min-width:0}
+.dep-event-picker-wrap{position:relative;flex-shrink:0}
+.dep-event-picker{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--navy-light);border:1px solid rgba(184,154,92,.2);border-radius:8px;cursor:pointer;transition:background .2s,border-color .2s;min-width:200px}
+.dep-event-picker:hover{background:var(--charcoal);border-color:var(--gold)}
+.dep-event-picker-label{font-family:var(--font-display);font-size:15px;font-weight:500;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.dep-event-picker-chevron{font-size:10px;color:var(--gold);flex-shrink:0;transition:transform .2s}
+.dep-event-picker-wrap.open .dep-event-picker-chevron{transform:rotate(180deg)}
+.dep-event-dropdown{display:none;position:absolute;top:100%;right:0;margin-top:6px;min-width:100%;max-width:320px;max-height:280px;overflow-y:auto;background:var(--navy-mid);border:1px solid rgba(184,154,92,.2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:300}
+.dep-event-picker-wrap.open .dep-event-dropdown{display:block}
+.dep-event-opt{padding:10px 16px;font-size:13px;color:var(--stone);cursor:pointer;transition:background .15s,color .15s;border-bottom:1px solid rgba(255,255,255,.06)}
+.dep-event-opt:last-child{border-bottom:none}
+.dep-event-opt:hover{background:var(--navy-light);color:var(--white)}
 .dep-graph{background:var(--navy);border:1px solid rgba(255,255,255,.06);padding:20px;min-height:200px}
 .dep-row{display:flex;gap:6px;align-items:center;margin-bottom:12px}
 .dep-node{background:var(--navy-mid);border:1px solid rgba(255,255,255,.1);padding:8px 12px;font-size:11px;color:var(--white);cursor:pointer;transition:all .2s;white-space:nowrap}
@@ -379,7 +391,7 @@ const VP_CONFIG = {
 
 <nav id="sidebar">
   <div class="sb-logo">
-    <img src="logo-images/logo.png" alt="SSA" loading="lazy" />
+    <img src="logo-images/logo-v3.png" alt="SSA" loading="lazy" />
     <div class="sb-logo-txt"><span>SSA Ops</span><span>Board Platform</span></div>
   </div>
   <div class="sb-user">
@@ -400,7 +412,7 @@ const VP_CONFIG = {
     <div class="sb-item" onclick="vpOpenAssignModal()"><span class="sb-icon">→</span>Assign Tasks</div>
 
     <div class="sb-section-label">Events</div>
-    <div class="sb-item" onclick="showPage('events')"><span class="sb-icon">◆</span>Active Events</div>
+    <div class="sb-item" onclick="showPage('events')"><span class="sb-icon">◆</span>Events</div>
     <div class="sb-item" onclick="showPage('dependency')"><span class="sb-icon">⊹</span>Dependency Graph</div>
     <div class="sb-item" onclick="showPage('calendar')"><span class="sb-icon">◻</span>Calendar</div>
 
@@ -423,7 +435,7 @@ const VP_CONFIG = {
     <div class="topbar-left"><h1 id="page-title">Division Hub</h1></div>
     <div class="topbar-right">
       <div class="division-badge" id="div-badge" style="margin:0">▲ Internal Division</div>
-      <button class="btn btn-outline" onclick="window.location.href='index.html'">Home</button>
+      <a href="index.html" class="btn btn-outline" style="text-decoration:none;color:inherit">Main Site</a>
       <button class="btn btn-outline" onclick="window.location.href='ops-login.html'">Login Page</button>
     </div>
   </div>
@@ -449,7 +461,7 @@ const VP_CONFIG = {
         </div>
         <div class="card">
           <div class="section-label">Events</div>
-          <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:12px">Active Events</div>
+          <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:12px">Events</div>
           <div id="overview-events"></div>
         </div>
       </div>
@@ -478,11 +490,11 @@ const VP_CONFIG = {
   <!-- ── DIVISION TASKS ── -->
   <div class="page" id="page-div-tasks">
     <div class="breadcrumb" id="div-tasks-bc"><span>Internal Division</span> / All Tasks</div>
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <div class="division-badge" style="cursor:pointer;margin:0" onclick="filterDivTasks('all',this)">All</div>
-      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('overdue',this)">Overdue</div>
-      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('pending',this)">Pending Review</div>
-      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('done',this)">Completed</div>
+    <div id="div-task-filters" style="display:flex;gap:8px;margin-bottom:16px">
+      <div class="division-badge div-filter-badge active" data-filter="all" style="cursor:pointer;margin:0" onclick="filterDivTasks('all',this)">All</div>
+      <div class="division-badge div-filter-badge" data-filter="overdue" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('overdue',this)">Overdue</div>
+      <div class="division-badge div-filter-badge" data-filter="pending" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('pending',this)">Pending Review</div>
+      <div class="division-badge div-filter-badge" data-filter="done" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('done',this)">Completed</div>
     </div>
     <div class="task-list" id="div-task-list"></div>
   </div>
@@ -543,10 +555,9 @@ const VP_CONFIG = {
             <select id="assign-priority"><option value="standard">Standard</option><option value="high">High</option><option value="urgent">Urgent</option><option value="critical">Critical</option></select>
           </div>
           <div class="fg"><label>Linked Event</label><select id="assign-event"></select></div>
-          <div class="fg"><label>Unlock Date</label><input type="datetime-local" id="assign-unlock"/></div>
           <div class="fg"><label>Meeting Link (optional)</label><input type="url" id="assign-meeting-link" placeholder="https://zoom.us/j/..."/></div>
-          <div class="fg"><label>Description</label><textarea id="assign-description" placeholder="Describe scope and completion criteria"></textarea></div>
-          <div class="fg"><label>Prerequisite Tasks</label><div style="font-size:11px;color:var(--silver)">Select prerequisite tasks to chain dependency flow and lock this task until ready.</div><div id="assign-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
+          <div class="fg"><label>Description</label><textarea id="assign-description" placeholder="Describe scope and completion criteria" oninput="updateAssignDescriptionHint()"></textarea><div style="font-size:9px;color:var(--gold);margin-top:4px;text-align:right" id="assign-desc-hint">Recommended 0/100 characters (minimum 40).</div></div>
+          <div class="fg"><label>Prerequisite Tasks</label><div style="font-size:11px;color:var(--silver)">Only active tasks are shown as prerequisites.</div><div id="assign-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
         </div>
       </div>
       <div class="card">
@@ -566,16 +577,27 @@ const VP_CONFIG = {
 
   <!-- ── EVENTS ── -->
   <div class="page" id="page-events">
-    <div class="breadcrumb"><span>Events</span> / Active</div>
+    <div class="breadcrumb"><span>Events</span> / Current &amp; Past</div>
     <div id="events-list" style="display:flex;flex-direction:column;gap:16px"></div>
   </div>
 
   <!-- ── DEPENDENCY ── -->
   <div class="page" id="page-dependency">
     <div class="breadcrumb"><span>Ops</span> / Dependency Graph</div>
+    <div class="dep-map-header">
+      <div class="dep-map-title-wrap">
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--white)">Task Dependency Graph</div>
+      </div>
+      <div class="dep-event-picker-wrap" id="vp-dep-picker-wrap">
+        <div class="dep-event-picker" id="vp-dep-event-picker" onclick="toggleVpDepEventDropdown()" role="button" tabindex="0">
+          <span class="dep-event-picker-label" id="vp-dep-event-name">All events</span>
+          <span class="dep-event-picker-chevron">▾</span>
+        </div>
+        <div class="dep-event-dropdown" id="vp-dep-event-dropdown" role="listbox"></div>
+      </div>
+    </div>
+    <input type="hidden" id="vp-dep-event-select" />
     <div class="card">
-      <div class="section-label">Chain</div>
-      <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:16px">Task Dependency Graph</div>
       <div class="dep-graph" id="dep-graph"></div>
       <div style="margin-top:16px;padding:14px;background:var(--navy);border:1px solid rgba(255,255,255,.05)">
         <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin-bottom:8px">Legend</div>
@@ -791,10 +813,7 @@ const VP_CONFIG = {
           <label class="at-fl">Due Date</label>
           <input class="at-fi" id="vp-assign-due" type="date" />
         </div>
-        <div class="fg">
-          <label class="at-fl">Unlock Date</label>
-          <input class="at-fi" id="vp-assign-unlock" type="datetime-local" />
-        </div>
+        <div class="fg"></div>
       </div>
       <div class="at-divider at-divider-tight"></div>
       <div class="at-sec-tight"><div class="at-sec-label">Assign to Role</div>
@@ -810,12 +829,13 @@ const VP_CONFIG = {
       </div></div>
       <div class="at-divider at-divider-tight"></div>
       <div class="at-sec-label">Prerequisites</div>
-      <div style="font-size:11px;color:var(--silver);margin-bottom:12px;margin-top:-8px">Task auto-locks until all selected prerequisites are complete. You can select tasks from any division.</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:12px;margin-top:-8px">Only active tasks are shown as prerequisites. You can select tasks from any division.</div>
       <div class="at-prereq-list" id="vp-assign-dependencies"></div>
       <div class="at-divider at-divider-tight"></div>
       <div class="at-sec-tight"><div class="at-sec-label">Description</div>
       <div class="fg">
-        <textarea class="at-fi at-fta" id="vp-assign-description" placeholder="Describe the scope, what done looks like, and any context the assignee needs."></textarea>
+        <textarea class="at-fi at-fta" id="vp-assign-description" placeholder="Describe the scope, what done looks like, and any context the assignee needs." oninput="vpUpdateAssignDescHint()"></textarea>
+        <div class="ce-disclaimer" id="vp-assign-desc-hint" style="font-size:9px;color:var(--gold);text-align:right;margin-top:4px">Recommended 0/100 characters (minimum 40).</div>
       </div>
       </div>
       <div class="fg vp-meeting-link-wrap">
@@ -876,6 +896,21 @@ const VP_CONFIG = {
   </div>
 </div>
 
+<div class="modal-overlay" id="vpEventDetailModal">
+  <div class="modal" style="max-width:860px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="vp-event-detail-title">Event Detail</div>
+      <button class="modal-close" onclick="closeModal('vpEventDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="vp-event-detail-body" style="overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="vp-event-detail-edit-btn" style="display:none">Edit</button>
+      <button class="btn btn-red" id="vp-event-detail-delete-btn" style="display:none">Delete</button>
+      <button class="btn btn-outline" onclick="closeModal('vpEventDetailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="vpEventEditModal">
   <div class="modal" style="max-width:860px">
     <div class="modal-header">
@@ -922,13 +957,11 @@ const VP_CONFIG = {
     </div>
     <div class="at-body">
       <input type="hidden" id="vp-edit-task-id" />
-      <select id="vp-edit-task-status" style="display:none"><option value="current">Current</option><option value="locked">Locked</option><option value="pending_review">Pending Review</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select>
+      <select id="vp-edit-task-status" style="display:none"><option value="current">Current</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select>
       <select id="vp-edit-task-priority" style="display:none"><option value="urgent">Urgent</option><option value="high">High</option><option value="standard">Standard</option><option value="low">Low</option></select>
       <div class="at-sec-label">Task Status</div>
       <div class="status-grid" id="vp-edit-task-status-grid">
         <div class="st-btn" data-s="current" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#b89a5c"></div><div class="st-label">Current</div></div>
-        <div class="st-btn" data-s="locked" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:rgba(255,255,255,.25)"></div><div class="st-label">Locked</div></div>
-        <div class="st-btn" data-s="pending_review" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#7ba3d4"></div><div class="st-label">Pending Review</div></div>
         <div class="st-btn" data-s="redo" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#d4914a"></div><div class="st-label">Redo</div></div>
         <div class="st-btn" data-s="completed" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#4caf7d"></div><div class="st-label">Completed</div></div>
         <div class="st-btn" data-s="overdue" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#c0504d"></div><div class="st-label">Overdue</div></div>
@@ -949,7 +982,7 @@ const VP_CONFIG = {
       </div>
       <div class="at-cols">
         <div class="fg"><label class="at-fl">Due Date</label><input class="at-fi" id="vp-edit-task-due" type="datetime-local" /></div>
-        <div class="fg"><label class="at-fl">Unlock Date</label><input class="at-fi" id="vp-edit-task-unlock" type="datetime-local" /></div>
+        <div class="fg"><label class="at-fl">Lock until (optional)</label><input class="at-fi" id="vp-edit-task-unlock" type="datetime-local" /><div class="ce-disclaimer" style="margin-top:4px;font-size:10px">Leave empty to keep task unlocked.</div></div>
       </div>
       </div>
       <div class="at-divider at-divider-tight"></div>
@@ -959,15 +992,12 @@ const VP_CONFIG = {
         <div class="fg"><label class="at-fl">Assigned Person</label><select class="at-fi" id="vp-edit-task-assignee"></select></div>
         <div class="fg"><label class="at-fl">Assigned Role</label><input class="at-fi" id="vp-edit-task-role" type="text" /></div>
       </div>
-      <div class="at-cols">
-        <div class="fg"><label class="at-fl">Assigned Division</label><input class="at-fi" id="vp-edit-task-division" type="text" /></div>
-        <div class="fg"></div>
-      </div>
+      <input id="vp-edit-task-division" type="hidden" />
       </div>
       <div class="at-divider at-divider-tight"></div>
       <div class="at-sec-tight">
       <div class="at-sec-label">Prerequisites</div>
-      <div style="font-size:11px;color:var(--silver);margin-bottom:10px;margin-top:-6px">Task auto-locks until all selected prerequisites are complete. You can select tasks from any division.</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:10px;margin-top:-6px">Completion is blocked only when a selected prerequisite task is not completed. You can select tasks from any division.</div>
       <div class="pre-list" id="vp-edit-task-dependencies"></div>
       </div>
       <div class="at-divider"></div>
@@ -1017,8 +1047,7 @@ const myMembers = isInternal ? MEMBERS.internal : MEMBERS.external;
 
 const ALL_TASKS = [];
 const MY_TASKS = [];
-
-const divTasks = ALL_TASKS.filter(t => t.div === VP_CONFIG.type);
+let divTasks = [];
 
 const NOTIFS = [];
 
@@ -1155,12 +1184,23 @@ function renderMyTasks(filter='all') {
 
 function renderDivTasks(filter='all') {
   let tasks = divTasks;
-  if (filter !== 'all') tasks = divTasks.filter(t => t.status === filter);
-  document.getElementById('div-task-list').innerHTML = tasks.map(t => taskHtml(t, true)).join('');
+  if (filter !== 'all') tasks = divTasks.filter((t) => t.status === filter);
+  const listEl = document.getElementById('div-task-list');
+  if (listEl) listEl.innerHTML = tasks.map((t) => taskHtml(t, true)).join('') || '<div style="color:var(--silver);font-size:13px;padding:16px">No tasks match this filter.</div>';
 }
 
 function filterMyTasks(f, el) { renderMyTasks(f); }
-function filterDivTasks(f, el) { renderDivTasks(f); }
+function filterDivTasks(f, el) {
+  const container = document.getElementById('div-task-filters');
+  if (container) {
+    container.querySelectorAll('.div-filter-badge').forEach((b) => {
+      b.classList.remove('active');
+      b.style.opacity = b.dataset.filter === f ? '1' : '0.5';
+    });
+    if (el) { el.classList.add('active'); el.style.opacity = '1'; }
+  }
+  renderDivTasks(f);
+}
 
 function renderFullApprovals() {
   const pending = divTasks.filter(t => t.status === 'pending');
@@ -1294,6 +1334,7 @@ function inspectTask(id) {
       <div class="info-block"><div class="info-label">Assigned</div><div class="info-val">${t.assigned} · ${t.owner_role || t.dept}</div></div>
       <div class="info-block"><div class="info-label">Event</div><div class="info-val">${t.event || 'Standalone'}</div></div>
       <div class="info-block"><div class="info-label">Due</div><div class="info-val">${t.due}</div></div>
+      <div class="info-block"><div class="info-label">Stage</div><div class="info-val">${t.phase || 'Planning'}</div></div>
       <div class="info-block"><div class="info-label">Status</div><div class="info-val">${t.status}</div></div>
       ${t.description ? `<div class="info-block"><div class="info-label">Description</div><div class="info-val">${t.description}</div></div>` : ''}
       ${t.notes ? `<div class="info-block"><div class="info-label">Notes</div><div class="info-val">${t.notes}</div></div>` : ''}
@@ -1315,7 +1356,7 @@ function showPage(id) {
   const titles = {
     'overview':'Division Hub','my-tasks':'My Tasks','approvals':'Review Queue',
     'overdue':'Overdue Tasks','members':'Division Members','div-tasks':'Division Tasks',
-    'assign':'Smart Assignment','events':'Active Events',
+    'assign':'Smart Assignment','events':'Events',
     'dependency':'Dependency Graph','calendar':'Calendar',
     'suggestions':'Suggestion Box',
     'reports':'Report Box',
@@ -1478,7 +1519,11 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     if (hsub) hsub.textContent = divName + " · SSA Board Platform";
     const eventSelect = document.getElementById("vp-assign-event");
     if (eventSelect) {
-      eventSelect.innerHTML = "<option value=\"\">Standalone</option>" + (dashboard.events || []).map((e) => `<option value="${e.id}">${e.name}</option>`).join("");
+      const activeEvents = (dashboard.events || []).filter((e) => {
+        const ts = new Date(e.event_date).getTime();
+        return !(Number(e.progress || 0) >= 100 || String(e.status || "").toLowerCase() === "completed" || (Number.isFinite(ts) && ts < Date.now()));
+      });
+      eventSelect.innerHTML = "<option value=\"\">Standalone</option>" + activeEvents.map((e) => `<option value="${e.id}">${e.name}</option>`).join("");
     }
     const users = dashboard.users || [];
     const roleSet = new Map();
@@ -1501,7 +1546,7 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
       depsRoot.innerHTML = "<div style=\"font-size:12px;color:var(--silver);padding:8px 0\">Loading prerequisites (any division)…</div>";
       try {
         const data = await apiGet("/api/tasks/all-for-prereq");
-        const allTasks = data.tasks || [];
+        const allTasks = (data.tasks || []).filter((t) => String(t.status || "").toLowerCase() !== "completed");
         depsRoot.innerHTML = allTasks.map((t) => {
           const status = t.status === "completed" ? "Done" : ["current", "pending_review", "redo"].includes(t.status) ? "In Progress" : "Locked";
           const psClass = t.status === "completed" ? "at-ps-done" : ["current", "pending_review", "redo"].includes(t.status) ? "at-ps-active" : "at-ps-locked";
@@ -1521,8 +1566,8 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     if (stdBtn) stdBtn.classList.add("active-standard");
     document.getElementById("vp-assign-description").value = "";
     document.getElementById("vp-assign-due").value = "";
-    document.getElementById("vp-assign-unlock").value = "";
     document.getElementById("vp-assign-meeting-link").value = "";
+    if (typeof vpUpdateAssignDescHint === "function") vpUpdateAssignDescHint();
     selectedVpAssigneeEmail = "";
     document.getElementById("vp-assign-suggestions").innerHTML = "<div style=\"font-size:12px;color:var(--silver);padding:8px 0\">Select a role to load suggestions.</div>";
     vpUpdateAssignFooterHint();
@@ -1605,6 +1650,22 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     } else hint.textContent = "Select a role and click a suggestion to choose assignee (division only).";
   };
 
+  window.vpUpdateAssignDescHint = function vpUpdateAssignDescHint() {
+    const hint = document.getElementById("vp-assign-desc-hint");
+    const text = document.getElementById("vp-assign-description")?.value || "";
+    if (!hint) return;
+    hint.textContent = `Recommended ${text.length}/100 characters (minimum 40).`;
+    hint.style.color = "var(--gold)";
+  };
+
+  window.updateAssignDescriptionHint = function updateAssignDescriptionHint() {
+    const hint = document.getElementById("assign-desc-hint");
+    const text = document.getElementById("assign-description")?.value || "";
+    if (!hint) return;
+    hint.textContent = `Recommended ${text.length}/100 characters (minimum 40).`;
+    hint.style.color = "var(--gold)";
+  };
+
   window.vpToggleAssignPrereq = function vpToggleAssignPrereq(el) {
     if (!el) return;
     const cb = el.querySelector("input.vp-assign-dep-cb");
@@ -1620,7 +1681,6 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     const due = document.getElementById("vp-assign-due")?.value;
     const priority = document.getElementById("vp-assign-priority")?.value || "standard";
     const eventId = document.getElementById("vp-assign-event")?.value || "";
-    const unlockAt = document.getElementById("vp-assign-unlock")?.value || "";
     const description = document.getElementById("vp-assign-description")?.value?.trim() || "Assigned by VP.";
     const meetingLink = document.getElementById("vp-assign-meeting-link")?.value?.trim() || "";
     const meetingInput = document.getElementById("vp-assign-meeting-link");
@@ -1633,6 +1693,10 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
       showToast("Fill task title and role.");
       return;
     }
+    if (description.length < 40) {
+      showToast("Description must be at least 40 characters.");
+      return;
+    }
     const dueAt = due ? new Date(due + "T23:59:00") : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     try {
       await apiPost("/api/tasks/assign", {
@@ -1643,7 +1707,7 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
         description,
         assignee_email: selectedVpAssigneeEmail || undefined,
         event_id: eventId || undefined,
-        unlock_at: unlockAt ? new Date(unlockAt).toISOString() : undefined,
+        unlock_at: new Date(0).toISOString(),
         meeting_link: meetingLink || undefined,
         dependency_task_ids
       });
@@ -1842,17 +1906,23 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
 
     renderLiveStats(dashboard.tasks);
     if (typeof ALL_TASKS !== "undefined") {
+      const userEmail = (me && me.user && me.user.email) ? String(me.user.email).toLowerCase() : "";
       ALL_TASKS.length = 0;
-      dashboard.tasks.forEach((t) =>
+      dashboard.tasks.forEach((t) => {
+        const vpScope = String(t.vp_scope || t.vp_type || "").toLowerCase();
+        const div = vpScope === "external" ? "external" : vpScope === "internal" ? "internal" : "";
         ALL_TASKS.push({
           id: t.id,
           title: t.title,
           assigned: t.owner_name,
+          assigned_email: (t.owner_email || "").toLowerCase(),
           owner_role: t.owner_role,
           dept: t.department,
+          div: div,
           event: (dashboard.events.find((e) => e.id === t.event_id) || {}).name || "",
           due: new Date(t.due_at).toLocaleDateString(),
           due_at: t.due_at,
+          phase: t.phase || "Planning",
           priority: t.priority || "standard",
           meeting_date: t.meeting_date || "",
           meeting_time: t.meeting_time || "",
@@ -1862,16 +1932,18 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
           summary: t.previous_summary || "",
           description: t.description || "",
           notes: t.notes || ""
-        })
-      );
+        });
+      });
+      divTasks = ALL_TASKS.filter((t) => t.div === VP_CONFIG.type);
       MY_TASKS.length = 0;
-      ALL_TASKS.forEach((t) => MY_TASKS.push(t));
+      ALL_TASKS.filter((t) => t.assigned_email === userEmail).forEach((t) => MY_TASKS.push(t));
     }
-    const tasksHtml = dashboard.tasks.map(taskHtmlLive).join("") || '<div style="color:var(--silver);font-size:13px;padding:16px">No tasks in your scope.</div>';
+    const myTasksHtml = (typeof MY_TASKS !== "undefined" ? MY_TASKS : []).map((t) => taskHtml(t)).join("") || '<div style="color:var(--silver);font-size:13px;padding:16px">No tasks assigned to you.</div>';
+    const divTasksHtml = (typeof divTasks !== "undefined" ? divTasks : []).map((t) => taskHtml(t, true)).join("") || '<div style="color:var(--silver);font-size:13px;padding:16px">No division tasks.</div>';
     const myTaskList = document.getElementById("my-task-list");
     const divTaskList = document.getElementById("div-task-list");
-    if (myTaskList) myTaskList.innerHTML = tasksHtml;
-    if (divTaskList) divTaskList.innerHTML = tasksHtml;
+    if (myTaskList) myTaskList.innerHTML = myTasksHtml;
+    if (divTaskList) divTaskList.innerHTML = divTasksHtml;
 
     const pHtml = pending.pending
       .map(
@@ -1934,36 +2006,74 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     }
     const assignEvent = document.getElementById("assign-event");
     if (assignEvent) {
-      assignEvent.innerHTML = `<option value="">Standalone</option>${dashboard.events
+      const activeEvents = (dashboard.events || []).filter((e) => {
+        const ts = new Date(e.event_date).getTime();
+        return !(Number(e.progress || 0) >= 100 || String(e.status || "").toLowerCase() === "completed" || (Number.isFinite(ts) && ts < Date.now()));
+      });
+      assignEvent.innerHTML = `<option value="">Standalone</option>${activeEvents
         .map((e) => `<option value="${e.id}">${e.name}</option>`)
         .join("")}`;
     }
     const assignDeps = document.getElementById("assign-dependencies");
     if (assignDeps) {
       assignDeps.innerHTML = dashboard.tasks
+        .filter((t) => String(t.status || "").toLowerCase() !== "completed")
         .map((t) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px"><input type="checkbox" value="${t.id}" /> <span>${t.title}</span></label>`)
         .join("");
     }
 
-    const eventHtml = dashboard.events
-      .map(
-        (e) => `
-      <div class="event-card">
-        <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px">
-          <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="editEventLive(${e.id}, '${String(e.name || "").replaceAll("'", "\\'")}')">Edit</button>
-          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="deleteEventLive(${e.id})">Delete</button>
+    const isPastEvent = (e) => {
+      const ts = new Date(e.event_date).getTime();
+      return Number(e.progress || 0) >= 100 || String(e.status || "").toLowerCase() === "completed" || (Number.isFinite(ts) && ts < Date.now());
+    };
+    const currentEvents = (dashboard.events || []).filter((e) => !isPastEvent(e));
+    const pastEvents = (dashboard.events || []).filter((e) => isPastEvent(e));
+    const tagChip = (txt) => `<span style="display:inline-block;border:1px solid rgba(255,255,255,.16);padding:3px 7px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--silver)">${txt}</span>`;
+    const renderEventCard = (e, sectionLabel) => `
+      <div class="card" style="margin-bottom:12px;cursor:pointer" onclick="openVpEventDetail(${Number(e.id)})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px">
+          <div>
+            <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">${new Date(e.event_date).toLocaleDateString()} · ${e.venue || e.location || e.scope || "TBD Location"}</div>
+            <div style="font-family:var(--font-display);font-size:24px;color:var(--white);margin-bottom:6px">${e.name}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${tagChip(e.event_type || "Event")}
+              ${tagChip(sectionLabel)}
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--font-display);font-size:34px;color:var(--white);line-height:1">${Math.max(0, Number(e.progress || 0))}%</div>
+            <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver)">Complete</div>
+          </div>
         </div>
-        <div class="event-name">${e.name}</div>
-        <div class="event-date">${new Date(e.event_date).toLocaleDateString()} · ${e.venue || e.location || e.scope || "TBD Location"}</div>
-        <div class="progress-wrap"><div class="progress-row"><span>Progress</span><span>${e.progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%"></div></div></div>
+        <div class="progress-bar" style="margin:12px 0 10px"><div class="progress-fill" style="width:${Math.max(0, Number(e.progress || 0))}%"></div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="padding:10px;background:rgba(122,152,212,.08);border:1px solid rgba(123,163,212,.22)">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--gold);margin-bottom:4px">Your Tasks</div>
+            <div style="font-family:var(--font-display);font-size:22px;color:var(--white)">${(dashboard.tasks || []).filter((t) => Number(t.event_id) === Number(e.id)).length}</div>
+          </div>
+          <div style="padding:10px;background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.22)">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--green);margin-bottom:4px">Done</div>
+            <div style="font-family:var(--font-display);font-size:22px;color:var(--green)">${(dashboard.tasks || []).filter((t) => Number(t.event_id) === Number(e.id) && String(t.status) === "completed").length}</div>
+          </div>
+        </div>
       </div>
-    `
-      )
-      .join("");
+    `;
+    const eventHtml = `
+      <div class="card">
+        <div class="section-label">Current</div>
+        <div class="card-title" style="margin-bottom:10px">Current Events</div>
+        ${currentEvents.length ? currentEvents.map((e) => renderEventCard(e, "Current")).join("") : '<div style="color:var(--silver);font-size:13px;padding:8px 0">No current events.</div>'}
+      </div>
+      <div class="card">
+        <div class="section-label">Past</div>
+        <div class="card-title" style="margin-bottom:10px">Past Events</div>
+        ${pastEvents.length ? pastEvents.map((e) => renderEventCard(e, "Past")).join("") : '<div style="color:var(--silver);font-size:13px;padding:8px 0">No past events.</div>'}
+      </div>
+    `;
     const eventsList = document.getElementById("events-list");
     const overviewEvents = document.getElementById("overview-events");
     if (eventsList) eventsList.innerHTML = eventHtml;
-    if (overviewEvents) overviewEvents.innerHTML = eventHtml;
+    if (overviewEvents) overviewEvents.innerHTML = currentEvents.slice(0, 3).map((e) => renderEventCard(e, "Current")).join("") || '<div style="color:var(--silver);font-size:13px;padding:8px 0">No current events.</div>';
 
     const memberBuckets = {};
     dashboard.tasks.forEach((t) => {
@@ -2043,12 +2153,63 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     }
 
     renderOperationalCalendar(document.getElementById("cal-content"), dashboard.events, dashboard.tasks);
-    const deps = dashboard.dependencies || [];
+    window.VP_DASHBOARD = dashboard;
+    const events = dashboard.events || [];
+    const vpDepSelect = document.getElementById("vp-dep-event-select");
+    const vpDepName = document.getElementById("vp-dep-event-name");
+    const vpDepDropdown = document.getElementById("vp-dep-event-dropdown");
+    if (vpDepSelect) vpDepSelect.value = "";
+    if (vpDepName) vpDepName.textContent = "All events";
+    if (vpDepDropdown) {
+      vpDepDropdown.innerHTML = "<div class=\"dep-event-opt\" data-value=\"\" onclick=\"pickVpDepEvent('')\">All events</div>" +
+        events.map((e) => `<div class="dep-event-opt" data-value="${e.id}" onclick="pickVpDepEvent('${e.id}')">${(e.name || '').replace(/"/g, '&quot;')}</div>`).join("");
+    }
+    let deps = dashboard.dependencies || [];
     const depTaskIds = new Set();
     deps.forEach((d) => { depTaskIds.add(d.task_id); depTaskIds.add(d.depends_on_task_id); });
-    const tasksWithDeps = (dashboard.tasks || []).filter((t) => depTaskIds.has(t.id));
+    let tasksWithDeps = (dashboard.tasks || []).filter((t) => depTaskIds.has(t.id));
+    const eventIdVal = vpDepSelect ? vpDepSelect.value : null;
+    if (eventIdVal) {
+      const eid = Number(eventIdVal);
+      tasksWithDeps = tasksWithDeps.filter((t) => Number(t.event_id) === eid);
+      const taskIds = new Set(tasksWithDeps.map((t) => t.id));
+      deps = deps.filter((d) => taskIds.has(d.task_id) && taskIds.has(d.depends_on_task_id));
+    }
     renderDependencyGraph(document.getElementById("dep-graph"), tasksWithDeps, deps);
   }
+  window.setVpDepEvent = function setVpDepEvent(eventIdVal) {
+    const dash = window.VP_DASHBOARD;
+    if (!dash || !dash.tasks) return;
+    const eventId = eventIdVal ? Number(eventIdVal) : null;
+    const sel = document.getElementById("vp-dep-event-select");
+    const nameEl = document.getElementById("vp-dep-event-name");
+    if (sel) sel.value = eventId != null ? String(eventId) : "";
+    const events = dash.events || [];
+    const ev = eventId ? events.find((e) => Number(e.id) === eventId) : null;
+    if (nameEl) nameEl.textContent = ev ? ev.name : "All events";
+    let tasks = dash.tasks || [];
+    let deps = dash.dependencies || [];
+    if (eventId) {
+      tasks = tasks.filter((t) => Number(t.event_id) === eventId);
+      const taskIds = new Set(tasks.map((t) => t.id));
+      deps = deps.filter((d) => taskIds.has(d.task_id) && taskIds.has(d.depends_on_task_id));
+    } else {
+      const depTaskIds = new Set();
+      deps.forEach((d) => { depTaskIds.add(d.task_id); depTaskIds.add(d.depends_on_task_id); });
+      tasks = tasks.filter((t) => depTaskIds.has(t.id));
+    }
+    const g = document.getElementById("dep-graph");
+    if (g && typeof renderDependencyGraph === "function") renderDependencyGraph(g, tasks, deps);
+  };
+  window.toggleVpDepEventDropdown = function() {
+    const wrap = document.getElementById("vp-dep-picker-wrap");
+    if (wrap) wrap.classList.toggle("open");
+  };
+  window.pickVpDepEvent = function(value) {
+    const wrap = document.getElementById("vp-dep-picker-wrap");
+    if (wrap) wrap.classList.remove("open");
+    setVpDepEvent(value || null);
+  };
 
   async function renderSuggestionsBox() {
     const list = document.getElementById("suggestions-list");
@@ -2157,6 +2318,56 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     } catch (_e) {
       showToast("Unable to update report.");
     }
+  };
+
+  window.openVpEventDetail = function openVpEventDetail(eventId) {
+    const event = (dashboard?.events || []).find((e) => Number(e.id) === Number(eventId));
+    if (!event) return;
+    const tasks = (dashboard?.tasks || []).filter((t) => Number(t.event_id) === Number(event.id));
+    const esc = (v) => String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const kv = (label, value) => `<div class="info-block"><div class="info-label">${label}</div><div class="info-val">${value || "—"}</div></div>`;
+    const body = `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="event-meta-tag">${(Number(event.progress || 0) >= 100 || String(event.status || "").toLowerCase() === "completed" || (Number.isFinite(new Date(event.event_date).getTime()) && new Date(event.event_date).getTime() < Date.now())) ? "Past" : "Current"}</span>
+        <span class="event-meta-tag">${esc(event.event_type || "Event")}</span>
+        <span class="event-meta-tag">${Number(event.progress || 0)}% Complete</span>
+      </div>
+      ${kv("Date", esc(new Date(event.event_date).toLocaleDateString()))}
+      ${kv("Venue", esc(event.venue || ""))}
+      ${kv("Location", esc(event.location || ""))}
+      ${kv("Scope", esc(event.scope || ""))}
+      ${kv("Budget", event.budget_limit != null && event.budget_limit !== "" ? `$${Number(event.budget_limit).toLocaleString()}` : "—")}
+      ${kv("Planning Notes", esc(event.planning_notes || ""))}
+      ${kv("Timeline Assumptions", esc(event.timeline_assumptions || ""))}
+      <div class="info-block"><div class="info-label">Workflow</div><div class="info-val"><pre style="white-space:pre-wrap;margin:0">${esc(JSON.stringify(event.workflow_json || [], null, 2))}</pre></div></div>
+      <div class="info-block"><div class="info-label">Divisions</div><div class="info-val">${esc((event.divisions_json || []).join(", ")) || "—"}</div></div>
+      <div class="info-block"><div class="info-label">Roles</div><div class="info-val">${esc((event.roles_json || []).join(", ")) || "—"}</div></div>
+      <div class="info-block"><div class="info-label">Deliverables</div><div class="info-val"><pre style="white-space:pre-wrap;margin:0">${esc(JSON.stringify(event.deliverables_json || {}, null, 2))}</pre></div></div>
+      <div class="info-block"><div class="info-label">Constraints</div><div class="info-val"><pre style="white-space:pre-wrap;margin:0">${esc(JSON.stringify(event.constraints_json || {}, null, 2))}</pre></div></div>
+      <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver);margin:12px 0 8px">All Tasks for This Event</div>
+      <div class="task-list">${tasks.map(asTaskCard).join("") || '<div style="color:var(--silver);font-size:12px">No tasks linked to this event.</div>'}</div>
+    `;
+    const titleEl = document.getElementById("vp-event-detail-title");
+    const bodyEl = document.getElementById("vp-event-detail-body");
+    const editBtn = document.getElementById("vp-event-detail-edit-btn");
+    const delBtn = document.getElementById("vp-event-detail-delete-btn");
+    if (titleEl) titleEl.textContent = event.name || "Event Detail";
+    if (bodyEl) bodyEl.innerHTML = body;
+    if (editBtn) {
+      editBtn.style.display = "";
+      editBtn.onclick = () => {
+        closeModal("vpEventDetailModal");
+        editEventLive(event.id, event.name || "");
+      };
+    }
+    if (delBtn) {
+      delBtn.style.display = "";
+      delBtn.onclick = () => {
+        closeModal("vpEventDetailModal");
+        deleteEventLive(event.id);
+      };
+    }
+    openModal("vpEventDetailModal");
   };
 
   // ── Newsletter editor (same as president; Director of Operations + president only)
@@ -2484,12 +2695,15 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     const dueDate = document.getElementById("assign-due")?.value || "";
     const priority = document.getElementById("assign-priority")?.value || "standard";
     const eventId = document.getElementById("assign-event")?.value || "";
-    const unlockAt = document.getElementById("assign-unlock")?.value || "";
     const description =
       document.getElementById("assign-description")?.value?.trim() || "Assigned by division admin.";
     const dependency_task_ids = [...document.querySelectorAll("#assign-dependencies input:checked")].map((el) => Number(el.value));
     if (!title || !role) {
       showToast("Fill at least task title and role.");
+      return;
+    }
+    if (description.length < 40) {
+      showToast("Description must be at least 40 characters.");
       return;
     }
     const finalDueDate =
@@ -2505,7 +2719,7 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
         description,
         assignee_email: selectedAssigneeEmail || undefined,
         event_id: eventId || undefined,
-        unlock_at: unlockAt ? new Date(unlockAt).toISOString() : undefined,
+        unlock_at: new Date(0).toISOString(),
         meeting_link: meetingLink || undefined,
         dependency_task_ids
       });
@@ -2514,8 +2728,8 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
       document.getElementById("assign-description").value = "";
       document.getElementById("assign-due").value = "";
       if (document.getElementById("assign-event")) document.getElementById("assign-event").value = "";
-      if (document.getElementById("assign-unlock")) document.getElementById("assign-unlock").value = "";
       document.querySelectorAll("#assign-dependencies input").forEach((el) => { el.checked = false; });
+      if (typeof updateAssignDescriptionHint === "function") updateAssignDescriptionHint();
       selectedAssigneeEmail = "";
       await hydrate();
       await window.updateSuggestions();
@@ -2715,7 +2929,11 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
         department: document.getElementById("vp-edit-task-division").value,
         event_id: document.getElementById("vp-edit-task-event").value || null,
         due_at: document.getElementById("vp-edit-task-due").value ? new Date(document.getElementById("vp-edit-task-due").value).toISOString() : null,
-        unlock_at: document.getElementById("vp-edit-task-unlock").value ? new Date(document.getElementById("vp-edit-task-unlock").value).toISOString() : null,
+        unlock_at: (function() {
+          const u = document.getElementById("vp-edit-task-unlock").value;
+          if (u) return new Date(u).toISOString();
+          return new Date(0).toISOString();
+        })(),
         priority: document.getElementById("vp-edit-task-priority").value,
         status: document.getElementById("vp-edit-task-status").value,
         meeting_date: "",
@@ -2728,8 +2946,15 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
       closeModal("vpTaskEditModal");
       showToast("Task updated.");
       await hydrate();
-    } catch (_e) {
-      showToast("Unable to save task edit.");
+    } catch (e) {
+      let msg = "Unable to save task edit.";
+      if (e && e.message) {
+        try {
+          const data = JSON.parse(e.message);
+          if (data && data.error) msg = data.error;
+        } catch (_) { msg = e.message; }
+      }
+      showToast(msg);
     }
   };
 
@@ -2840,6 +3065,11 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
   setInterval(async () => {
     await hydrate();
   }, 30000);
+
+  document.addEventListener("click", function(e) {
+    const wrap = document.querySelector("#vp-dep-picker-wrap.open");
+    if (wrap && !wrap.contains(e.target)) wrap.classList.remove("open");
+  });
 })();
 </script>
 </body>

@@ -129,6 +129,7 @@ function initDb() {
       recommended_action TEXT,
       status TEXT NOT NULL DEFAULT 'open',
       clarification_notes TEXT,
+      status_updated_at TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -163,6 +164,7 @@ function initDb() {
   ensureColumn("tasks", "phase", "TEXT");
   ensureColumn("reports", "escalated_to", "TEXT NOT NULL DEFAULT 'president'");
   ensureColumn("reports", "target_vp_type", "TEXT");
+  ensureColumn("reports", "status_updated_at", "TEXT");
 
   // Keep auth domain policy aligned with @umn.edu access.
   db.exec(`
