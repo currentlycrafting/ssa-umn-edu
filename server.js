@@ -763,7 +763,21 @@ function selectDashboardData(user) {
         id, event_id, title, description, owner_email, owner_name, owner_role,
         department, status, unlock_at, due_at, priority, visibility, vp_scope,
         meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules, phase
+        notes, attachments_json, redo_rules, escalation_rules, phase,
+        (
+          SELECT rr.notes
+          FROM redo_requests rr
+          WHERE rr.task_id = tasks.id
+          ORDER BY datetime(rr.created_at) DESC, rr.id DESC
+          LIMIT 1
+        ) AS redo_notes,
+        (
+          SELECT rr.created_at
+          FROM redo_requests rr
+          WHERE rr.task_id = tasks.id
+          ORDER BY datetime(rr.created_at) DESC, rr.id DESC
+          LIMIT 1
+        ) AS redo_requested_at
       FROM tasks
       WHERE ${rolePredicate}
       ORDER BY datetime(due_at) ASC

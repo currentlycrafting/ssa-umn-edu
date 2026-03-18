@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-26GKQG2GXF');
+</script>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SSA Ops — Vice President</title>
 <link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
@@ -655,8 +664,7 @@ const VP_CONFIG = {
     <div class="breadcrumb"><span>Newsletter</span> / Community Newsletter</div>
     <div class="card" style="margin-bottom:24px">
       <div class="section-label">Current newsletter on site</div>
-      <div class="card-title">How it looks on the homepage</div>
-      <div class="card-sub">Preview of the newsletter section as visitors see it. Content is loaded from <code>data/newsletter.json</code>. Refresh to see updates.</div>
+      <div class="card-title">Current newsletter</div>
       <div id="newsletter-preview-wrap" style="margin-top:16px;display:flex;flex-direction:column;gap:16px"></div>
       <div style="margin-top:16px">
         <button type="button" class="btn btn-outline" onclick="openNewsletterFullView()">View entire newsletter</button>
@@ -664,8 +672,7 @@ const VP_CONFIG = {
     </div>
     <div class="card">
       <div class="section-label">Community Newsletter</div>
-      <div class="card-title">Edit newsletter entries</div>
-      <div class="card-sub">These appear in the Newsletter section on the homepage. Edit entries below, then push to GitHub to publish.</div>
+      <div class="card-title">Edit entries</div>
       <div style="margin-bottom:16px">
         <button type="button" class="btn btn-gold" onclick="newsletterAddEntry()">+ Add newsletter entry</button>
         <button type="button" class="btn btn-outline" style="margin-left:10px" onclick="loadNewsletterPage()">Refresh</button>
@@ -680,11 +687,10 @@ const VP_CONFIG = {
 
   <!-- ── INDEX (gallery: photos on homepage) ── -->
   <div class="page" id="page-site-gallery">
-    <div class="breadcrumb"><span>Index</span> / Photos on homepage</div>
+    <div class="breadcrumb"><span>Index</span> / Gallery</div>
     <div class="card">
       <div class="section-label">Index gallery</div>
-      <div class="card-title">Photos on homepage</div>
-      <div class="card-sub">Gallery is loaded from the <code>gallery/</code> folder. Index shows 3 photos; Full Gallery shows all. Add or remove below — changes are immediate. Then push to GitHub.</div>
+      <div class="card-title">Gallery</div>
       <div class="site-gallery-drop-wrap" style="margin-bottom:16px">
         <div class="site-drop-zone site-gallery-drop-wide" id="vp-gallery-drop" ondragover="vpGalleryDragOver(event)" ondragleave="vpGalleryDragLeave(event)" ondrop="vpGalleryDrop(event)" onclick="document.getElementById('vp-gallery-file').click()">
           <div class="site-dz-text" id="vp-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
@@ -863,16 +869,20 @@ const VP_CONFIG = {
     </div>
     <div class="modal-body">
       <div class="info-block"><div class="info-label">Task</div><div class="info-val" id="redo-task-name">—</div></div>
-      <div class="fg"><label>What is missing?</label><textarea placeholder="Describe what was incomplete..."></textarea></div>
-      <div class="fg"><label>Specific revision instructions</label><textarea placeholder="What exactly needs to be redone?"></textarea></div>
+      <input type="hidden" id="redo-task-id" value="" />
+      <div class="fg">
+        <label>Redo notes</label>
+        <textarea id="redo-notes" placeholder="Write clear revision instructions. What needs to change, and what ‘done’ looks like."></textarea>
+        <div style="font-size:10px;color:var(--silver);text-align:right;margin-top:6px" id="redo-notes-hint">0 / 600 recommended</div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg"><label>Updated Deadline</label><input type="date"/></div>
-        <div class="fg"><label>Priority</label><select><option>Standard</option><option>Urgent</option></select></div>
+        <div class="fg"><label>Updated Deadline (optional)</label><input id="redo-due" type="date"/></div>
+        <div class="fg"><label>Priority</label><select id="redo-priority"><option>Standard</option><option>Urgent</option></select></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('redoModal')">Cancel</button>
-      <button class="btn btn-red" onclick="submitRedo()">Send Redo</button>
+      <button class="btn btn-red" id="redo-send-btn" onclick="submitRedo()">Send Redo</button>
     </div>
   </div>
 </div>
@@ -890,7 +900,7 @@ const VP_CONFIG = {
       <button class="btn btn-outline" onclick="editTaskLive()">Edit</button>
       <button class="btn btn-outline" onclick="markTaskOverdueLive()">Mark Overdue</button>
       <button class="btn btn-red" onclick="deleteTaskLive()">Delete</button>
-      <button class="btn btn-red" id="inspect-redo-btn" style="display:none" onclick="openModal('redoModal');closeModal('inspectModal')">Request Redo</button>
+      <button class="btn btn-red" id="inspect-redo-btn" style="display:none" onclick="openRedoModal(inspectId);closeModal('inspectModal')">Request Redo</button>
       <button class="btn btn-green" id="inspect-approve-btn" style="display:none" onclick="approveFromInspect()">Approve</button>
     </div>
   </div>
@@ -1105,7 +1115,7 @@ function renderOverview() {
         <div class="alert-sub">${t.assigned} · Due ${t.due}</div>
         <div class="alert-actions">
           <button class="btn btn-outline" style="font-size:9px;padding:4px 10px">Extend</button>
-          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal('${t.title}')">Redo</button>
+          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal(${t.id})">Redo</button>
         </div>
       </div>
     </div>`).join('') || '<div style="font-size:13px;color:var(--silver);padding:8px">No overdue tasks.</div>';
@@ -1130,7 +1140,7 @@ function approvalHtml(t) {
       <div><div class="approval-task">${t.title}</div><div class="approval-by">${t.assigned} · ${t.event}</div></div>
       <div style="display:flex;gap:6px">
         <button class="btn btn-green" style="font-size:9px;padding:4px 10px" onclick="approveTask(${t.id})">Approve</button>
-        <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal('${t.title}')">Redo</button>
+        <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal(${t.id})">Redo</button>
       </div>
     </div>
     ${t.summary ? `<div style="font-size:11px;color:var(--silver)">${t.summary}</div>` : ''}
@@ -1218,7 +1228,7 @@ function renderFullOverdue() {
         <div class="alert-actions">
           <button class="btn btn-outline" style="font-size:9px;padding:4px 10px">Extend</button>
           <button class="btn btn-outline" style="font-size:9px;padding:4px 10px">Reassign</button>
-          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal('${t.title}')">Redo</button>
+          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal(${t.id})">Redo</button>
         </div>
       </div>
     </div>`).join('') || '<div style="color:var(--silver);font-size:13px;padding:16px">No overdue tasks.</div>';
@@ -1315,11 +1325,60 @@ function renderNotifications() {
 // ── MODALS ────────────────────────────────────────────────────────────────
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function openRedoModal(taskName) {
-  if (taskName) document.getElementById('redo-task-name').textContent = taskName;
+function openRedoModal(taskIdOrName) {
+  const nameEl = document.getElementById('redo-task-name');
+  const idEl = document.getElementById('redo-task-id');
+  const notesEl = document.getElementById('redo-notes');
+  const dueEl = document.getElementById('redo-due');
+  const prEl = document.getElementById('redo-priority');
+  const hintEl = document.getElementById('redo-notes-hint');
+  const sendBtn = document.getElementById('redo-send-btn');
+
+  let taskId = null;
+  let taskName = '';
+  if (typeof taskIdOrName === 'number') {
+    taskId = taskIdOrName;
+    const t = [...ALL_TASKS, ...MY_TASKS].find((x) => x.id === taskId);
+    taskName = t ? t.title : '';
+  } else if (typeof taskIdOrName === 'string') {
+    taskName = taskIdOrName;
+  }
+
+  if (nameEl) nameEl.textContent = taskName || '—';
+  if (idEl) idEl.value = taskId != null ? String(taskId) : '';
+  if (notesEl) notesEl.value = '';
+  if (dueEl) dueEl.value = '';
+  if (prEl) prEl.value = 'Standard';
+  if (hintEl) hintEl.textContent = '0 / 600 recommended';
+  if (sendBtn) sendBtn.disabled = true;
   openModal('redoModal');
 }
-function submitRedo() { closeModal('redoModal'); showToast('Redo request sent to member'); }
+
+function submitRedo() {
+  const idRaw = document.getElementById('redo-task-id')?.value || '';
+  const notes = (document.getElementById('redo-notes')?.value || '').trim();
+  const updatedDueAt = document.getElementById('redo-due')?.value || '';
+  if (!idRaw) { showToast('Pick a task first.'); return; }
+  if (!notes) { showToast('Redo notes are required.'); return; }
+  const taskId = Number(idRaw);
+  apiPost(`/api/tasks/${taskId}/redo`, { notes, updatedDueAt: updatedDueAt || null })
+    .then(async () => {
+      closeModal('redoModal');
+      showToast('Redo request sent.');
+      if (typeof hydrate === 'function') await hydrate();
+    })
+    .catch((e) => showToast(e?.message || 'Redo request failed'));
+}
+
+// live enable/disable
+document.getElementById('redo-notes')?.addEventListener('input', (e) => {
+  const v = (e.target.value || '');
+  const hint = document.getElementById('redo-notes-hint');
+  const send = document.getElementById('redo-send-btn');
+  if (hint) hint.textContent = `${v.length} / 600 recommended`;
+  if (send) send.disabled = v.trim().length === 0;
+});
+
 function approveTask(id) { showToast('Task approved'); updateBadge('appr-badge', -1); renderFullApprovals(); renderOverview(); }
 function approveFromInspect() { closeModal('inspectModal'); showToast('Task approved'); }
 
@@ -1343,8 +1402,9 @@ function inspectTask(id) {
     </div>`;
   const approveBtn = document.getElementById('inspect-approve-btn');
   const redoBtn = document.getElementById('inspect-redo-btn');
-  approveBtn.style.display = t.status === 'pending' ? '' : 'none';
-  redoBtn.style.display = (t.status === 'pending' || t.status === 'current') ? '' : 'none';
+  approveBtn.style.display = (t.status === 'pending' || t.status === 'pending_review') ? '' : 'none';
+  // Redo should be available from any task detail to reduce friction.
+  redoBtn.style.display = '';
   openModal('inspectModal');
 }
 
@@ -2285,12 +2345,19 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
             .map(
               (r) => {
                 const meta = `${r.event_name || "No event"}${r.task_title ? " · " + r.task_title : ""} · ${r.created_at ? new Date(r.created_at).toLocaleString() : ""}`;
+                const clarification = r.clarification_notes
+                  ? `<details style="margin-top:10px;border-left:2px solid var(--amber);background:var(--amber-dim);padding:8px 10px;">
+                      <summary style="cursor:pointer;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);">Clarification requested</summary>
+                      <div style="font-size:11px;color:var(--silver);margin-top:6px;line-height:1.6">${(r.clarification_notes || "").replace(/</g, "&lt;")}</div>
+                    </details>`
+                  : "";
                 return `<div class="approval-item">
                   <div class="approval-header">
                     <div>
                       <div class="approval-task">${(r.reason || "").replace(/</g, "&lt;")}</div>
                       <div class="approval-by">${(r.submitted_by_name || "").replace(/</g, "&lt;")} · ${(r.submitted_by_role || "").replace(/</g, "&lt;")}</div>
                       <div style="font-size:11px;color:var(--silver);margin-top:6px">${(r.notes || "").replace(/</g, "&lt;")}</div>
+                      ${clarification}
                       <div style="font-size:10px;color:var(--gold);margin-top:6px">${meta.replace(/</g, "&lt;")}</div>
                     </div>
                     <div class="approval-actions">
@@ -2647,11 +2714,8 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     await hydrate();
   };
   window.redoTaskLive = async function redoTaskLive(taskId) {
-    const notes = prompt("Redo notes:");
-    if (!notes) return;
-    await apiPost(`/api/tasks/${taskId}/redo`, { notes });
-    showToast("Redo request sent.");
-    await hydrate();
+    // Use the same frictionless redo modal everywhere.
+    openRedoModal(taskId);
   };
   window.updateSuggestions = async function updateSuggestionsLive() {
     selectedAssigneeEmail = "";

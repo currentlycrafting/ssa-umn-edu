@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-26GKQG2GXF');
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Join SSA — Somali Student Association, University of Minnesota</title>
@@ -42,6 +51,22 @@
       background: linear-gradient(90deg, var(--gold), var(--gold-light));
       z-index: 9999; transition: width 0.1s linear;
     }
+
+    /* Cursor-follow glow (subtle, desktop only) */
+    #cursor-glow {
+      position: fixed;
+      left: 0; top: 0;
+      width: 140px; height: 140px;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 900;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      background: radial-gradient(circle at center, rgba(184,154,92,0.12), transparent 65%);
+      filter: blur(8px);
+      mix-blend-mode: screen;
+    }
+    @media (pointer: coarse) { #cursor-glow { display: none; } }
 
     /* ── NAV ── */
     #navbar {
@@ -323,7 +348,8 @@
     /* ── HOW SSA WORKS ── */
     #how-it-works { background: var(--navy); }
     .work-pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-bottom: 64px; }
-    .work-pillar { background: var(--navy-light); padding: 40px 32px; }
+    .work-pillar { background: var(--navy-light); padding: 40px 32px; border-bottom: 2px solid transparent; transition: border-color 0.3s, transform 0.3s; }
+    .work-pillar:hover { border-bottom-color: rgba(184,154,92,0.45); transform: translateY(-2px); }
     .work-pillar-num { font-family: var(--font-display); font-size: 48px; font-weight: 300; color: rgba(184,154,92,0.3); line-height: 1; margin-bottom: 16px; }
     .work-pillar h3 { font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--white); margin-bottom: 12px; }
     .work-pillar p { font-size: 13px; line-height: 1.8; color: var(--silver); }
@@ -438,7 +464,8 @@
     /* ── EVENTS ── */
     #events { background: var(--navy-mid); border-top: 1px solid rgba(184,154,92,0.1); }
     .events-types { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 64px; }
-    .event-type { padding: 48px 40px; }
+    .event-type { padding: 48px 40px; border-bottom: 2px solid transparent; transition: border-color 0.3s, transform 0.3s; }
+    .event-type:hover { border-bottom-color: rgba(184,154,92,0.45); transform: translateY(-2px); }
     .event-type.campus { background: var(--navy-light); }
     .event-type.community { background: var(--charcoal); }
     .event-type-badge {
@@ -463,6 +490,8 @@
     .somali-night-deep h3 { font-family: var(--font-display); font-size: 32px; font-weight: 300; color: var(--white); margin-bottom: 8px; }
     .somali-night-deep .sn-sub { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); margin-bottom: 28px; }
     .sn-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; }
+    .sn-item { border-bottom: 2px solid transparent; padding-bottom: 14px; transition: border-color 0.3s, transform 0.3s; }
+    .sn-item:hover { border-bottom-color: rgba(184,154,92,0.45); transform: translateY(-2px); }
     .sn-item h4 { font-family: var(--font-display); font-size: 18px; color: var(--white); margin-bottom: 10px; }
     .sn-item p { font-size: 12px; line-height: 1.75; color: var(--silver); }
 
@@ -471,6 +500,8 @@
     .conduct-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
     .conduct-item { padding: 36px; background: var(--navy-light); }
     .conduct-item:nth-child(even) { background: var(--navy-mid); }
+    .conduct-item { border-bottom: 2px solid transparent; transition: border-color 0.3s, transform 0.3s; }
+    .conduct-item:hover { border-bottom-color: rgba(184,154,92,0.45); transform: translateY(-2px); }
     .conduct-icon { font-size: 24px; margin-bottom: 16px; }
     .conduct-item h4 { font-family: var(--font-display); font-size: 20px; color: var(--white); margin-bottom: 10px; }
     .conduct-item p { font-size: 13px; line-height: 1.8; color: var(--silver); }
@@ -627,9 +658,9 @@
       position: absolute;
       top: 12px;
       right: 14px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: transparent;
-      color: var(--white);
+      border: 1px solid var(--gold);
+      background: var(--navy);
+      color: var(--gold);
       font-size: 16px;
       width: 32px;
       height: 32px;
@@ -667,9 +698,9 @@
       position: absolute;
       top: 12px;
       right: 14px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: transparent;
-      color: var(--white);
+      border: 1px solid var(--gold);
+      background: var(--navy);
+      color: var(--gold);
       font-size: 16px;
       width: 32px;
       height: 32px;
@@ -690,6 +721,72 @@
       margin-bottom: 24px;
     }
     .apply-disclaimer-modal .btn-primary { display: inline-block; text-decoration: none; }
+
+    /* ── INFO POPUP (clickable cards) ── */
+    .click-popup { cursor: pointer; }
+    .click-popup:focus-visible { outline: 2px solid rgba(184,154,92,0.65); outline-offset: 4px; }
+    .info-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 8, 18, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5500;
+      padding: 28px;
+    }
+    .info-modal.open { display: flex; }
+    .info-modal-card {
+      width: min(760px, 100%);
+      max-height: min(78vh, 860px);
+      overflow: auto;
+      background: var(--navy-mid);
+      border: 1px solid rgba(184,154,92,0.4);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      padding: 34px 32px 30px;
+      position: relative;
+      animation: modalIn 0.24s ease;
+    }
+    .info-modal-close {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      border: 1px solid var(--gold);
+      background: var(--navy);
+      color: var(--gold);
+      font-size: 16px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+    .info-modal-close:hover {
+      border-color: var(--gold-light);
+      background: var(--navy-light);
+      color: var(--gold-light);
+    }
+    .info-modal-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .info-modal-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 14px;
+    }
+    .info-modal-body {
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--silver);
+    }
+    .info-modal-body .collab-arrow { color: var(--gold); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1100px) {
@@ -728,6 +825,7 @@
 <body>
 
 <div id="scroll-progress"></div>
+<div id="cursor-glow" aria-hidden="true"></div>
 <canvas id="hifive-confetti"></canvas>
 
 <!-- ── SIDE NAV ── -->
@@ -1788,6 +1886,15 @@
   </div>
 </div>
 
+<div id="info-modal" class="info-modal" aria-hidden="true">
+  <div class="info-modal-card" role="dialog" aria-modal="true" aria-label="More information">
+    <button type="button" class="info-modal-close" id="info-modal-close" aria-label="Close">×</button>
+    <div class="info-modal-eyebrow" id="info-modal-eyebrow" style="display:none;"></div>
+    <div class="info-modal-title" id="info-modal-title"></div>
+    <div class="info-modal-body" id="info-modal-body"></div>
+  </div>
+</div>
+
 <!-- ════════════════════════ SCRIPTS ════════════════════════ -->
 <script>
   // Scroll progress
@@ -1886,6 +1993,171 @@
   document.querySelectorAll('.apply-cta').forEach((el) => {
     el.addEventListener('click', showApplyDisclaimer);
   });
+
+  // Cursor-follow glow (desktop only)
+  (function setupCursorGlow() {
+    const glow = document.getElementById('cursor-glow');
+    if (!glow) return;
+    const canUse = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+    if (!canUse) return;
+    let raf = 0;
+    let x = -9999, y = -9999;
+    const onMove = (e) => {
+      x = e.clientX;
+      y = e.clientY;
+      glow.style.opacity = '1';
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        glow.style.left = x + 'px';
+        glow.style.top = y + 'px';
+        raf = 0;
+      });
+    };
+    window.addEventListener('mousemove', onMove, { passive: true });
+    window.addEventListener('mouseleave', () => { glow.style.opacity = '0'; });
+  })();
+
+  // Clickable info cards -> popup modal
+  const infoModal = document.getElementById('info-modal');
+  const infoModalClose = document.getElementById('info-modal-close');
+  const infoEyebrow = document.getElementById('info-modal-eyebrow');
+  const infoTitle = document.getElementById('info-modal-title');
+  const infoBody = document.getElementById('info-modal-body');
+
+  function openInfoModal(payload) {
+    if (!infoModal || !infoTitle || !infoBody) return;
+    const eyebrow = (payload && payload.eyebrow) ? String(payload.eyebrow).trim() : '';
+    const title = (payload && payload.title) ? String(payload.title).trim() : '';
+    const bodyHtml = (payload && payload.bodyHtml) ? String(payload.bodyHtml) : '';
+    if (infoEyebrow) {
+      infoEyebrow.textContent = eyebrow;
+      infoEyebrow.style.display = eyebrow ? 'block' : 'none';
+    }
+    infoTitle.textContent = title;
+    infoBody.innerHTML = bodyHtml;
+    infoModal.classList.add('open');
+    infoModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeInfoModal() {
+    if (!infoModal) return;
+    infoModal.classList.remove('open');
+    infoModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function makeCardPopupPayload(card) {
+    if (!card) return null;
+    if (card.classList.contains('collab-card')) {
+      const eyebrow = card.querySelector('.collab-from')?.textContent?.trim() || 'Cross-Functional Collaboration';
+      const title = card.querySelector('.collab-role')?.textContent?.trim() || 'Details';
+      const partners = card.querySelector('.collab-partners');
+      const bodyHtml = partners ? partners.innerHTML : `<p>${escapeHtml(card.textContent || '')}</p>`;
+      return { eyebrow, title, bodyHtml };
+    }
+    if (card.classList.contains('ops-enhanced-card')) {
+      const title = card.querySelector('h4')?.textContent?.trim() || 'Details';
+      const p = card.querySelector('p')?.textContent?.trim() || '';
+      const bodyHtml = p ? `<p>${escapeHtml(p)}</p>` : '';
+      return { eyebrow: 'How SSA Works', title, bodyHtml };
+    }
+    if (card.classList.contains('intern-card')) {
+      const eyebrow = card.querySelector('.intern-for')?.textContent?.trim() || 'Intern Program';
+      const title = card.querySelector('.intern-title')?.textContent?.trim() || 'Intern Role';
+      const p = card.querySelector('.intern-desc')?.textContent?.trim() || '';
+      const bodyHtml = p ? `<p>${escapeHtml(p)}</p>` : '';
+      return { eyebrow, title, bodyHtml };
+    }
+    if (card.classList.contains('event-roster-item')) {
+      const eyebrow = card.querySelector('.event-roster-label')?.textContent?.trim() || 'SSA Traditions';
+      const title = card.querySelector('.event-roster-name')?.textContent?.trim() || 'Signature Event';
+      const p = card.querySelector('.event-roster-desc')?.textContent?.trim() || '';
+      const bodyHtml = p ? `<p>${escapeHtml(p)}</p>` : '';
+      return { eyebrow, title, bodyHtml };
+    }
+    if (card.classList.contains('conduct-item')) {
+      const title = card.querySelector('h4')?.textContent?.trim() || 'Code of Conduct';
+      const p = card.querySelector('p')?.textContent?.trim() || '';
+      const bodyHtml = p ? `<p>${escapeHtml(p)}</p>` : '';
+      return { eyebrow: 'Code of Conduct', title, bodyHtml };
+    }
+    if (card.classList.contains('funding-card')) {
+      const abbr = card.querySelector('.funding-abbr')?.textContent?.trim() || '';
+      const title = card.querySelector('.funding-name')?.textContent?.trim() || 'Funding Resource';
+      const p = card.querySelector('.funding-desc')?.textContent?.trim() || '';
+      const href = card.querySelector('a.funding-link')?.getAttribute('href') || '';
+      const linkText = card.querySelector('a.funding-link')?.textContent?.trim() || 'Learn more';
+      const linkHtml = href && href !== '#'
+        ? `<p style="margin-top:16px;"><a class="funding-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkText)}</a></p>`
+        : '';
+      const bodyHtml = (p ? `<p>${escapeHtml(p)}</p>` : '') + linkHtml;
+      return { eyebrow: abbr || 'Funding', title, bodyHtml };
+    }
+    if (card.classList.contains('sn-item')) {
+      const title = card.querySelector('h4')?.textContent?.trim() || 'Somali Night';
+      const bodyHtml = card.querySelector('p') ? card.querySelector('p').innerHTML : `<p>${escapeHtml(card.textContent || '')}</p>`;
+      return { eyebrow: "Deep Dive · Somali Night", title, bodyHtml };
+    }
+    if (card.classList.contains('work-pillar')) {
+      const num = card.querySelector('.work-pillar-num')?.textContent?.trim() || '';
+      const title = card.querySelector('h3')?.textContent?.trim() || 'How SSA Works';
+      const p = card.querySelector('p')?.textContent?.trim() || '';
+      const bodyHtml = p ? `<p>${escapeHtml(p)}</p>` : '';
+      return { eyebrow: (num ? `${num} · ` : '') + 'Chain of Command', title, bodyHtml };
+    }
+    if (card.classList.contains('event-type')) {
+      const eyebrow = card.querySelector('.event-type-badge')?.textContent?.trim() || 'Events & Programming';
+      const title = card.querySelector('h3')?.textContent?.trim() || 'Event Type';
+      const pHtml = card.querySelector('p') ? `<p>${escapeHtml(card.querySelector('p').textContent || '')}</p>` : '';
+      const list = card.querySelector('ul');
+      const listHtml = list ? list.outerHTML : '';
+      return { eyebrow: 'Events & Programming', title: `${eyebrow} — ${title}`, bodyHtml: pHtml + listHtml };
+    }
+    if (card.classList.contains('org-node')) {
+      const title = card.querySelector('.node-title')?.textContent?.trim() || card.textContent?.trim() || 'Role';
+      const div = card.querySelector('.node-div')?.textContent?.trim() || '';
+      const colLabel = card.closest('.chain-column')?.querySelector('.chain-column-label')?.textContent?.trim() || '';
+      const eyebrow = colLabel || 'Chain of Command';
+      const bodyHtml = div ? `<p>${escapeHtml(div)}</p>` : '';
+      return { eyebrow, title, bodyHtml };
+    }
+    return null;
+  }
+
+  // minimal escape for injected modal text
+  function escapeHtml(v) {
+    return String(v || '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  const popupCards = document.querySelectorAll('.collab-card, .ops-enhanced-card, .intern-card, .event-roster-item, .conduct-item, .funding-card, .sn-item, .work-pillar, .event-type, .org-node');
+  popupCards.forEach((card) => {
+    card.classList.add('click-popup');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    card.addEventListener('click', (e) => {
+      // Let actual links work normally (especially in funding cards)
+      if (e && e.target && e.target.closest && e.target.closest('a')) return;
+      const payload = makeCardPopupPayload(card);
+      if (payload) openInfoModal(payload);
+    });
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const payload = makeCardPopupPayload(card);
+        if (payload) openInfoModal(payload);
+      }
+    });
+  });
+
+  infoModalClose?.addEventListener('click', closeInfoModal);
+  infoModal?.addEventListener('click', (e) => { if (e.target === infoModal) closeInfoModal(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoModal?.classList.contains('open')) closeInfoModal(); });
 
   // Hi-five Easter egg
   function doHiFive() {

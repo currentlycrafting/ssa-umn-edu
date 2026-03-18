@@ -137,7 +137,8 @@ function renderEvents() {
       ? serverSiteContent.events
       : siteData.events;
 
-  eventsList.innerHTML = events
+  const visible = events.slice(0, 3);
+  eventsList.innerHTML = visible
     .map((event) => {
       const actionHtml = event.link
         ? `<div class="event-row-actions"><a href="${escapeHtml(event.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(event.buttonText || 'Learn More')}</a></div>`
@@ -158,6 +159,30 @@ function renderEvents() {
       </div>`;
     })
     .join('');
+
+  const fullList = document.getElementById('full-calendar-list');
+  if (fullList) {
+    fullList.innerHTML = events
+      .map((event) => {
+        const actionHtml = event.link
+          ? `<div class="event-row-actions"><a href="${escapeHtml(event.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(event.buttonText || 'Learn More')}</a></div>`
+          : '';
+        return `
+        <div class="event-row">
+          <div class="event-date">
+            <div class="event-date-day">${escapeHtml(event.day)}</div>
+            <div class="event-date-month">${escapeHtml(event.month)}</div>
+          </div>
+          <div class="event-details">
+            <h3>${escapeHtml(event.title)}</h3>
+            <p>${escapeHtml(event.description)}</p>
+            ${actionHtml}
+          </div>
+          <div class="event-row-tag">${escapeHtml(event.tag || 'Event')}</div>
+        </div>`;
+      })
+      .join('');
+  }
 }
 
 function renderNewsletters() {
@@ -916,6 +941,36 @@ function setupFullGalleryModal() {
   });
 }
 
+function setupFullCalendarModal() {
+  const openBtn = document.getElementById('open-full-calendar');
+  const modal = document.getElementById('full-calendar-modal');
+  const closeBtn = document.getElementById('close-full-calendar');
+  const backdrop = document.querySelector('[data-close-full-calendar]');
+
+  const openModal = () => {
+    if (!modal) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('gallery-open');
+  };
+  const closeModal = () => {
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('gallery-open');
+  };
+
+  openBtn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal();
+  });
+  closeBtn?.addEventListener('click', closeModal);
+  backdrop?.addEventListener('click', closeModal);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('open')) closeModal();
+  });
+}
+
 function setupGalleryLightbox() {
   const lightbox = document.getElementById('gallery-lightbox');
   const lightboxImg = document.getElementById('gallery-lightbox-img');
@@ -964,7 +1019,203 @@ function init() {
   setupAdminPanel();
   setupScrollAndReveal();
   setupFullGalleryModal();
+  setupFullCalendarModal();
   setupGalleryLightbox();
+  setupCursorGlow();
+  setupVoicesCarousel();
+  setupIndexInfoPopup();
 }
 
 init();
+
+function setupCursorGlow() {
+  const glow = document.getElementById('cursor-glow');
+  if (!glow) return;
+  const canUse = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+  if (!canUse) return;
+  let raf = 0;
+  let x = -9999, y = -9999;
+  const onMove = (e) => {
+    x = e.clientX;
+    y = e.clientY;
+    glow.style.opacity = '1';
+    if (raf) return;
+    raf = window.requestAnimationFrame(() => {
+      glow.style.left = x + 'px';
+      glow.style.top = y + 'px';
+      raf = 0;
+    });
+  };
+  window.addEventListener('mousemove', onMove, { passive: true });
+  window.addEventListener('mouseleave', () => { glow.style.opacity = '0'; });
+}
+
+function setupVoicesCarousel() {
+  const track = document.getElementById('voices-track');
+  const prev = document.getElementById('voices-prev');
+  const next = document.getElementById('voices-next');
+  if (!track) return;
+  const cards = Array.from(track.children).filter((el) => el instanceof HTMLElement);
+  if (cards.length <= 1) return;
+  let index = 0;
+
+  const cardGap = 14; // keep in sync with CSS gap
+  const apply = () => {
+    const card = cards[index];
+    const w = card?.getBoundingClientRect().width || 0;
+    track.style.transform = `translateX(${-index * (w + cardGap)}px)`;
+  };
+  const go = (dir) => {
+    index = (index + dir + cards.length) % cards.length;
+    apply();
+  };
+
+  prev?.addEventListener('click', () => go(-1));
+  next?.addEventListener('click', () => go(1));
+  window.addEventListener('resize', apply, { passive: true });
+
+  // gentle auto-advance (paused on hover)
+  let timer = window.setInterval(() => go(1), 6500);
+  track.addEventListener('mouseenter', () => { if (timer) window.clearInterval(timer); timer = 0; });
+  track.addEventListener('mouseleave', () => { if (!timer) timer = window.setInterval(() => go(1), 6500); });
+  apply();
+}
+
+function setupIndexInfoPopup() {
+  const infoModal = document.getElementById('info-modal');
+  const infoModalClose = document.getElementById('info-modal-close');
+  const infoEyebrow = document.getElementById('info-modal-eyebrow');
+  const infoTitle = document.getElementById('info-modal-title');
+  const infoBody = document.getElementById('info-modal-body');
+  if (!infoModal || !infoTitle || !infoBody) return;
+
+  const openInfoModal = (payload) => {
+    const eyebrow = payload?.eyebrow ? String(payload.eyebrow).trim() : '';
+    const title = payload?.title ? String(payload.title).trim() : '';
+    const bodyHtml = payload?.bodyHtml ? String(payload.bodyHtml) : '';
+    if (infoEyebrow) {
+      infoEyebrow.textContent = eyebrow;
+      infoEyebrow.style.display = eyebrow ? 'block' : 'none';
+    }
+    infoTitle.textContent = title;
+    infoBody.innerHTML = bodyHtml;
+    infoModal.classList.add('open');
+    infoModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('gallery-open');
+  };
+  const closeInfoModal = () => {
+    infoModal.classList.remove('open');
+    infoModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('gallery-open');
+  };
+
+  const makePayload = (el) => {
+    if (!el) return null;
+
+    if (el.classList.contains('event-image-side')) {
+      const title = el.closest('#signature-event')?.querySelector('h2')?.textContent?.trim() || 'Somali Night';
+      const desc = el.closest('#signature-event')?.querySelector('.event-content-side p')?.textContent?.trim() || '';
+      const bodyHtml = desc ? `<p>${escapeHtml(desc)}</p>` : '';
+      return { eyebrow: 'Signature Event', title, bodyHtml };
+    }
+
+    if (el.classList.contains('pillar')) {
+      const title = el.querySelector('.pillar-title')?.textContent?.trim() || 'SSA';
+      const p = el.querySelector('p')?.textContent?.trim() || '';
+      return { eyebrow: 'About SSA', title, bodyHtml: p ? `<p>${escapeHtml(p)}</p>` : '' };
+    }
+
+    if (el.classList.contains('leader-card')) {
+      const name = el.querySelector('.leader-name')?.textContent?.trim() || 'Board Member';
+      const role = el.querySelector('.leader-role')?.textContent?.trim() || '';
+      const bio = el.querySelector('.leader-card-info p')?.textContent?.trim() || '';
+      const body = [
+        role && `<p style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-light);margin:0 0 14px 0;">${escapeHtml(role)}</p>`,
+        bio && `<p>${escapeHtml(bio)}</p>`
+      ]
+        .filter(Boolean)
+        .join('');
+      return { eyebrow: 'Executive Board', title: name, bodyHtml: body || '<p>SSA leadership team member.</p>' };
+    }
+
+    if (el.classList.contains('event-row')) {
+      const title = el.querySelector('.event-details h3')?.textContent?.trim() || 'Event';
+      const desc = el.querySelector('.event-details p')?.textContent?.trim() || '';
+      const tag = el.querySelector('.event-row-tag')?.textContent?.trim() || '';
+      const action = el.querySelector('.event-row-actions a');
+      const linkHref = action?.getAttribute('href') || '';
+      const linkText = action?.textContent || 'Learn More';
+      const linkHtml = action && linkHref
+        ? `<p style="margin-top:16px;"><a href="${escapeHtml(linkHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkText)}</a></p>`
+        : '';
+      return { eyebrow: tag || 'Upcoming Events', title, bodyHtml: `${desc ? `<p>${escapeHtml(desc)}</p>` : ''}${linkHtml}` };
+    }
+
+    if (el.classList.contains('voice-card')) {
+      const quote = el.querySelector('.voice-quote')?.textContent?.trim() || 'Voice';
+      const body = el.querySelector('.voice-body')?.textContent?.trim() || '';
+      const name = el.querySelector('.voice-name')?.textContent?.trim() || '';
+      const tag = el.querySelector('.voice-tag')?.textContent?.trim() || '';
+      const footer = (name || tag)
+        ? `<p style="margin-top:16px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-light);">${escapeHtml([name, tag].filter(Boolean).join(' · '))}</p>`
+        : '';
+      return { eyebrow: 'Voices', title: quote.replace(/^“|”$/g, ''), bodyHtml: `${body ? `<p>${escapeHtml(body)}</p>` : ''}${footer}` };
+    }
+
+    if (el.classList.contains('alumni-card')) {
+      const title = el.querySelector('h3')?.textContent?.trim() || 'Alumni';
+      const role = el.querySelector('.role')?.textContent?.trim() || '';
+      const bodyHtml = role ? `<p style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-light);margin:0;">${escapeHtml(role)}</p>` : '';
+      return { eyebrow: 'Board Alumni', title, bodyHtml };
+    }
+
+    return null;
+  };
+
+  const makeClickable = (selector) => {
+    document.querySelectorAll(selector).forEach((node) => {
+      node.classList.add('click-popup');
+      node.setAttribute('tabindex', '0');
+      node.setAttribute('role', 'button');
+    });
+  };
+  makeClickable('.event-image-side, .pillar, .voice-card, .alumni-card');
+
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    const target =
+      t.closest('.event-image-side') ||
+      t.closest('.pillar') ||
+      t.closest('.leader-card') ||
+      t.closest('.event-row') ||
+      t.closest('.voice-card') ||
+      t.closest('.alumni-card');
+    if (!target) return;
+    if (t.closest('a, button')) return;
+    const payload = makePayload(target);
+    if (!payload) return;
+    e.preventDefault();
+    openInfoModal(payload);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const t = e.target;
+    const target =
+      t.closest('.event-image-side') ||
+      t.closest('.pillar') ||
+      t.closest('.leader-card') ||
+      t.closest('.event-row') ||
+      t.closest('.voice-card') ||
+      t.closest('.alumni-card');
+    if (!target) return;
+    if (!target.classList.contains('click-popup')) return;
+    e.preventDefault();
+    const payload = makePayload(target);
+    if (payload) openInfoModal(payload);
+  });
+
+  infoModalClose?.addEventListener('click', closeInfoModal);
+  infoModal?.addEventListener('click', (e) => { if (e.target === infoModal) closeInfoModal(); });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoModal?.classList.contains('open')) closeInfoModal(); });
+}

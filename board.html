@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-26GKQG2GXF');
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SSA Ops — Board Member Workspace</title>
@@ -1812,6 +1821,8 @@ async function hydrateBoardData() {
       priority: normalizePriority(t.priority),
       status: toUiStatus(t.status),
       raw_status: t.status,
+      redo_notes: t.redo_notes || '',
+      redo_requested_at: t.redo_requested_at || '',
       event: eventName,
       due: formatShortDate(t.due_at),
       due_at: t.due_at,
@@ -2113,6 +2124,18 @@ function buildTaskCard(t, opts) {
     ? `<button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); openCompletionForm(${t.id})">Submit Complete</button>`
     : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openTaskModal(${t.id})">Click to Review</button>`;
 
+  const redoNoteHtml = (t.status === 'redo' && (t.redo_notes || t.redo_requested_at))
+    ? `<div class="tc-dep-banner" style="border-left-color:var(--amber);background:rgba(212,145,74,0.10);margin-top:12px">
+        <div class="tc-dep-label" style="color:var(--amber);">Redo requested</div>
+        <div style="font-size:12px;color:var(--silver);line-height:1.65;margin-top:6px">
+          ${t.redo_notes ? String(t.redo_notes).replace(/</g,'&lt;') : 'Please review the redo request and resubmit.'}
+        </div>
+        <div style="margin-top:10px">
+          <button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); openCompletionForm(${t.id})">Resubmit</button>
+        </div>
+      </div>`
+    : '';
+
   const showBadge = !hideDatesForBoard;
   const showDueUnlocks = !hideDatesForBoard;
   const metaDue = showDueUnlocks ? `<div class="tc-meta-item"><span class="tc-meta-label">Due</span><span class="tc-meta-val">${t.due}</span></div>` : '';
@@ -2147,6 +2170,7 @@ function buildTaskCard(t, opts) {
           </div>
         </div>
       </div>
+      ${redoNoteHtml}
       ${depHtml}
     </article>`;
 }
@@ -2464,12 +2488,19 @@ function renderReportsLive() {
               <button class="btn btn-red" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'archived')">Archive</button>
             </div>`
           : '';
+        const clarification = r.clarification_notes
+          ? `<details style="margin-top:10px;border-left:2px solid var(--amber);background:var(--amber-dim);padding:8px 10px;">
+              <summary style="cursor:pointer;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);">Clarification requested</summary>
+              <div style="font-size:11px;color:var(--silver);margin-top:6px;line-height:1.6">${(r.clarification_notes || '').replace(/</g, '&lt;')}</div>
+            </details>`
+          : '';
         return `<div class="approval-item">
           <div class="approval-header">
             <div>
               <div class="approval-task">${(r.reason || '').replace(/</g, '&lt;')}</div>
               <div class="approval-by">${(r.submitted_by_name || '').replace(/</g, '&lt;')} · ${(r.submitted_by_role || '').replace(/</g, '&lt;')} · ${(r.division || '').replace(/</g, '&lt;')}</div>
               <div style="font-size:11px;color:var(--silver);margin-top:6px">${(r.notes || '').replace(/</g, '&lt;')}</div>
+              ${clarification}
               <div style="font-size:10px;color:var(--gold);margin-top:6px">${meta.replace(/</g, '&lt;')}</div>
             </div>
             ${actions}

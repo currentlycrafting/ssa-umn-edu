@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-26GKQG2GXF');
+</script>
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SSA Ops — Executive President</title>
 <link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
@@ -917,8 +926,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
 
     <div class="card" style="margin-bottom:24px">
       <div class="section-label">Current newsletter on site</div>
-      <div class="card-title">How it looks on the homepage</div>
-      <div class="card-sub">Preview of the newsletter section as visitors see it. Content is loaded from <code>data/newsletter.json</code>. Refresh to see updates.</div>
+      <div class="card-title">Current newsletter</div>
       <div id="newsletter-preview-wrap" style="margin-top:16px;display:flex;flex-direction:column;gap:16px"></div>
       <div style="margin-top:16px">
         <button type="button" class="btn btn-outline" onclick="openNewsletterFullView()">View entire newsletter</button>
@@ -927,8 +935,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
 
     <div class="card">
       <div class="section-label">Community Newsletter</div>
-      <div class="card-title">Edit newsletter entries</div>
-      <div class="card-sub">These appear in the Newsletter section on the homepage. Edit <code>data/newsletter.json</code> directly or add entries here (then push to GitHub to publish).</div>
+      <div class="card-title">Edit entries</div>
       <div style="margin-bottom:16px">
         <button type="button" class="btn btn-gold" onclick="newsletterAddEntry()">+ Add newsletter entry</button>
         <button type="button" class="btn btn-outline" style="margin-left:10px" onclick="loadNewsletterPage()">Refresh</button>
@@ -946,8 +953,7 @@ input[type="date"]::-webkit-calendar-picker-indicator,input[type="time"]::-webki
     <div class="breadcrumb"><span>Executive</span> / Index & Board</div>
     <div class="card">
       <div class="section-label">Index gallery</div>
-      <div class="card-title">Photos on homepage</div>
-      <div class="card-sub">Gallery is loaded from the <code>gallery/</code> folder. Index shows 3 photos; Full Gallery shows all. Add or remove below — changes are immediate. Then push to GitHub.</div>
+      <div class="card-title">Gallery</div>
       <div class="site-gallery-drop-wrap" style="margin-bottom:16px">
         <div class="site-drop-zone site-gallery-drop-wide" id="site-gallery-drop" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryDrop(event)" onclick="document.getElementById('site-gallery-file').click()">
           <div class="site-dz-text" id="site-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
