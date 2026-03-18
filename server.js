@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 const { OAuth2Client } = require("google-auth-library");
 const multer = require("multer");
 const { initDb, db, seedUsers } = require("./sqlite");
+const { setupNewsletterPlatform, canManageNewsletter } = require("./newsletter-platform");
 
 dotenv.config();
 initDb();
@@ -312,10 +313,7 @@ function isPresident(user) {
 }
 
 function canEditNewsletter(user) {
-  if (!user) return false;
-  if (user.permission_level === "president" || user.view_type === "president") return true;
-  const role = String(user.role_title || "").trim().toLowerCase();
-  return role === "director of operations";
+  return canManageNewsletter(user);
 }
 
 migrateLegacyImageAssets();
@@ -521,7 +519,7 @@ function firstIncompletePrerequisite(taskId) {
   const rows = db
     .prepare(
       `
-      SELECT dep.id, dep.title, dep.status
+      SELECT dep.id, dep.title, dep.status, dep.owner_name
       FROM task_dependencies td
       JOIN tasks dep ON dep.id = td.depends_on_task_id
       WHERE td.task_id = ?
@@ -1085,9 +1083,22 @@ app.post("/api/tasks/:id/submit", (req, res) => {
   if (task.owner_email !== user.email) {
     return res.status(403).json({ error: "You can only submit your own task." });
   }
-  const blockedBy = task.status === "redo" ? null : firstIncompletePrerequisite(taskId);
+  const hasRedoRequest = db
+    .prepare(
+      `
+      SELECT 1 AS x
+      FROM redo_requests
+      WHERE task_id = ?
+      ORDER BY datetime(created_at) DESC, id DESC
+      LIMIT 1
+    `
+    )
+    .get(taskId);
+
+  const blockedBy = task.status === "redo" || hasRedoRequest ? null : firstIncompletePrerequisite(taskId);
   if (blockedBy) {
-    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}` });
+    const ownerLabel = blockedBy.owner_name ? ` (assigned to ${blockedBy.owner_name})` : "";
+    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}${ownerLabel}` });
   }
 
   const {
@@ -1172,9 +1183,22 @@ app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res
   if (task.owner_email !== user.email) {
     return res.status(403).json({ error: "You can only submit your own task." });
   }
-  const blockedBy = task.status === "redo" ? null : firstIncompletePrerequisite(taskId);
+  const hasRedoRequest = db
+    .prepare(
+      `
+      SELECT 1 AS x
+      FROM redo_requests
+      WHERE task_id = ?
+      ORDER BY datetime(created_at) DESC, id DESC
+      LIMIT 1
+    `
+    )
+    .get(taskId);
+
+  const blockedBy = task.status === "redo" || hasRedoRequest ? null : firstIncompletePrerequisite(taskId);
   if (blockedBy) {
-    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}` });
+    const ownerLabel = blockedBy.owner_name ? ` (assigned to ${blockedBy.owner_name})` : "";
+    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}${ownerLabel}` });
   }
 
   const body = req.body || {};
@@ -1301,7 +1325,7 @@ app.get("/api/poll", (req, res) => {
     `
     UPDATE tasks
     SET status = 'overdue'
-    WHERE status IN ('current', 'redo')
+    WHERE status IN ('current')
       AND datetime(due_at) < datetime('now')
   `
   ).run();
@@ -2751,7 +2775,7 @@ app.put("/api/site/newsletters", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only president or Director of Operations can edit newsletters." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only President, Internal VP, or Director of Operations can edit newsletters." });
   const { newsletters } = req.body || {};
   if (!Array.isArray(newsletters)) return res.status(400).json({ error: "Request body must include newsletters array." });
   try {
@@ -2780,7 +2804,7 @@ app.post("/api/site/newsletter-image", upload.single("photo"), (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only president or Director of Operations can upload newsletter images." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only President, Internal VP, or Director of Operations can upload newsletter images." });
   const file = req.file;
   if (!file) return res.status(400).json({ error: "No photo file uploaded." });
   try {
@@ -3045,7 +3069,7 @@ app.post("/api/site/push-newsletter", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only president or Director of Operations can push newsletter." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only President, Internal VP, or Director of Operations can push newsletter." });
   const githubToken = process.env.GITHUB_TOKEN;
   if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
   const repoUrl = process.env.GITHUB_REPO || "";
@@ -3109,6 +3133,15 @@ app.post("/api/site/push-newsletter", async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message || "Push failed." });
   }
+});
+
+setupNewsletterPlatform({
+  app,
+  rootDir: __dirname,
+  upload,
+  getUserFromSession,
+  geminiApiKey: GEMINI_API_KEY,
+  newsletterImagesDir
 });
 
 app.delete("/api/events/:id", (req, res) => {

@@ -490,6 +490,7 @@ const VP_CONFIG = {
       <div class="division-badge" style="cursor:pointer;margin:0" onclick="filterMyTasks('all',this)">All</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('urgent',this)">Urgent</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('current',this)">Current</div>
+      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('redo',this)">Redo</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('locked',this)">Upcoming</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('done',this)">Past</div>
     </div>
@@ -1184,8 +1185,12 @@ function renderMyTasks(filter='all') {
     tasks = MY_TASKS.filter((t) => {
       const due = t.due_at ? new Date(t.due_at).getTime() : NaN;
       const dueSoon = Number.isFinite(due) && due > Date.now() && due - Date.now() <= soonMs;
-      return String(t.priority || "").toLowerCase() === "critical" || dueSoon || t.status === "overdue";
+      return String(t.priority || "").toLowerCase() === "critical" || dueSoon || t.status === "overdue" || t.status === "redo";
     });
+  } else if (filter === 'current') {
+    tasks = MY_TASKS.filter((t) => t.status === 'current' || t.status === 'redo');
+  } else if (filter === 'redo') {
+    tasks = MY_TASKS.filter((t) => t.status === 'redo');
   } else if (filter !== 'all') {
     tasks = MY_TASKS.filter(t => t.status===filter);
   }
@@ -1199,7 +1204,15 @@ function renderDivTasks(filter='all') {
   if (listEl) listEl.innerHTML = tasks.map((t) => taskHtml(t, true)).join('') || '<div style="color:var(--silver);font-size:13px;padding:16px">No tasks match this filter.</div>';
 }
 
-function filterMyTasks(f, el) { renderMyTasks(f); }
+function filterMyTasks(f, el) {
+  const tabs = document.getElementById('my-task-tabs');
+  if (tabs) {
+    tabs.querySelectorAll('.division-badge').forEach((b) => {
+      b.style.opacity = b === el ? '1' : '0.5';
+    });
+  }
+  renderMyTasks(f);
+}
 function filterDivTasks(f, el) {
   const container = document.getElementById('div-task-filters');
   if (container) {
@@ -1395,6 +1408,13 @@ function inspectTask(id) {
       <div class="info-block"><div class="info-label">Due</div><div class="info-val">${t.due}</div></div>
       <div class="info-block"><div class="info-label">Stage</div><div class="info-val">${t.phase || 'Planning'}</div></div>
       <div class="info-block"><div class="info-label">Status</div><div class="info-val">${t.status}</div></div>
+      ${(t.redo_notes || t.redo_requested_at) ? `
+        <div class="info-block">
+          <div class="info-label">Redo Requested</div>
+          <div class="info-val" style="white-space:pre-wrap">${String(t.redo_notes || '').replace(/</g, '&lt;') || 'Please review the redo request and resubmit.'}</div>
+        </div>
+        ${t.redo_requested_at ? `<div style="font-size:11px;color:var(--silver);margin-top:-6px">Requested: ${new Date(t.redo_requested_at).toLocaleDateString()}</div>` : ''}
+      ` : ''}
       ${t.description ? `<div class="info-block"><div class="info-label">Description</div><div class="info-val">${t.description}</div></div>` : ''}
       ${t.notes ? `<div class="info-block"><div class="info-label">Notes</div><div class="info-val">${t.notes}</div></div>` : ''}
       ${t.meeting_link ? `<div class="info-block"><div class="info-label">Meeting Link</div><div class="info-val"><a href="${t.meeting_link}" target="_blank" rel="noopener noreferrer" style="color:var(--gold-light)">${t.meeting_link}</a></div></div>` : ''}
@@ -1403,8 +1423,9 @@ function inspectTask(id) {
   const approveBtn = document.getElementById('inspect-approve-btn');
   const redoBtn = document.getElementById('inspect-redo-btn');
   approveBtn.style.display = (t.status === 'pending' || t.status === 'pending_review') ? '' : 'none';
-  // Redo should be available from any task detail to reduce friction.
-  redoBtn.style.display = '';
+  // Redo requests should only be available once a task is completed.
+  const isCompleted = t.status === 'done' || t.status === 'completed';
+  redoBtn.style.display = isCompleted ? '' : 'none';
   openModal('inspectModal');
 }
 
@@ -1991,7 +2012,9 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
           status: t.status === "completed" ? "done" : t.status === "pending_review" ? "pending" : t.status,
           summary: t.previous_summary || "",
           description: t.description || "",
-          notes: t.notes || ""
+          notes: t.notes || "",
+          redo_notes: t.redo_notes || "",
+          redo_requested_at: t.redo_requested_at || ""
         });
       });
       divTasks = ALL_TASKS.filter((t) => t.div === VP_CONFIG.type);
@@ -2005,23 +2028,57 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
     if (myTaskList) myTaskList.innerHTML = myTasksHtml;
     if (divTaskList) divTaskList.innerHTML = divTasksHtml;
 
+    const esc = (v) => String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const splitProofLinks = (raw) => String(raw || "")
+      .split(/\r?\n|,/)
+      .map((s) => s.trim())
+      .filter(Boolean);
     const pHtml = pending.pending
       .map(
-        (s) => `
+        (s) => {
+          const proofLinks = splitProofLinks(s.proof_links);
+          const proofHtml = proofLinks.length
+            ? `<div style="margin-top:8px">
+                <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px">Proof links / attachments</div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  ${proofLinks.map((l) => `<a href="${esc(l)}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--gold-light);text-decoration:none;word-break:break-all">${esc(l)}</a>`).join("")}
+                </div>
+              </div>`
+            : `<div style="font-size:11px;color:var(--silver);margin-top:8px">No proof links provided.</div>`;
+          const quality = s.difficulty ? esc(s.difficulty) : "Not provided";
+          return `
       <div class="approval-item">
         <div class="approval-header">
           <div>
-            <div class="approval-task">${s.title}</div>
-            <div class="approval-by">${s.owner_name} · ${s.department}</div>
+            <div class="approval-task">${esc(s.title)}</div>
+            <div class="approval-by">${esc(s.owner_name)} · ${esc(s.department)} · ${s.created_at ? new Date(s.created_at).toLocaleString() : ''}</div>
           </div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-green" style="font-size:9px;padding:4px 10px" onclick="approveTaskLive(${s.task_id})">Approve</button>
             <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="redoTaskLive(${s.task_id})">Redo</button>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--silver)">${s.summary}</div>
+        <details style="margin-top:8px;border-left:2px solid var(--blue);background:var(--blue-dim);padding:8px 10px">
+          <summary style="cursor:pointer;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blue)">Full submission detail</summary>
+          <div style="font-size:11px;color:var(--silver);line-height:1.65;margin-top:8px">
+            <div style="margin-bottom:10px">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px">What did you do?</div>
+              <div>${esc(s.summary || "—")}</div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px">Completion quality</div>
+              <div>${quality}</div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px">Blockers / notes</div>
+              <div>${esc(s.comments || "—")}</div>
+            </div>
+            ${proofHtml}
+          </div>
+        </details>
       </div>
     `
+        }
       )
       .join("");
 
@@ -2345,24 +2402,16 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
             .map(
               (r) => {
                 const meta = `${r.event_name || "No event"}${r.task_title ? " · " + r.task_title : ""} · ${r.created_at ? new Date(r.created_at).toLocaleString() : ""}`;
-                const clarification = r.clarification_notes
-                  ? `<details style="margin-top:10px;border-left:2px solid var(--amber);background:var(--amber-dim);padding:8px 10px;">
-                      <summary style="cursor:pointer;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);">Clarification requested</summary>
-                      <div style="font-size:11px;color:var(--silver);margin-top:6px;line-height:1.6">${(r.clarification_notes || "").replace(/</g, "&lt;")}</div>
-                    </details>`
-                  : "";
                 return `<div class="approval-item">
                   <div class="approval-header">
                     <div>
                       <div class="approval-task">${(r.reason || "").replace(/</g, "&lt;")}</div>
                       <div class="approval-by">${(r.submitted_by_name || "").replace(/</g, "&lt;")} · ${(r.submitted_by_role || "").replace(/</g, "&lt;")}</div>
                       <div style="font-size:11px;color:var(--silver);margin-top:6px">${(r.notes || "").replace(/</g, "&lt;")}</div>
-                      ${clarification}
                       <div style="font-size:10px;color:var(--gold);margin-top:6px">${meta.replace(/</g, "&lt;")}</div>
                     </div>
                     <div class="approval-actions">
-                      <button type="button" class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="vpUpdateReportStatus(${r.id}, 'reviewed')">Mark Reviewed</button>
-                      <button type="button" class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="vpUpdateReportStatus(${r.id}, 'needs_clarification')">Clarify</button>
+                      <button type="button" class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="vpUpdateReportStatus(${r.id}, 'reviewed')">Marked Review</button>
                       <button type="button" class="btn btn-red" style="font-size:9px;padding:5px 10px" onclick="vpUpdateReportStatus(${r.id}, 'archived')">Archive</button>
                     </div>
                   </div>
@@ -2404,13 +2453,12 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
       ${kv("Location", esc(event.location || ""))}
       ${kv("Scope", esc(event.scope || ""))}
       ${kv("Budget", event.budget_limit != null && event.budget_limit !== "" ? `$${Number(event.budget_limit).toLocaleString()}` : "—")}
-      ${kv("Planning Notes", esc(event.planning_notes || ""))}
+      ${kv("Description", esc(event.description || event.planning_notes || ""))}
       ${kv("Timeline Assumptions", esc(event.timeline_assumptions || ""))}
+      ${event.hard_deadline ? kv("Hard Deadline", esc(new Date(event.hard_deadline).toLocaleDateString())) : ""}
       <div class="info-block"><div class="info-label">Workflow</div><div class="info-val"><pre style="white-space:pre-wrap;margin:0">${esc(JSON.stringify(event.workflow_json || [], null, 2))}</pre></div></div>
       <div class="info-block"><div class="info-label">Divisions</div><div class="info-val">${esc((event.divisions_json || []).join(", ")) || "—"}</div></div>
       <div class="info-block"><div class="info-label">Roles</div><div class="info-val">${esc((event.roles_json || []).join(", ")) || "—"}</div></div>
-      <div class="info-block"><div class="info-label">Deliverables</div><div class="info-val"><pre style="white-space:pre-wrap;margin:0">${esc(JSON.stringify(event.deliverables_json || {}, null, 2))}</pre></div></div>
-      <div class="info-block"><div class="info-label">Constraints</div><div class="info-val"><pre style="white-space:pre-wrap;margin:0">${esc(JSON.stringify(event.constraints_json || {}, null, 2))}</pre></div></div>
       <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver);margin:12px 0 8px">All Tasks for This Event</div>
       <div class="task-list">${tasks.map(asTaskCard).join("") || '<div style="color:var(--silver);font-size:12px">No tasks linked to this event.</div>'}</div>
     `;
@@ -3136,5 +3184,6 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
   });
 })();
 </script>
+<script src="newsletter-admin.js"></script>
 </body>
 </html>

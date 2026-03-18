@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSA Newsletter</title>
+  <link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0b0f1c;
+      --navy-mid: #141929;
+      --navy-light: #1e2540;
+      --white: #f8f6f2;
+      --silver: #9a9fad;
+      --gold: #b89a5c;
+      --gold-light: #d4b87a;
+      --font-display: "Cormorant Garamond", serif;
+      --font-body: "DM Sans", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--navy);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page-wrap {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 20px 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Top bar: minimal */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 0 14px;
+      border-bottom: 1px solid rgba(184,154,92,.12);
+      flex-shrink: 0;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--white);
+      transition: opacity 0.2s;
+    }
+    .brand:hover { opacity: 0.9; }
+    .brand img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .brand-sub {
+      margin-top: 2px;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+    }
+    .back-link {
+      text-decoration: none;
+      color: var(--gold-light);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      border: 1px solid rgba(184,154,92,.35);
+      border-radius: 8px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .back-link:hover {
+      background: rgba(184,154,92,.08);
+      border-color: rgba(184,154,92,.5);
+    }
+
+    /* Edition label: one line, subtle */
+    .edition-label {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .edition-label .eyebrow {
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .edition-label .name {
+      font-family: var(--font-display);
+      font-size: clamp(22px, 3.2vw, 32px);
+      font-weight: 400;
+      color: var(--white);
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    .edition-label .date {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--silver);
+    }
+
+    /* Newsletter document: fills remaining viewport, scroll inside iframe only */
+    .newsletter-frame-wrap {
+      background: var(--navy-mid);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,.35), 0 0 0 1px rgba(184,154,92,.08);
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .newsletter-frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      border: 0;
+      background: var(--navy);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <div class="topbar">
+      <a class="brand" href="index.html">
+        <img src="logo-images/logo-v3.png" alt="SSA logo" />
+        <div class="brand-text">
+          <span class="brand-title">SSA</span>
+          <span class="brand-sub">University of Minnesota</span>
+        </div>
+      </a>
+      <a class="back-link" href="index.html">← Back to site</a>
+    </div>
+
+    <div class="edition-label">
+      <div>
+        <div class="eyebrow">Newsletter</div>
+        <h1 class="name" id="nl-title">SSA Monthly Publication</h1>
+      </div>
+      <div class="date" id="nl-date">Loading…</div>
+    </div>
+
+    <div class="newsletter-frame-wrap">
+      <iframe id="nl-frame" class="newsletter-frame" src="newsletters/current.html" title="SSA Newsletter"></iframe>
+    </div>
+  </div>
+  <script>
+    (async function () {
+      try {
+        const res = await fetch("/api/public/newsletter/current");
+        const data = res.ok ? await res.json() : {};
+        const current = data.current || {};
+        const titleEl = document.getElementById("nl-title");
+        const dateEl = document.getElementById("nl-date");
+        const frame = document.getElementById("nl-frame");
+        if (titleEl) titleEl.textContent = current.edition_name || "SSA Monthly Publication";
+        if (dateEl) dateEl.textContent = current.date_range || "";
+        if (frame && data.current_html_path) frame.src = data.current_html_path;
+      } catch (_e) {
+        const dateEl = document.getElementById("nl-date");
+        if (dateEl) dateEl.textContent = "Unable to load newsletter.";
+      }
+    })();
+  </script>
+</body>
+</html>

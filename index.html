@@ -1041,127 +1041,6 @@
       margin-top: 8px;
     }
 
-    #newsletter {
-      padding: 120px 60px;
-      background: var(--navy);
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-    .newsletter-header h2 {
-      font-family: var(--font-display);
-      font-size: clamp(30px, 4vw, 48px);
-      font-weight: 300;
-      color: var(--white);
-      margin-bottom: 14px;
-    }
-    .newsletter-list {
-      margin-top: 36px;
-      display: grid;
-      gap: 24px;
-    }
-    .newsletter-card {
-      background: var(--navy-mid);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 28px;
-    }
-    .newsletter-card-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    .newsletter-card-head h3 {
-      font-family: var(--font-display);
-      font-size: clamp(24px, 3vw, 34px);
-      font-weight: 400;
-    }
-    .newsletter-card-date {
-      color: var(--gold-light);
-      font-size: 11px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-    .newsletter-card-body {
-      display: grid;
-      gap: 20px;
-      align-items: start;
-    }
-    .newsletter-top-row {
-      display: grid;
-      grid-template-columns: minmax(260px, 360px) minmax(320px, 1fr);
-      gap: 20px;
-      align-items: start;
-    }
-    .newsletter-bottom-row {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .newsletter-embed-row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      width: 100%;
-      align-items: start;
-    }
-    .newsletter-media-placeholder {
-      min-height: 10px;
-    }
-    .newsletter-content-col p {
-      color: var(--silver);
-      line-height: 1.8;
-      font-size: 14px;
-      margin-bottom: 14px;
-    }
-    .newsletter-card-media,
-    .newsletter-embed-frame {
-      width: 100%;
-      background: var(--navy);
-    }
-    .newsletter-embed-frame {
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    .newsletter-media-col,
-    .newsletter-embed-wrap {
-      width: min(100%, 360px);
-    }
-    .newsletter-embed-row .newsletter-embed-wrap {
-      width: 100%;
-      max-width: none;
-    }
-    .newsletter-card-media {
-      height: auto;
-      object-fit: contain;
-      border: none;
-    }
-    .newsletter-card-media-wrap {
-      display: block; padding: 0; border: none; border-radius: 8px; background: none; cursor: pointer; width: 100%; line-height: 0;
-    }
-    .newsletter-embed-wrap {
-      margin-top: 0;
-      overflow: hidden;
-      border-radius: 8px;
-      aspect-ratio: 4 / 5;
-    }
-    .newsletter-embed-frame {
-      width: 100%;
-      height: 100%;
-      min-height: 100%;
-      aspect-ratio: 4 / 5;
-      display: block;
-      border: none;
-      background: var(--navy);
-      transform: scale(1.18);
-      transform-origin: center center;
-    }
-    .newsletter-read-more {
-      margin-top: 12px;
-      width: fit-content;
-      padding: 11px 22px;
-      font-size: 10px;
-    }
-
     .footer-right {
       display: flex;
       align-items: center;
@@ -1504,9 +1383,6 @@
     }
 
     @media (max-width: 1024px) {
-      #newsletter { padding: 80px 32px; }
-      .newsletter-top-row { grid-template-columns: 1fr; }
-      .newsletter-embed-row { grid-template-columns: 1fr; }
       .full-gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
@@ -1527,7 +1403,7 @@
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
       <li><a href="#events">Events</a></li>
-      <li><a href="#newsletter">Newsletter</a></li>
+      <li><a href="newsletter.html">Newsletter</a></li>
       <li><a href="#gallery">Gallery</a></li>
       <li><a href="#leadership">Leadership</a></li>
       <li><a href="#alumni">Alumni</a></li>
@@ -1814,17 +1690,6 @@
       <div id="full-calendar-list" class="events-list" style="margin-top:18px;"></div>
     </div>
   </div>
-
-  <section id="newsletter">
-    <div class="newsletter-header reveal">
-      <div class="section-label">Newsletter</div>
-      <h2>February Newsletter</h2>
-      <p style="max-width:650px;color:var(--silver);line-height:1.8;">
-        Monthly updates, event highlights, and community reflections.
-      </p>
-    </div>
-    <div id="newsletter-list" class="newsletter-list reveal reveal-delay-1"></div>
-  </section>
 
   <section id="alumni">
     <div class="alumni-header reveal">

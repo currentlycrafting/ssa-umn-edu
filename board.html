@@ -429,6 +429,7 @@ textarea, input, select { font-family: var(--fb); }
 .task-card:hover { border-color: var(--border-gold); background: var(--charcoal); }
 .task-card.tc-overdue  { border-left-color: var(--red); }
 .task-card.tc-done     { border-left-color: var(--green); opacity: .75; }
+.task-card.tc-locked   { border-left-color: var(--silver); }
 .task-card.tc-failed   { border-left-color: var(--red); opacity: .65; }
 .task-card.tc-pending  { border-left-color: var(--blue); }
 
@@ -511,6 +512,7 @@ textarea, input, select { font-family: var(--fb); }
 .dep-node.done-node   { border-color: rgba(76,175,125,.45); background: rgba(76,175,125,.05); }
 .dep-node.active-node { border-color: var(--gold); background: rgba(184,154,92,.07); }
 .dep-node.overdue-node{ border-color: rgba(192,80,77,.5); background: var(--red-dim); }
+.dep-node.locked-node { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.03); opacity: .85; }
 .dep-node.mine-node   { border-color: var(--gold-light); box-shadow: 0 0 0 1px rgba(184,154,92,.18); }
 .dep-node-div  { font-size: 7px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
 .dep-node-title{ font-size: 11px; color: var(--white); margin-bottom: 3px; line-height: 1.3; }
@@ -620,6 +622,45 @@ textarea, input, select { font-family: var(--fb); }
 .badge-comp { display: inline-flex; align-items: center; font-size: 8px; letter-spacing: .14em; text-transform: uppercase; padding: 3px 8px; font-weight: 500; }
 .badge-comp.b-over { background: var(--red-dim); color: var(--red); }
 .badge-comp.b-cur { background: rgba(184,154,92,.13); color: var(--gold); }
+.badge-comp.b-lock { background: rgba(255,255,255,.08); color: var(--silver); border: 1px solid rgba(255,255,255,.14); }
+.badge-comp.b-redo { background: rgba(212,145,74,.13); color: var(--amber); border: 1px solid rgba(212,145,74,.2); }
+.task-select-opt.locked-opt { border-left: 2px solid rgba(255,255,255,.18); background: rgba(255,255,255,.02); }
+.task-select-opt .task-lock-note { font-size: 10px; color: var(--silver); margin-top: 6px; line-height: 1.5; }
+.task-select-opt .task-lock-note strong { color: var(--off-white); font-weight: 500; }
+.comp-lock-note {
+  border: 1px solid rgba(255,255,255,.14);
+  border-left: 3px solid rgba(255,255,255,.45);
+  background: rgba(255,255,255,.04);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+.comp-lock-note-title {
+  font-size: 9px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--silver);
+  margin-bottom: 4px;
+}
+.comp-lock-note-sub { font-size: 12px; color: var(--stone); line-height: 1.6; }
+.comp-redo-note {
+  border-left: 3px solid rgba(212,145,74,.6);
+  background: rgba(212,145,74,0.06);
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+.comp-redo-note-title {
+  font-size: 9px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 4px;
+}
+.comp-redo-note-sub {
+  font-size: 12px;
+  color: var(--stone);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
 .comp-form-cols { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
 .comp-form-stack { display: flex; flex-direction: column; gap: 20px; }
 .comp-form-stack .comp-form-side { display: flex; flex-direction: column; gap: 14px; }
@@ -880,6 +921,89 @@ textarea, input, select { font-family: var(--fb); }
   font-size: 12px; color: var(--silver);
   text-align: center; line-height: 1.7; max-width: 320px; margin: 0 auto 4px;
 }
+.submit-success-check {
+  width: 64px; height: 64px; border-radius: 50%;
+  margin: 2px auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(76,175,125,.5);
+  background: rgba(76,175,125,.14);
+  color: var(--green); font-size: 30px; font-weight: 700;
+}
+.submit-loading {
+  position: relative;
+  overflow: hidden;
+}
+.submit-loading::before {
+  content: "";
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(192,80,77,.95), rgba(168,61,58,.95));
+  animation: submitFill 3s linear forwards;
+}
+.submit-loading > span {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+}
+@keyframes submitFill {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.event-item.clickable { cursor: pointer; }
+.event-item.clickable:hover { border-color: rgba(184,154,92,.35); }
+.submit-status-card {
+  border: 1px solid rgba(76,175,125,.3);
+  background: rgba(76,175,125,.08);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.submit-status-title {
+  font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--green);
+}
+.submit-status-sub {
+  font-size: 12px; color: var(--stone); margin-top: 4px; line-height: 1.6;
+}
+.submit-event-toggle {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.submit-event-chip {
+  border: 1px solid var(--border);
+  background: var(--navy-mid);
+  color: var(--silver);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.submit-event-chip.active {
+  border-color: var(--gold);
+  color: var(--gold-light);
+  background: rgba(184,154,92,.12);
+}
+.comp-event-checklist { margin-top: 10px; display: grid; gap: 8px; }
+.comp-event-check-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.02);
+  padding: 8px 10px;
+}
+.comp-event-check-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.comp-event-check-mark {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.2); color: transparent;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0;
+}
+.comp-event-check-mark.done {
+  border-color: rgba(76,175,125,.6);
+  background: rgba(76,175,125,.12);
+  color: var(--green);
+}
+.comp-event-check-title {
+  font-size: 12px; color: var(--off-white);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.comp-event-check-meta { font-size: 10px; color: var(--silver); text-transform: uppercase; letter-spacing: .08em; }
 
 /* ─────────────────────────────────────────────
    MISC COMPONENTS
@@ -1458,6 +1582,24 @@ textarea, input, select { font-family: var(--fb); }
   </div>
 </div>
 
+<div class="modal-backdrop" id="submit-success-modal" role="dialog" aria-modal="true">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <span class="modal-header-title">Task Shipped to Review</span>
+      <button class="modal-close" onclick="closeModal('submit-success-modal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:22px 24px">
+      <div class="submit-success-check">✓</div>
+      <div class="confirm-msg" style="margin-bottom:6px">Great work — submitted!</div>
+      <div class="confirm-sub" id="submit-success-sub">Your VP has been notified and this task is now in review.</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;gap:10px">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('submit-success-modal')">Close</button>
+      <button class="btn btn-gold btn-sm" onclick="closeModal('submit-success-modal');navigate('tasks')">Back to My Tasks</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -1496,6 +1638,7 @@ let CAL_EVENTS = {};
 let DASHBOARD = { tasks: [], events: [], dependencies: [] };
 let STAGED_FILES = {};
 let ACTIVE_DEP_EVENT_ID = null;
+let SUBMIT_EVENT_FILTER = null;
 
 /* ─────────────────────────────────────
    INDEX GALLERY (board can add/remove/reorder; president pushes)
@@ -1638,7 +1781,22 @@ function toUiStatus(status) {
   if (status === "pending_review") return "pending";
   if (status === "redo") return "redo";
   if (status === "overdue") return "overdue";
+  if (status === "locked") return "locked";
   return "current";
+}
+
+function getBlockingPrereq(task) {
+  if (!task) return null;
+  // Redo requests should not be blocked by prerequisite tasks.
+  if (task.status === "redo" || task.redo_notes || task.redo_requested_at) return null;
+  const deps = Array.isArray(task.dep) ? task.dep : [];
+  return deps.find((d) => d.status !== "done") || null;
+}
+
+function formatBlockingNote(blockedBy) {
+  if (!blockedBy) return "";
+  const owner = blockedBy.owner || "Unassigned";
+  return `${blockedBy.title} (assigned to ${owner})`;
 }
 
 function normalizePriority(priority) {
@@ -1695,17 +1853,28 @@ function buildPhaseChains(tasks, dependencies, eventId) {
       .filter((t) => normalizePhaseName(t.phase) === phase)
       .map((t) => {
         const depIds = depByTask.get(Number(t.id)) || [];
-        const prereqTitles = depIds
+        const prereqTasks = depIds
           .map((depId) => taskById.get(depId))
           .filter(Boolean)
-          .map((dep) => dep.title);
+          .map((dep) => ({
+            id: Number(dep.id),
+            title: dep.title,
+            owner: dep.owner_name || "Unassigned",
+            status: toUiStatus(dep.status)
+          }));
+        const blockedBy = t.status === "redo" ? null : prereqTasks.find((dep) => dep.status !== "done") || null;
+        const prereqTitles = prereqTasks.map((dep) => dep.title);
         return {
+          id: Number(t.id),
           title: t.title,
           div: t.department,
           owner: t.owner_name,
           status: toUiStatus(t.status),
           mine: t.owner_email === USER.email,
-          prereqText: prereqTitles.length ? `Prerequisite: ${prereqTitles.join(", ")}` : "No prerequisite"
+          blockedBy,
+          prereqText: blockedBy
+            ? `Locked by: ${formatBlockingNote(blockedBy)}`
+            : (prereqTitles.length ? `Prerequisite: ${prereqTitles.join(", ")}` : "No prerequisite")
         };
       });
     return { phase, nodes };
@@ -1803,8 +1972,10 @@ async function hydrateBoardData() {
       const depTask = taskById.get(depId);
       return depTask
         ? {
+            id: Number(depTask.id),
             title: depTask.title,
             owner: depTask.owner_name,
+            owner_email: depTask.owner_email,
             status: toUiStatus(depTask.status)
           }
         : null;
@@ -1834,6 +2005,7 @@ async function hydrateBoardData() {
       } : null,
       meeting_link: t.meeting_link || "",
       dep: deps,
+      blocked_by: toUiStatus(t.status) === "redo" ? null : (deps.find((d) => d.status !== "done") || null),
       description: t.description || "",
       summary: t.previous_summary || "",
       downstream: [],
@@ -2042,11 +2214,31 @@ function renderKPIs() {
    TASK LISTS
 ───────────────────────────────────── */
 function renderAllTaskLists() {
+  const urgencyRank = (t) => {
+    const statusWeight = t.status === "overdue" ? 400 : t.status === "redo" ? 300 : t.status === "current" ? 200 : t.status === "done" ? -100 : 0;
+    const priorityWeight = t.priority === "urgent" ? 80 : t.priority === "high" ? 55 : t.priority === "medium" ? 30 : 10;
+    const dueTs = Number.isFinite(new Date(t.due_at).getTime()) ? new Date(t.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+    const dueWeight = Number.isFinite(dueTs) ? Math.max(0, (Date.now() - dueTs) / 86400000) : 0;
+    return statusWeight + priorityWeight + dueWeight;
+  };
+  const sortByUrgency = (arr) => arr.slice().sort((a, b) => {
+    const aBlocked = Boolean(getBlockingPrereq(a));
+    const bBlocked = Boolean(getBlockingPrereq(b));
+    if (aBlocked !== bBlocked) return aBlocked ? 1 : -1;
+    const rankDiff = urgencyRank(b) - urgencyRank(a);
+    if (rankDiff !== 0) return rankDiff;
+    const aDue = Number.isFinite(new Date(a.due_at).getTime()) ? new Date(a.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+    const bDue = Number.isFinite(new Date(b.due_at).getTime()) ? new Date(b.due_at).getTime() : Number.MAX_SAFE_INTEGER;
+    return aDue - bDue;
+  });
   const mine    = TASKS.filter(t => t.assigned_email === USER.email);
-  const current = mine.filter(t => t.status === 'current' || t.status === 'overdue');
-  const upcoming = mine.filter((t) => (t.status === "current" || t.status === "overdue") && Number.isFinite(new Date(t.due_at).getTime()) && new Date(t.due_at).getTime() > Date.now());
-  const redo = mine.filter(t => t.status === 'redo');
-  const done    = mine.filter(t => t.status === 'done');
+  const isRedoRequested = (t) => Boolean(t.redo_notes || t.redo_requested_at);
+  const current = sortByUrgency(mine.filter(t => (t.status === 'current' || t.status === 'overdue') && !isRedoRequested(t)));
+  const upcoming = sortByUrgency(
+    mine.filter((t) => (t.status === "current" || t.status === "overdue") && !isRedoRequested(t) && Number.isFinite(new Date(t.due_at).getTime()) && new Date(t.due_at).getTime() > Date.now())
+  );
+  const redo = sortByUrgency(mine.filter((t) => t.status === 'redo' || isRedoRequested(t)));
+  const done = mine.filter(t => t.status === 'done').sort((a, b) => new Date(b.updated_at || b.due_at || 0) - new Date(a.updated_at || a.due_at || 0));
   const mainCombined = [...current, ...upcoming, ...redo];
   const mainIds = new Set();
   const mainTasks = mainCombined.filter(t => {
@@ -2076,32 +2268,38 @@ function renderTaskList(containerId, tasks, showEmpty = false) {
 function buildTaskCard(t, opts) {
   opts = opts || {};
   const hideDatesForBoard = opts.forBoardEvents === true && USER.permission === 'board';
+  const isRedoRequested = Boolean(t.redo_notes || t.redo_requested_at);
+  const uiStatus = isRedoRequested ? 'redo' : t.status;
+  const blockedBy = getBlockingPrereq(t);
+  const isBlocked = Boolean(blockedBy);
   const statusCls = {
-    overdue: 'tc-overdue', current: '', redo: 'tc-overdue',
+    overdue: 'tc-overdue', current: '', redo: 'tc-overdue', locked: 'tc-locked',
     done: 'tc-done',
-  }[t.status] || '';
+  }[uiStatus] || (isBlocked ? 'tc-locked' : '');
 
   const badgeCls = {
     overdue: 'badge-overdue', current: 'badge-current', redo: 'badge-pending',
+    locked: 'badge-pending',
     done: 'badge-done',
-  }[t.status] || 'badge-current';
+  }[uiStatus] || (isBlocked ? 'badge-pending' : 'badge-current');
 
   const badgeLabel = {
     overdue: 'Overdue', current: 'Current', redo: 'Redo',
+    locked: 'Locked',
     done: 'Completed',
-  }[t.status] || t.status;
+  }[uiStatus] || (isBlocked ? 'Locked' : uiStatus);
 
   const prioCls = {
     urgent: 'prio-urgent', high: 'prio-high',
     medium: 'prio-medium', low: 'prio-low',
   }[t.priority] || 'prio-low';
 
-  const canComplete = ["current", "overdue", "redo"].includes(t.status) && t.assigned_email === USER.email;
+  const canComplete = ["current", "overdue", "redo"].includes(uiStatus) && t.assigned_email === USER.email && !isBlocked;
 
   let depHtml = '';
-  if (t.dep && t.dep.length) {
+  if (!isRedoRequested && t.dep && t.dep.length) {
     depHtml = `<div class="tc-dep-banner">
-      <div class="tc-dep-label">Prerequisite Required</div>
+      <div class="tc-dep-label">${isBlocked ? "Locked by prerequisite" : "Prerequisite chain"}</div>
       <div class="tc-dep-chain">
         ${t.dep.map(d => `
           <div class="dep-chip ${d.status}">${d.title}
@@ -2110,6 +2308,7 @@ function buildTaskCard(t, opts) {
           <span class="dep-arrow">→</span>`).join('')}
         <div class="dep-chip active">Your task</div>
       </div>
+      ${isBlocked ? `<div style="font-size:11px;color:var(--stone);margin-top:8px">Complete <strong style="color:var(--off-white)">${blockedBy.title}</strong> first. Assigned to <strong style="color:var(--off-white)">${blockedBy.owner || "Unassigned"}</strong>.</div>` : ''}
     </div>`;
   }
 
@@ -2121,17 +2320,16 @@ function buildTaskCard(t, opts) {
     </div>` : '';
 
   const actionBtn = canComplete
-    ? `<button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); openCompletionForm(${t.id})">Submit Complete</button>`
-    : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openTaskModal(${t.id})">Click to Review</button>`;
+    ? `<button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); openCompletionForm(${t.id})">${uiStatus === 'redo' ? 'Resubmit' : 'Submit Complete'}</button>`
+    : isBlocked
+      ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openTaskModal(${t.id})">Locked by dependency</button>`
+      : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openTaskModal(${t.id})">Click to Review</button>`;
 
-  const redoNoteHtml = (t.status === 'redo' && (t.redo_notes || t.redo_requested_at))
+  const redoNoteHtml = (uiStatus === 'redo' && (t.redo_notes || t.redo_requested_at))
     ? `<div class="tc-dep-banner" style="border-left-color:var(--amber);background:rgba(212,145,74,0.10);margin-top:12px">
         <div class="tc-dep-label" style="color:var(--amber);">Redo requested</div>
         <div style="font-size:12px;color:var(--silver);line-height:1.65;margin-top:6px">
           ${t.redo_notes ? String(t.redo_notes).replace(/</g,'&lt;') : 'Please review the redo request and resubmit.'}
-        </div>
-        <div style="margin-top:10px">
-          <button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); openCompletionForm(${t.id})">Resubmit</button>
         </div>
       </div>`
     : '';
@@ -2139,7 +2337,9 @@ function buildTaskCard(t, opts) {
   const showBadge = !hideDatesForBoard;
   const showDueUnlocks = !hideDatesForBoard;
   const metaDue = showDueUnlocks ? `<div class="tc-meta-item"><span class="tc-meta-label">Due</span><span class="tc-meta-val">${t.due}</span></div>` : '';
-  const metaPrereq = showDueUnlocks ? `<div class="tc-meta-item"><span class="tc-meta-label">Prereq</span><span class="tc-meta-val">${t.dep && t.dep.length ? t.dep.map((d) => d.title).join(", ") : "None"}</span></div>` : '';
+  const metaPrereq = showDueUnlocks
+    ? `<div class="tc-meta-item"><span class="tc-meta-label">Prereq</span><span class="tc-meta-val">${isBlocked ? `LOCKED: ${formatBlockingNote(blockedBy)}` : (t.dep && t.dep.length ? t.dep.map((d) => d.title).join(", ") : "None")}</span></div>`
+    : '';
 
   return `
     <article class="task-card ${statusCls}" onclick="openTaskModal(${t.id})">
@@ -2190,10 +2390,10 @@ function renderDepGraph(containerId, compact) {
       <div class="dep-phase-label">${phase.phase}</div>
       <div class="dep-phase-row">
         ${phase.nodes.map((n, i) => `
-          <div class="dep-node ${nodeClass(n)}" onclick="openNodeInspect('${escHtml(n.title)}','${n.div}','${n.owner}','${n.status}')">
+          <div class="dep-node ${nodeClass(n)}" onclick="openNodeInspect(${Number(n.id)})">
             <div class="dep-node-div">${(n.div || '').length > 20 ? (n.div || '').slice(0,18) + '..' : (n.div || '')}</div>
             <div class="dep-node-title">${truncateTitle(n.title, TITLE_MAX)}</div>
-            <div class="dep-node-owner">${truncateTitle(n.owner || '', 18)}</div>
+            <div class="dep-node-owner">${n.blockedBy ? `LOCKED: ${truncateTitle(n.blockedBy.title, 14)} · ${truncateTitle(n.blockedBy.owner || "Unassigned", 12)}` : truncateTitle(n.owner || '', 18)}</div>
           </div>
           ${compact ? "" : (i < phase.nodes.length - 1 ? '<span class="dep-arrow-icon">·</span>' : '')}`).join('')}
       </div>
@@ -2201,6 +2401,7 @@ function renderDepGraph(containerId, compact) {
     <div class="dep-legend">
       <div class="dep-legend-item"><div class="dep-legend-dot" style="background:rgba(76,175,125,.6)"></div>Done</div>
       <div class="dep-legend-item"><div class="dep-legend-dot" style="background:var(--gold)"></div>Active / Yours</div>
+      <div class="dep-legend-item"><div class="dep-legend-dot" style="background:rgba(255,255,255,.45)"></div>Locked by prerequisite</div>
       <div class="dep-legend-item"><div class="dep-legend-dot" style="background:rgba(255,255,255,.15)"></div>Independent unless prerequisite exists</div>
       <div class="dep-legend-item"><div class="dep-legend-dot" style="background:var(--red)"></div>Overdue</div>
     </div>`;
@@ -2209,33 +2410,20 @@ function renderDepGraph(containerId, compact) {
 function nodeClass(n) {
   let cls = '';
   if (n.status === 'done')    cls = 'done-node';
+  else if (n.blockedBy) cls = 'locked-node';
   else if (n.status === 'overdue') cls = 'active-node overdue-node';
   else cls = 'active-node';
   if (n.mine) cls += ' mine-node';
   return cls;
 }
 
-function escHtml(s) { return s.replace(/'/g, "\\'"); }
+function escHtml(s) { return String(s == null ? "" : s).replace(/'/g, "\\'"); }
 
-function openNodeInspect(title, div, owner, status) {
-  const badgeCls = { done:'badge-done', current:'badge-current', redo:'badge-pending', overdue:'badge-overdue' }[status] || 'badge-current';
-  const label    = { done:'Completed', current:'Current', redo:'Redo', overdue:'Overdue' }[status] || status;
-  const body = `
-    <div class="detail-row"><div class="detail-label">Title</div><div class="detail-val">${title}</div></div>
-    <div class="detail-row"><div class="detail-label">Division / Dept</div><div class="detail-val">${div}</div></div>
-    <div class="detail-row"><div class="detail-label">Owner</div><div class="detail-val">${owner}</div></div>
-    <div class="detail-row">
-      <div class="detail-label">Status</div>
-      <div class="detail-val"><span class="badge ${badgeCls}">${label}</span></div>
-    </div>
-    <div style="font-size:11px;color:var(--silver);margin-top:14px;line-height:1.7">
-      You can inspect this task for context. You cannot complete or edit it unless it is assigned to you.
-    </div>`;
-  document.getElementById('task-modal-title').textContent = title;
-  document.getElementById('task-modal-body').innerHTML = body;
-  document.getElementById('task-modal-action').textContent = 'Close';
-  document.getElementById('task-modal-action').onclick = () => closeModal('task-modal');
-  openModal('task-modal');
+function openNodeInspect(taskId) {
+  const t = TASKS.find((x) => Number(x.id) === Number(taskId));
+  if (!t) return;
+  // Use the full task modal so assigned members can submit directly from dependency view.
+  openTaskModal(t.id);
 }
 
 function setDependencyEvent(eventId) {
@@ -2265,12 +2453,80 @@ function pickDepEvent(value) {
 /* ─────────────────────────────────────
    SUBMISSION FORM
 ───────────────────────────────────── */
+function getActiveTasksForSubmit() {
+  const isRedoRequested = (t) => Boolean(t && (t.redo_notes || t.redo_requested_at));
+  let tasks = TASKS.filter((t) => {
+    if (!t || t.assigned_email !== USER.email) return false;
+    // Redo tasks must always be available for resubmission, even if their status would otherwise be excluded.
+    if (isRedoRequested(t)) return true;
+    return !["done", "pending", "pending_review"].includes(t.status);
+  });
+  if (SUBMIT_EVENT_FILTER != null) {
+    tasks = tasks.filter((t) => Number(t.event_id) === Number(SUBMIT_EVENT_FILTER));
+  }
+  return tasks;
+}
+
+function renderSubmitEventToggle(prefix) {
+  const root = document.getElementById(prefix + '-event-toggle');
+  if (!root) return;
+  const isRedoRequested = (t) => Boolean(t && (t.redo_notes || t.redo_requested_at));
+  const mine = TASKS.filter((t) => t.assigned_email === USER.email && (isRedoRequested(t) || !["done", "pending", "pending_review"].includes(t.status)));
+  const evIds = Array.from(new Set(mine.map((t) => Number(t.event_id)).filter((id) => Number.isFinite(id))));
+  const evs = EVENTS.filter((e) => evIds.includes(Number(e.id)));
+  root.innerHTML = `<button type="button" class="submit-event-chip ${SUBMIT_EVENT_FILTER == null ? 'active' : ''}" onclick="setSubmitEventFilter('${prefix}','')">All events</button>` +
+    evs.map((e) => `<button type="button" class="submit-event-chip ${Number(SUBMIT_EVENT_FILTER) === Number(e.id) ? 'active' : ''}" onclick="setSubmitEventFilter('${prefix}','${e.id}')">${(e.name || 'Event').replace(/</g, '&lt;')}</button>`).join('');
+}
+
+function setSubmitEventFilter(prefix, eventId) {
+  SUBMIT_EVENT_FILTER = eventId ? Number(eventId) : null;
+  const sel = document.getElementById(prefix + '-task-sel');
+  const tasks = getActiveTasksForSubmit();
+  if (sel) sel.value = tasks.length ? String(tasks[0].id) : '';
+  renderSubmitEventToggle(prefix);
+  updateCompletionTaskCard(prefix);
+  updateCompSteps(prefix);
+}
+
+function renderSubmitEventChecklist(prefix) {
+  const root = document.getElementById(prefix + '-event-checklist');
+  const sel = document.getElementById(prefix + '-task-sel');
+  if (!root || !sel) return;
+  const selectedTask = TASKS.find((t) => Number(t.id) === Number(sel.value));
+  if (!selectedTask || !selectedTask.event_id) {
+    root.innerHTML = '<div class="comp-ds-meta" style="opacity:.75">Pick a task to see event completion progress.</div>';
+    return;
+  }
+  const evTasks = TASKS.filter((t) => Number(t.event_id) === Number(selectedTask.event_id) && t.assigned_email === USER.email);
+  if (!evTasks.length) {
+    root.innerHTML = '<div class="comp-ds-meta" style="opacity:.75">No personal tasks found for this event.</div>';
+    return;
+  }
+  root.innerHTML = evTasks.map((t) => {
+    const done = t.status === 'done' || t.status === 'pending' || t.status === 'pending_review';
+    const mark = done ? 'done' : '';
+    const blockedBy = getBlockingPrereq(t);
+    const isRedoRequested = Boolean(t.redo_notes || t.redo_requested_at);
+    const status = done
+      ? 'completed'
+      : blockedBy
+        ? `locked by ${blockedBy.title} • ${blockedBy.owner || "Unassigned"}`
+        : (isRedoRequested ? 'redo' : t.status === 'overdue' ? 'overdue' : 'active');
+    return `<div class="comp-event-check-row">
+      <div class="comp-event-check-left">
+        <span class="comp-event-check-mark ${mark}">${done ? '✓' : blockedBy ? '!' : ''}</span>
+        <span class="comp-event-check-title">${(t.title || '').replace(/</g, '&lt;')}</span>
+      </div>
+      <span class="comp-event-check-meta">${status}</span>
+    </div>`;
+  }).join('');
+}
+
 function renderSubmissionForm(containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
-  const currentTasks = TASKS.filter(t => t.assigned_email === USER.email && !["done", "pending"].includes(t.status));
+  const currentTasks = getActiveTasksForSubmit();
   const firstTask = currentTasks[0] || null;
-  const taskOptions = currentTasks.map((t, i) => `<option value="${t.id}"${i === 0 ? ' selected' : ''}>${t.title}</option>`).join('');
   el.innerHTML = `
     <div class="comp-steps">
       <div class="comp-step active"><div class="comp-step-num">1</div><div class="comp-step-label">Task & Summary</div></div>
@@ -2288,6 +2544,11 @@ function renderSubmissionForm(containerId) {
         <div class="comp-cl-item"><span class="comp-cl-icon todo">○</span><span>Write the handoff note for the next person</span></div>
       </div>
     </div>
+    <div class="submit-status-card" id="${containerId}-submit-status">
+      <div class="submit-status-title">Submission status</div>
+      <div class="submit-status-sub">Select a task, submit evidence, and it will be shipped to VP review. Completed tasks are automatically removed from this list.</div>
+    </div>
+    <div class="submit-event-toggle" id="${containerId}-event-toggle"></div>
     <input type="hidden" id="${containerId}-task-sel" value="${firstTask ? firstTask.id : ''}" />
     <div class="task-sel-card" id="${containerId}-task-card" onclick="openTaskSelectModal('${containerId}')" style="cursor:pointer">
       <div class="tsc-left">
@@ -2303,6 +2564,14 @@ function renderSubmissionForm(containerId) {
         <span class="badge-comp ${firstTask && firstTask.status === 'overdue' ? 'b-over' : 'b-cur'}" id="${containerId}-tsc-badge">${firstTask && firstTask.status === 'overdue' ? 'Overdue' : 'In Progress'}</span>
         <button type="button" class="tsc-change" onclick="event.preventDefault();event.stopPropagation();openTaskSelectModal('${containerId}')">${firstTask ? 'Change Task' : 'Select Task'}</button>
       </div>
+    </div>
+    <div class="comp-lock-note" id="${containerId}-lock-note" style="display:none">
+      <div class="comp-lock-note-title">Locked by prerequisite</div>
+      <div class="comp-lock-note-sub" id="${containerId}-lock-note-sub"></div>
+    </div>
+    <div class="comp-redo-note" id="${containerId}-redo-note" style="display:none">
+      <div class="comp-redo-note-title">Redo requested</div>
+      <div class="comp-redo-note-sub" id="${containerId}-redo-note-sub"></div>
     </div>
     <div class="comp-form-stack">
       <div class="comp-form-main" style="max-width:100%">
@@ -2337,30 +2606,32 @@ function renderSubmissionForm(containerId) {
           <div class="comp-ff-note"><strong>Ready to submit?</strong> Your VP will be notified immediately. If returned for redo, you'll get revision notes.</div>
           <div class="comp-ff-btns">
             <button type="button" class="btn btn-ghost" onclick="navigate('tasks')">Cancel</button>
-            <button type="button" class="btn btn-gold" onclick="submitWork('${containerId}')">Submit for VP Review</button>
+            <button type="button" class="btn btn-gold" id="${containerId}-submit-btn" onclick="submitWork('${containerId}')">Submit for VP Review</button>
           </div>
         </div>
       </div>
     </div>
-    <div class="comp-side-card" id="${containerId}-downstream-card" style="margin-top:14px">
-      <div class="comp-sl">Current Stage Snapshot</div>
-      <div class="comp-side-card-sub">Informational only for the selected event stage.</div>
-      <div class="comp-downstream-list" id="${containerId}-downstream-list"></div>
+    <div class="comp-side-card" style="margin-top:14px">
+      <div class="comp-sl">Your Event Task Progress</div>
+      <div class="comp-side-card-sub" style="margin-bottom:10px">Track your tasks for this event with completion checkmarks.</div>
+      <div class="comp-event-checklist" id="${containerId}-event-checklist"></div>
     </div>`;
+  renderSubmitEventToggle(containerId);
   updateCompletionTaskCard(containerId);
-  renderCompletionDownstream(containerId);
+  renderSubmitEventChecklist(containerId);
   updateCompSteps(containerId);
 }
 
 function openTaskSelectModal(prefix) {
   const listEl = document.getElementById('task-select-list');
   if (!listEl) return;
-  const currentTasks = TASKS.filter(t => t.assigned_email === USER.email && !["done", "pending"].includes(t.status));
+  const currentTasks = getActiveTasksForSubmit();
   listEl.innerHTML = currentTasks.length
     ? currentTasks.map(t => `
-        <div class="task-select-opt" onclick="pickTaskForCompletion('${prefix}',${t.id});closeModal('task-select-modal')" style="padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s">
+        <div class="task-select-opt ${getBlockingPrereq(t) ? 'locked-opt' : ''}" onclick="pickTaskForCompletion('${prefix}',${t.id});closeModal('task-select-modal')" style="padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s">
           <div style="font-weight:500;color:var(--white)">${t.title}</div>
           <div style="font-size:11px;color:var(--silver);margin-top:4px">${t.event || 'Task'} · ${t.assigned || ''}</div>
+          ${getBlockingPrereq(t) ? `<div class="task-lock-note"><strong>LOCKED:</strong> ${getBlockingPrereq(t).title} must be completed first by ${getBlockingPrereq(t).owner || 'Unassigned'}.</div>` : ''}
         </div>`).join('')
     : '<div style="padding:20px;color:var(--silver);text-align:center">No tasks available to complete.</div>';
   openModal('task-select-modal');
@@ -2368,9 +2639,12 @@ function openTaskSelectModal(prefix) {
 
 function pickTaskForCompletion(prefix, taskId) {
   const hid = document.getElementById(prefix + '-task-sel');
+  const picked = TASKS.find((t) => Number(t.id) === Number(taskId));
+  if (picked && picked.event_id) SUBMIT_EVENT_FILTER = Number(picked.event_id);
   if (hid) hid.value = String(taskId);
+  renderSubmitEventToggle(prefix);
   updateCompletionTaskCard(prefix);
-  renderCompletionDownstream(prefix);
+  renderSubmitEventChecklist(prefix);
   updateCompSteps(prefix);
   const btn = document.querySelector(`#${prefix}-task-card .tsc-change`);
   if (btn) btn.textContent = 'Change Task';
@@ -2421,13 +2695,30 @@ function setCompQuality(prefix, btn) {
 function updateCompletionTaskCard(prefix) {
   const sel = document.getElementById(prefix + '-task-sel');
   if (!sel) return;
+  const available = getActiveTasksForSubmit();
   const id = Number(sel.value);
-  const t = TASKS.find(x => x.id === id);
+  let t = TASKS.find(x => x.id === id);
+  if ((!t || !available.some((x) => Number(x.id) === Number(t.id))) && available.length) {
+    sel.value = String(available[0].id);
+    t = available[0];
+  }
+  if (!available.length) {
+    sel.value = "";
+    t = null;
+  }
   const card = document.getElementById(prefix + '-task-card');
   if (!card) return;
   const set = (suffix, text) => { const el = document.getElementById(prefix + suffix); if (el) el.textContent = text || '—'; };
   const btn = card.querySelector('.tsc-change');
+  const submitBtn = document.getElementById(prefix + '-submit-btn');
+  const lockNote = document.getElementById(prefix + '-lock-note');
+  const lockNoteSub = document.getElementById(prefix + '-lock-note-sub');
+  const redoNote = document.getElementById(prefix + '-redo-note');
+  const redoNoteSub = document.getElementById(prefix + '-redo-note-sub');
   if (t) {
+    const blockedBy = getBlockingPrereq(t);
+    const isRedoRequested = Boolean(t.redo_notes || t.redo_requested_at);
+    const uiStatus = isRedoRequested ? 'redo' : t.status;
     set('-tsc-event', t.event || 'Task');
     set('-tsc-title', t.title);
     set('-tsc-due', t.due || '—');
@@ -2435,8 +2726,45 @@ function updateCompletionTaskCard(prefix) {
     set('-tsc-owner', t.assigned || USER.full);
     const badge = document.getElementById(prefix + '-tsc-badge');
     if (badge) {
-      badge.textContent = t.status === 'overdue' ? 'Overdue' : 'In Progress';
-      badge.className = 'badge-comp ' + (t.status === 'overdue' ? 'b-over' : 'b-cur');
+      if (blockedBy) {
+        badge.textContent = 'Locked';
+        badge.className = 'badge-comp b-lock';
+      } else {
+        if (uiStatus === 'redo') {
+          badge.textContent = 'Redo';
+          badge.className = 'badge-comp b-redo';
+        } else {
+          badge.textContent = t.status === 'overdue' ? 'Overdue' : 'In Progress';
+          badge.className = 'badge-comp ' + (t.status === 'overdue' ? 'b-over' : 'b-cur');
+        }
+      }
+    }
+    if (lockNote && lockNoteSub) {
+      if (blockedBy) {
+        lockNote.style.display = '';
+        lockNoteSub.textContent = `${blockedBy.title} must be completed first by ${blockedBy.owner || "Unassigned"}.`;
+      } else {
+        lockNote.style.display = 'none';
+        lockNoteSub.textContent = '';
+      }
+    }
+    if (redoNote && redoNoteSub) {
+      if (uiStatus === 'redo') {
+        redoNote.style.display = '';
+        const notes = t.redo_notes ? String(t.redo_notes) : 'Please review the redo request and resubmit.';
+        const requested = t.redo_requested_at ? `\nRequested: ${new Date(t.redo_requested_at).toLocaleDateString()}` : '';
+        redoNoteSub.textContent = notes + requested;
+      } else {
+        redoNote.style.display = 'none';
+        redoNoteSub.textContent = '';
+      }
+    }
+    if (submitBtn) {
+      const locked = Boolean(blockedBy);
+      submitBtn.disabled = locked;
+      submitBtn.style.opacity = locked ? '.5' : '';
+      submitBtn.style.cursor = locked ? 'not-allowed' : '';
+      submitBtn.textContent = locked ? 'Locked by dependency' : (uiStatus === 'redo' ? 'Resubmit for VP Review' : 'Submit for VP Review');
     }
     if (btn) btn.textContent = 'Change Task';
   } else {
@@ -2447,31 +2775,23 @@ function updateCompletionTaskCard(prefix) {
     set('-tsc-owner', USER.full);
     const badge = document.getElementById(prefix + '-tsc-badge');
     if (badge) { badge.textContent = 'In Progress'; badge.className = 'badge-comp b-cur'; }
+    if (lockNote && lockNoteSub) {
+      lockNote.style.display = 'none';
+      lockNoteSub.textContent = '';
+    }
+    if (redoNote && redoNoteSub) {
+      redoNote.style.display = 'none';
+      redoNoteSub.textContent = '';
+    }
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.style.opacity = '.5';
+      submitBtn.style.cursor = 'not-allowed';
+      submitBtn.textContent = 'Select task first';
+    }
     if (btn) btn.textContent = 'Select Task';
   }
-  renderCompletionDownstream(prefix);
-}
-
-function renderCompletionDownstream(prefix) {
-  const sel = document.getElementById(prefix + '-task-sel');
-  const listEl = document.getElementById(prefix + '-downstream-list');
-  if (!sel || !listEl) return;
-  const id = Number(sel.value);
-  const selectedTask = TASKS.find(x => x.id === id);
-  if (!selectedTask || !selectedTask.event_id) {
-    listEl.innerHTML = '<div class="comp-ds-meta" style="opacity:.7">Select an event task to view stage context.</div>';
-    return;
-  }
-  const eventTasks = TASKS.filter((t) => Number(t.event_id) === Number(selectedTask.event_id));
-  const isIncomplete = (t) => t.status !== "done";
-  const activeStage =
-    PHASE_ORDER.find((phase) => eventTasks.some((t) => t.phase === phase && isIncomplete(t))) ||
-    PHASE_ORDER[PHASE_ORDER.length - 1];
-  const stageTasks = eventTasks.filter((t) => t.phase === activeStage);
-  listEl.innerHTML = `
-    <div class="comp-ds-meta" style="margin-bottom:8px">${activeStage}</div>
-    ${stageTasks.map((t) => `<div class="comp-ds-item"><div class="comp-ds-dept">${t.dept || t.division || "—"}</div><div class="comp-ds-title">${t.title}</div><div class="comp-ds-meta">${t.due || "—"} · ${t.status === "done" ? "Completed" : t.status === "pending" ? "Pending Review" : t.status === "redo" ? "Redo" : t.status === "overdue" ? "Overdue" : "Current"}</div></div>`).join("")}
-  `;
+  renderSubmitEventChecklist(prefix);
 }
 
 function renderReportsLive() {
@@ -2917,18 +3237,41 @@ function submitWork(prefix) {
   const links = linksEl ? linksEl.value.trim() : '';
   const blockersEl = document.getElementById(prefix + '-blockers');
   const blockers = blockersEl ? blockersEl.value.trim() : '';
+  const qBtn = document.querySelector(`#${prefix} .comp-q-btn.on-smooth, #${prefix} .comp-q-btn.on-rough, #${prefix} .comp-q-btn.on-blocker`);
+  const quality = qBtn ? (qBtn.getAttribute('data-q') || '') : '';
+  const pickedTask = TASKS.find((t) => Number(t.id) === Number(task));
+  const blockedBy = getBlockingPrereq(pickedTask);
   if (!task)    { showToast('Select a task first'); return; }
+  if (blockedBy) { showToast(`Locked: complete ${blockedBy.title} (assigned to ${blockedBy.owner || "Unassigned"}) first.`); return; }
   if (!summary) { showToast('Summary cannot be empty'); return; }
   openConfirmModal(
     'Submit for Review?',
     'Your VP will be notified immediately. You can\'t edit the submission after sending.',
     'Submit',
     async () => {
+      const confirmBtn = document.getElementById('confirm-action-btn');
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.classList.add('submit-loading');
+        confirmBtn.innerHTML = '<span>Submitting…</span>';
+      }
       try {
+        await new Promise((r) => setTimeout(r, 3000));
+        const liveTask = TASKS.find((t) => Number(t.id) === Number(task));
+        if (!liveTask || ["done", "pending", "pending_review"].includes(liveTask.status)) {
+          showToast('This task is already completed/submitted.');
+          return;
+        }
+        const liveBlockedBy = getBlockingPrereq(liveTask);
+        if (liveBlockedBy) {
+          showToast(`Locked: complete ${liveBlockedBy.title} (assigned to ${liveBlockedBy.owner || "Unassigned"}) first.`);
+          return;
+        }
         const form = new FormData();
         form.append("summary", summary);
         form.append("proofLinks", links);
         form.append("comments", blockers);
+        form.append("difficulty", quality || "");
         (STAGED_FILES[prefix] || []).forEach((f) => form.append("attachments", f));
         const fileInput = document.getElementById(prefix + '-file');
         if (fileInput && fileInput.files && fileInput.files.length) {
@@ -2936,7 +3279,14 @@ function submitWork(prefix) {
         }
         await apiPostMultipart(`/api/tasks/${task}/submit-form`, form);
         STAGED_FILES[prefix] = [];
-        showToast('Submitted and sent for VP review');
+        const submittedTitle = (TASKS.find((t) => Number(t.id) === Number(task)) || {}).title || "Task";
+        if (summaryEl) summaryEl.value = "";
+        if (linksEl) linksEl.value = "";
+        if (blockersEl) blockersEl.value = "";
+        const input = document.getElementById(prefix + '-file');
+        if (input) input.value = "";
+        const successSub = document.getElementById('submit-success-sub');
+        if (successSub) successSub.textContent = `"${submittedTitle}" has been completed and shipped to VP review.`;
         await hydrateBoardData();
         renderKPIs();
         renderAllTaskLists();
@@ -2947,8 +3297,17 @@ function submitWork(prefix) {
         renderEventsPage();
         renderCalendar();
         renderDownstream();
+        renderSubmitEventToggle(prefix);
+        openModal('submit-success-modal');
+        showToast('Submitted and sent for VP review');
       } catch (err) {
         showToast(err?.message || 'Submission failed');
+      } finally {
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.classList.remove('submit-loading');
+          confirmBtn.innerHTML = 'Submit';
+        }
       }
     }
   );
@@ -2962,12 +3321,13 @@ function renderEventsDeadlines() {
   if (!el) return;
 
   const evHtml = EVENTS.map(e => `
-    <div class="event-item ${e.overdue ? 'ev-urgent' : ''}">
+    <div class="event-item clickable ${e.overdue ? 'ev-urgent' : ''}" onclick="openEventModal(${Number(e.id)})">
       <div class="ev-date">${e.date} · ${e.venue}</div>
       <div class="ev-name">${e.name}</div>
       <div class="ev-meta">
         <span class="ev-tag">${e.type}</span>
         <span class="ev-tag">${e.yourTasks} your tasks</span>
+        <span class="ev-tag">${e.yourDone || 0} completed</span>
         ${e.overdue ? `<span class="ev-tag ev-tag-red">${e.overdue} overdue</span>` : ''}
       </div>
       <div class="progress-wrap">
@@ -3180,13 +3540,16 @@ function openTaskModal(id) {
   if (document.getElementById("event-modal")?.classList.contains("open")) closeModal("event-modal");
   const t = TASKS.find(x => x.id === id);
   if (!t) return;
+  const blockedBy = getBlockingPrereq(t);
+  const isRedoRequested = Boolean(t.redo_notes || t.redo_requested_at);
+  const uiStatus = isRedoRequested ? 'redo' : t.status;
 
   const badgeCls = {
     overdue:'badge-overdue',current:'badge-current',redo:'badge-pending',done:'badge-done'
-  }[t.status] || 'badge-current';
-  const label = { overdue:'Overdue',current:'Current',redo:'Redo',done:'Completed' }[t.status] || t.status;
+  }[uiStatus] || 'badge-current';
+  const label = { overdue:'Overdue',current:'Current',redo:'Redo',done:'Completed' }[uiStatus] || uiStatus;
 
-  const depHtml = t.dep && t.dep.length ? `
+  const depHtml = !isRedoRequested && t.dep && t.dep.length ? `
     <div class="detail-row">
       <div class="detail-label">Prerequisite</div>
       <div class="detail-val">
@@ -3195,6 +3558,11 @@ function openTaskModal(id) {
           <div class="dep-chip active">This task</div>
         </div>
       </div>
+    </div>` : '';
+  const lockHtml = blockedBy ? `
+    <div class="detail-row">
+      <div class="detail-label">Dependency Lock</div>
+      <div class="detail-val">Complete <strong style="color:var(--off-white)">${blockedBy.title}</strong> first. Assigned to <strong style="color:var(--off-white)">${blockedBy.owner || "Unassigned"}</strong>.</div>
     </div>` : '';
 
   const summaryHtml = t.summary ? `
@@ -3214,6 +3582,13 @@ function openTaskModal(id) {
       <div class="detail-val"><a href="${t.meeting_link}" target="_blank" rel="noopener noreferrer" style="color:var(--gold-light)">${t.meeting_link}</a></div>
     </div>` : '';
 
+  const redoInfoHtml = uiStatus === 'redo' ? `
+    <div class="detail-row" style="border-left:3px solid rgba(212,145,74,.6);background:rgba(212,145,74,0.06)">
+      <div class="detail-label" style="color:var(--amber)">Redo requested</div>
+      <div class="detail-val" style="white-space:pre-wrap">${t.redo_notes ? String(t.redo_notes).replace(/</g,'&lt;') : 'Please review the redo request and resubmit.'}</div>
+      ${t.redo_requested_at ? `<div style="font-size:11px;color:var(--silver);margin-top:8px">Requested: ${new Date(t.redo_requested_at).toLocaleDateString()}</div>` : ''}
+    </div>` : '';
+
   document.getElementById('task-modal-title').textContent = t.title;
   document.getElementById('task-modal-body').innerHTML = `
     <div style="display:flex;gap:8px;margin-bottom:16px">
@@ -3225,9 +3600,9 @@ function openTaskModal(id) {
     <div class="detail-row"><div class="detail-label">Department</div><div class="detail-val">${t.dept} · ${t.division} Division</div></div>
     <div class="detail-row"><div class="detail-label">Assigned To</div><div class="detail-val">${t.assigned}</div></div>
     <div class="detail-row"><div class="detail-label">Due Date</div><div class="detail-val">${t.due}</div></div>
-    ${meetHtml}${meetingLinkHtml}${depHtml}${summaryHtml}`;
+    ${meetHtml}${meetingLinkHtml}${redoInfoHtml}${lockHtml}${depHtml}${summaryHtml}`;
 
-  const canComplete = ["current", "overdue", "redo"].includes(t.status) && t.assigned_email === USER.email;
+  const canComplete = ["current", "overdue", "redo"].includes(uiStatus) && t.assigned_email === USER.email && !blockedBy;
   /* Board: complete only. President/VP: can delete. */
   const canManage = USER.permission === "president" || USER.permission === "vp";
   const actionBtn = document.getElementById('task-modal-action');
@@ -3244,7 +3619,7 @@ function openTaskModal(id) {
       }
     );
   } else {
-    actionBtn.textContent = canComplete ? 'Submit Completion' : 'Close';
+    actionBtn.textContent = canComplete ? (uiStatus === 'redo' ? 'Resubmit' : 'Submit Completion') : (blockedBy ? 'Locked by dependency' : 'Close');
     actionBtn.className   = canComplete ? 'btn btn-gold btn-sm' : 'btn btn-ghost btn-sm';
     actionBtn.onclick     = canComplete
       ? () => { closeModal('task-modal'); openCompletionForm(t.id); }
@@ -3257,13 +3632,26 @@ function openTaskModal(id) {
 function openCompletionForm(id) {
   const t = TASKS.find(x => x.id === id);
   if (!t) return;
+  const blockedBy = getBlockingPrereq(t);
+  if (blockedBy) {
+    showToast(`Locked: complete ${blockedBy.title} (assigned to ${blockedBy.owner || "Unassigned"}) first.`);
+    return;
+  }
+  const isRedoRequested = Boolean(t.redo_notes || t.redo_requested_at);
+  const uiStatus = isRedoRequested ? 'redo' : t.status;
+  ["task-modal", "event-modal", "task-select-modal"].forEach((modalId) => {
+    const modal = document.getElementById(modalId);
+    if (modal && modal.classList.contains("open")) closeModal(modalId);
+  });
+  SUBMIT_EVENT_FILTER = t.event_id ? Number(t.event_id) : null;
   navigate('submit');
   const sel = document.getElementById('submit-form-card-task-sel');
   if (sel) sel.value = String(id);
+  renderSubmitEventToggle('submit-form-card');
   updateCompletionTaskCard('submit-form-card');
-  renderCompletionDownstream('submit-form-card');
+  renderSubmitEventChecklist('submit-form-card');
   updateCompSteps('submit-form-card');
-  showToast(`Ready to submit: ${t.title}`);
+  showToast(`${uiStatus === 'redo' ? 'Ready to resubmit' : 'Ready to submit'}: ${t.title}`);
 }
 
 /* ─────────────────────────────────────
@@ -3282,10 +3670,23 @@ function openConfirmModal(title, sub, actionLabel, callback) {
   document.getElementById('confirm-sub').textContent   = sub   || 'This action cannot be undone.';
   const btn = document.getElementById('confirm-action-btn');
   btn.textContent = actionLabel || 'Confirm';
-  btn.onclick = () => {
-    closeModal('confirm-modal');
-    if (typeof callback === 'function') callback();
-    else showToast('Action confirmed');
+  btn.classList.remove('submit-loading');
+  btn.disabled = false;
+  btn.onclick = async () => {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try {
+      if (typeof callback === 'function') {
+        const shouldClose = await callback();
+        if (shouldClose !== false) closeModal('confirm-modal');
+      } else {
+        closeModal('confirm-modal');
+        showToast('Action confirmed');
+      }
+    } finally {
+      btn.disabled = false;
+      if (!btn.classList.contains('submit-loading')) btn.textContent = actionLabel || 'Confirm';
+    }
   };
   openModal('confirm-modal');
 }
@@ -3317,5 +3718,6 @@ function showToast(msg) {
 
 /* live polling is handled in initBoardLive via startPolling */
 </script>
+<script src="newsletter-admin.js"></script>
 </body>
 </html>

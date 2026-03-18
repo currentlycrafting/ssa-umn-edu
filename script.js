@@ -77,7 +77,7 @@ let siteData = loadSiteData();
 let serverSiteContent = { galleryImages: null, boardMembers: null, newsletters: null, events: null };
 let adminUnlocked = sessionStorage.getItem(ADMIN_SESSION_KEY) === '1';
 let directEditEnabled = false;
-let adminActiveTab = 'newsletters';
+let adminActiveTab = 'events';
 
 function loadSiteData() {
   try {
@@ -473,30 +473,6 @@ function renderAdminForms() {
       })
       .join('');
 
-  const newsletterForms = siteData.newsletters
-    .map(
-      (n, idx) => `
-    <div class="admin-section-form">
-      <h4>Newsletter ${idx + 1}</h4>
-      ${makeFields(
-        [
-          { key: 'title', label: 'Title', value: n.title },
-          { key: 'date', label: 'Date', value: n.date },
-          { key: 'description', label: 'Description', value: n.description, type: 'textarea' },
-          { key: 'image', label: 'Image URL', value: n.image },
-          { key: 'link', label: 'Primary Link URL', value: n.link },
-          { key: 'secondaryLink', label: 'Secondary Instagram Link URL', value: n.secondaryLink || '' }
-        ],
-        'newsletters',
-        idx
-      )}
-      <div class="admin-inline-actions">
-        <button type="button" class="btn-ghost" data-action="delete" data-section="newsletters" data-index="${idx}">Delete</button>
-      </div>
-    </div>`
-    )
-    .join('');
-
   const eventForms = siteData.events
     .map(
       (e, idx) => `
@@ -565,7 +541,6 @@ function renderAdminForms() {
     .join('');
 
   const tabs = [
-    { id: 'newsletters', label: 'Newsletters' },
     { id: 'events', label: 'Events' },
     { id: 'boardMembers', label: 'Board Members' },
     { id: 'galleryImages', label: 'Gallery Photos' }
@@ -593,7 +568,6 @@ function renderAdminForms() {
     <div class="admin-top-tabs">
       ${tabButtons}
     </div>
-    ${groupSection('newsletters', 'Newsletters', 'Add Newsletter', newsletterForms)}
     ${groupSection('events', 'Events', 'Add Event', eventForms)}
     ${groupSection('boardMembers', 'Board Members', 'Add Member', boardForms)}
     ${groupSection('galleryImages', 'Gallery Images', 'Add Gallery Image', galleryForms)}
@@ -697,17 +671,6 @@ function bindAdminForms() {
       siteData[section].splice(index, 1);
     }
     if (action === 'add') {
-      if (section === 'newsletters') {
-        siteData.newsletters.push({
-          id: crypto.randomUUID(),
-          title: 'New Newsletter',
-          date: 'Month Year',
-          description: 'Write your newsletter update here.',
-          image: '',
-          link: '',
-          secondaryLink: ''
-        });
-      }
       if (section === 'events') {
         siteData.events.push({
           id: crypto.randomUUID(),
@@ -772,7 +735,6 @@ function bindAdminForms() {
 function renderAllDynamicSections() {
   renderGallery();
   renderEvents();
-  renderNewsletters();
   renderBoard();
 }
 
