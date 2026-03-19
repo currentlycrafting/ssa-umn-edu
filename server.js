@@ -1752,7 +1752,7 @@ ${JSON.stringify(payload, null, 2)}
           ],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 8192,
+            maxOutputTokens: 500000,
             responseMimeType: "application/json"
           }
         })
@@ -1797,7 +1797,7 @@ ${JSON.stringify(payload, null, 2)}
             ],
             generationConfig: {
               temperature: 0,
-              maxOutputTokens: 8192,
+              maxOutputTokens: 65536,
               responseMimeType: "application/json"
             }
           })
