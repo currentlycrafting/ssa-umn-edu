@@ -1,317 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-26GKQG2GXF');
+</script>
 <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SSA Ops — Executive President</title>
+<link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --navy:#0b0f1c;--navy-mid:#141929;--navy-light:#1e2540;
-  --white:#f8f6f2;--off-white:#ede9e1;--silver:#9a9fad;
-  --gold:#b89a5c;--gold-light:#d4b87a;--stone:#c4bdb0;--charcoal:#2a2e3d;
-  --red:#c0504d;--red-dim:rgba(192,80,77,0.15);
-  --green:#4caf7d;--green-dim:rgba(76,175,125,0.12);
-  --amber:#d4914a;--amber-dim:rgba(212,145,74,0.12);
-  --fd:var(--font-display);--fb:var(--font-body);
-  --font-display:'Cormorant Garamond',serif;--font-body:'DM Sans',sans-serif;
-  --sidebar:260px;
-}
-html,body{height:100%;overflow:hidden}
-body{background:var(--navy);color:var(--white);font-family:var(--font-body);font-weight:300;display:flex}
-
-/* SIDEBAR */
-#sidebar{
-  width:var(--sidebar);flex-shrink:0;background:var(--navy-mid);
-  border-right:1px solid rgba(184,154,92,.12);
-  display:flex;flex-direction:column;height:100vh;overflow-y:auto;overflow-x:hidden;
-  position:fixed;left:0;top:0;bottom:0;z-index:100;
-}
-.sb-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px}
-.sb-logo img{height:38px;width:38px;object-fit:contain}
-.sb-logo-txt{line-height:1}
-.sb-logo-txt span:first-child{font-family:var(--font-display);font-size:13px;font-weight:500;letter-spacing:.15em;text-transform:uppercase}
-.sb-logo-txt span:last-child{display:block;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver);margin-top:2px}
-.sb-user{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05)}
-.sb-user-name{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--white);line-height:1.1}
-.sb-user-role{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-top:4px}
-.sb-user-dept{font-size:11px;color:var(--silver);margin-top:2px}
-.sb-nav{padding:12px 0;flex:1}
-.sb-section-label{font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--silver);padding:14px 20px 6px;opacity:.6}
-.sb-item{
-  display:flex;align-items:center;gap:10px;padding:9px 20px;
-  font-size:12px;letter-spacing:.04em;color:var(--stone);cursor:pointer;
-  transition:all .2s;border-left:2px solid transparent;position:relative;
-}
-.sb-item:hover{color:var(--white);background:rgba(255,255,255,.03);border-left-color:rgba(184,154,92,.3)}
-.sb-item.active{color:var(--white);background:rgba(184,154,92,.08);border-left-color:var(--gold)}
-.sb-item .sb-icon{font-size:13px;width:16px;text-align:center;flex-shrink:0}
-.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:500;padding:2px 6px;border-radius:2px;min-width:18px;text-align:center}
-.sb-badge.gold{background:var(--gold);color:var(--navy)}
-.sb-badge.amber{background:var(--amber);color:#fff}
-.sb-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.05)}
-.sb-footer-txt{font-size:10px;color:var(--silver);letter-spacing:.05em}
-.poll-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* MAIN */
-#main{margin-left:var(--sidebar);flex:1;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 32px;background:var(--navy-mid);
-  border-bottom:1px solid rgba(184,154,92,.1);position:sticky;top:0;z-index:50;
-}
-.topbar-left h1{font-family:var(--font-display);font-size:13px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:var(--silver)}
-.topbar-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
-.notif-btn{
-  position:relative;background:transparent;border:1px solid rgba(255,255,255,.1);
-  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:border-color .3s;font-size:14px;
-}
-.notif-btn:hover{border-color:var(--gold)}
-.notif-count{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:8px;font-weight:500;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.btn{padding:8px 20px;font-family:var(--font-body);font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .2s;border:none;font-weight:500}
-.btn-gold{background:var(--gold);color:var(--navy)}
-.btn-gold:hover{background:var(--gold-light)}
-.btn-outline{background:transparent;border:1px solid rgba(184,154,92,.4);color:var(--gold)}
-.btn-outline:hover{background:rgba(184,154,92,.08)}
-.btn-red{background:var(--red);color:#fff}
-.btn-green{background:var(--green);color:#fff}
-
-/* PAGE */
-.page{display:none;padding:32px;flex-direction:column;gap:24px}
-.page.active{display:flex}
-
-/* CARDS */
-.card{background:var(--navy-mid);border:1px solid rgba(255,255,255,.06);padding:24px}
-.card-sm{background:var(--navy-light);border:1px solid rgba(255,255,255,.05);padding:16px}
-.card-title{font-family:var(--font-display);font-size:18px;font-weight:400;color:var(--white);margin-bottom:4px}
-.card-sub{font-size:11px;color:var(--silver);margin-bottom:16px}
-.section-label{font-size:8px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.section-label::before{content:'';display:block;width:20px;height:1px;background:var(--gold)}
-
-/* STAT ROW */
-.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.stat-card{background:var(--navy-light);padding:20px;border:1px solid rgba(255,255,255,.05);border-bottom:2px solid transparent;transition:border-color .3s}
-.stat-card:hover{border-bottom-color:var(--gold)}
-.stat-num{font-family:var(--font-display);font-size:40px;font-weight:300;color:var(--white);line-height:1}
-.stat-num.red{color:var(--red)}
-.stat-num.green{color:var(--green)}
-.stat-num.amber{color:var(--amber)}
-.stat-label{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--silver);margin-top:4px}
-
-/* TASK CARDS */
-.task-list{display:flex;flex-direction:column;gap:2px}
-.task-item{
-  display:grid;grid-template-columns:8px 1fr auto;gap:16px;align-items:start;
-  padding:16px;background:var(--navy-light);border:1px solid rgba(255,255,255,.04);
-  cursor:pointer;transition:border-color .2s;
-}
-.task-item:hover{border-color:rgba(184,154,92,.2)}
-.task-stripe{width:3px;height:100%;border-radius:2px;align-self:stretch;min-height:40px}
-.task-stripe.urgent{background:var(--red)}
-.task-stripe.current{background:var(--gold)}
-.task-stripe.locked{background:rgba(255,255,255,.15)}
-.task-stripe.done{background:var(--green)}
-.task-stripe.redo{background:var(--amber)}
-.task-title{font-size:13px;font-weight:400;color:var(--white);margin-bottom:4px}
-.task-meta{font-size:11px;color:var(--silver)}
-.task-meta span{margin-right:12px}
-.task-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
-.status-badge{font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 10px;border-radius:2px}
-.sb-urgent{background:var(--red-dim);color:var(--red)}
-.sb-current{background:rgba(184,154,92,.12);color:var(--gold)}
-.sb-locked{background:rgba(255,255,255,.06);color:var(--silver)}
-.sb-done{background:var(--green-dim);color:var(--green)}
-.sb-redo{background:var(--amber-dim);color:var(--amber)}
-.sb-pending{background:rgba(100,130,200,.12);color:#7ba3d4}
-.sb-overdue{background:var(--red-dim);color:var(--red)}
-
-/* GRID LAYOUTS */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.one-two{display:grid;grid-template-columns:1fr 2fr;gap:16px}
-
-/* EVENTS */
-.event-card{
-  background:var(--navy-light);border:1px solid rgba(255,255,255,.05);padding:20px;
-  border-left:3px solid var(--gold);cursor:pointer;transition:all .2s;
-}
-.event-card:hover{background:var(--charcoal);border-left-color:var(--gold-light)}
-.event-name{font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:4px}
-.event-date{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
-.event-meta{display:flex;gap:12px;flex-wrap:wrap}
-.event-meta-tag{font-size:10px;padding:3px 8px;border:1px solid rgba(255,255,255,.1);color:var(--silver)}
-.progress-bar-wrap{margin-top:12px}
-.progress-label{display:flex;justify-content:space-between;font-size:10px;color:var(--silver);margin-bottom:4px}
-.progress-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px}
-.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .5s}
-
-/* DEPT GRID */
-.dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
-.dept-block{padding:16px;background:var(--navy);border:1px solid rgba(255,255,255,.04)}
-.dept-name{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
-.dept-members{display:flex;flex-direction:column;gap:4px}
-.dept-member{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--stone)}
-.workload-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:2px;width:100%}
-.workload-fill{height:100%;border-radius:2px;transition:width .4s}
-.wl-ok{background:var(--green)}
-.wl-warn{background:var(--amber)}
-.wl-over{background:var(--red)}
-
-/* APPROVAL QUEUE */
-.approval-item{
-  background:var(--navy-light);border:1px solid rgba(255,255,255,.05);padding:16px;
-  border-top:2px solid rgba(100,130,200,.4);margin-bottom:2px;
-}
-.approval-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:8px}
-.approval-task{font-size:13px;font-weight:400;color:var(--white)}
-.approval-by{font-size:10px;color:var(--silver);margin-top:2px}
-.approval-actions{display:flex;gap:8px}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--navy-mid);border:1px solid rgba(184,154,92,.2);width:700px;max-width:95vw;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column}
-.modal-header{padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-mid);z-index:5}
-.modal-title{font-family:var(--font-display);font-size:24px;font-weight:400;color:var(--white)}
-.modal-close{background:transparent;border:1px solid rgba(255,255,255,.15);width:30px;height:30px;color:var(--silver);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.modal-close:hover{border-color:var(--red);color:var(--red)}
-.modal-body{padding:28px;display:flex;flex-direction:column;gap:20px}
-.modal-footer{padding:16px 28px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:14px;background:var(--navy-mid);position:sticky;bottom:0;flex-wrap:wrap}
-
-/* FORM */
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.fg{display:flex;flex-direction:column;gap:6px}
-.fg label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--silver)}
-.fg input,.fg select,.fg textarea{
-  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.14);
-  padding:13px 14px;font-family:var(--font-body);font-size:13px;color:var(--white);
-  min-height:48px;border-radius:6px;outline:none;transition:border-color .3s;resize:vertical;
-}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
-.fg input::placeholder,.fg textarea::placeholder{color:rgba(154,159,173,.4)}
-.fg select option{background:var(--navy-mid)}
-.fg textarea{min-height:80px}
-.fg select{min-height:48px}
-.checkbox-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.cb-item{
-  display:flex;align-items:center;gap:6px;padding:6px 12px;
-  border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:11px;color:var(--stone);
-  transition:all .2s;
-}
-.cb-item.checked{border-color:var(--gold);color:var(--gold);background:rgba(184,154,92,.08)}
-
-/* GENERATED TASKS REVIEW */
-.gen-task{background:var(--navy);border:1px solid rgba(255,255,255,.05);padding:14px;margin-bottom:2px}
-.gen-task-top{display:flex;justify-content:space-between;align-items:start;margin-bottom:8px}
-.gen-task-title{font-size:13px;color:var(--white)}
-.gen-task-dept{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
-.gen-task-meta{font-size:11px;color:var(--silver);display:flex;gap:16px}
-.gen-task-actions{display:flex;gap:6px;flex-shrink:0}
-.btn-icon{background:transparent;border:1px solid rgba(255,255,255,.1);width:26px;height:26px;cursor:pointer;font-size:12px;color:var(--silver);display:flex;align-items:center;justify-content:center;transition:all .2s}
-.btn-icon:hover{border-color:var(--gold);color:var(--gold)}
-.btn-icon.red:hover{border-color:var(--red);color:var(--red)}
-
-/* CALENDAR */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cal-header{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);text-align:center;padding:8px}
-.cal-day{min-height:60px;background:var(--navy-light);border:1px solid rgba(255,255,255,.04);padding:6px;font-size:10px;color:var(--silver);position:relative;transition:background .2s}
-.cal-day:hover{background:var(--charcoal)}
-.cal-day.today{border-color:var(--gold);background:rgba(184,154,92,.06)}
-.cal-day.other-month{opacity:.3}
-.cal-day-num{font-size:11px;color:var(--stone);margin-bottom:3px}
-.cal-event-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);display:inline-block;margin-right:2px}
-.cal-task-line{font-size:9px;color:var(--silver);padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cal-task-line.red{color:var(--red)}
-
-/* PERF CHART (simple CSS bars) */
-.perf-chart{display:flex;gap:8px;align-items:flex-end;height:100px}
-.perf-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
-.perf-bar{width:100%;border-radius:2px 2px 0 0;transition:height .5s;background:linear-gradient(to top,var(--gold),var(--gold-light));opacity:.7;min-height:4px}
-.perf-bar:hover{opacity:1}
-.perf-label{font-size:8px;color:var(--silver);text-align:center;letter-spacing:.05em;white-space:nowrap}
-.perf-val{font-size:10px;color:var(--gold);font-weight:500}
-
-/* NOTIFICATION PANEL */
-.notif-panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:var(--navy-mid);border-left:1px solid rgba(184,154,92,.15);z-index:200;transform:translateX(100%);transition:transform .35s;overflow-y:auto}
-.notif-panel.open{transform:translateX(0)}
-.notif-panel-header{padding:20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-mid)}
-.notif-panel-title{font-family:var(--font-display);font-size:20px;color:var(--white)}
-.notif-item{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .2s}
-.notif-item:hover{background:rgba(255,255,255,.02)}
-.notif-item-title{font-size:12px;color:var(--white);margin-bottom:3px}
-.notif-item-sub{font-size:11px;color:var(--silver)}
-.notif-item-time{font-size:10px;color:var(--gold);margin-top:2px}
-.notif-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:4px}
-.notif-row{display:flex;gap:10px;align-items:flex-start}
-
-/* REDO MODAL */
-.redo-section{background:var(--navy);border:1px solid rgba(255,255,255,.06);padding:14px;margin-bottom:12px}
-.redo-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-.redo-val{font-size:13px;color:var(--silver);line-height:1.6}
-
-/* DIVISION TABS */
-.div-tabs{display:flex;gap:2px;margin-bottom:20px}
-.div-tab{padding:8px 20px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;background:var(--navy-light);color:var(--silver);border:1px solid rgba(255,255,255,.06);transition:all .2s}
-.div-tab.active{background:rgba(184,154,92,.1);color:var(--gold);border-color:rgba(184,154,92,.3)}
-
-/* BREADCRUMB */
-.breadcrumb{font-size:10px;color:var(--silver);letter-spacing:.1em;margin-bottom:20px;display:flex;align-items:center;gap:6px}
-.breadcrumb span{color:var(--gold)}
-
-/* STEP INDICATOR */
-.steps{display:flex;gap:0;margin-bottom:24px}
-.step{flex:1;padding:10px 16px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;text-align:center;background:var(--navy-light);color:var(--silver);border-right:1px solid rgba(255,255,255,.05)}
-.step:last-child{border-right:none}
-.step.active{background:rgba(184,154,92,.12);color:var(--gold)}
-.step.done{background:rgba(76,175,125,.08);color:var(--green)}
-
-/* SCROLLBAR */
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}
-::-webkit-scrollbar-thumb{background:rgba(184,154,92,.3);border-radius:2px}
-
-/* DEPENDENCY GRAPH */
-.dep-graph{background:var(--navy);border:1px solid rgba(255,255,255,.06);padding:24px;position:relative;min-height:300px;overflow:hidden}
-.dep-row{display:flex;gap:8px;align-items:center;margin-bottom:16px;position:relative}
-.dep-row::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(255,255,255,.05);z-index:0}
-.dep-node{
-  background:var(--navy-mid);border:1px solid rgba(255,255,255,.1);padding:10px 14px;
-  font-size:11px;color:var(--white);z-index:1;cursor:pointer;transition:all .2s;
-  white-space:nowrap;position:relative;min-width:130px;text-align:center;
-}
-.dep-node:hover{border-color:var(--gold);background:var(--charcoal)}
-.dep-node.done-node{border-color:var(--green);background:rgba(76,175,125,.06)}
-.dep-node.active-node{border-color:var(--gold);background:rgba(184,154,92,.08)}
-.dep-node.locked-node{opacity:.5}
-.dep-arrow{font-size:18px;color:rgba(184,154,92,.4);z-index:1;flex-shrink:0}
-.dep-dept{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
-
-/* OVERDUE ALERT */
-.overdue-alert{background:var(--red-dim);border:1px solid rgba(192,80,77,.3);padding:14px;display:flex;gap:12px;align-items:start;margin-bottom:8px}
-.alert-icon{color:var(--red);font-size:16px;flex-shrink:0;margin-top:2px}
-.alert-body{flex:1}
-.alert-title{font-size:13px;color:var(--white);margin-bottom:3px}
-.alert-sub{font-size:11px;color:var(--silver)}
-.alert-actions{display:flex;gap:8px;margin-top:8px}
-
-/* RESPONSIVE */
-@media(max-width:900px){
-  #sidebar{display:none}
-  #main{margin-left:0}
-  .stat-row{grid-template-columns:repeat(2,1fr)}
-  .dept-grid{grid-template-columns:1fr}
-  .two-col,.three-col,.one-two{grid-template-columns:1fr}
-}
-</style>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDmbwcgEO1GmqNNAKsDFTOmK196a26eY8M&libraries=places&callback=initVenuePlaces" async defer></script>
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/utilities.css" />
+<link rel="stylesheet" href="css/president.css" />
 </head>
-<body>
+<body class="ops-shell">
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div class="sb-logo">
-    <img src="images/ssa-logo.png" alt="SSA"/>
+    <img src="logo-images/logo-v3.png" alt="SSA" loading="lazy" />
     <div class="sb-logo-txt"><span>SSA Ops</span><span>Board Platform</span></div>
   </div>
   <div class="sb-user">
@@ -326,7 +42,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
     <div class="sb-item" onclick="showPage('overdue')"><span class="sb-icon">⚠</span>Overdue & Alerts <span class="sb-badge" id="overdue-badge">0</span></div>
 
     <div class="sb-section-label">Events</div>
-    <div class="sb-item" onclick="showPage('events')"><span class="sb-icon">◆</span>All Events</div>
+    <div class="sb-item" onclick="showPage('events')"><span class="sb-icon">◆</span>Events</div>
     <div class="sb-item" onclick="openModal('eventCreateModal')"><span class="sb-icon">+</span>Create Event</div>
     <div class="sb-item" onclick="showPage('templates')"><span class="sb-icon">▣</span>Event Templates</div>
 
@@ -341,8 +57,13 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
     <div class="sb-item" onclick="showPage('internal-div')"><span class="sb-icon">▲</span>Internal Division</div>
     <div class="sb-item" onclick="showPage('external-div')"><span class="sb-icon">◯</span>External Division</div>
 
+    <div class="sb-section-label">Newsletter</div>
+    <div class="sb-item" onclick="showPage('newsletter')"><span class="sb-icon">◐</span>Edit Newsletter</div>
+
     <div class="sb-section-label">Executive</div>
     <div class="sb-item" onclick="showPage('reports')"><span class="sb-icon">✦</span>Reports</div>
+    <div class="sb-item" onclick="showPage('site-content')"><span class="sb-icon">◷</span>Index & Board</div>
+    <div class="sb-item" onclick="showPage('seed-users')"><span class="sb-icon">⎘</span>Seed users (sqlite.js)</div>
   </div>
   <div class="sb-footer">
     <div class="sb-footer-txt"><span class="poll-dot"></span>Live · syncing every 30s</div>
@@ -355,7 +76,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <div class="topbar">
     <div class="topbar-left"><h1 id="page-title">Command Center</h1></div>
     <div class="topbar-right">
-      <button class="btn btn-outline" onclick="window.location.href='index.html'">Home</button>
+      <a href="index.html" class="btn btn-outline" style="text-decoration:none;color:inherit">Main Site</a>
       <button class="btn btn-outline" onclick="window.location.href='ops-login.html'">Login Page</button>
       <button class="btn btn-outline" onclick="openModal('assignTaskModal')">Assign Task</button>
       <button class="btn btn-gold" onclick="openModal('eventCreateModal')">+ Create Event</button>
@@ -408,8 +129,8 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 
   <!-- ── PAGE: EVENTS ── -->
   <div class="page" id="page-events">
-    <div class="breadcrumb"><span>Events</span> / All Events</div>
-    <div class="two-col" id="events-grid"></div>
+    <div class="breadcrumb"><span>Events</span> / Current &amp; Past</div>
+    <div id="events-grid" style="display:flex;flex-direction:column;gap:14px"></div>
   </div>
 
   <!-- ── PAGE: EVENT PANEL ── -->
@@ -434,9 +155,20 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <!-- ── PAGE: DEPENDENCY ── -->
   <div class="page" id="page-dependency">
     <div class="breadcrumb"><span>Board</span> / Dependency Graph</div>
+    <div class="dep-map-header">
+      <div class="dep-map-title-wrap">
+        <div class="card-title" style="margin:0">Task Dependency Chain</div>
+      </div>
+      <div class="dep-event-picker-wrap" id="pres-dep-picker-wrap">
+        <div class="dep-event-picker" id="pres-dep-event-picker" onclick="togglePresDepEventDropdown()" role="button" tabindex="0">
+          <span class="dep-event-picker-label" id="pres-dep-event-name">All events</span>
+          <span class="dep-event-picker-chevron">▾</span>
+        </div>
+        <div class="dep-event-dropdown" id="pres-dep-event-dropdown" role="listbox"></div>
+      </div>
+    </div>
+    <input type="hidden" id="pres-dep-event-select" />
     <div class="card">
-      <div class="section-label">Live Event</div>
-      <div class="card-title">Task Dependency Chain</div>
       <div class="dep-graph" id="dep-graph-content"></div>
     </div>
   </div>
@@ -454,8 +186,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <!-- ── PAGE: INTERNAL DIV ── -->
   <div class="page" id="page-internal-div">
     <div class="breadcrumb"><span>Divisions</span> / Internal Division</div>
-    <div class="section-label">Team</div>
-    <div class="three-col" id="internal-member-cards"></div>
+    <div id="internal-member-cards"></div>
     <div class="card" style="margin-top:16px">
       <div class="section-label">Internal Tasks</div>
       <div class="card-title">All Internal Division Tasks</div>
@@ -466,8 +197,7 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <!-- ── PAGE: EXTERNAL DIV ── -->
   <div class="page" id="page-external-div">
     <div class="breadcrumb"><span>Divisions</span> / External Division</div>
-    <div class="section-label">Team</div>
-    <div class="three-col" id="external-member-cards"></div>
+    <div id="external-member-cards"></div>
     <div class="card" style="margin-top:16px">
       <div class="section-label">External Tasks</div>
       <div class="card-title">All External Division Tasks</div>
@@ -479,15 +209,20 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <div class="page" id="page-exec-div">
     <div class="breadcrumb"><span>Divisions</span> / Executive Division</div>
     <div id="exec-member-cards"></div>
+    <div class="card" style="margin-top:16px">
+      <div class="section-label">Executive Tasks</div>
+      <div class="card-title">All Executive Division Tasks</div>
+      <div class="task-list" id="exec-tasks-list"></div>
+    </div>
   </div>
 
-  <!-- ── PAGE: REPORTS ── -->
+  <!-- ── PAGE: REPORTS (escalations) ── -->
   <div class="page" id="page-reports">
     <div class="breadcrumb"><span>Executive</span> / Reports</div>
     <div class="card">
-      <div class="section-label">Oversight</div>
-      <div class="card-title">Vice President Reports Inbox</div>
-      <div class="card-sub">Escalations and executive review items from division leadership.</div>
+      <div class="section-label">Escalations</div>
+      <div class="card-title">Reports from Escalations</div>
+      <div class="card-sub">VP and division escalations submitted for executive review. Review details, recommended actions, and update status.</div>
       <div id="reports-list" style="display:flex;flex-direction:column;gap:10px;margin-top:16px"></div>
     </div>
   </div>
@@ -498,111 +233,287 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
     <div class="breadcrumb"><span>Events</span> / Event Templates</div>
     <div class="three-col" id="templates-grid"></div>
   </div>
+
+  <!-- ── PAGE: NEWSLETTER (full edit community newsletter) ── -->
+  <div class="page" id="page-newsletter">
+    <div class="breadcrumb"><span>Newsletter</span> / Community Newsletter</div>
+
+    <div class="card" style="margin-bottom:24px">
+      <div class="section-label">Current newsletter on site</div>
+      <div class="card-title">Current newsletter</div>
+      <div id="newsletter-preview-wrap" style="margin-top:16px;display:flex;flex-direction:column;gap:16px"></div>
+      <div style="margin-top:16px">
+        <button type="button" class="btn btn-outline" onclick="openNewsletterFullView()">View entire newsletter</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Community Newsletter</div>
+      <div class="card-title">Edit entries</div>
+      <div style="margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="newsletterAddEntry()">+ Add newsletter entry</button>
+        <button type="button" class="btn btn-outline" style="margin-left:10px" onclick="loadNewsletterPage()">Refresh</button>
+      </div>
+      <div id="newsletter-editor-list" style="display:flex;flex-direction:column;gap:20px"></div>
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="newsletterPushToGitHub()">Push Newsletter to Github</button>
+        <span id="newsletter-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: INDEX & BOARD (gallery + board section, homepage events, push to GitHub) ── -->
+  <div class="page" id="page-site-content">
+    <div class="breadcrumb"><span>Executive</span> / Index & Board</div>
+    <div class="card">
+      <div class="section-label">Index gallery</div>
+      <div class="card-title">Gallery</div>
+      <div class="site-gallery-drop-wrap" style="margin-bottom:16px">
+        <div class="site-drop-zone site-gallery-drop-wide" id="site-gallery-drop" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryDrop(event)" onclick="document.getElementById('site-gallery-file').click()">
+          <div class="site-dz-text" id="site-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
+          <div class="site-dz-sub">PNG, JPG</div>
+          <input type="file" id="site-gallery-file" accept="image/*" style="display:none" onchange="siteGalleryFileChosen(this)" />
+        </div>
+      </div>
+      <div id="site-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
+      <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="sitePushGalleryToGitHub()">Push Gallery Content to Github</button>
+        <span id="site-push-gallery-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+    <div class="card" style="margin-top:24px">
+      <div class="section-label">Board section (Executive Board on index)</div>
+      <div class="card-title">Edit members</div>
+      <div class="card-sub">Board is loaded from <code>board-images/</code>. Add (upload photo + name/role) or remove, reorder with ↺↻, then push.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="openViewBoard()">View Board</button>
+      </div>
+      <div id="site-board-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
+        <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
+        <button type="button" class="btn btn-outline" onclick="siteSaveBoard()">Refresh from folder</button>
+      </div>
+      <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="sitePushBoardToGitHub()">Push Member Content to Github</button>
+        <span id="site-push-board-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+    <div class="card" style="margin-top:24px">
+      <div class="section-label">Homepage events (Upcoming Events)</div>
+      <div class="card-title">Edit calendar items</div>
+      <div class="card-sub">
+        These appear in the <code>Upcoming Events</code> section on the public site. Edit day/month, title, description, tag, and optional RSVP button text + link,
+        then push to GitHub.
+      </div>
+      <div id="site-events-list" style="display:flex;flex-direction:column;gap:12px;margin:16px 0 20px"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
+        <button type="button" class="btn btn-outline" onclick="siteAddEvent()">+ Add event</button>
+      </div>
+      <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="sitePushEventsToGitHub()">Push Events to Github</button>
+        <span id="site-push-events-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: SEED USERS (sqlite.js) ── -->
+  <div class="page" id="page-seed-users">
+    <div class="breadcrumb"><span>Executive</span> / Seed users</div>
+    <div class="card">
+      <div class="section-label">Database</div>
+      <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:8px">seedUsers() in sqlite.js</div>
+      <div style="font-size:12px;color:var(--silver);margin-bottom:16px">Paste or edit the seedUsers() function below, then push to GitHub.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="pushSeedToGitHub()">Push to GitHub</button>
+        <a id="seed-open-github" class="btn btn-outline" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Open in GitHub</a>
+      </div>
+      <textarea id="seed-users-snippet" style="width:100%;min-height:360px;background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:var(--stone);resize:vertical;line-height:1.5" placeholder="Paste seedUsers() from sqlite.js or edit locally, then click Push to GitHub."></textarea>
+      <div id="seed-status" style="font-size:11px;color:var(--silver);margin-top:10px"></div>
+    </div>
+  </div>
 </main>
+
+<!-- ══ MODAL: View Gallery (same as index — add/remove from gallery folder) ══ -->
+<div class="modal-overlay" id="site-gallery-modal">
+  <div class="modal" style="max-width:720px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mh" style="flex-shrink:0">
+      <div>
+        <div class="mh-title">View Gallery</div>
+        <div class="mh-sub">Same as index: 3 on homepage, rest in Full Gallery. Add or remove — saved to gallery folder immediately.</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeModal('site-gallery-modal')" style="margin:0">✕</button>
+    </div>
+    <div style="padding:0 24px 24px;overflow-y:auto;flex:1">
+      <div class="site-drop-zone" id="site-gallery-modal-drop" style="margin-bottom:16px" ondragover="siteGalleryDragOver(event)" ondragleave="siteGalleryDragLeave(event)" ondrop="siteGalleryModalDrop(event)" onclick="document.getElementById('site-gallery-modal-file').click()">
+        <div class="site-dz-text" id="site-gallery-modal-dz-text"><strong>Click to upload</strong> or drag and drop a photo</div>
+        <div class="site-dz-sub">PNG, JPG</div>
+        <input type="file" id="site-gallery-modal-file" accept="image/*" style="display:none" onchange="siteGalleryModalFileChosen(this)" />
+      </div>
+      <div id="site-gallery-modal-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px"></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button type="button" class="btn btn-gold" onclick="siteSaveGallery()">Done</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('site-gallery-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: View Board (add/edit/delete board members) ══ -->
+<div class="modal-overlay" id="site-board-modal">
+  <div class="modal" style="max-width:760px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mh" style="flex-shrink:0">
+      <div>
+        <div class="mh-title">View Board</div>
+        <div class="mh-sub">Edit board members. Fields: photo, full name, role, major.</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeModal('site-board-modal')" style="margin:0">✕</button>
+    </div>
+    <div style="padding:0 24px 24px;overflow-y:auto;flex:1">
+      <div id="site-board-modal-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
+        <button type="button" class="btn btn-gold" onclick="siteSaveBoard();closeModal('site-board-modal')">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: View entire newsletter (zoomed) ══ -->
+<div class="modal-overlay" id="newsletter-full-modal">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mh" style="flex-shrink:0;justify-content:flex-end">
+      <button type="button" class="modal-close" onclick="closeModal('newsletter-full-modal')" aria-label="Close">✕</button>
+    </div>
+    <div id="newsletter-full-modal-body" style="padding:0 24px 24px;overflow-y:auto;flex:1"></div>
+  </div>
+</div>
 
 <!-- ══ MODAL: EVENT CREATE ══ -->
 <div class="modal-overlay" id="eventCreateModal">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Create New Event</div>
-      <button class="modal-close" onclick="closeModal('eventCreateModal')">✕</button>
+    <div class="mh">
+      <div>
+        <div class="mh-title">Create New Event</div>
+        <div class="mh-sub">Define event details, scope, and generate tasks with Gemini.</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="ev-id">New</span>
+        <button type="button" class="modal-close" onclick="closeModal('eventCreateModal')" style="margin:0">✕</button>
+      </div>
     </div>
-    <div class="modal-body">
-      <div class="steps" id="create-steps">
-        <div class="step active">1 · Event Info</div>
-        <div class="step">2 · Scope</div>
-        <div class="step">3 · Instructions</div>
-        <div class="step">4 · Generate</div>
-        <div class="step">5 · Review</div>
+    <div class="step-bar" id="create-steps">
+      <div class="step step-tab active" id="tab-1" onclick="goToCreateStep(1)"><span class="st-num">1</span><span class="st-label">Event Info</span></div>
+      <div class="step step-tab" id="tab-2" onclick="goToCreateStep(2)"><span class="st-num">2</span><span class="st-label">Scope</span></div>
+      <div class="step step-tab" id="tab-3" onclick="goToCreateStep(3)"><span class="st-num">3</span><span class="st-label">Instructions</span></div>
+      <div class="step step-tab" id="tab-4" onclick="goToCreateStep(4)"><span class="st-num">4</span><span class="st-label">Generate</span></div>
+      <div class="step step-tab" id="tab-5" onclick="goToCreateStep(5)"><span class="st-num">5</span><span class="st-label">Review</span></div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="create-prog-fill" style="width:20%"></div></div>
+    <div class="mb">
+      <div class="step-section active" id="create-step-1">
+        <div class="ce-sl">Event Info</div>
+        <div class="ce-r2">
+          <div class="ce-fg"><label class="ce-fl">Event Name</label><input type="text" class="ce-fi" placeholder="Enter event name" id="ev-name"/></div>
+          <div class="ce-fg"><label class="ce-fl">Event Date</label><input type="date" class="ce-fi" id="ev-date"/></div>
+        </div>
+        <div class="type-grid" id="ev-type-grid">
+          <div class="type-card" data-value="Flagship Production" onclick="setEvType(this)"><div class="tc-name">Flagship Production</div><div class="tc-desc">Major production events</div></div>
+          <div class="type-card" data-value="Cultural Event" onclick="setEvType(this)"><div class="tc-name">Cultural Event</div><div class="tc-desc">Cultural celebrations</div></div>
+          <div class="type-card" data-value="Campus Kickoff" onclick="setEvType(this)"><div class="tc-name">Campus Kickoff</div><div class="tc-desc">Campus-wide kickoffs</div></div>
+          <div class="type-card" data-value="Campus Event" onclick="setEvType(this)"><div class="tc-name">Campus Event</div><div class="tc-desc">Campus events and activations</div></div>
+          <div class="type-card" data-value="Community Event" onclick="setEvType(this)"><div class="tc-name">Community Event</div><div class="tc-desc">Community-focused</div></div>
+          <div class="type-card" data-value="Speaker Event" onclick="setEvType(this)"><div class="tc-name">Speaker Event</div><div class="tc-desc">Guest speakers</div></div>
+        </div>
+        <input type="hidden" id="ev-type" value=""/>
+        <div class="ce-dv"></div>
+        <div class="ce-r2">
+          <div class="ce-fg"><label class="ce-fl">Event Scope</label><select id="ev-scope" class="ce-fi"><option>Massive Scale (1000+)</option><option>Large Scale (500+)</option><option>Medium (100–500)</option><option>Small (&lt;100)</option><option>Internal Only</option></select></div>
+          <div class="ce-fg"><label class="ce-fl">Venue / Location</label><input type="text" class="ce-fi" placeholder="Building or place near UMN campus" id="ev-venue"/></div>
+        </div>
+        <div class="ce-fg" style="margin-top:-8px"><label class="ce-fl">Room / Suite (optional)</label><input type="text" class="ce-fi" placeholder="e.g. Room 120, Suite 300" id="ev-venue-room"/></div>
       </div>
-      <div id="create-step-1">
-        <div class="form-row">
-          <div class="fg"><label>Event Name</label><input type="text" placeholder="Enter event name" id="ev-name"/></div>
-          <div class="fg"><label>Event Date</label><input type="date" id="ev-date"/></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Event Type</label>
-            <select id="ev-type">
-              <option value="">— Select —</option>
-              <option>Flagship Production</option><option>Cultural Event</option>
-              <option>Campus Kickoff</option><option>Community Event</option>
-              <option>Speaker Event</option><option>Fundraiser</option>
-              <option>General Body Meeting</option>
-            </select>
+      <div class="step-section" id="create-step-2">
+        <div class="ce-sl">Scope & Roles</div>
+        <div class="ce-fg"><label class="ce-fl">Divisions & Roles Involved</label>
+          <div id="dept-checkboxes">
+            <div class="ce-dv" style="margin:8px 0 6px"></div>
+            <div class="ce-fl" style="margin-bottom:8px;font-size:9px">Internal Division</div>
+            <div class="checkbox-group cb-role-grid">
+              <div class="cb-item checked" data-role="Director of Operations" data-division="internal" onclick="toggleCb(this)">Director of Operations</div>
+              <div class="cb-item checked" data-role="Director of Finance & Development - Finance" data-division="internal" onclick="toggleCb(this)">Director of Finance & Development - Finance</div>
+              <div class="cb-item" data-role="Director of Finance & Development - Development" data-division="internal" onclick="toggleCb(this)">Director of Finance & Development - Development</div>
+              <div class="cb-item checked" data-role="Director of Events & Experiences" data-division="internal" onclick="toggleCb(this)">Director of Events & Experiences</div>
+              <div class="cb-item" data-role="Executive Producer, Somali Night — Production" data-division="internal" onclick="toggleCb(this)">Executive Producer, Somali Night — Production</div>
+            </div>
+            <div class="ce-dv" style="margin:14px 0 6px"></div>
+            <div class="ce-fl" style="margin-bottom:8px;font-size:9px">External Division</div>
+            <div class="checkbox-group cb-role-grid">
+              <div class="cb-item checked" data-role="Director of Brand & Marketing" data-division="external" onclick="toggleCb(this)">Director of Brand & Marketing</div>
+              <div class="cb-item" data-role="Director of Strategic Relations & Advancement" data-division="external" onclick="toggleCb(this)">Director of Strategic Relations & Advancement</div>
+              <div class="cb-item" data-role="Director of Editorial & Communications" data-division="external" onclick="toggleCb(this)">Director of Editorial & Communications</div>
+              <div class="cb-item checked" data-role="Director of Campus Activation" data-division="external" onclick="toggleCb(this)">Director of Campus Activation</div>
+              <div class="cb-item" data-role="Executive Producer, Somali Night — Creative" data-division="external" onclick="toggleCb(this)">Executive Producer, Somali Night — Creative</div>
+            </div>
+            <div class="ce-dv" style="margin:14px 0 6px"></div>
+            <div class="ce-fl" style="margin-bottom:8px;font-size:9px">Executive Division</div>
+            <div class="checkbox-group cb-role-grid">
+              <div class="cb-item" data-role="Executive President" data-division="executive" onclick="toggleCb(this)">Executive President</div>
+              <div class="cb-item" data-role="Vice President, Chief of Internal Affairs" data-division="executive" onclick="toggleCb(this)">Vice President, Chief of Internal Affairs</div>
+              <div class="cb-item" data-role="Vice President, Chief of External Affairs" data-division="executive" onclick="toggleCb(this)">Vice President, Chief of External Affairs</div>
+            </div>
           </div>
-          <div class="fg"><label>Event Scope</label>
-            <select id="ev-scope">
-              <option>Large Scale (500+)</option><option>Medium (100–500)</option>
-              <option>Small (&lt;100)</option><option>Internal Only</option>
-            </select>
-          </div>
         </div>
-        <div class="fg"><label>Venue / Location</label><input type="text" placeholder="Enter venue or location" id="ev-venue"/></div>
+        <div class="ce-fg"><label class="ce-fl">Expected Deliverables By Role</label><div class="ce-disclaimer" style="margin-bottom:10px">Example: &ldquo;Finalize run-of-show by [date]; share with production and marketing for sign-off.&rdquo;</div><div id="role-deliverables-container" style="display:flex;flex-direction:column;gap:10px"></div></div>
       </div>
-      <div id="create-step-2" style="display:none">
-        <div class="fg"><label>Divisions & Roles Involved</label>
-          <div class="checkbox-group" id="dept-checkboxes">
-            <div class="cb-item checked" data-role="Director of Operations" data-division="internal" onclick="toggleCb(this)">Internal · Director of Operations</div>
-            <div class="cb-item checked" data-role="Director of Finance & Development - Finance" data-division="internal" onclick="toggleCb(this)">Internal · Director of Finance & Development - Finance</div>
-            <div class="cb-item" data-role="Director of Finance & Development - Development" data-division="internal" onclick="toggleCb(this)">Internal · Director of Finance & Development - Development</div>
-            <div class="cb-item checked" data-role="Director of Events & Experiences" data-division="internal" onclick="toggleCb(this)">Internal · Director of Events & Experiences</div>
-            <div class="cb-item" data-role="Executive Producer, Somali Night — Production" data-division="internal" onclick="toggleCb(this)">Internal · Executive Producer, Somali Night — Production</div>
-            <div class="cb-item" data-role="Executive Producer, Somali Night — Creative" data-division="internal" onclick="toggleCb(this)">Internal · Executive Producer, Somali Night — Creative</div>
-            <div class="cb-item checked" data-role="Director of Brand & Marketing" data-division="external" onclick="toggleCb(this)">External · Director of Brand & Marketing</div>
-            <div class="cb-item" data-role="Director of Strategic Relations & Advancement" data-division="external" onclick="toggleCb(this)">External · Director of Strategic Relations & Advancement</div>
-            <div class="cb-item" data-role="Director of Editorial & Communications" data-division="external" onclick="toggleCb(this)">External · Director of Editorial & Communications</div>
-            <div class="cb-item checked" data-role="Director of Campus Activation" data-division="external" onclick="toggleCb(this)">External · Director of Campus Activation</div>
-          </div>
+      <div class="step-section" id="create-step-3">
+        <div class="ce-sl">Instructions</div>
+        <div class="ce-r2">
+          <div class="ce-fg"><label class="ce-fl">Budget Limit (USD)</label><input type="number" class="ce-fi" id="ev-budget-limit" placeholder="e.g. 5000" min="0" max="150000" step="1" onblur="validateBudgetLimit()"/><span class="ce-fi-hint" id="ev-budget-hint" style="display:none;font-size:10px;color:var(--red);margin-top:4px"></span></div>
+          <div class="ce-fg"><label class="ce-fl">Hard Deadline</label><input type="date" class="ce-fi" id="ev-hard-deadline"/></div>
         </div>
-        <div class="fg" style="margin-top:12px"><label>Expected Deliverables By Role</label>
-          <div id="role-deliverables-container" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div class="toggle-grid">
+          <div class="toggle-item on" id="toggle-contract" onclick="toggleEvYesNo('ev-need-contract', this)"><div><div class="ti-label">Venue Contract</div><div class="ti-sub">Required</div></div><div class="ti-toggle"></div></div>
+          <div class="toggle-item on" id="toggle-sponsors" onclick="toggleEvYesNo('ev-need-sponsors', this)"><div><div class="ti-label">Sponsor Outreach</div><div class="ti-sub">Required</div></div><div class="ti-toggle"></div></div>
         </div>
+        <input type="hidden" id="ev-need-contract" value="yes"/><input type="hidden" id="ev-need-sponsors" value="yes"/>
+        <div class="ce-fg"><label class="ce-fl">Preferred Sequencing (optional)</label><textarea class="ce-fi" placeholder="e.g. Budget and contracts first; then marketing; then day-of logistics." id="ev-sequence" style="min-height:70px"></textarea><div class="ce-disclaimer">Example: &ldquo;Finance and contracts before creative; marketing after venue locked.&rdquo; Keep it short: which groups depend on which.</div></div>
+        <div class="ce-fg"><label class="ce-fl">Custom Planning Prompt / Notes for Gemini</label><textarea class="ce-fi" placeholder="e.g. Focus on campus outreach and two checkpoints before event day." id="ev-prompt" style="min-height:100px"></textarea><div class="ce-disclaimer">Example: &ldquo;Include budget checkpoints and one internal review before external launch.&rdquo; Shorter prompts often produce cleaner, valid output.</div></div>
       </div>
-      <div id="create-step-3" style="display:none">
-        <div class="form-row">
-          <div class="fg"><label>Budget Limit (USD)</label><input type="number" id="ev-budget-limit" placeholder="e.g. 5000"/></div>
-          <div class="fg"><label>Hard Deadline</label><input type="date" id="ev-hard-deadline"/></div>
-        </div>
-        <div class="form-row">
-          <div class="fg"><label>Requires Venue Contract?</label>
-            <select id="ev-need-contract"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div class="step-section" id="create-step-4">
+        <div class="gen-stage">
+          <div class="gen-title" id="gen-status">Generate Task Workflow</div>
+          <div class="gen-sub">Gemini 2.5 Flash will analyze your event details and produce a structured set of tasks with assignments, dependencies, and timeline sequencing.</div>
+          <div class="gen-summary" id="gen-summary-box" style="display:none">
+            <div class="gs-row"><span class="gs-lbl">Event</span><span class="gs-val" id="gs-name">—</span></div>
+            <div class="gs-row"><span class="gs-lbl">Date</span><span class="gs-val" id="gs-date">—</span></div>
+            <div class="gs-row"><span class="gs-lbl">Type</span><span class="gs-val" id="gs-type">—</span></div>
+            <div class="gs-row"><span class="gs-lbl">Scope</span><span class="gs-val" id="gs-scope">—</span></div>
           </div>
-          <div class="fg"><label>Requires Sponsor Outreach?</label>
-            <select id="ev-need-sponsors"><option value="yes">Yes</option><option value="no">No</option></select>
-          </div>
+          <button class="gen-btn" id="gen-btn" onclick="generateTasks()">Generate with Gemini</button>
         </div>
-        <div class="fg"><label>Preferred Sequencing Guidance (optional)</label>
-          <textarea placeholder="Describe preferred sequencing and dependency rules" id="ev-sequence"></textarea>
-        </div>
-        <div class="fg"><label>Custom Planning Prompt / Notes for Gemini</label>
-          <textarea placeholder="Any specific instructions for task generation. The more detail, the better the output..." id="ev-prompt" style="min-height:100px"></textarea>
-        </div>
-      </div>
-      <div id="create-step-4" style="display:none">
-        <div style="text-align:center;padding:28px 20px 14px">
-          <div id="gen-status" style="font-family:var(--font-display);font-size:28px;color:var(--white);margin-bottom:12px">Generate Task Workflow</div>
-          <div style="font-size:13px;color:var(--silver);margin-bottom:16px;max-width:640px;margin-left:auto;margin-right:auto">Gemini 2.5 Flash will analyze your event details and produce a structured set of tasks with assignments, dependencies, and timeline sequencing.</div>
-          <button class="btn btn-gold" style="font-size:12px;padding:12px 32px" onclick="generateTasks()">Generate with Gemini</button>
-        </div>
-        <div style="padding:0 20px 22px">
-          <div id="gen-input-preview" style="font-size:11px;color:var(--silver);margin-bottom:10px"></div>
-          <div id="gen-detail-log" style="background:var(--navy);border:1px solid rgba(255,255,255,.08);padding:12px;max-height:180px;overflow:auto;font-size:11px;color:var(--stone);text-align:left"></div>
+        <div style="padding:0 0 12px">
+          <div id="gen-input-preview" style="font-size:11px;color:var(--silver);margin-bottom:8px"></div>
+          <div id="gen-detail-log" style="background:var(--navy);border:1px solid rgba(255,255,255,.08);padding:12px;max-height:160px;overflow:auto;font-size:11px;color:var(--stone);text-align:left"></div>
         </div>
       </div>
-      <div id="create-step-5" style="display:none">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div>
-            <div style="font-family:var(--font-display);font-size:20px;color:var(--white)">Generated Tasks</div>
-            <div style="font-size:11px;color:var(--silver);margin-top:2px">Review, edit, or delete before publishing</div>
-          </div>
-          <button class="btn btn-outline" onclick="addGenTask()" style="font-size:9px;padding:7px 16px">+ Add Task</button>
+      <div class="step-section" id="create-step-5">
+        <div class="ce-sl">Review</div>
+        <div style="margin-bottom:14px">
+          <div style="font-family:var(--font-display);font-size:18px;color:var(--white)">Generated Tasks</div>
+          <div style="font-size:11px;color:var(--silver);margin-top:2px">Review, edit, or delete before publishing</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <button type="button" class="review-add" onclick="addGenTask()">+ Add Task</button>
         </div>
         <div id="generated-tasks-list"></div>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" id="create-back-btn" onclick="createStep(-1)" style="display:none">← Back</button>
-      <button class="btn btn-gold" id="create-next-btn" onclick="createStep(1)">Continue →</button>
+    <div class="mf">
+      <span class="mf-step-txt" id="mf-step-txt">Step 1 of 5</span>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button type="button" class="btn btn-back" id="create-back-btn" onclick="createStep(-1)" style="display:none">← Back</button>
+        <button type="button" class="btn btn-gold" id="create-next-btn" onclick="createStep(1)">Continue →</button>
+      </div>
     </div>
   </div>
 </div>
@@ -652,59 +563,106 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   </div>
 </div>
 
+<div class="modal-overlay" id="eventDetailModal">
+  <div class="modal" style="max-width:860px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="event-detail-title">Event Detail</div>
+      <button class="modal-close" onclick="closeModal('eventDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="event-detail-body" style="overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('eventDetailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="genTaskDetailModal">
+  <div class="modal" style="max-width:760px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="gen-task-detail-title">Generated Task Detail</div>
+      <button class="modal-close" onclick="closeModal('genTaskDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="gen-task-detail-body" style="overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('genTaskDetailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODAL: ASSIGN TASK ══ -->
 <div class="modal-overlay" id="assignTaskModal">
-  <div class="modal" style="max-width:760px">
-    <div class="modal-header">
-      <div class="modal-title">Assign Task</div>
-      <button class="modal-close" onclick="closeModal('assignTaskModal')">✕</button>
+  <div class="modal at-modal" style="max-width:720px">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Assign Task</div>
+        <div class="at-hsub">Internal Operations · SSA Board Platform</div>
+      </div>
+      <button class="at-close" type="button" onclick="closeModal('assignTaskModal')">✕</button>
     </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="fg"><label>Task Title</label><input id="p-assign-title" type="text" placeholder="Enter task title" /></div>
-        <div class="fg"><label>Role</label>
-          <select id="p-assign-role" onchange="loadPresidentSuggestions()">
-            <option value="">— Select role —</option>
-            <option>Director of Operations</option>
-            <option>Director of Finance & Development - Finance</option>
-            <option>Director of Finance & Development - Development</option>
-            <option>Director of Events & Experiences</option>
-            <option>Director of Brand & Marketing</option>
-            <option>Director of Strategic Relations & Advancement</option>
-            <option>Director of Editorial & Communications</option>
-            <option>Director of Campus Activation</option>
-            <option>Executive Producer, Somali Night — Production</option>
-            <option>Executive Producer, Somali Night — Creative</option>
-          </select>
+    <div class="at-body">
+      <div class="at-progress-track"><div class="at-progress-val" id="p-assign-progress" style="width:20%"></div></div>
+      <input type="hidden" id="p-assign-priority" value="standard" />
+      <select id="p-assign-role" style="display:none" aria-hidden="true"><option value="">—</option></select>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Task Title</label>
+          <input class="at-fi" id="p-assign-title" type="text" placeholder="e.g. Launch promotional campaign" oninput="updateAssignProgress()" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Linked Event</label>
+          <select class="at-fi" id="p-assign-event" onchange="updateAssignProgress()"><option value="">Standalone</option></select>
         </div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Due Date</label><input id="p-assign-due" type="date" /></div>
-        <div class="fg"><label>Priority</label>
-          <select id="p-assign-priority">
-            <option value="standard">Standard</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
-            <option value="critical">Critical</option>
-          </select>
+      <div class="fg" style="margin-top:4px;margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row">
+        <button type="button" class="at-prio-btn" data-prio="urgent" onclick="setAssignPrio(this)">Urgent</button>
+        <button type="button" class="at-prio-btn" data-prio="high" onclick="setAssignPrio(this)">High</button>
+        <button type="button" class="at-prio-btn active-standard" data-prio="standard" onclick="setAssignPrio(this)">Standard</button>
+        <button type="button" class="at-prio-btn" data-prio="low" onclick="setAssignPrio(this)">Low</button>
+      </div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Due Date</label>
+          <input class="at-fi" id="p-assign-due" type="date" oninput="updateAssignProgress()" />
         </div>
+        <div class="fg"></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Linked Event</label><select id="p-assign-event"></select></div>
-        <div class="fg"><label>Unlock Date</label><input id="p-assign-unlock" type="datetime-local" /></div>
-      </div>
-      <div class="fg"><label>Description</label><textarea id="p-assign-description" placeholder="Describe scope and completion criteria"></textarea></div>
-      <div class="fg"><label>Prerequisite Tasks</label><div style="font-size:11px;color:var(--silver)">Select tasks that must be completed first. New task auto-locks until prerequisites are done.</div><div id="p-assign-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Assign to Role</div>
+      <div class="at-role-grid" id="p-assign-role-chips"></div>
+      <div class="at-suggest-wrap">
+        <div class="at-suggest-hdr">
+          <span class="at-suggest-title">Smart Suggestions</span>
+          <span class="at-suggest-title" style="font-size:10px;color:var(--silver)">Sorted by role fit + workload</span>
+        </div>
+        <div class="at-suggest-list" id="p-assign-suggestions">
+          <div style="font-size:12px;color:var(--silver);padding:8px 0">Select a role to load suggestions.</div>
+        </div>
+      </div></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:12px;margin-top:-8px">Only active tasks can be selected as prerequisites.</div>
+      <div class="at-prereq-list" id="p-assign-dependencies"></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Description</div>
       <div class="fg">
-        <label>Smart Suggestions</label>
-        <div id="p-assign-suggestions" style="display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:12px;color:var(--silver)">Select a role to load suggestions.</div>
-        </div>
+        <textarea class="at-fi at-fta" id="p-assign-description" placeholder="Describe the scope, what done looks like, and any context the assignee needs." oninput="updateAssignProgress();updateAssignDescHint();"></textarea>
+        <div class="ce-disclaimer" id="p-assign-desc-hint" style="font-size:9px;color:var(--gold);text-align:right;margin-top:4px">Recommended 0/100 characters (minimum 40).</div>
+      </div>
+      </div>
+      <div class="fg p-assign-meeting-wrap">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="p-assign-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="validateMeetingLink(this)" />
+        <span class="meeting-link-err" id="p-assign-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('assignTaskModal')">Cancel</button>
-      <button class="btn btn-gold" onclick="assignTaskFromPresident()">Assign Task</button>
+    <div class="at-footer">
+      <div class="at-footer-left" id="p-assign-footer-hint">Select a role and assignee above.</div>
+      <div class="at-footer-right">
+        <a id="p-assign-add-calendar" href="#" target="_blank" rel="noopener noreferrer" class="at-btn-cancel" style="text-decoration:none;display:inline-flex;align-items:center" onclick="return openAssignTaskCalendar();">Add to Google Calendar</a>
+        <button type="button" class="at-btn-cancel" onclick="closeModal('assignTaskModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="assignTaskFromPresident()">Assign Task</button>
+      </div>
     </div>
   </div>
 </div>
@@ -722,23 +680,73 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
         <div class="fg"><label>Budget Limit</label><input id="edit-event-budget" type="number" /></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label>Event Type</label><input id="edit-event-type" type="text" /></div>
+        <div class="fg">
+          <label>Event Type</label>
+          <input id="edit-event-type" type="text" readonly />
+          <div class="edit-chip-grid" id="edit-event-type-grid">
+            <button type="button" class="edit-chip" data-value="Flagship Production" onclick="setEditEventType(this)">Flagship Production</button>
+            <button type="button" class="edit-chip" data-value="Cultural Event" onclick="setEditEventType(this)">Cultural Event</button>
+            <button type="button" class="edit-chip" data-value="Campus Kickoff" onclick="setEditEventType(this)">Campus Kickoff</button>
+            <button type="button" class="edit-chip" data-value="Campus Event" onclick="setEditEventType(this)">Campus Event</button>
+            <button type="button" class="edit-chip" data-value="Community Event" onclick="setEditEventType(this)">Community Event</button>
+            <button type="button" class="edit-chip" data-value="Speaker Event" onclick="setEditEventType(this)">Speaker Event</button>
+          </div>
+        </div>
         <div class="fg"><label>Event Date</label><input id="edit-event-date" type="date" /></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label>Event Scope</label><input id="edit-event-scope" type="text" /></div>
+        <div class="fg">
+          <label>Event Scope</label>
+          <input id="edit-event-scope" type="text" readonly />
+          <div class="edit-chip-grid" id="edit-event-scope-grid">
+            <button type="button" class="edit-chip" data-value="Massive Scale (1000+)" onclick="setEditEventScope(this)">Massive</button>
+            <button type="button" class="edit-chip" data-value="Large Scale (500+)" onclick="setEditEventScope(this)">Large</button>
+            <button type="button" class="edit-chip" data-value="Medium (100–500)" onclick="setEditEventScope(this)">Medium</button>
+            <button type="button" class="edit-chip" data-value="Small (<100)" onclick="setEditEventScope(this)">Small</button>
+            <button type="button" class="edit-chip" data-value="Internal Only" onclick="setEditEventScope(this)">Internal Only</button>
+          </div>
+        </div>
         <div class="fg"><label>Venue</label><input id="edit-event-venue" type="text" /></div>
       </div>
       <div class="fg"><label>Location</label><input id="edit-event-location" type="text" /></div>
       <div class="fg"><label>Planning Notes / Event Instructions</label><textarea id="edit-event-notes"></textarea></div>
       <div class="fg"><label>Timeline Assumptions</label><textarea id="edit-event-timeline"></textarea></div>
-      <div class="fg"><label>Task Sequence / Workflow Order</label><textarea id="edit-event-workflow" placeholder='JSON array or plain notes'></textarea></div>
-      <div class="form-row">
-        <div class="fg"><label>Divisions Involved</label><textarea id="edit-event-divisions" placeholder='["Internal Division","External Division"]'></textarea></div>
-        <div class="fg"><label>Roles Involved</label><textarea id="edit-event-roles" placeholder='["Director of Operations"]'></textarea></div>
+      <div class="fg">
+        <label>Dependency Stages</label>
+        <div class="edit-chip-grid" id="edit-event-stage-grid">
+          <button type="button" class="edit-chip" data-value="Planning" onclick="toggleEditEventStage(this)">Planning</button>
+          <button type="button" class="edit-chip" data-value="Pre-Event" onclick="toggleEditEventStage(this)">Pre-Event</button>
+          <button type="button" class="edit-chip" data-value="Execution" onclick="toggleEditEventStage(this)">Execution</button>
+          <button type="button" class="edit-chip" data-value="Wrap-Up" onclick="toggleEditEventStage(this)">Wrap-Up</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="setDefaultEditWorkflow()">Use Default Order</button>
+          <button type="button" class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="clearEditWorkflowStages()">Clear Stages</button>
+        </div>
+        <textarea id="edit-event-workflow" placeholder='JSON array or plain notes' style="display:none"></textarea>
       </div>
-      <div class="fg"><label>Deliverables By Role</label><textarea id="edit-event-deliverables" placeholder='{"Director of Operations":"Venue setup"}'></textarea></div>
-      <div class="fg"><label>Constraints</label><textarea id="edit-event-constraints" placeholder='{"hardDeadline":"2026-03-01"}'></textarea></div>
+      <div class="form-row">
+        <div class="fg">
+          <label>Divisions Involved</label>
+          <div class="edit-chip-grid" id="edit-event-division-grid">
+            <button type="button" class="edit-chip" data-value="Internal Division" onclick="toggleEditEventDivision(this)">Internal Division</button>
+            <button type="button" class="edit-chip" data-value="External Division" onclick="toggleEditEventDivision(this)">External Division</button>
+            <button type="button" class="edit-chip" data-value="Executive Division" onclick="toggleEditEventDivision(this)">Executive Division</button>
+          </div>
+          <textarea id="edit-event-divisions" placeholder='["Internal Division","External Division"]' style="display:none"></textarea>
+        </div>
+        <div class="fg">
+          <label>Roles Involved</label>
+          <div class="edit-chip-grid" id="edit-event-role-grid"></div>
+          <textarea id="edit-event-roles" placeholder='["Director of Operations"]' style="display:none"></textarea>
+        </div>
+      </div>
+      <div class="fg"><label>Deliverables By Role</label><div id="edit-event-deliverables-fields" style="display:flex;flex-direction:column;gap:10px"></div><textarea id="edit-event-deliverables" placeholder='{"Director of Operations":"Venue setup"}' style="display:none"></textarea></div>
+      <div class="form-row">
+        <div class="fg"><label>Hard Deadline</label><input id="edit-event-hard-deadline" type="date" /></div>
+        <div class="fg"><label>Constraint Notes</label><input id="edit-event-constraint-note" type="text" placeholder="Optional risk, compliance, or logistics note" /></div>
+      </div>
+      <textarea id="edit-event-constraints" placeholder='{"hardDeadline":"2026-03-01"}' style="display:none"></textarea>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('eventEditModal')">Cancel</button>
@@ -748,47 +756,127 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
 </div>
 
 <div class="modal-overlay" id="taskEditModal">
-  <div class="modal" style="max-width:900px">
-    <div class="modal-header">
-      <div class="modal-title">Edit Task</div>
-      <button class="modal-close" onclick="closeModal('taskEditModal')">✕</button>
+  <div class="modal at-modal" style="max-width:720px">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Edit Task</div>
+        <div class="at-hsub" id="edit-task-header-sub">Internal Operations · SSA Board Platform</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="task-id-badge" id="edit-task-id-badge">TASK-000</span>
+        <button class="at-close" type="button" onclick="closeModal('taskEditModal')">✕</button>
+      </div>
     </div>
-    <div class="modal-body">
+    <div class="at-body">
       <input type="hidden" id="edit-task-id" />
-      <div class="form-row">
-        <div class="fg"><label>Task Title</label><input id="edit-task-title" type="text" /></div>
-        <div class="fg"><label>Assigned Person</label><select id="edit-task-assignee"></select></div>
+      <select id="edit-task-status" style="display:none"><option value="current">Current</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select>
+      <select id="edit-task-priority" style="display:none"><option value="urgent">Urgent</option><option value="high">High</option><option value="standard">Standard</option><option value="low">Low</option></select>
+      <div class="at-sec-label">Task Status</div>
+      <div class="status-grid" id="edit-task-status-grid">
+        <div class="st-btn" data-s="current" onclick="setEditStatus(this)"><div class="st-dot" style="background:#b89a5c"></div><div class="st-label">Current</div></div>
+        <div class="st-btn" data-s="redo" onclick="setEditStatus(this)"><div class="st-dot" style="background:#d4914a"></div><div class="st-label">Redo</div></div>
+        <div class="st-btn" data-s="completed" onclick="setEditStatus(this)"><div class="st-dot" style="background:#4caf7d"></div><div class="st-label">Completed</div></div>
+        <div class="st-btn" data-s="overdue" onclick="setEditStatus(this)"><div class="st-dot" style="background:#c0504d"></div><div class="st-label">Overdue</div></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Assigned Role</label><input id="edit-task-role" type="text" /></div>
-        <div class="fg"><label>Assigned Division</label><input id="edit-task-division" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Task Details</div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Task Title</label>
+          <input class="at-fi" id="edit-task-title" type="text" placeholder="Task title" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Linked Event</label>
+          <select class="at-fi" id="edit-task-event"><option value="">Standalone</option></select>
+        </div>
       </div>
-      <div class="fg"><label>Description</label><textarea id="edit-task-description"></textarea></div>
-      <div class="form-row">
-        <div class="fg"><label>Linked Event</label><select id="edit-task-event"></select></div>
-        <div class="fg"><label>Priority</label><select id="edit-task-priority"><option value="standard">Standard</option><option value="high">High</option><option value="urgent">Urgent</option><option value="critical">Critical</option></select></div>
+      <div class="fg" style="margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row" id="edit-task-prio-row">
+        <div class="at-prio-btn" data-p="urgent" onclick="setEditPrio(this)">Urgent</div>
+        <div class="at-prio-btn" data-p="high" onclick="setEditPrio(this)">High</div>
+        <div class="at-prio-btn" data-p="standard" onclick="setEditPrio(this)">Standard</div>
+        <div class="at-prio-btn" data-p="low" onclick="setEditPrio(this)">Low</div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Unlock Date / Time</label><input id="edit-task-unlock" type="datetime-local" /></div>
-        <div class="fg"><label>Due Date</label><input id="edit-task-due" type="datetime-local" /></div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Due Date</label>
+          <input class="at-fi" id="edit-task-due" type="datetime-local" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Lock until (optional)</label>
+          <input class="at-fi" id="edit-task-unlock" type="datetime-local" />
+          <div class="ce-disclaimer" style="margin-top:4px;font-size:10px">Leave empty to keep task unlocked. Only assigned tasks can be locked.</div>
+        </div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Status</label><select id="edit-task-status"><option value="current">Current</option><option value="locked">Locked</option><option value="pending_review">Pending Review</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select></div>
-        <div class="fg"><label>Meeting Date</label><input id="edit-task-meeting-date" type="date" /></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Meeting Time</label><input id="edit-task-meeting-time" type="time" /></div>
-        <div class="fg"><label>Meeting Location</label><input id="edit-task-meeting-location" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Assigned</div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Assigned Person</label>
+          <select class="at-fi" id="edit-task-assignee"></select>
+        </div>
+        <div class="fg">
+          <label class="at-fl">Assigned Role</label>
+          <input class="at-fi" id="edit-task-role" type="text" />
+        </div>
       </div>
-      <div class="fg"><label>Dependencies</label><div style="font-size:11px;color:var(--silver)">Use this to build or refine the dependency chart for this task.</div><div id="edit-task-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
-      <div class="fg"><label>Attachments</label><textarea id="edit-task-attachments" placeholder='["/uploads/file.pdf","https://..."]'></textarea></div>
-      <div class="fg"><label>Notes</label><textarea id="edit-task-notes"></textarea></div>
-      <div class="fg"><label>Redo Rules</label><textarea id="edit-task-redo-rules"></textarea></div>
-      <div class="fg"><label>Escalation Rules</label><textarea id="edit-task-escalation-rules"></textarea></div>
+      <input id="edit-task-division" type="hidden" />
+      </div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:10px;margin-top:-6px">Completion is blocked only when a selected prerequisite task is not completed.</div>
+      <div class="pre-list" id="edit-task-dependencies"></div>
+      </div>
+      <div class="at-divider"></div>
+      <div class="at-sec-label">Description</div>
+      <div class="fg">
+        <textarea class="at-fi at-fta" id="edit-task-description" placeholder="Describe scope, deliverables, and what done looks like."></textarea>
+      </div>
+      <div class="fg">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="edit-task-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="validateMeetingLink(this)" />
+        <span class="meeting-link-err" id="edit-task-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
+      </div>
+      <div class="at-divider"></div>
+      <div class="at-sec-label">Attachments</div>
+      <div class="att-list" id="edit-task-att-list"></div>
+      <div class="att-zone" id="edit-task-att-zone"
+        ondragover="editAttZoneDrag(this,true);event.preventDefault();"
+        ondragleave="editAttZoneDrag(this,false)"
+        ondrop="editAttZoneDrop(event);event.preventDefault();"
+        onclick="document.getElementById('edit-task-att-input').click()">
+        <div class="att-zone-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b89a5c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="att-zone-text"><strong>Click to upload</strong> or drag and drop</div>
+        <div class="att-zone-sub">PDF, PNG, JPG, DOCX, MP4 · Max 50 MB</div>
+        <input type="file" id="edit-task-att-input" multiple accept=".pdf,.png,.jpg,.jpeg,.gif,.doc,.docx,.ppt,.pptx,.mp4" style="display:none" onchange="editAttFilesPicked(this)" />
+      </div>
+      <input type="hidden" id="edit-task-attachments" value="[]" />
+      <div class="fg">
+        <label class="at-fl">Escalation Rules</label>
+        <p style="font-size:11px;color:var(--silver);margin-bottom:8px">When should this task escalate?</p>
+        <div class="rule-btn-wrap" id="edit-task-escalation-rules-wrap">
+          <button type="button" class="rule-btn" data-rule="notify_vp_2days" onclick="toggleRuleBtn(this,'escalation')">Notify VP after 2 days</button>
+          <button type="button" class="rule-btn" data-rule="escalate_to_president" onclick="toggleRuleBtn(this,'escalation')">Escalate to President</button>
+          <button type="button" class="rule-btn" data-rule="auto_remind" onclick="toggleRuleBtn(this,'escalation')">Auto-remind assignee</button>
+          <button type="button" class="rule-btn" data-rule="none" onclick="toggleRuleBtn(this,'escalation')">None</button>
+        </div>
+        <input type="hidden" id="edit-task-escalation-rules" value="" />
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('taskEditModal')">Cancel</button>
-      <button class="btn btn-gold" onclick="saveTaskEdit()">Save Task</button>
+    <div class="at-footer">
+      <div class="at-footer-left" id="edit-task-footer-hint" style="font-size:11px;color:var(--silver)">Assigned to · Status</div>
+      <div class="at-footer-right" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn-del" onclick="deleteTaskFromEditModal()">Delete Task</button>
+        <a id="edit-task-add-calendar" class="at-btn-cancel" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none" onclick="return openEditTaskCalendar(event)">Add to Google Calendar</a>
+        <button type="button" class="at-btn-cancel" onclick="closeModal('taskEditModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="saveTaskEdit()">Save Changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -797,1683 +885,25 @@ body{background:var(--navy);color:var(--white);font-family:var(--font-body);font
   <div class="modal" style="max-width:520px">
     <div class="modal-header">
       <div class="modal-title">Confirm Action</div>
-      <button class="modal-close" onclick="closeModal('confirmActionModal')">✕</button>
+      <button class="modal-close" onclick="cancelStyledConfirm()">✕</button>
     </div>
     <div class="modal-body">
       <div class="card-sub" id="confirm-action-message">Are you sure?</div>
+      <div class="confirm-hold-wrap">
+        <div class="confirm-hold-hint" id="confirm-hold-hint">Press and hold delete for 5 seconds to unlock confirm.</div>
+      </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('confirmActionModal')">Cancel</button>
-      <button class="btn btn-red" id="confirm-action-btn">Confirm</button>
+      <button class="btn btn-outline" onclick="cancelStyledConfirm()">Cancel</button>
+      <button class="btn btn-red hold-to-confirm-btn" id="confirm-action-btn">Confirm</button>
     </div>
   </div>
 </div>
 
-<script>
-// ── DATA ──────────────────────────────────────────────────────────────────
-const BOARD = [];
-const TASKS = [];
-const NOTIFICATIONS = [];
 
-// ── STATE ──────────────────────────────────────────────────────────────────
-let currentStep = 1;
-let totalSteps = 5;
-let isGeneratingTasks = false;
-
-// ── INIT ──────────────────────────────────────────────────────────────────
-function init() {
-  renderRoleDeliverableInputs();
-  renderWorkloadGrid();
-  renderAllTasks();
-  renderApprovals();
-  renderOverdue();
-  renderEvents();
-  renderDependencyGraph();
-  renderCalendar();
-  renderDivisions();
-  renderTemplates();
-  startPolling();
-}
-
-// ── NAVIGATION ────────────────────────────────────────────────────────────
-function showPage(id, param) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const el = document.getElementById('page-' + id);
-  if (el) el.classList.add('active');
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
-  if (param) {
-    document.getElementById('event-panel-name').textContent = param;
-    renderEventPanel(param);
-  }
-  const titles = {
-    'overview':'Command Center','tasks-all':'All Tasks','approvals':'Approval Queue',
-    'overdue':'Overdue & Alerts','events':'All Events','event-panel':'Event Control Panel',
-    'dependency':'Dependency Graph','calendar':'Calendar',
-    'internal-div':'Internal Division','external-div':'External Division','exec-div':'Executive Division',
-    'templates':'Event Templates','reports':'Reports',
-  };
-  document.getElementById('page-title').textContent = titles[id] || id;
-}
-
-// ── RENDER WORKLOAD GRID ──────────────────────────────────────────────────
-function renderWorkloadGrid() {
-  const divs = ['internal','external'];
-  const container = document.getElementById('workload-grid');
-  container.innerHTML = '';
-  divs.forEach(div => {
-    const members = BOARD.filter(b => b.div === div);
-    members.forEach(m => {
-      const pct = (m.tasks / m.max) * 100;
-      const cls = m.tasks >= m.max ? 'wl-over' : m.tasks >= m.max - 1 ? 'wl-warn' : 'wl-ok';
-      container.innerHTML += `
-        <div class="dept-block">
-          <div class="dept-name">${m.dept}</div>
-          <div class="dept-member">
-            <span>${m.name.split(' ')[0]}</span>
-            <span style="color:${m.tasks>=m.max?'var(--red)':m.tasks>=m.max-1?'var(--amber)':'var(--green)'}">${m.tasks}/${m.max}</span>
-          </div>
-          <div class="workload-bar"><div class="workload-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div>
-        </div>`;
-    });
-  });
-}
-
-// ── RENDER ALL TASKS ──────────────────────────────────────────────────────
-function renderAllTasks(filter = 'all') {
-  const list = document.getElementById('all-tasks-list');
-  let tasks = TASKS;
-  if (filter === "urgent") {
-    const soonMs = 1000 * 60 * 60 * 24 * 3;
-    tasks = tasks.filter((t) => {
-      const due = t.due_at ? new Date(t.due_at).getTime() : NaN;
-      const dueSoon = Number.isFinite(due) && due > Date.now() && due - Date.now() <= soonMs;
-      return String(t.priority || "").toLowerCase() === "critical" || dueSoon || t.status === "overdue";
-    });
-  } else if (filter !== 'all') {
-    tasks = tasks.filter(t => t.status === filter);
-  }
-  list.innerHTML = tasks.map(t => taskCard(t, true)).join('');
-}
-
-function taskCard(t, isAdmin=false) {
-  const statusMap = {done:'sb-done',current:'sb-current',locked:'sb-locked',overdue:'sb-urgent',pending:'sb-pending',redo:'sb-redo'};
-  const stripeMap = {done:'done',current:'current',locked:'locked',overdue:'urgent',pending:'current',redo:'redo'};
-  const statusLabel = {done:'Completed',current:'In Progress',locked:'Locked',overdue:'Overdue',pending:'Pending Review',redo:'Redo'};
-  return `
-    <div class="task-item" onclick="inspectTask(${t.id})">
-      <div class="task-stripe ${stripeMap[t.status] || 'locked'}"></div>
-      <div>
-        <div class="task-title">${t.title}</div>
-        <div class="task-meta">
-          <span>${t.assigned}</span>
-          <span>${t.dept}</span>
-          <span>Due ${t.due}</span>
-          ${t.event ? `<span style="color:var(--gold)">${t.event}</span>` : ''}
-        </div>
-      </div>
-      <div class="task-actions">
-        <span class="status-badge ${statusMap[t.status] || 'sb-locked'}">${statusLabel[t.status] || t.status}</span>
-        <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();inspectTask(${t.id})">Click to Review</button>
-        ${isAdmin && t.status === 'pending' ? `<button class="btn btn-green" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();approveTaskById(${t.id})">Approve</button>` : ''}
-        ${isAdmin && t.status === 'overdue' ? `<button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();extendTaskDeadline(${t.id})">Extend</button>` : ''}
-      </div>
-    </div>`;
-}
-
-function filterTasks(filter, el) {
-  document.querySelectorAll('.div-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  renderAllTasks(filter);
-}
-
-// ── APPROVALS ─────────────────────────────────────────────────────────────
-function renderApprovals() {
-  const pending = TASKS.filter(t => t.status === 'pending');
-  const cont = document.getElementById('full-approval-list');
-  cont.innerHTML = pending.map(t => `
-    <div class="approval-item">
-      <div class="approval-header">
-        <div>
-          <div class="approval-task">${t.title}</div>
-          <div class="approval-by">${t.assigned} · ${t.dept} · ${t.event}</div>
-          ${t.summary ? `<div style="font-size:11px;color:var(--silver);margin-top:6px">${t.summary}</div>` : ''}
-        </div>
-        <div class="approval-actions">
-          <button class="btn btn-green" style="font-size:9px;padding:5px 12px" onclick="approveTaskById(${t.id})">Approve</button>
-          <button class="btn btn-red" style="font-size:9px;padding:5px 12px" onclick="openRedoModal()">Redo</button>
-        </div>
-      </div>
-    </div>`).join('') || '<div style="color:var(--silver);font-size:13px;padding:16px">No pending submissions.</div>';
-}
-
-function approveTask(btn) {
-  btn.closest('.approval-item').style.opacity = '.4';
-  btn.textContent = '✓ Approved';
-  btn.disabled = true;
-  updateBadge('approval-badge', -1);
-}
-function approveTaskById(id) {
-  const t = TASKS.find(x => x.id === id);
-  if (t) t.status = 'done';
-  renderApprovals(); renderAllTasks();
-  updateBadge('approval-badge', -1);
-}
-
-// ── OVERDUE ───────────────────────────────────────────────────────────────
-function renderOverdue() {
-  const overdue = TASKS.filter(t => t.status === 'overdue');
-  const cont = document.getElementById('overdue-list');
-  cont.innerHTML = overdue.map(t => `
-    <div class="overdue-alert">
-      <div class="alert-icon">⚠</div>
-      <div class="alert-body">
-        <div class="alert-title">${t.title}</div>
-        <div class="alert-sub">${t.assigned} · ${t.dept} · Due ${t.due} · ${t.event}</div>
-        <div class="alert-actions">
-          <button class="btn btn-outline" style="font-size:9px;padding:5px 12px" onclick="extendTaskDeadline(${t.id})">Extend Deadline</button>
-          <button class="btn btn-outline" style="font-size:9px;padding:5px 12px" onclick="reassignOverdueTask(${t.id})">Reassign</button>
-          <button class="btn btn-outline" style="font-size:9px;padding:5px 12px" onclick="markTaskOverdue(${t.id})">Mark Overdue</button>
-          <button class="btn btn-red" style="font-size:9px;padding:5px 12px" onclick="openRedoModal()">Mark Redo</button>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-// ── EVENTS ────────────────────────────────────────────────────────────────
-const EVENTS_DATA = [];
-function renderEvents() {
-  const grid = document.getElementById('events-grid');
-  grid.innerHTML = EVENTS_DATA.map(e => `
-    <div class="event-card" onclick="showPage('event-panel','${e.name}')">
-      <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px">
-        <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();editEventLive(${Number(e.id || 0)}, '${String(e.name || "").replaceAll("'", "\\'")}')">Edit</button>
-        <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();deleteEventLive(${Number(e.id || 0)})">Delete</button>
-      </div>
-      <div class="event-name">${e.name}</div>
-      <div class="event-date">${e.date} · ${e.venue || e.location || "TBD Location"}</div>
-      <div class="event-meta">
-        <span class="event-meta-tag">${e.type}</span>
-        <span class="event-meta-tag">${e.tasks} Tasks</span>
-        ${e.overdue ? `<span class="event-meta-tag" style="border-color:rgba(192,80,77,.4);color:var(--red)">${e.overdue} Overdue</span>` : ''}
-      </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-label"><span>Progress</span><span>${e.progress}%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%"></div></div>
-      </div>
-    </div>`).join('');
-}
-
-function renderEventPanel(name) {
-  const ev = EVENTS_DATA.find(e => e.name === name) || EVENTS_DATA[0];
-  if (!ev) {
-    document.getElementById('event-stats').innerHTML = '<div style="color:var(--silver);font-size:12px">No event selected.</div>';
-    document.getElementById('dept-progress').innerHTML = '';
-    document.getElementById('event-tasks-list').innerHTML = '';
-    return;
-  }
-  document.getElementById('event-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${ev.tasks}</div><div class="stat-label">Total Tasks</div></div>
-    <div class="stat-card"><div class="stat-num green">${ev.done}</div><div class="stat-label">Completed</div></div>
-    <div class="stat-card"><div class="stat-num amber">${ev.tasks - ev.done - ev.overdue}</div><div class="stat-label">In Progress</div></div>
-    <div class="stat-card"><div class="stat-num red">${ev.overdue}</div><div class="stat-label">Overdue</div></div>
-    <div class="stat-card"><div class="stat-num">${ev.progress}%</div><div class="stat-label">Complete</div></div>`;
-  const depts = {};
-  TASKS.filter((t) => t.event === name).forEach((t) => {
-    const k = t.dept || "Other";
-    if (!depts[k]) depts[k] = { total: 0, done: 0 };
-    depts[k].total += 1;
-    if (t.status === "done") depts[k].done += 1;
-  });
-  document.getElementById('dept-progress').innerHTML = Object.keys(depts).map((d) => {
-    const pct = Math.round((depts[d].done / Math.max(1, depts[d].total)) * 100);
-    return `<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--silver);margin-bottom:3px"><span>${d}</span><span>${pct}%</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-    </div>`;
-  }).join('') || '<div style="color:var(--silver);font-size:12px">No department progress yet.</div>';
-  const evTasks = TASKS.filter(t => t.event === name);
-  document.getElementById('event-tasks-list').innerHTML = evTasks.map(t => taskCard(t, true)).join('');
-}
-
-// ── WORKLOAD DETAIL ───────────────────────────────────────────────────────
-function renderWorkloadDetail() {
-  const cont = document.getElementById('workload-detail');
-  cont.innerHTML = BOARD.filter(b => b.div !== 'exec').map(m => {
-    const pct = (m.tasks / m.max) * 100;
-    const cls = m.tasks >= m.max ? 'wl-over' : m.tasks >= m.max - 1 ? 'wl-warn' : 'wl-ok';
-    const warn = m.tasks >= m.max ? `<span style="color:var(--red);font-size:10px;margin-left:8px">⚠ Overloaded</span>` : m.tasks >= m.max - 1 ? `<span style="color:var(--amber);font-size:10px;margin-left:8px">⚡ Near limit</span>` : '';
-    return `<div style="background:var(--navy-light);padding:14px;border:1px solid rgba(255,255,255,.05)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div><span style="font-size:13px;color:var(--white)">${m.name}</span><span style="font-size:10px;color:var(--silver);margin-left:10px">${m.role}</span>${warn}</div>
-        <span style="font-size:13px;color:${m.tasks>=m.max?'var(--red)':m.tasks>=m.max-1?'var(--amber)':'var(--green)'}">${m.tasks}/${m.max} tasks</span>
-      </div>
-      <div class="workload-bar"><div class="workload-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div>
-    </div>`;
-  }).join('');
-}
-
-// ── DEPENDENCY GRAPH ──────────────────────────────────────────────────────
-function renderDependencyGraph() {
-  const g = document.getElementById('dep-graph-content');
-  if (!g) return;
-  if (!TASKS.length) {
-    g.innerHTML = '<div style="color:var(--silver);font-size:12px">No dependency data yet.</div>';
-    return;
-  }
-  const rows = TASKS.slice(0, 6).map((t) => [
-    { title: t.title, dept: t.dept, status: t.status },
-    { arrow: true },
-    { title: t.dep?.length ? `Depends on ${t.dep.length} task(s)` : "Ready", dept: t.dept, status: t.dep?.length ? "locked" : "current" }
-  ]);
-  g.innerHTML = rows
-    .map(
-      (seq) =>
-        `<div class="dep-row">${seq
-          .map((n) => {
-            if (n.arrow) return `<div class="dep-arrow">→</div>`;
-            const cls = n.status === "done" ? "done-node" : n.status === "current" || n.status === "pending" ? "active-node" : "locked-node";
-            return `<div class="dep-node ${cls}"><div class="dep-dept">${n.dept}</div>${n.title}</div>`;
-          })
-          .join("")}</div>`
-    )
-    .join("");
-}
-
-// ── CALENDAR ──────────────────────────────────────────────────────────────
-function renderCalendar() {
-  const root = document.getElementById('cal-content');
-  if (!root) return;
-  if (!TASKS.length && !EVENTS_DATA.length) {
-    root.innerHTML = '<div style="color:var(--silver);font-size:12px">No calendar items yet.</div>';
-    return;
-  }
-  const lines = [
-    ...EVENTS_DATA.slice(0, 8).map((e) => `Event: ${e.name} (${e.date})`),
-    ...TASKS.slice(0, 12).map((t) => `Task due: ${t.title} (${t.due})`)
-  ];
-  root.innerHTML = lines.map((l) => `<div class="cal-task-line" style="padding:4px 0">${l}</div>`).join('');
-}
-
-// ── DIVISIONS ─────────────────────────────────────────────────────────────
-function renderDivisions() {
-  const mk = (members, taskKey, cardId) => {
-    const cont = document.getElementById(cardId);
-    if (!cont) return;
-    cont.innerHTML = members.map(m => {
-      const t = TASKS.filter(tk => tk.assigned === m.name);
-      const pct = (m.tasks / m.max) * 100;
-      return `<div class="card-sm">
-        <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">${m.dept}</div>
-        <div style="font-size:15px;font-family:var(--font-display);color:var(--white);margin-bottom:2px">${m.name}</div>
-        <div style="font-size:11px;color:var(--silver);margin-bottom:10px">${m.role}</div>
-        <div class="workload-bar"><div class="workload-fill ${m.tasks>=m.max?'wl-over':m.tasks>=m.max-1?'wl-warn':'wl-ok'}" style="width:${Math.min(pct,100)}%"></div></div>
-        <div style="font-size:10px;color:var(--silver);margin-top:4px">${m.tasks} active tasks</div>
-      </div>`;
-    }).join('');
-  };
-  mk(BOARD.filter(b => b.div === 'exec'), '', 'exec-member-cards');
-  mk(BOARD.filter(b => b.div === 'internal'), '', 'internal-member-cards');
-  mk(BOARD.filter(b => b.div === 'external'), '', 'external-member-cards');
-
-  document.getElementById('internal-tasks-list').innerHTML = TASKS.filter(t => BOARD.find(b => b.name === t.assigned && b.div === 'internal')).map(t => taskCard(t, true)).join('');
-  document.getElementById('external-tasks-list').innerHTML = TASKS.filter(t => BOARD.find(b => b.name === t.assigned && b.div === 'external')).map(t => taskCard(t, true)).join('');
-}
-
-// ── PERFORMANCE ──────────────────────────────────────────────────────────
-function renderPerformance() {
-  const byDept = {};
-  TASKS.forEach((t) => {
-    const key = t.dept || "Other";
-    if (!byDept[key]) byDept[key] = { total: 0, done: 0 };
-    byDept[key].total += 1;
-    if (t.status === "done") byDept[key].done += 1;
-  });
-  const depts = Object.keys(byDept);
-  const vals = depts.map((d) => Math.round((byDept[d].done / Math.max(1, byDept[d].total)) * 100));
-  const chart = document.getElementById('perf-chart');
-  chart.innerHTML = depts.length ? depts.map((d,i) => `
-    <div class="perf-bar-wrap">
-      <div class="perf-val">${vals[i]}%</div>
-      <div class="perf-bar" style="height:${vals[i]}px"></div>
-      <div class="perf-label">${d}</div>
-    </div>`).join('') : '<div style="color:var(--silver);font-size:12px">No performance data yet.</div>';
-
-  const stats = document.getElementById('member-stats');
-  stats.innerHTML = BOARD.filter(b => b.div !== 'exec').map(m => {
-    const mine = TASKS.filter((t) => t.assigned === m.name);
-    const done = mine.filter((t) => t.status === "done").length;
-    const rate = Math.round((done / Math.max(1, mine.length)) * 100);
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">
-      <div><div style="font-size:12px;color:var(--white)">${m.name.split(' ')[0]}</div><div style="font-size:10px;color:var(--silver)">${m.role.substring(0,32)}...</div></div>
-      <div style="text-align:right"><div style="font-size:13px;color:${rate>=85?'var(--green)':rate>=70?'var(--amber)':'var(--red)'}">${rate}%</div><div style="font-size:9px;color:var(--silver)">completion</div></div>
-    </div>`;
-  }).join('') || '<div style="color:var(--silver);font-size:12px">No member metrics yet.</div>';
-
-  document.getElementById('redo-list').innerHTML = TASKS.filter(t => t.status === 'redo').slice(0,3).map(t => taskCard(t)).join('') || '<div style="color:var(--silver);font-size:13px;padding:8px">No recent redo requests.</div>';
-}
-
-// ── DIGEST ────────────────────────────────────────────────────────────────
-function renderDigest() {
-  const done = TASKS.filter((t) => t.status === "done");
-  const overdue = TASKS.filter((t) => t.status === "overdue");
-  const current = TASKS.filter((t) => t.status === "current");
-  document.getElementById('digest-content').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div><div class="section-label">Completions</div>${done.slice(0,5).map((t)=>`<div style="font-size:12px;color:var(--green);padding:8px;background:var(--green-dim)">✓ ${t.title} (${t.assigned})</div>`).join('') || '<div style="font-size:12px;color:var(--silver);padding:8px;background:var(--navy-light)">No completed tasks this period.</div>'}</div>
-      <div><div class="section-label">Overdue</div>${overdue.slice(0,5).map((t)=>`<div style="font-size:12px;color:var(--red);padding:8px;background:var(--red-dim)">⚠ ${t.title} (${t.assigned})</div>`).join('') || '<div style="font-size:12px;color:var(--silver);padding:8px;background:var(--navy-light)">No overdue tasks.</div>'}</div>
-      <div><div class="section-label">In Progress</div>${current.slice(0,5).map((t)=>`<div style="font-size:12px;color:var(--silver);padding:8px;background:var(--navy-light)">${t.title} (${t.assigned})</div>`).join('') || '<div style="font-size:12px;color:var(--silver);padding:8px;background:var(--navy-light)">No in-progress tasks.</div>'}</div>
-      <div><div class="section-label">Event Risk</div><div style="padding:12px;background:var(--amber-dim);border:1px solid rgba(212,145,74,.3);font-size:11px;color:var(--silver)">Risks are generated from live overdue and pending-review task counts.</div></div>
-    </div>`;
-}
-
-// ── TEMPLATES ─────────────────────────────────────────────────────────────
-function renderTemplates() {
-  document.getElementById('templates-grid').innerHTML = `
-    <div class="card-sm" style="grid-column:1 / -1">
-      <div style="font-size:12px;color:var(--silver)">Templates are now generated from event inputs and Gemini output. Use <b>Create Event</b> to generate a live workflow.</div>
-    </div>
-  `;
-}
-
-// ── NOTIFICATIONS ─────────────────────────────────────────────────────────
-function renderNotifications() {
-  const list = document.getElementById('notifList');
-  list.innerHTML = NOTIFICATIONS.map(n => `
-    <div class="notif-item">
-      <div class="notif-row">
-        <div class="notif-dot"></div>
-        <div>
-          <div class="notif-item-title">${n.title}</div>
-          <div class="notif-item-sub">${n.sub}</div>
-          <div class="notif-item-time">${n.time}</div>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-// ── MODALS ────────────────────────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function openRedoModal() { openModal('redoModal'); }
-function submitRedo() { closeModal('redoModal'); showToast('Redo request sent'); }
-
-function inspectTask(id) {
-  window.__presidentInspectTaskId = id;
-  const t = TASKS.find(x => x.id === id);
-  if (!t) return;
-  document.getElementById('inspect-title').textContent = t.title;
-  document.getElementById('inspect-body').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="redo-section"><div class="redo-label">Assigned To</div><div class="redo-val">${t.assigned} · ${t.owner_role || t.dept}</div></div>
-      <div class="redo-section"><div class="redo-label">Event</div><div class="redo-val">${t.event || 'Standalone'}</div></div>
-      <div class="redo-section"><div class="redo-label">Due Date</div><div class="redo-val">${t.due}</div></div>
-      <div class="redo-section"><div class="redo-label">Unlock</div><div class="redo-val">${t.unlock_at ? new Date(t.unlock_at).toLocaleString() : 'Immediate'}</div></div>
-      <div class="redo-section"><div class="redo-label">Dependencies</div><div class="redo-val">${t.dep.length ? t.dep.map(d => TASKS.find(x=>x.id===d)?.title).join(', ') : 'None'}</div></div>
-      ${t.description ? `<div class="redo-section"><div class="redo-label">Description</div><div class="redo-val">${t.description}</div></div>` : ''}
-      ${t.notes ? `<div class="redo-section"><div class="redo-label">Notes</div><div class="redo-val">${t.notes}</div></div>` : ''}
-      ${t.meeting_location || t.meeting_date ? `<div class="redo-section"><div class="redo-label">Meeting</div><div class="redo-val">${t.meeting_date || ''} ${t.meeting_time || ''} ${t.meeting_location || ''}</div></div>` : ''}
-      ${t.attachments_json && t.attachments_json !== "[]" ? `<div class="redo-section"><div class="redo-label">Attachments</div><div class="redo-val">${t.attachments_json}</div></div>` : ''}
-      ${t.summary ? `<div class="redo-section"><div class="redo-label">Completion Summary</div><div class="redo-val">${t.summary}</div></div>` : ''}
-    </div>`;
-  openModal('taskInspectModal');
-}
-
-// ── EVENT CREATE FLOW ─────────────────────────────────────────────────────
-function createStep(dir) {
-  if (isGeneratingTasks) return;
-  const steps = document.querySelectorAll('#create-steps .step');
-  const curr = document.getElementById('create-step-' + currentStep);
-  if (curr) curr.style.display = 'none';
-  if (currentStep === 4 && dir === 1) { generateTasks(); return; }
-  currentStep = Math.max(1, Math.min(totalSteps, currentStep + dir));
-  const next = document.getElementById('create-step-' + currentStep);
-  if (next) next.style.display = '';
-  steps.forEach((s, i) => {
-    s.className = 'step' + (i + 1 < currentStep ? ' done' : i + 1 === currentStep ? ' active' : '');
-  });
-  document.getElementById('create-back-btn').style.display = currentStep > 1 ? '' : 'none';
-  const nextBtn = document.getElementById('create-next-btn');
-  nextBtn.textContent = currentStep === totalSteps ? 'Publish Event' : currentStep === 4 ? 'Generate' : 'Continue →';
-  nextBtn.onclick = currentStep === totalSteps ? publishEvent : () => createStep(1);
-}
-
-function goToCreateStep(stepNumber) {
-  const target = Math.max(1, Math.min(totalSteps, Number(stepNumber || 1)));
-  currentStep = target;
-  const steps = document.querySelectorAll('#create-steps .step');
-  for (let i = 1; i <= totalSteps; i += 1) {
-    const pane = document.getElementById(`create-step-${i}`);
-    if (pane) pane.style.display = i === currentStep ? '' : 'none';
-  }
-  steps.forEach((s, i) => {
-    s.className = 'step' + (i + 1 < currentStep ? ' done' : i + 1 === currentStep ? ' active' : '');
-  });
-  document.getElementById('create-back-btn').style.display = currentStep > 1 ? '' : 'none';
-  const nextBtn = document.getElementById('create-next-btn');
-  nextBtn.textContent = currentStep === totalSteps ? 'Publish Event' : currentStep === 4 ? 'Generate' : 'Continue →';
-  nextBtn.onclick = currentStep === totalSteps ? publishEvent : () => createStep(1);
-}
-
-let genTasks = [];
-function generateTasks() {
-  const gs = document.getElementById('gen-status');
-  if (gs) gs.textContent = 'Preparing Gemini request...';
-}
-
-function renderGenTasks() {
-  document.getElementById('generated-tasks-list').innerHTML = genTasks.map((t, i) => `
-    <div class="gen-task" id="gt-${t.id}">
-      <div class="gen-task-top">
-        <div><div class="gen-task-dept">${t.dept}</div><div class="gen-task-title">${t.title}</div></div>
-        <div class="gen-task-actions">
-          <button class="btn-icon" title="Edit">✎</button>
-          <button class="btn-icon red" title="Delete" onclick="removeGenTask('${t.id}')">✕</button>
-        </div>
-      </div>
-      <div class="gen-task-meta">
-        <span>Assigned: ${t.assigned}</span>
-        <span>Unlock: ${t.due}</span>
-        <span>Priority: ${t.priority}</span>
-        ${t.dep ? `<span>Dep: Task ${t.dep}</span>` : ''}
-      </div>
-    </div>`).join('');
-}
-
-function removeGenTask(id) {
-  genTasks = genTasks.filter(t => t.id !== id);
-  renderGenTasks();
-}
-
-function addGenTask() {
-  genTasks.push({id:'g'+(genTasks.length+10),title:'New Task',dept:'Operations',assigned:'Unassigned',dep:'',due:'-2 weeks',priority:'Medium'});
-  renderGenTasks();
-}
-
-function publishEvent() {
-  closeModal('eventCreateModal');
-  showToast('Event workflow published to the board');
-  currentStep = 1;
-}
-
-function renderRoleDeliverableInputs() {
-  const root = document.getElementById("role-deliverables-container");
-  if (!root) return;
-  const roles = [...document.querySelectorAll("#dept-checkboxes .cb-item.checked")]
-    .map((el) => el.getAttribute("data-role") || el.textContent.trim())
-    .filter(Boolean);
-  root.innerHTML = roles.length
-    ? roles
-        .map(
-          (role, idx) => `
-      <div class="fg">
-        <label>${role}</label>
-        <textarea data-role-deliverable="${role.replaceAll('"', "&quot;")}" placeholder="Expected deliverables for ${role}"></textarea>
-      </div>`
-        )
-        .join("")
-    : '<div style="font-size:12px;color:var(--silver)">Select roles above to define deliverables.</div>';
-}
-
-function toggleCb(el) {
-  el.classList.toggle('checked');
-  renderRoleDeliverableInputs();
-}
-
-// ── POLLING ───────────────────────────────────────────────────────────────
-function startPolling() {
-  // Polling is handled by the live API integration layer.
-}
-
-// ── BADGE ─────────────────────────────────────────────────────────────────
-function updateBadge(id, delta) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const val = Math.max(0, parseInt(el.textContent) + delta);
-  el.textContent = val;
-  if (val === 0) el.style.display = 'none';
-}
-
-// ── TOAST ─────────────────────────────────────────────────────────────────
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--gold);color:var(--navy);padding:12px 24px;font-size:12px;font-weight:500;letter-spacing:.08em;z-index:9999;animation:fadeUp .3s ease';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-}
-
-// ── CLICK OUTSIDE MODAL ───────────────────────────────────────────────────
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
-});
-
-init();
-</script>
-<script src="ops-common.js"></script>
-<script>
-// Live API integration layer for the existing President UI.
-(async function wirePresidentLive() {
-  const token = getSessionToken();
-  if (!token) {
-    window.location.href = "ops-login.html";
-    return;
-  }
-
-  let dashboardCache = null;
-  let selectedPresidentAssignee = "";
-  let pendingConfirmAction = null;
-
-  function toLegacyStatus(status) {
-    if (status === "completed") return "done";
-    if (status === "pending_review") return "pending";
-    return status;
-  }
-
-  function renderOverviewLive(data) {
-    const page = document.getElementById("page-overview");
-    if (!page) return;
-    const activeCount = data.tasks.filter((t) => ["current", "redo", "pending_review"].includes(t.status)).length;
-    const overdueCount = data.tasks.filter((t) => t.status === "overdue").length;
-    const pendingCount = data.tasks.filter((t) => t.status === "pending_review").length;
-    const completedCount = data.tasks.filter((t) => t.status === "completed").length;
-    const eventCount = data.events.length;
-    const topEvents = data.events.slice(0, 3);
-    const recentTasks = data.tasks.slice(0, 6);
-    page.innerHTML = `
-      <div class="breadcrumb"><span>Executive President</span> / Command Center</div>
-      <div class="stat-row">
-        <div class="stat-card"><div class="stat-num">${activeCount}</div><div class="stat-label">Active Tasks</div></div>
-        <div class="stat-card"><div class="stat-num amber">${overdueCount}</div><div class="stat-label">Overdue</div></div>
-        <div class="stat-card"><div class="stat-num">${pendingCount}</div><div class="stat-label">Pending Review</div></div>
-        <div class="stat-card"><div class="stat-num green">${completedCount}</div><div class="stat-label">Completed</div></div>
-        <div class="stat-card"><div class="stat-num">${eventCount}</div><div class="stat-label">Active Events</div></div>
-      </div>
-      <div class="two-col">
-        <div class="card">
-          <div class="section-label">Events</div>
-          <div class="card-title">Event Control Panels</div>
-          <div class="card-sub">Live data from your board workflow</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            ${
-              topEvents.length
-                ? topEvents
-                    .map(
-                      (e) => `
-              <div class="event-card" onclick="showPage('event-panel','${e.name.replaceAll("'", "\\'")}')">
-                <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px">
-                  <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();editEventLive(${Number(e.id || 0)}, '${String(e.name || "").replaceAll("'", "\\'")}')">Edit</button>
-                  <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();deleteEventLive(${Number(e.id || 0)})">Delete</button>
-                </div>
-                <div class="event-name">${e.name}</div>
-                <div class="event-date">${new Date(e.event_date).toLocaleDateString()} · ${e.venue || e.location || "TBD Location"}</div>
-                <div class="progress-bar-wrap">
-                  <div class="progress-label"><span>Overall Progress</span><span>${e.progress}%</span></div>
-                  <div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%"></div></div>
-                </div>
-              </div>`
-                    )
-                    .join("")
-                : '<div style="font-size:12px;color:var(--silver);padding:10px 0">No events created yet.</div>'
-            }
-          </div>
-        </div>
-        <div class="card">
-          <div class="section-label">Tasks</div>
-          <div class="card-title">Recent Task Activity</div>
-          <div class="card-sub">Latest tasks across departments</div>
-          <div class="task-list">
-            ${
-              recentTasks.length
-                ? recentTasks
-                    .map(
-                      (t) => `
-              <div class="task-item">
-                <div class="task-stripe ${t.status === "completed" ? "done" : t.status === "overdue" ? "urgent" : t.status === "redo" ? "redo" : t.status === "current" ? "current" : "locked"}"></div>
-                <div>
-                  <div class="task-title">${t.title}</div>
-                  <div class="task-meta"><span>${t.owner_name}</span><span>${t.department}</span><span>Due ${new Date(t.due_at).toLocaleDateString()}</span></div>
-                </div>
-                <div class="task-actions"><span class="status-badge ${t.status === "completed" ? "sb-done" : t.status === "pending_review" ? "sb-pending" : t.status === "overdue" ? "sb-urgent" : t.status === "redo" ? "sb-redo" : t.status === "current" ? "sb-current" : "sb-locked"}">${t.status.replaceAll("_", " ")}</span></div>
-              </div>`
-                    )
-                    .join("")
-                : '<div style="font-size:12px;color:var(--silver);padding:10px 0">No tasks yet.</div>'
-            }
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  function asTaskCard(t) {
-    const statusClass =
-      t.status === "completed"
-        ? "sb-done"
-        : t.status === "current"
-        ? "sb-current"
-        : t.status === "pending_review"
-        ? "sb-pending"
-        : t.status === "overdue"
-        ? "sb-urgent"
-        : t.status === "redo"
-        ? "sb-redo"
-        : "sb-locked";
-    const stripe =
-      t.status === "completed"
-        ? "done"
-        : t.status === "current"
-        ? "current"
-        : t.status === "overdue"
-        ? "urgent"
-        : t.status === "redo"
-        ? "redo"
-        : "locked";
-    return `
-      <div class="task-item" onclick="inspectTask(${t.id})">
-        <div class="task-stripe ${stripe}"></div>
-        <div>
-          <div class="task-title">${t.title}</div>
-          <div class="task-meta">
-            <span>${t.owner_name}</span>
-            <span>${t.department}</span>
-            <span>Due ${new Date(t.due_at).toLocaleDateString()}</span>
-          </div>
-        </div>
-        <div class="task-actions">
-          <span class="status-badge ${statusClass}">${t.status.replaceAll("_", " ")}</span>
-          <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="event.stopPropagation();inspectTask(${t.id})">Click to Review</button>
-        </div>
-      </div>
-    `;
-  }
-
-  function openStyledConfirm(message, onConfirm) {
-    const msgEl = document.getElementById("confirm-action-message");
-    const btn = document.getElementById("confirm-action-btn");
-    if (msgEl) msgEl.textContent = message;
-    pendingConfirmAction = onConfirm;
-    if (btn) {
-      btn.onclick = async () => {
-        const action = pendingConfirmAction;
-        pendingConfirmAction = null;
-        closeModal("confirmActionModal");
-        if (typeof action === "function") await action();
-      };
-    }
-    openModal("confirmActionModal");
-  }
-
-  function parseListInput(text) {
-    const raw = String(text || "").trim();
-    if (!raw) return [];
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed.map((v) => String(v).trim()).filter(Boolean);
-    } catch (_e) {}
-    return raw
-      .split(/\n|,/)
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-
-  function parseKeyValueInput(text) {
-    const raw = String(text || "").trim();
-    if (!raw) return {};
-    try {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
-    } catch (_e) {}
-    const out = {};
-    raw.split("\n").forEach((line) => {
-      const parts = line.split(":");
-      if (parts.length < 2) return;
-      const key = parts.shift().trim();
-      const value = parts.join(":").trim();
-      if (key) out[key] = value;
-    });
-    return out;
-  }
-
-  function buildDivisionSummary(divisionName, leaderRole) {
-    const members = (dashboardCache?.users || []).filter((u) => u.department === divisionName);
-    const leader = members.find((u) => u.role_title === leaderRole) || members[0];
-    const memberEmails = new Set(members.map((m) => m.email));
-    const tasks = (dashboardCache?.tasks || []).filter((t) => memberEmails.has(t.owner_email));
-    const completed = tasks.filter((t) => t.status === "completed").length;
-    const overdue = tasks.filter((t) => t.status === "overdue").length;
-    const blockedIds = new Set(
-      (dashboardCache?.dependencies || [])
-        .filter((d) => {
-          const task = (dashboardCache?.tasks || []).find((t) => t.id === d.task_id);
-          return task && memberEmails.has(task.owner_email);
-        })
-        .map((d) => d.task_id)
-    );
-    const pct = Math.round((completed / Math.max(1, tasks.length)) * 100);
-    return { members, leader, tasks, overdue, blocked: blockedIds.size, pct };
-  }
-
-  function renderReportsLive() {
-    const root = document.getElementById("reports-list");
-    if (!root) return;
-    const reports = dashboardCache?.reports || [];
-    root.innerHTML = reports.length
-      ? reports
-          .map(
-            (r) => `
-        <div class="approval-item">
-          <div class="approval-header">
-            <div>
-              <div class="approval-task">${r.reason}</div>
-              <div class="approval-by">${r.submitted_by_name} · ${r.submitted_by_role} · ${r.division}</div>
-              <div style="font-size:11px;color:var(--silver);margin-top:6px">${r.notes}</div>
-              <div style="font-size:10px;color:var(--gold);margin-top:6px">${r.event_name || "No event"}${r.task_title ? ` · ${r.task_title}` : ""} · ${new Date(r.created_at).toLocaleString()}</div>
-            </div>
-            <div class="approval-actions">
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'reviewed')">Mark Reviewed</button>
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'needs_clarification')">Clarify</button>
-              <button class="btn btn-red" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'archived')">Archive</button>
-            </div>
-          </div>
-        </div>
-      `
-          )
-          .join("")
-      : '<div style="font-size:13px;color:var(--silver);padding:12px">No VP reports submitted yet.</div>';
-  }
-
-  window.renderEventPanel = function renderEventPanelLive(name) {
-    const event = (dashboardCache?.events || []).find((e) => e.name === name) || (dashboardCache?.events || [])[0];
-    if (!event) return;
-    const tasks = (dashboardCache?.tasks || []).filter((t) => t.event_id === event.id);
-    const divisions = [...new Set(tasks.map((t) => t.department))];
-    const statsRoot = document.getElementById("event-stats");
-    if (statsRoot) {
-      const done = tasks.filter((t) => t.status === "completed").length;
-      const overdue = tasks.filter((t) => t.status === "overdue").length;
-      const active = tasks.filter((t) => ["current", "pending_review", "redo"].includes(t.status)).length;
-      statsRoot.innerHTML = `
-        <div class="stat-card"><div class="stat-num">${tasks.length}</div><div class="stat-label">Total Tasks</div></div>
-        <div class="stat-card"><div class="stat-num green">${done}</div><div class="stat-label">Completed</div></div>
-        <div class="stat-card"><div class="stat-num amber">${active}</div><div class="stat-label">Active</div></div>
-        <div class="stat-card"><div class="stat-num red">${overdue}</div><div class="stat-label">Overdue</div></div>
-        <div class="stat-card"><div class="stat-num">${event.progress}%</div><div class="stat-label">Progress</div></div>`;
-    }
-    const progressRoot = document.getElementById("dept-progress");
-    if (progressRoot) {
-      progressRoot.innerHTML = divisions.length
-        ? divisions
-            .map((division) => {
-              const divTasks = tasks.filter((t) => t.department === division);
-              const done = divTasks.filter((t) => t.status === "completed").length;
-              const overdue = divTasks.filter((t) => t.status === "overdue").length;
-              const pct = Math.round((done / Math.max(1, divTasks.length)) * 100);
-              const memberNames = [...new Set(divTasks.map((t) => t.owner_name))];
-              const leader =
-                division === "External Division"
-                  ? "Vice President, Chief of External Affairs"
-                  : division === "Executive Division"
-                  ? "Executive President"
-                  : "Vice President, Chief of Internal Affairs";
-              return `<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)">
-                <div style="display:flex;justify-content:space-between;gap:12px">
-                  <div>
-                    <div style="font-size:13px;color:var(--white)">${division}</div>
-                    <div style="font-size:10px;color:var(--silver)">Leader: ${leader}</div>
-                    <div style="font-size:10px;color:var(--silver);margin-top:4px">Members: ${memberNames.join(", ") || "None"}</div>
-                  </div>
-                  <div style="text-align:right">
-                    <div style="font-size:13px;color:var(--gold)">${pct}%</div>
-                    <div style="font-size:10px;color:var(--silver)">${done}/${divTasks.length} complete${overdue ? ` · ${overdue} overdue` : ""}</div>
-                  </div>
-                </div>
-                <div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${pct}%"></div></div>
-              </div>`;
-            })
-            .join("")
-        : '<div style="font-size:12px;color:var(--silver)">No division work tied to this event yet.</div>';
-    }
-    const taskRoot = document.getElementById("event-tasks-list");
-    if (taskRoot) {
-      taskRoot.innerHTML = tasks.length
-        ? tasks
-            .sort((a, b) => new Date(a.unlock_at).getTime() - new Date(b.unlock_at).getTime())
-            .map(
-              (t) => `
-          <div class="task-item" onclick="inspectTask(${t.id})">
-            <div class="task-stripe ${t.status === "completed" ? "done" : t.status === "overdue" ? "urgent" : t.status === "current" ? "current" : "locked"}"></div>
-            <div>
-              <div class="task-title">${t.title}</div>
-              <div class="task-meta">
-                <span>${t.owner_name}</span>
-                <span>${t.owner_role}</span>
-                <span>${t.department}</span>
-                <span>Unlock ${new Date(t.unlock_at).toLocaleDateString()}</span>
-                <span>Due ${new Date(t.due_at).toLocaleDateString()}</span>
-              </div>
-              ${t.previous_summary ? `<div style="font-size:11px;color:var(--silver);margin-top:6px">${t.previous_summary}</div>` : ""}
-            </div>
-            <div class="task-actions"><span class="status-badge ${t.status === "completed" ? "sb-done" : t.status === "pending_review" ? "sb-pending" : t.status === "overdue" ? "sb-urgent" : t.status === "current" ? "sb-current" : "sb-locked"}">${t.status.replaceAll("_", " ")}</span></div>
-          </div>`
-            )
-            .join("")
-        : '<div style="font-size:12px;color:var(--silver)">No tasks linked to this event yet.</div>';
-    }
-  };
-
-  window.renderDivisions = function renderDivisionsLive() {
-    const configs = [
-      ["Executive Division", "Executive President", "exec-member-cards"],
-      ["Internal Division", "Vice President, Chief of Internal Affairs", "internal-member-cards"],
-      ["External Division", "Vice President, Chief of External Affairs", "external-member-cards"]
-    ];
-    configs.forEach(([divisionName, leaderRole, rootId]) => {
-      const root = document.getElementById(rootId);
-      if (!root) return;
-      const summary = buildDivisionSummary(divisionName, leaderRole);
-      root.innerHTML = `
-        <div class="card">
-          <div class="section-label">${divisionName}</div>
-          <div class="card-title">${summary.leader ? summary.leader.full_name : "Division Overview"}</div>
-          <div class="card-sub">${summary.leader ? summary.leader.role_title : "No leader mapped"} · ${summary.pct}% complete · ${summary.overdue} overdue · ${summary.blocked} blockers</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:16px">
-            ${summary.members
-              .map((m) => {
-                const memberTasks = summary.tasks.filter((t) => t.owner_email === m.email);
-                const active = memberTasks.filter((t) => ["current", "pending_review", "redo", "locked"].includes(t.status)).length;
-                const overdue = memberTasks.filter((t) => t.status === "overdue").length;
-                return `<div class="card-sm">
-                  <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">${m.department}</div>
-                  <div style="font-size:15px;font-family:var(--font-display);color:var(--white)">${m.full_name}</div>
-                  <div style="font-size:11px;color:var(--silver);margin-bottom:10px">${m.role_title}</div>
-                  <div style="font-size:11px;color:var(--off-white)">Active Tasks: ${active}</div>
-                  <div style="font-size:11px;color:${overdue ? "var(--red)" : "var(--silver)"}">Overdue / Failed: ${overdue}</div>
-                  <div style="font-size:10px;color:var(--silver);margin-top:8px">${memberTasks.slice(0, 3).map((t) => t.title).join(" · ") || "No assigned tasks"}</div>
-                </div>`;
-              })
-              .join("")}
-          </div>
-        </div>`;
-    });
-    const internalRoot = document.getElementById("internal-tasks-list");
-    const externalRoot = document.getElementById("external-tasks-list");
-    if (internalRoot) {
-      internalRoot.innerHTML = (dashboardCache?.tasks || [])
-        .filter((t) => t.department === "Internal Division")
-        .map(asTaskCard)
-        .join("") || '<div style="font-size:12px;color:var(--silver)">No internal tasks.</div>';
-    }
-    if (externalRoot) {
-      externalRoot.innerHTML = (dashboardCache?.tasks || [])
-        .filter((t) => t.department === "External Division")
-        .map(asTaskCard)
-        .join("") || '<div style="font-size:12px;color:var(--silver)">No external tasks.</div>';
-    }
-  };
-
-  window.renderTemplates = function renderTemplatesLive() {
-    const root = document.getElementById("templates-grid");
-    if (!root) return;
-    const templates = [
-      {
-        id: "somali-night",
-        name: "Cultural Night / Somali Night",
-        text: "Production timeline, venue operations, finance approvals, creative build-out, promotion launch, performer confirmations, rehearsal checkpoints, and final run-of-show sequencing.",
-        preset: {
-          event_type: "Flagship Production",
-          scope: "Large Scale (500+)",
-          roles: [
-            "Director of Operations",
-            "Director of Finance & Development - Finance",
-            "Director of Events & Experiences",
-            "Director of Brand & Marketing",
-            "Executive Producer, Somali Night — Production",
-            "Executive Producer, Somali Night — Creative"
-          ],
-          tasks: [
-            { title: "Finalize Event Budget & Secure Initial Funding", department: "Internal Division", role: "Director of Finance & Development - Finance", priority: "high", dependsOnTitles: [] },
-            { title: "Confirm Venue Booking & Layout", department: "Internal Division", role: "Director of Operations", priority: "high", dependsOnTitles: ["Finalize Event Budget & Secure Initial Funding"] },
-            { title: "Recruit & Confirm Performers/Cultural Groups", department: "Internal Division", role: "Director of Events & Experiences", priority: "high", dependsOnTitles: ["Confirm Venue Booking & Layout"] },
-            { title: "Launch Full Marketing Campaign", department: "External Division", role: "Director of Brand & Marketing", priority: "high", dependsOnTitles: ["Recruit & Confirm Performers/Cultural Groups"] },
-            { title: "Finalize Production Run-of-Show", department: "Internal Division", role: "Executive Producer, Somali Night — Production", priority: "critical", dependsOnTitles: ["Launch Full Marketing Campaign"] }
-          ]
-        }
-      },
-      {
-        id: "campus-kickoff",
-        name: "Campus Kickoff",
-        text: "Space booking, campus activation, outreach assets, volunteer coverage, tabling logistics, sponsorship asks, and follow-up communications.",
-        preset: {
-          event_type: "Campus Kickoff",
-          scope: "Medium (100–500)",
-          roles: [
-            "Director of Campus Activation",
-            "Director of Strategic Relations & Advancement",
-            "Director of Brand & Marketing",
-            "Director of Operations"
-          ],
-          tasks: [
-            { title: "Book Campus Activation Space", department: "Internal Division", role: "Director of Operations", priority: "high", dependsOnTitles: [] },
-            { title: "Build Sponsor Outreach List", department: "External Division", role: "Director of Strategic Relations & Advancement", priority: "standard", dependsOnTitles: [] },
-            { title: "Prepare Tabling Assets & Flyers", department: "External Division", role: "Director of Brand & Marketing", priority: "standard", dependsOnTitles: ["Book Campus Activation Space"] },
-            { title: "Execute Campus Activation Plan", department: "External Division", role: "Director of Campus Activation", priority: "high", dependsOnTitles: ["Prepare Tabling Assets & Flyers"] }
-          ]
-        }
-      },
-      {
-        id: "speaker-event",
-        name: "Speaker Event",
-        text: "Speaker coordination, contract/transport, room logistics, editorial messaging, marketing rollout, check-in flow, and post-event recap tasks.",
-        preset: {
-          event_type: "Speaker Event",
-          scope: "Medium (100–500)",
-          roles: [
-            "Director of Operations",
-            "Director of Editorial & Communications",
-            "Director of Brand & Marketing"
-          ],
-          tasks: [
-            { title: "Finalize Speaker Contract & Travel", department: "Internal Division", role: "Director of Operations", priority: "high", dependsOnTitles: [] },
-            { title: "Publish Speaker Messaging Brief", department: "External Division", role: "Director of Editorial & Communications", priority: "standard", dependsOnTitles: ["Finalize Speaker Contract & Travel"] },
-            { title: "Launch Speaker Event Promotion", department: "External Division", role: "Director of Brand & Marketing", priority: "high", dependsOnTitles: ["Publish Speaker Messaging Brief"] }
-          ]
-        }
-      },
-      {
-        id: "fundraiser",
-        name: "Fundraiser",
-        text: "Donor targets, finance tracking, creative collateral, external partnerships, activation plan, collection checkpoints, and wrap-up reporting.",
-        preset: {
-          event_type: "Fundraiser",
-          scope: "Small (<100)",
-          roles: [
-            "Director of Finance & Development - Development",
-            "Director of Strategic Relations & Advancement",
-            "Director of Brand & Marketing"
-          ],
-          tasks: [
-            { title: "Set Fundraising Target & Budget Framework", department: "Internal Division", role: "Director of Finance & Development - Development", priority: "high", dependsOnTitles: [] },
-            { title: "Secure External Partners", department: "External Division", role: "Director of Strategic Relations & Advancement", priority: "standard", dependsOnTitles: ["Set Fundraising Target & Budget Framework"] },
-            { title: "Launch Fundraiser Creative Campaign", department: "External Division", role: "Director of Brand & Marketing", priority: "high", dependsOnTitles: ["Secure External Partners"] }
-          ]
-        }
-      }
-    ];
-    window.__eventTemplates = templates;
-    root.innerHTML = templates
-      .map(
-        (t) => `<div class="card-sm">
-          <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Template</div>
-          <div style="font-size:18px;font-family:var(--font-display);color:var(--white);margin-bottom:8px">${t.name}</div>
-          <div style="font-size:12px;color:var(--silver);line-height:1.7">${t.text}</div>
-          <button class="btn btn-outline" style="margin-top:14px;font-size:10px" onclick="useEventTemplate('${t.id}')">Use Template</button>
-        </div>`
-      )
-      .join("");
-  };
-
-  window.useEventTemplate = function useEventTemplate(templateId) {
-    const template = (window.__eventTemplates || []).find((t) => t.id === templateId);
-    if (!template) return;
-    document.getElementById("ev-type").value = template.preset.event_type || "";
-    document.getElementById("ev-scope").value = template.preset.scope || "";
-    document.querySelectorAll("#dept-checkboxes .cb-item").forEach((chip) => {
-      const role = chip.getAttribute("data-role");
-      chip.classList.toggle("checked", template.preset.roles.includes(role));
-    });
-    renderRoleDeliverableInputs();
-    genTasks = (template.preset.tasks || []).map((t, idx) => ({
-      id: `tpl-${template.id}-${idx + 1}`,
-      title: t.title,
-      description: t.description || `${t.title} for ${template.name}`,
-      department: t.department,
-      role: t.role,
-      priority: t.priority || "standard",
-      dependsOnTitles: t.dependsOnTitles || []
-    }));
-    openModal("eventCreateModal");
-    goToCreateStep(5);
-    renderGenTasks();
-    showToast(`${template.name} template applied.`);
-  };
-
-  async function hydrateDashboard() {
-    const me = await apiGet("/api/me");
-    const data = await apiGet("/api/dashboard");
-    dashboardCache = data;
-
-    const nameEl = document.querySelector(".sb-user-name");
-    const roleEl = document.querySelector(".sb-user-role");
-    const deptEl = document.querySelector(".sb-user-dept");
-    if (nameEl) nameEl.textContent = `Hey ${me.user.full_name.split(" ")[0]},`;
-    if (roleEl) roleEl.textContent = me.user.role_title;
-    if (deptEl) deptEl.textContent = `${me.user.department} · Full Access`;
-
-    if (typeof TASKS !== "undefined") {
-      TASKS.length = 0;
-      data.tasks.forEach((t) =>
-        TASKS.push({
-          id: t.id,
-          title: t.title,
-          dept: t.department,
-          assigned: t.owner_name,
-          status: toLegacyStatus(t.status),
-          priority: t.priority,
-          event: (data.events.find((e) => e.id === t.event_id) || {}).name || "",
-          due: new Date(t.due_at).toLocaleDateString(),
-          dep: data.dependencies.filter((d) => d.task_id === t.id).map((d) => d.depends_on_task_id),
-          summary: t.previous_summary || "",
-          description: t.description || "",
-          owner_role: t.owner_role || "",
-          owner_email: t.owner_email || "",
-          event_id: t.event_id || null,
-          unlock_at: t.unlock_at,
-          due_at: t.due_at,
-          notes: t.notes || "",
-          meeting_date: t.meeting_date || "",
-          meeting_time: t.meeting_time || "",
-          meeting_location: t.meeting_location || "",
-          attachments_json: t.attachments_json || "[]",
-          redo_rules: t.redo_rules || "",
-          escalation_rules: t.escalation_rules || ""
-        })
-      );
-    }
-    if (typeof EVENTS_DATA !== "undefined") {
-      EVENTS_DATA.length = 0;
-      data.events.forEach((e) =>
-        EVENTS_DATA.push({
-          id: e.id,
-          name: e.name,
-          date: new Date(e.event_date).toLocaleDateString(),
-          venue: e.venue || e.location || e.scope,
-          type: e.event_type,
-          progress: e.progress,
-          tasks: data.tasks.filter((t) => t.event_id === e.id).length,
-          done: data.tasks.filter((t) => t.event_id === e.id && t.status === "completed").length,
-          overdue: data.tasks.filter((t) => t.event_id === e.id && t.status === "overdue").length
-        })
-      );
-    }
-
-    renderOverviewLive(data);
-    if (typeof renderAllTasks === "function") renderAllTasks();
-    if (typeof renderApprovals === "function") renderApprovals();
-    if (typeof renderOverdue === "function") renderOverdue();
-    if (typeof renderEvents === "function") renderEvents();
-    if (typeof renderDependencyGraph === "function") {
-      renderDependencyGraph(document.getElementById("dep-graph-content"), data.tasks, data.dependencies);
-    }
-    if (typeof renderCalendar === "function") {
-      renderOperationalCalendar(document.getElementById("cal-content"), data.events, data.tasks);
-    }
-    if (typeof renderDivisions === "function") renderDivisions();
-    if (typeof renderTemplates === "function") renderTemplates();
-    if (typeof renderReportsLive === "function") renderReportsLive();
-    const assignEvent = document.getElementById("p-assign-event");
-    if (assignEvent) {
-      assignEvent.innerHTML = `<option value="">Standalone</option>${data.events
-        .map((e) => `<option value="${e.id}">${e.name}</option>`)
-        .join("")}`;
-    }
-    const assignDeps = document.getElementById("p-assign-dependencies");
-    if (assignDeps) {
-      assignDeps.innerHTML = data.tasks
-        .map((t) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px"><input type="checkbox" value="${t.id}" /> <span>${t.title}</span></label>`)
-        .join("");
-    }
-
-    const pendingRes = await apiGet("/api/submissions/pending").catch(() => ({ pending: [] }));
-    const notifications = await apiGet("/api/notifications").catch(() => ({ count: 0, items: [], stats: { pendingReview: 0, overdue: 0 } }));
-    const pendingHtml = pendingRes.pending
-      .map(
-        (s) => `
-      <div class="approval-item">
-        <div class="approval-header">
-          <div>
-            <div class="approval-task">${s.title}</div>
-            <div class="approval-by">${s.owner_name} · ${s.department}</div>
-            <div style="font-size:11px;color:var(--silver);margin-top:6px">${s.summary}</div>
-          </div>
-          <div class="approval-actions">
-            <button class="btn btn-green" style="font-size:9px;padding:5px 12px" onclick="approveTaskById(${s.task_id})">Approve</button>
-            <button class="btn btn-red" style="font-size:9px;padding:5px 12px" onclick="openRedoModalWithTask(${s.task_id})">Redo</button>
-          </div>
-        </div>
-      </div>
-    `
-      )
-      .join("");
-    const approvalList = document.getElementById("full-approval-list");
-    if (approvalList) {
-      approvalList.innerHTML =
-        pendingHtml || '<div style="color:var(--silver);font-size:13px;padding:16px">No pending submissions.</div>';
-    }
-    const approvalBadge = document.getElementById("approval-badge");
-    if (approvalBadge) approvalBadge.textContent = String(notifications.stats?.pendingReview || 0);
-    const overdueBadge = document.getElementById("overdue-badge");
-    if (overdueBadge) overdueBadge.textContent = String(notifications.stats?.overdue || 0);
-  }
-
-  window.approveTaskById = async function approveTaskByIdLive(id) {
-    await apiPost(`/api/tasks/${id}/approve`, {});
-    showToast("Task approved.");
-    await hydrateDashboard();
-  };
-
-  window.openRedoModalWithTask = function openRedoModalWithTask(taskId) {
-    const task = (dashboardCache?.tasks || []).find((t) => t.id === taskId);
-    if (task) {
-      const val = document.querySelector("#redoModal .redo-val");
-      if (val) val.textContent = task.title;
-      const hidden = document.getElementById("redoTaskIdHidden");
-      if (hidden) hidden.value = String(taskId);
-    }
-    openModal("redoModal");
-  };
-
-  window.submitRedo = async function submitRedoLive() {
-    const hidden = document.getElementById("redoTaskIdHidden");
-    const taskId = Number(hidden?.value || 0);
-    const notes =
-      document.querySelector("#redoModal textarea")?.value?.trim() || "Redo required by admin.";
-    if (!taskId) {
-      closeModal("redoModal");
-      return;
-    }
-    await apiPost(`/api/tasks/${taskId}/redo`, { notes });
-    closeModal("redoModal");
-    showToast("Redo request sent.");
-    await hydrateDashboard();
-  };
-
-  if (!document.getElementById("redoTaskIdHidden")) {
-    const hidden = document.createElement("input");
-    hidden.type = "hidden";
-    hidden.id = "redoTaskIdHidden";
-    document.body.appendChild(hidden);
-  }
-
-  // Override generated-task render to be editable before publish.
-  window.renderGenTasks = function renderGenTasksEditable() {
-    const root = document.getElementById("generated-tasks-list");
-    if (!root) return;
-    root.innerHTML = (genTasks || [])
-      .map(
-        (t, i) => `
-      <div class="gen-task">
-        <div class="gen-task-top">
-          <div style="flex:1;display:grid;gap:8px;">
-            <input data-edit-i="${i}" data-field="title" value="${(t.title || "").replaceAll('"', "&quot;")}" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:8px;color:var(--white);" />
-            <input data-edit-i="${i}" data-field="department" value="${(t.dept || t.department || "").replaceAll('"', "&quot;")}" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:8px;color:var(--white);" />
-            <textarea data-edit-i="${i}" data-field="description" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);padding:8px;color:var(--white);min-height:60px;">${t.description || ""}</textarea>
-          </div>
-          <div class="gen-task-actions">
-            <button class="btn-icon red" onclick="removeGenTask('${t.id || ("g"+i)}')">✕</button>
-          </div>
-        </div>
-      </div>`
-      )
-      .join("");
-
-    root.querySelectorAll("[data-edit-i]").forEach((el) => {
-      el.addEventListener("input", () => {
-        const idx = Number(el.getAttribute("data-edit-i"));
-        const field = el.getAttribute("data-field");
-        if (!genTasks[idx]) return;
-        genTasks[idx][field] = el.value;
-      });
-    });
-  };
-
-  window.generateTasks = async function generateTasksLive() {
-    if (isGeneratingTasks) return;
-    isGeneratingTasks = true;
-    const selectedRoles = [...document.querySelectorAll("#dept-checkboxes .cb-item.checked")]
-      .map((el) => ({
-        role: el.getAttribute("data-role") || el.textContent.trim(),
-        division: el.getAttribute("data-division") || ""
-      }))
-      .filter((r) => r.role);
-    const deliverablesByRole = {};
-    document.querySelectorAll("[data-role-deliverable]").forEach((el) => {
-      const key = el.getAttribute("data-role-deliverable") || "";
-      if (key) deliverablesByRole[key] = String(el.value || "").trim();
-    });
-    const payload = {
-      name: document.getElementById("ev-name")?.value || "",
-      eventDate: document.getElementById("ev-date")?.value || "",
-      eventType: document.getElementById("ev-type")?.value || "",
-      scope: document.getElementById("ev-scope")?.value || "",
-      venue: document.getElementById("ev-venue")?.value || "",
-      selectedRoles,
-      deliverablesByRole,
-      constraints: {
-        budgetLimitUsd: document.getElementById("ev-budget-limit")?.value || "",
-        hardDeadline: document.getElementById("ev-hard-deadline")?.value || "",
-        requiresVenueContract: document.getElementById("ev-need-contract")?.value || "yes",
-        requiresSponsorOutreach: document.getElementById("ev-need-sponsors")?.value || "yes"
-      },
-      sequencing: document.getElementById("ev-sequence")?.value || "",
-      customPrompt: document.getElementById("ev-prompt")?.value || ""
-    };
-
-    const status = document.getElementById("gen-status");
-    const log = document.getElementById("gen-detail-log");
-    const inputPreview = document.getElementById("gen-input-preview");
-    const nextBtn = document.getElementById("create-next-btn");
-    const backBtn = document.getElementById("create-back-btn");
-    const pushLog = (line) => {
-      if (!log) return;
-      const ts = new Date().toLocaleTimeString();
-      log.innerHTML += `<div style="padding:3px 0;border-bottom:1px dashed rgba(255,255,255,.06)">[${ts}] ${line}</div>`;
-      log.scrollTop = log.scrollHeight;
-    };
-    if (log) log.innerHTML = "";
-    if (inputPreview) {
-      inputPreview.textContent = `Input: ${payload.name || "Untitled Event"} · ${
-        payload.eventType || "Custom Type"
-      } · Date ${payload.eventDate || "Not set"} · Scope ${payload.scope || "Not set"}`;
-    }
-    if (status) status.textContent = "Preparing Gemini request...";
-    if (nextBtn) {
-      nextBtn.disabled = true;
-      nextBtn.textContent = "Generating...";
-      nextBtn.style.opacity = ".7";
-    }
-    if (backBtn) backBtn.style.pointerEvents = "none";
-    pushLog("Validating event inputs and building generation prompt.");
-    pushLog(
-      `Using fields: name, date, type, scope, venue, selected roles, per-role deliverables, structured constraints, sequencing, custom prompt.`
-    );
-    try {
-      if (status) status.textContent = "Contacting Gemini 2.5 Flash...";
-      pushLog("Sending request to /api/events/generate.");
-      const resp = await apiPost("/api/events/generate", payload);
-      pushLog(`Received model response${resp.model ? ` from ${resp.model}` : ""}.`);
-      genTasks = (resp.generated || []).map((t, idx) => ({
-        id: `g-${idx + 1}`,
-        title: t.title,
-        department: t.department,
-        dept: t.department,
-        description: t.description,
-        priority: t.priority,
-        dependsOnTitles: t.dependsOnTitles || []
-      }));
-      if (!genTasks.length) throw new Error("Gemini returned no tasks.");
-      const depsCount = genTasks.reduce(
-        (acc, t) => acc + (Array.isArray(t.dependsOnTitles) ? t.dependsOnTitles.length : 0),
-        0
-      );
-      const roles = [...new Set(genTasks.map((t) => t.department || t.dept).filter(Boolean))];
-      pushLog(`Generated ${genTasks.length} tasks.`);
-      pushLog(`Detected ${depsCount} dependency links across tasks.`);
-      pushLog(`Roles/departments in plan: ${roles.length ? roles.join(", ") : "None detected"}.`);
-      if (status) status.textContent = `Generated ${genTasks.length} tasks. Opening review...`;
-      renderGenTasks();
-      goToCreateStep(5);
-    } catch (error) {
-      if (status) status.textContent = "Generation failed.";
-      pushLog(`Generation failed: ${String(error?.message || error)}`);
-      pushLog("Tip: verify GEMINI_API_KEY and retry with a shorter custom prompt.");
-      showToast(String(error?.message || error));
-    } finally {
-      isGeneratingTasks = false;
-      if (nextBtn) {
-        nextBtn.disabled = false;
-        nextBtn.style.opacity = "";
-        nextBtn.textContent = currentStep === totalSteps ? "Publish Event" : currentStep === 4 ? "Generate" : "Continue →";
-      }
-      if (backBtn) backBtn.style.pointerEvents = "";
-    }
-  };
-
-  window.publishEvent = async function publishEventLive() {
-    const roles = [...document.querySelectorAll("#dept-checkboxes .cb-item.checked")].map((el) => el.getAttribute("data-role")).filter(Boolean);
-    const divisions = [...new Set([...document.querySelectorAll("#dept-checkboxes .cb-item.checked")].map((el) => el.getAttribute("data-division") === "external" ? "External Division" : "Internal Division"))];
-    const deliverables_by_role = {};
-    document.querySelectorAll("[data-role-deliverable]").forEach((el) => {
-      const key = el.getAttribute("data-role-deliverable");
-      if (key) deliverables_by_role[key] = el.value || "";
-    });
-    const event = {
-      name: document.getElementById("ev-name")?.value || "Untitled Event",
-      event_date: new Date(document.getElementById("ev-date")?.value || Date.now()).toISOString(),
-      event_type: document.getElementById("ev-type")?.value || "Custom Event",
-      scope: document.getElementById("ev-scope")?.value || "Custom",
-      budget_limit: document.getElementById("ev-budget-limit")?.value || "",
-      venue: document.getElementById("ev-venue")?.value || "",
-      location: document.getElementById("ev-venue")?.value || "",
-      planning_notes: document.getElementById("ev-prompt")?.value || "",
-      timeline_assumptions: document.getElementById("ev-sequence")?.value || "",
-      hard_deadline: document.getElementById("ev-hard-deadline")?.value || "",
-      roles,
-      divisions,
-      deliverables_by_role,
-      constraints: {
-        hard_deadline: document.getElementById("ev-hard-deadline")?.value || "",
-        requiresVenueContract: document.getElementById("ev-need-contract")?.value || "",
-        requiresSponsorOutreach: document.getElementById("ev-need-sponsors")?.value || ""
-      }
-    };
-    const tasks = (genTasks || []).map((t) => ({
-      title: t.title,
-      description: t.description || "Generated task",
-      department: t.department || t.dept || "Board Operations",
-      role: t.role || t.ownerSuggestion || "",
-      division: t.division || "",
-      priority: t.priority || "medium",
-      dependsOnTitles: t.dependsOnTitles || [],
-      unlock_at: t.unlock_at || null,
-      due_at: t.due_at || null
-    }));
-    await apiPost("/api/events/publish", { event, tasks });
-    closeModal("eventCreateModal");
-    showToast("Event workflow published.");
-    await hydrateDashboard();
-  };
-
-  window.loadPresidentSuggestions = async function loadPresidentSuggestions() {
-    selectedPresidentAssignee = "";
-    const role = document.getElementById("p-assign-role")?.value || "";
-    const root = document.getElementById("p-assign-suggestions");
-    if (!root) return;
-    if (!role) {
-      root.innerHTML = '<div style="font-size:12px;color:var(--silver)">Select a role to load suggestions.</div>';
-      return;
-    }
-    root.innerHTML = '<div style="font-size:12px;color:var(--silver)">Loading suggestions...</div>';
-    try {
-      const resp = await apiGet(`/api/assign/suggestions?role=${encodeURIComponent(role)}`);
-      root.innerHTML = (resp.suggestions || [])
-        .map(
-          (m, i) => `
-        <div class="approval-item" style="border-top-color:rgba(184,154,92,.25)">
-          <div class="approval-header">
-            <div>
-              <div class="approval-task">${m.full_name}</div>
-              <div class="approval-by">${m.role_title} · active ${m.activeCount}</div>
-            </div>
-            <div class="approval-actions">
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 12px" onclick="selectPresidentAssignee('${m.email}')">Select</button>
-            </div>
-          </div>
-          <div style="font-size:11px;color:var(--silver)">${m.email}</div>
-        </div>`
-        )
-        .join("") || '<div style="font-size:12px;color:var(--silver)">No users found for this role.</div>';
-    } catch (e) {
-      root.innerHTML = `<div style="font-size:12px;color:var(--red)">Unable to load suggestions: ${String(e.message || e)}</div>`;
-    }
-  };
-
-  window.selectPresidentAssignee = function selectPresidentAssignee(email) {
-    selectedPresidentAssignee = String(email || "").trim().toLowerCase();
-    showToast(`Selected ${selectedPresidentAssignee}`);
-  };
-
-  window.assignTaskFromPresident = async function assignTaskFromPresident() {
-    const title = document.getElementById("p-assign-title")?.value?.trim() || "";
-    const role = document.getElementById("p-assign-role")?.value?.trim() || "";
-    const dueDate = document.getElementById("p-assign-due")?.value || "";
-    const priority = document.getElementById("p-assign-priority")?.value || "standard";
-    const eventId = document.getElementById("p-assign-event")?.value || "";
-    const unlockAt = document.getElementById("p-assign-unlock")?.value || "";
-    const description =
-      document.getElementById("p-assign-description")?.value?.trim() || "Assigned by executive president.";
-    const dependency_task_ids = [...document.querySelectorAll("#p-assign-dependencies input:checked")].map((el) => Number(el.value));
-    if (!title || !role) {
-      showToast("Fill task title and role.");
-      return;
-    }
-    const finalDueDate =
-      dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const dueAt = new Date(`${finalDueDate}T23:59:00`);
-    try {
-      await apiPost("/api/tasks/assign", {
-        title,
-        role,
-        due_at: dueAt.toISOString(),
-        priority,
-        description,
-        assignee_email: selectedPresidentAssignee || undefined,
-        event_id: eventId || undefined,
-        unlock_at: unlockAt ? new Date(unlockAt).toISOString() : undefined,
-        dependency_task_ids
-      });
-      showToast("Task assigned.");
-      closeModal("assignTaskModal");
-      document.getElementById("p-assign-title").value = "";
-      document.getElementById("p-assign-description").value = "";
-      document.getElementById("p-assign-due").value = "";
-      if (document.getElementById("p-assign-event")) document.getElementById("p-assign-event").value = "";
-      if (document.getElementById("p-assign-unlock")) document.getElementById("p-assign-unlock").value = "";
-      document.querySelectorAll("#p-assign-dependencies input").forEach((el) => { el.checked = false; });
-      selectedPresidentAssignee = "";
-      await hydrateDashboard();
-    } catch (e) {
-      showToast(String(e.message || e));
-    }
-  };
-
-  window.editTaskAdmin = async function editTaskAdmin() {
-    const taskId = Number(window.__presidentInspectTaskId || 0);
-    if (!taskId) return;
-    const task = (dashboardCache?.tasks || []).find((t) => t.id === taskId);
-    if (!task) return;
-    document.getElementById("edit-task-id").value = String(task.id);
-    document.getElementById("edit-task-title").value = task.title || "";
-    document.getElementById("edit-task-role").value = task.owner_role || "";
-    document.getElementById("edit-task-division").value = task.department || "";
-    document.getElementById("edit-task-description").value = task.description || "";
-    document.getElementById("edit-task-priority").value = task.priority || "standard";
-    document.getElementById("edit-task-status").value = task.status || "current";
-    document.getElementById("edit-task-unlock").value = task.unlock_at ? new Date(task.unlock_at).toISOString().slice(0,16) : "";
-    document.getElementById("edit-task-due").value = task.due_at ? new Date(task.due_at).toISOString().slice(0,16) : "";
-    document.getElementById("edit-task-meeting-date").value = task.meeting_date || "";
-    document.getElementById("edit-task-meeting-time").value = task.meeting_time || "";
-    document.getElementById("edit-task-meeting-location").value = task.meeting_location || "";
-    document.getElementById("edit-task-notes").value = task.notes || "";
-    document.getElementById("edit-task-attachments").value = task.attachments_json || "[]";
-    document.getElementById("edit-task-redo-rules").value = task.redo_rules || "";
-    document.getElementById("edit-task-escalation-rules").value = task.escalation_rules || "";
-
-    const eventSelect = document.getElementById("edit-task-event");
-    eventSelect.innerHTML = `<option value="">Standalone</option>${(dashboardCache?.events || [])
-      .map((e) => `<option value="${e.id}">${e.name}</option>`)
-      .join("")}`;
-    eventSelect.value = task.event_id ? String(task.event_id) : "";
-
-    const assigneeSelect = document.getElementById("edit-task-assignee");
-    assigneeSelect.innerHTML = (dashboardCache?.users || [])
-      .map((u) => `<option value="${u.email}">${u.full_name} · ${u.role_title}</option>`)
-      .join("");
-    assigneeSelect.value = task.owner_email || "";
-
-    const depIds = new Set((dashboardCache?.dependencies || []).filter((d) => d.task_id === task.id).map((d) => d.depends_on_task_id));
-    document.getElementById("edit-task-dependencies").innerHTML = (dashboardCache?.tasks || [])
-      .filter((t) => t.id !== task.id)
-      .map((t) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px;align-items:flex-start"><input type="checkbox" value="${t.id}" ${depIds.has(t.id) ? "checked" : ""}/> <span>${t.title}</span></label>`)
-      .join("");
-    closeModal("taskInspectModal");
-    openModal("taskEditModal");
-  };
-
-  window.deleteTaskAdmin = async function deleteTaskAdmin() {
-    const taskId = Number(window.__presidentInspectTaskId || 0);
-    if (!taskId) return;
-    openStyledConfirm("Delete this task permanently from workflow?", async () => {
-      const token = getSessionToken();
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: "DELETE",
-        headers: { "x-session-token": token }
-      });
-      if (!res.ok) {
-        showToast("Unable to delete task.");
-        return;
-      }
-      showToast("Task deleted.");
-      closeModal("taskInspectModal");
-      await hydrateDashboard();
-    });
-  };
-
-  window.deleteEventLive = async function deleteEventLive(eventId) {
-    openStyledConfirm("Delete this event and all related tasks?", async () => {
-      const token = getSessionToken();
-      const res = await fetch(`/api/events/${eventId}`, {
-        method: "DELETE",
-        headers: { "x-session-token": token }
-      });
-      if (!res.ok) {
-        showToast("Unable to delete event.");
-        return;
-      }
-      showToast("Event deleted.");
-      await hydrateDashboard();
-    });
-  };
-
-  window.editEventLive = async function editEventLive(eventId, currentName) {
-    const event = (dashboardCache?.events || []).find((e) => e.id === eventId);
-    if (!event) return;
-    document.getElementById("edit-event-id").value = String(event.id);
-    document.getElementById("edit-event-name").value = event.name || currentName || "";
-    document.getElementById("edit-event-budget").value = event.budget_limit || "";
-    document.getElementById("edit-event-type").value = event.event_type || "";
-    document.getElementById("edit-event-date").value = event.event_date ? String(event.event_date).slice(0, 10) : "";
-    document.getElementById("edit-event-scope").value = event.scope || "";
-    document.getElementById("edit-event-venue").value = event.venue || "";
-    document.getElementById("edit-event-location").value = event.location || "";
-    document.getElementById("edit-event-notes").value = event.planning_notes || "";
-    document.getElementById("edit-event-timeline").value = event.timeline_assumptions || "";
-    document.getElementById("edit-event-workflow").value = Array.isArray(event.workflow_json)
-      ? event.workflow_json.map((w) => String(w)).join("\n")
-      : event.workflow_json || "";
-    document.getElementById("edit-event-divisions").value = Array.isArray(event.divisions_json)
-      ? event.divisions_json.join("\n")
-      : String(event.divisions_json || "").replace(/[\[\]"]/g, "").split(",").map((s) => s.trim()).filter(Boolean).join("\n");
-    document.getElementById("edit-event-roles").value = Array.isArray(event.roles_json)
-      ? event.roles_json.join("\n")
-      : String(event.roles_json || "").replace(/[\[\]"]/g, "").split(",").map((s) => s.trim()).filter(Boolean).join("\n");
-    const deliverablesObj = typeof event.deliverables_json === "object" && event.deliverables_json ? event.deliverables_json : {};
-    document.getElementById("edit-event-deliverables").value = Object.keys(deliverablesObj).map((k) => `${k}: ${deliverablesObj[k]}`).join("\n");
-    const constraintsObj = typeof event.constraints_json === "object" && event.constraints_json ? event.constraints_json : {};
-    document.getElementById("edit-event-constraints").value = Object.keys(constraintsObj).map((k) => `${k}: ${constraintsObj[k]}`).join("\n");
-    openModal("eventEditModal");
-  };
-
-  window.saveTaskEdit = async function saveTaskEdit() {
-    const taskId = Number(document.getElementById("edit-task-id").value || 0);
-    if (!taskId) return;
-    const dependency_task_ids = [...document.querySelectorAll("#edit-task-dependencies input:checked")].map((el) => Number(el.value));
-    try {
-      await apiPatch(`/api/tasks/${taskId}`, {
-        title: document.getElementById("edit-task-title").value,
-        description: document.getElementById("edit-task-description").value,
-        assignee_email: document.getElementById("edit-task-assignee").value,
-        role: document.getElementById("edit-task-role").value,
-        department: document.getElementById("edit-task-division").value,
-        event_id: document.getElementById("edit-task-event").value || null,
-        due_at: document.getElementById("edit-task-due").value ? new Date(document.getElementById("edit-task-due").value).toISOString() : null,
-        unlock_at: document.getElementById("edit-task-unlock").value ? new Date(document.getElementById("edit-task-unlock").value).toISOString() : null,
-        priority: document.getElementById("edit-task-priority").value,
-        status: document.getElementById("edit-task-status").value,
-        meeting_date: document.getElementById("edit-task-meeting-date").value,
-        meeting_time: document.getElementById("edit-task-meeting-time").value,
-        meeting_location: document.getElementById("edit-task-meeting-location").value,
-        notes: document.getElementById("edit-task-notes").value,
-        attachments: JSON.parse(document.getElementById("edit-task-attachments").value || "[]"),
-        redo_rules: document.getElementById("edit-task-redo-rules").value,
-        escalation_rules: document.getElementById("edit-task-escalation-rules").value,
-        dependency_task_ids
-      });
-      closeModal("taskEditModal");
-      showToast("Task updated.");
-      await hydrateDashboard();
-    } catch (error) {
-      showToast("Unable to save task edit.");
-    }
-  };
-
-  window.saveEventEdit = async function saveEventEdit() {
-    const eventId = Number(document.getElementById("edit-event-id").value || 0);
-    if (!eventId) return;
-    try {
-      const res = await apiPatch(`/api/events/${eventId}`, {
-        name: document.getElementById("edit-event-name").value,
-        budget_limit: document.getElementById("edit-event-budget").value,
-        event_type: document.getElementById("edit-event-type").value,
-        event_date: document.getElementById("edit-event-date").value,
-        scope: document.getElementById("edit-event-scope").value,
-        venue: document.getElementById("edit-event-venue").value,
-        location: document.getElementById("edit-event-location").value,
-        planning_notes: document.getElementById("edit-event-notes").value,
-        timeline_assumptions: document.getElementById("edit-event-timeline").value,
-        workflow: parseListInput(document.getElementById("edit-event-workflow").value),
-        divisions: parseListInput(document.getElementById("edit-event-divisions").value),
-        roles: parseListInput(document.getElementById("edit-event-roles").value),
-        deliverables_by_role: parseKeyValueInput(document.getElementById("edit-event-deliverables").value),
-        constraints: parseKeyValueInput(document.getElementById("edit-event-constraints").value)
-      });
-      closeModal("eventEditModal");
-      showToast(res.warnings?.length ? res.warnings[0] : "Event updated.");
-      await hydrateDashboard();
-    } catch (_error) {
-      showToast("Unable to save event edit.");
-    }
-  };
-
-  window.updateReportStatus = async function updateReportStatus(reportId, status) {
-    await apiPatch(`/api/reports/${reportId}`, { status });
-    showToast("Report updated.");
-    await hydrateDashboard();
-  };
-
-  window.markTaskOverdue = async function markTaskOverdue(taskId) {
-    await apiPatch(`/api/tasks/${taskId}`, { status: "overdue" });
-    showToast("Task marked overdue.");
-    await hydrateDashboard();
-  };
-
-  window.extendTaskDeadline = async function extendTaskDeadline(taskId) {
-    const nextDate = prompt("New due date (YYYY-MM-DD):");
-    if (!nextDate) return;
-    const dueAt = new Date(`${nextDate}T23:59:00`);
-    if (!Number.isFinite(dueAt.getTime())) {
-      showToast("Invalid date.");
-      return;
-    }
-    await apiPatch(`/api/tasks/${taskId}`, { due_at: dueAt.toISOString(), status: "current" });
-    showToast("Deadline updated.");
-    await hydrateDashboard();
-  };
-
-  window.reassignOverdueTask = async function reassignOverdueTask(taskId) {
-    const task = (dashboardCache?.tasks || []).find((t) => t.id === taskId);
-    if (!task) return;
-    const role = task.owner_role || "";
-    const suggestions = await apiGet(`/api/assign/suggestions?role=${encodeURIComponent(role)}`).catch(() => ({ suggestions: [] }));
-    if (!suggestions.suggestions?.length) {
-      showToast("No reassignment options found.");
-      return;
-    }
-    const selected = suggestions.suggestions[0];
-    await apiPatch(`/api/tasks/${taskId}`, {
-      assignee_email: selected.email,
-      role: selected.role_title,
-      department: selected.department,
-      status: "current"
-    });
-    showToast(`Reassigned to ${selected.full_name}.`);
-    await hydrateDashboard();
-  };
-
-  await hydrateDashboard();
-  setInterval(async () => {
-    await hydrateDashboard();
-  }, 30000);
-})();
-</script>
+<script src="js/president-core.js"></script>
+<script src="js/ops-common.js"></script>
+<script src="js/president-live.js"></script>
+<script src="js/newsletter-admin.js"></script>
 </body>
 </html>

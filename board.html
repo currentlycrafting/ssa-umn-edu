@@ -1,857 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="ops-shell">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-26GKQG2GXF');
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SSA Ops — Board Member Workspace</title>
+<link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/utilities.css" />
 
-<style>
-/* ─────────────────────────────────────────────
-   TOKENS
-───────────────────────────────────────────── */
-:root {
-  --navy:         #0b0f1c;
-  --navy-mid:     #141929;
-  --navy-light:   #1e2540;
-  --charcoal:     #2a2e3d;
-  --white:        #f8f6f2;
-  --off-white:    #ede9e1;
-  --silver:       #9a9fad;
-  --stone:        #c4bdb0;
-  --gold:         #b89a5c;
-  --gold-light:   #d4b87a;
-  --green:        #4caf7d;
-  --green-dim:    rgba(76, 175, 125, .12);
-  --red:          #c0504d;
-  --red-dim:      rgba(192, 80, 77, .14);
-  --amber:        #d4914a;
-  --amber-dim:    rgba(212, 145, 74, .13);
-  --blue:         #7ba3d4;
-  --blue-dim:     rgba(123, 163, 212, .12);
-  --border:       rgba(255, 255, 255, .06);
-  --border-gold:  rgba(184, 154, 92, .2);
-  --sidebar-w:    256px;
-  --topbar-h:     56px;
-  --fd: 'Cormorant Garamond', serif;
-  --fb: 'DM Sans', sans-serif;
-}
-
-/* ─────────────────────────────────────────────
-   RESET & BASE
-───────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; }
-body { background: var(--navy); color: var(--white); font-family: var(--fb); font-weight: 300; font-size: 13px; display: flex; }
-a { color: inherit; text-decoration: none; }
-button { font-family: var(--fb); cursor: pointer; }
-textarea, input, select { font-family: var(--fb); }
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(184,154,92,.25); border-radius: 2px; }
-
-/* ─────────────────────────────────────────────
-   SIDEBAR
-───────────────────────────────────────────── */
-#sidebar {
-  width: var(--sidebar-w);
-  flex-shrink: 0;
-  background: var(--navy-mid);
-  border-right: 1px solid var(--border-gold);
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: fixed;
-  left: 0; top: 0; bottom: 0;
-  z-index: 200;
-  transition: transform .3s;
-}
-
-/* logo */
-.sb-logo {
-  padding: 22px 18px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 10px;
-}
-.sb-logo-img {
-  width: 38px; height: 38px; object-fit: contain; flex-shrink: 0;
-}
-.sb-logo-text { line-height: 1; }
-.sb-logo-text .sb-lg-title {
-  font-family: var(--fd);
-  font-size: 13px; font-weight: 500;
-  letter-spacing: .16em; text-transform: uppercase; color: var(--white);
-}
-.sb-logo-text .sb-lg-sub {
-  display: block; font-size: 8px;
-  letter-spacing: .18em; text-transform: uppercase;
-  color: var(--silver); margin-top: 3px;
-}
-
-/* user */
-.sb-user {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-}
-.sb-user-name {
-  font-family: var(--fd);
-  font-size: 22px; font-weight: 400;
-  color: var(--white); line-height: 1.1; margin-bottom: 4px;
-}
-.sb-user-role {
-  font-size: 9px; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--gold);
-}
-.sb-user-div {
-  font-size: 10px; color: var(--silver); margin-top: 2px;
-}
-
-/* nav */
-.sb-nav { padding: 10px 0; flex: 1; }
-.sb-nav-section {
-  font-size: 8px; letter-spacing: .32em; text-transform: uppercase;
-  color: var(--silver); padding: 14px 18px 5px; opacity: .55;
-}
-.sb-nav-item {
-  display: flex; align-items: center; gap: 9px;
-  padding: 8px 18px;
-  font-size: 12px; letter-spacing: .03em;
-  color: var(--stone); cursor: pointer;
-  border-left: 2px solid transparent;
-  transition: all .18s;
-  user-select: none;
-}
-.sb-nav-item:hover {
-  color: var(--white);
-  background: rgba(255,255,255,.03);
-  border-left-color: rgba(184,154,92,.3);
-}
-.sb-nav-item.active {
-  color: var(--white);
-  background: rgba(184,154,92,.08);
-  border-left-color: var(--gold);
-}
-.sb-nav-item .sni { font-size: 12px; width: 15px; text-align: center; flex-shrink: 0; }
-.sb-nav-badge {
-  margin-left: auto;
-  background: var(--red); color: #fff;
-  font-size: 9px; font-weight: 500;
-  padding: 2px 6px; border-radius: 2px; min-width: 18px; text-align: center;
-}
-.sb-nav-badge.gold { background: var(--gold); color: var(--navy); }
-
-/* footer */
-.sb-footer {
-  padding: 14px 18px;
-  border-top: 1px solid var(--border);
-  font-size: 10px; color: var(--silver);
-}
-.poll-dot {
-  display: inline-block; width: 6px; height: 6px;
-  border-radius: 50%; background: var(--green);
-  margin-right: 5px; vertical-align: middle;
-  animation: blink 2.2s ease infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
-
-/* ─────────────────────────────────────────────
-   MAIN SHELL
-───────────────────────────────────────────── */
-#main {
-  margin-left: var(--sidebar-w);
-  flex: 1;
-  height: 100vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* topbar */
-#topbar {
-  height: var(--topbar-h);
-  background: var(--navy-mid);
-  border-bottom: 1px solid var(--border-gold);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px;
-  position: sticky; top: 0; z-index: 100;
-  flex-shrink: 0;
-}
-.topbar-title {
-  font-family: var(--fd);
-  font-size: 14px; font-weight: 400;
-  letter-spacing: .14em; text-transform: uppercase;
-  color: var(--silver);
-}
-.topbar-right { display: flex; align-items: center; gap: 10px; }
-
-/* buttons */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: 6px; padding: 7px 18px;
-  font-family: var(--fb); font-size: 10px;
-  font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
-  cursor: pointer; border: none; transition: all .2s;
-  white-space: nowrap;
-}
-.btn-gold  { background: var(--gold);  color: var(--navy); }
-.btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
-.btn-outline {
-  background: transparent;
-  border: 1px solid rgba(184,154,92,.35);
-  color: var(--gold);
-}
-.btn-outline:hover { background: rgba(184,154,92,.08); }
-.btn-red  { background: var(--red);  color: #fff; }
-.btn-red:hover { background: #a83d3a; }
-.btn-ghost {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.12);
-  color: var(--stone);
-}
-.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
-.btn-sm { padding: 5px 12px; font-size: 9px; }
-
-/* ─────────────────────────────────────────────
-   CONTENT WRAPPER
-───────────────────────────────────────────── */
-#content { padding: 24px 28px 40px; flex: 1; }
-
-/* pages */
-.page { display: none; flex-direction: column; gap: 20px; }
-.page.active { display: flex; }
-
-/* ─────────────────────────────────────────────
-   SECTION HEADER
-───────────────────────────────────────────── */
-.section-eyebrow {
-  font-size: 8px; letter-spacing: .38em;
-  text-transform: uppercase; color: var(--gold);
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 10px;
-}
-.section-eyebrow::before {
-  content: ''; display: block;
-  width: 18px; height: 1px; background: var(--gold);
-}
-.section-title {
-  font-family: var(--fd); font-size: 22px; font-weight: 400;
-  color: var(--white); margin-bottom: 4px;
-}
-.section-sub { font-size: 11px; color: var(--silver); margin-bottom: 16px; }
-
-/* breadcrumb */
-.breadcrumb {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 10px; color: var(--silver);
-  letter-spacing: .08em; margin-bottom: 18px;
-}
-.breadcrumb .bc-active { color: var(--gold); }
-
-/* ─────────────────────────────────────────────
-   KPI CARDS
-───────────────────────────────────────────── */
-.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-.kpi-card {
-  background: var(--navy-light);
-  border: 1px solid var(--border);
-  border-bottom: 2px solid transparent;
-  padding: 18px 16px;
-  cursor: pointer; transition: all .2s;
-}
-.kpi-card:hover { border-bottom-color: var(--gold); }
-.kpi-card.kpi-urgent  { border-bottom-color: var(--red); }
-.kpi-card.kpi-failed  { border-bottom-color: rgba(192,80,77,.5); }
-.kpi-num {
-  font-family: var(--fd); font-size: 40px; font-weight: 300;
-  line-height: 1; color: var(--white);
-}
-.kpi-num.num-red    { color: var(--red); }
-.kpi-num.num-gold   { color: var(--gold); }
-.kpi-num.num-green  { color: var(--green); }
-.kpi-num.num-silver { color: var(--silver); }
-.kpi-num.num-amber  { color: var(--amber); }
-.kpi-label {
-  font-size: 9px; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--silver); margin-top: 5px;
-}
-
-/* ─────────────────────────────────────────────
-   TWO-COL LAYOUT
-───────────────────────────────────────────── */
-.two-col    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.one-two    { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; }
-.three-col  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
-/* ─────────────────────────────────────────────
-   CARD SHELL
-───────────────────────────────────────────── */
-.card {
-  background: var(--navy-mid);
-  border: 1px solid var(--border);
-  padding: 22px;
-}
-.card-sm {
-  background: var(--navy-light);
-  border: 1px solid var(--border);
-  padding: 14px;
-}
-
-/* ─────────────────────────────────────────────
-   STATUS BADGES
-───────────────────────────────────────────── */
-.badge {
-  display: inline-flex; align-items: center;
-  font-size: 9px; letter-spacing: .15em;
-  text-transform: uppercase; padding: 3px 9px; border-radius: 2px;
-  font-weight: 500;
-}
-.badge-current    { background: rgba(184,154,92,.13); color: var(--gold); }
-.badge-locked     { background: rgba(255,255,255,.06); color: var(--silver); }
-.badge-overdue    { background: var(--red-dim); color: var(--red); }
-.badge-done       { background: var(--green-dim); color: var(--green); }
-.badge-pending    { background: var(--blue-dim); color: var(--blue); }
-.badge-failed     { background: var(--red-dim); color: var(--red); }
-.badge-redo       { background: var(--amber-dim); color: var(--amber); }
-.badge-urgent     { background: var(--red-dim); color: var(--red); }
-
-/* priority pills */
-.prio {
-  font-size: 8px; letter-spacing: .15em;
-  text-transform: uppercase; padding: 2px 7px; border-radius: 2px;
-}
-.prio-urgent { background: rgba(192,80,77,.2); color: var(--red); }
-.prio-high   { background: rgba(212,145,74,.15); color: var(--amber); }
-.prio-medium { background: rgba(184,154,92,.12); color: var(--gold); }
-.prio-low    { background: rgba(255,255,255,.06); color: var(--silver); }
-
-/* ─────────────────────────────────────────────
-   TASK CARDS
-───────────────────────────────────────────── */
-.task-list { display: flex; flex-direction: column; gap: 2px; }
-
-.task-card {
-  background: var(--navy-light);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--gold);
-  transition: border-color .2s, background .2s;
-  cursor: pointer;
-}
-.task-card:hover { border-color: var(--border-gold); background: var(--charcoal); }
-.task-card.tc-overdue  { border-left-color: var(--red); }
-.task-card.tc-done     { border-left-color: var(--green); opacity: .75; }
-.task-card.tc-locked   { border-left-color: rgba(255,255,255,.12); opacity: .7; }
-.task-card.tc-failed   { border-left-color: var(--red); opacity: .65; }
-.task-card.tc-pending  { border-left-color: var(--blue); }
-
-.tc-inner { padding: 14px; }
-.tc-top {
-  display: flex; justify-content: space-between;
-  align-items: flex-start; gap: 10px; margin-bottom: 8px;
-}
-.tc-title { font-size: 13px; font-weight: 400; color: var(--white); margin-bottom: 3px; }
-.tc-event { font-size: 10px; color: var(--gold); letter-spacing: .05em; }
-.tc-right  { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-
-.tc-meta {
-  display: flex; flex-wrap: wrap; gap: 14px;
-  font-size: 11px; color: var(--silver); margin-bottom: 10px;
-}
-.tc-meta-item { display: flex; align-items: center; gap: 4px; }
-.tc-meta-label { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: rgba(154,159,173,.55); }
-.tc-meta-val { color: var(--stone); }
-
-.tc-footer {
-  display: flex; justify-content: space-between;
-  align-items: center; gap: 8px; margin-top: 10px;
-  padding-top: 10px; border-top: 1px solid rgba(255,255,255,.04);
-}
-.tc-meeting {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 10px; color: var(--stone); background: rgba(255,255,255,.03);
-  padding: 5px 10px; border: 1px solid rgba(255,255,255,.06);
-}
-
-/* lock banner */
-.tc-lock-banner {
-  background: rgba(255,255,255,.03);
-  border-top: 1px solid rgba(255,255,255,.05);
-  padding: 9px 14px;
-  display: flex; align-items: center; gap: 7px;
-  font-size: 11px; color: var(--silver);
-}
-.tc-dep-banner {
-  background: rgba(184,154,92,.04);
-  border-top: 1px solid rgba(184,154,92,.12);
-  padding: 9px 14px;
-}
-.tc-dep-label {
-  font-size: 8px; letter-spacing: .2em;
-  text-transform: uppercase; color: var(--gold); margin-bottom: 5px;
-}
-.tc-dep-chain {
-  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
-}
-.dep-chip {
-  font-size: 10px; padding: 3px 9px;
-  border: 1px solid rgba(255,255,255,.08); color: var(--silver);
-}
-.dep-chip.done { border-color: rgba(76,175,125,.35); color: var(--green); }
-.dep-chip.active { border-color: rgba(184,154,92,.4); color: var(--gold); }
-.dep-arrow { color: rgba(184,154,92,.35); font-size: 11px; }
-
-/* ─────────────────────────────────────────────
-   DEPENDENCY GRAPH
-───────────────────────────────────────────── */
-.dep-graph-wrap {
-  background: var(--navy);
-  border: 1px solid var(--border);
-  padding: 20px;
-  overflow-x: auto;
-}
-.dep-phase { margin-bottom: 6px; }
-.dep-phase-label {
-  font-size: 8px; letter-spacing: .28em;
-  text-transform: uppercase; color: var(--silver);
-  margin-bottom: 8px; opacity: .6;
-}
-.dep-phase-row {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-}
-.dep-node {
-  min-width: 130px; max-width: 200px;
-  background: var(--navy-mid);
-  border: 1px solid rgba(255,255,255,.1);
-  padding: 10px 12px; cursor: pointer;
-  transition: all .2s; position: relative;
-}
-.dep-node:hover { border-color: var(--gold); }
-.dep-node.done-node   { border-color: rgba(76,175,125,.45); background: rgba(76,175,125,.05); }
-.dep-node.active-node { border-color: var(--gold); background: rgba(184,154,92,.07); }
-.dep-node.locked-node { opacity: .42; }
-.dep-node.overdue-node{ border-color: rgba(192,80,77,.5); background: var(--red-dim); }
-.dep-node.mine-node   { border-color: var(--gold-light); box-shadow: 0 0 0 1px rgba(184,154,92,.18); }
-.dep-node-div  { font-size: 7px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
-.dep-node-title{ font-size: 11px; color: var(--white); margin-bottom: 3px; line-height: 1.3; }
-.dep-node-owner{ font-size: 10px; color: var(--silver); }
-.dep-arrow-icon{ font-size: 14px; color: rgba(184,154,92,.35); flex-shrink: 0; }
-.dep-legend {
-  display: flex; gap: 16px; flex-wrap: wrap;
-  margin-top: 14px; padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,.05);
-}
-.dep-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--silver); }
-.dep-legend-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.2);
-}
-
-/* ─────────────────────────────────────────────
-   SUBMISSION FORM
-───────────────────────────────────────────── */
-.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.form-label {
-  font-size: 9px; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--silver);
-}
-.form-input, .form-select, .form-textarea {
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.1);
-  padding: 10px 12px;
-  font-family: var(--fb); font-size: 13px;
-  color: var(--white); outline: none;
-  transition: border-color .25s; width: 100%;
-  resize: vertical;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--gold);
-}
-.form-input::placeholder, .form-textarea::placeholder { color: rgba(154,159,173,.38); }
-.form-textarea { min-height: 90px; }
-.form-select option { background: var(--navy-mid); }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-/* drag-drop */
-.drop-zone {
-  border: 1px dashed rgba(184,154,92,.3);
-  background: rgba(255,255,255,.01);
-  padding: 28px 16px;
-  text-align: center; cursor: pointer;
-  transition: all .2s; margin-bottom: 16px;
-}
-.drop-zone:hover, .drop-zone.drag-over {
-  border-color: var(--gold);
-  background: rgba(184,154,92,.05);
-}
-.drop-icon { font-size: 26px; opacity: .4; margin-bottom: 8px; }
-.drop-text { font-size: 12px; color: var(--silver); }
-.drop-sub  { font-size: 10px; color: rgba(154,159,173,.5); margin-top: 4px; }
-
-/* difficulty stars */
-.difficulty-row { display: flex; gap: 5px; margin-top: 4px; }
-.diff-star {
-  font-size: 20px; cursor: pointer; opacity: .25;
-  color: var(--gold); transition: opacity .15s;
-}
-.diff-star.active { opacity: 1; }
-
-/* submit helper */
-.submit-helper {
-  font-size: 10px; color: var(--silver); line-height: 1.65;
-  margin-top: 10px; padding: 12px;
-  background: rgba(255,255,255,.02);
-  border: 1px solid var(--border);
-}
-
-/* ─────────────────────────────────────────────
-   EVENTS LIST
-───────────────────────────────────────────── */
-.event-item {
-  background: var(--navy-light);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--gold);
-  padding: 14px; margin-bottom: 6px;
-  cursor: pointer; transition: background .2s;
-}
-.event-item:hover { background: var(--charcoal); }
-.event-item.ev-urgent { border-left-color: var(--red); }
-.event-item.ev-done   { border-left-color: var(--green); opacity: .7; }
-
-.ev-date {
-  font-size: 9px; letter-spacing: .2em;
-  text-transform: uppercase; color: var(--gold); margin-bottom: 4px;
-}
-.ev-name { font-family: var(--fd); font-size: 17px; color: var(--white); margin-bottom: 5px; }
-.ev-meta { display: flex; gap: 10px; flex-wrap: wrap; }
-.ev-tag {
-  font-size: 9px; padding: 2px 8px;
-  border: 1px solid rgba(255,255,255,.1); color: var(--silver);
-}
-.ev-tag.ev-tag-red { border-color: rgba(192,80,77,.35); color: var(--red); }
-
-.progress-wrap { margin-top: 10px; }
-.progress-row-label {
-  display: flex; justify-content: space-between;
-  font-size: 10px; color: var(--silver); margin-bottom: 4px;
-}
-.progress-bar { height: 2px; background: rgba(255,255,255,.07); }
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--gold), var(--gold-light));
-  transition: width .5s;
-}
-
-/* deadline row */
-.deadline-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.04);
-}
-.deadline-row:last-child { border-bottom: none; }
-.dl-date {
-  width: 52px; flex-shrink: 0;
-  font-family: var(--fd); font-size: 22px;
-  font-weight: 300; color: var(--white); line-height: 1;
-}
-.dl-month {
-  font-size: 8px; letter-spacing: .2em;
-  text-transform: uppercase; color: var(--gold); margin-top: 1px;
-}
-.dl-body { flex: 1; }
-.dl-title { font-size: 12px; color: var(--white); margin-bottom: 2px; }
-.dl-sub   { font-size: 10px; color: var(--silver); }
-.dl-right { flex-shrink: 0; }
-
-/* ─────────────────────────────────────────────
-   CALENDAR
-───────────────────────────────────────────── */
-.cal-nav {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
-}
-.cal-month-label {
-  font-family: var(--fd); font-size: 20px; font-weight: 400; color: var(--white);
-}
-.cal-nav-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  width: 28px; height: 28px;
-  color: var(--silver); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; transition: border-color .2s;
-}
-.cal-nav-btn:hover { border-color: var(--gold); color: var(--gold); }
-
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-.cal-hdr {
-  font-size: 8px; letter-spacing: .2em;
-  text-transform: uppercase; color: var(--silver);
-  text-align: center; padding: 6px 2px;
-}
-.cal-cell {
-  min-height: 68px; max-height: 90px; overflow: hidden;
-  background: var(--navy-light);
-  border: 1px solid rgba(255,255,255,.04);
-  padding: 5px; cursor: pointer; transition: background .15s;
-}
-.cal-cell:hover { background: var(--charcoal); }
-.cal-cell.today  { border-color: var(--gold); background: rgba(184,154,92,.06); }
-.cal-cell.other  { opacity: .28; pointer-events: none; }
-.cal-cell.has-event { border-color: rgba(184,154,92,.2); }
-.cal-day-num { font-size: 10px; color: var(--stone); margin-bottom: 3px; }
-.cal-day-num.today-num { color: var(--gold); font-weight: 500; }
-.cal-line {
-  font-size: 9px; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-  padding: 1px 3px; margin-bottom: 1px;
-  border-left: 2px solid;
-}
-.cal-line.ev-normal   { border-color: var(--gold);  color: var(--stone);  background: rgba(184,154,92,.07); }
-.cal-line.ev-done     { border-color: var(--green); color: var(--green);  background: var(--green-dim); }
-.cal-line.ev-overdue  { border-color: var(--red);   color: var(--red);    background: var(--red-dim); }
-.cal-line.ev-deadline { border-color: var(--amber); color: var(--amber);  background: var(--amber-dim); }
-.cal-more { font-size: 9px; color: var(--silver); padding: 1px 3px; }
-
-/* ─────────────────────────────────────────────
-   MODALS
-───────────────────────────────────────────── */
-.modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.72);
-  z-index: 700; display: flex;
-  align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  transition: opacity .25s;
-}
-.modal-backdrop.open { opacity: 1; pointer-events: all; }
-
-.modal {
-  background: var(--navy-mid);
-  border: 1px solid var(--border-gold);
-  width: 660px; max-width: 96vw;
-  max-height: 88vh; overflow-y: auto;
-  display: flex; flex-direction: column;
-  transform: translateY(16px);
-  transition: transform .25s;
-}
-.modal-backdrop.open .modal { transform: translateY(0); }
-
-.modal-sm { width: 440px; }
-
-.modal-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: center;
-  position: sticky; top: 0; background: var(--navy-mid); z-index: 5;
-}
-.modal-header-title {
-  font-family: var(--fd); font-size: 22px;
-  font-weight: 400; color: var(--white);
-}
-.modal-close {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,.12);
-  width: 28px; height: 28px;
-  color: var(--silver); cursor: pointer;
-  font-size: 14px; display: flex;
-  align-items: center; justify-content: center;
-  transition: all .2s;
-}
-.modal-close:hover { border-color: var(--red); color: var(--red); }
-.modal-body { padding: 24px; flex: 1; }
-.modal-footer {
-  padding: 14px 24px;
-  border-top: 1px solid var(--border);
-  display: flex; justify-content: flex-end; gap: 10px;
-  position: sticky; bottom: 0;
-  background: var(--navy-mid);
-}
-
-/* modal detail rows */
-.detail-row {
-  background: var(--navy);
-  border: 1px solid var(--border);
-  padding: 12px 14px; margin-bottom: 8px;
-}
-.detail-label {
-  font-size: 8px; letter-spacing: .22em;
-  text-transform: uppercase; color: var(--gold); margin-bottom: 4px;
-}
-.detail-val { font-size: 13px; color: var(--stone); line-height: 1.6; }
-
-/* confirm modal */
-.confirm-icon {
-  font-size: 36px; text-align: center;
-  margin-bottom: 12px;
-}
-.confirm-msg {
-  font-family: var(--fd); font-size: 22px;
-  text-align: center; color: var(--white); margin-bottom: 8px;
-}
-.confirm-sub {
-  font-size: 12px; color: var(--silver);
-  text-align: center; line-height: 1.7; max-width: 320px; margin: 0 auto 4px;
-}
-
-/* ─────────────────────────────────────────────
-   MISC COMPONENTS
-───────────────────────────────────────────── */
-.info-banner {
-  background: rgba(184,154,92,.05);
-  border: 1px solid rgba(184,154,92,.15);
-  padding: 14px 16px; margin-bottom: 16px;
-  display: flex; gap: 12px; align-items: flex-start;
-}
-.info-banner-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-.info-banner-text { font-size: 12px; color: var(--silver); line-height: 1.7; }
-
-.divider { height: 1px; background: var(--border); margin: 16px 0; }
-
-.empty-state {
-  text-align: center; padding: 32px 16px;
-  font-size: 13px; color: var(--silver); opacity: .6;
-}
-
-/* workload bar */
-.wl-wrap { margin-top: 4px; }
-.wl-bar { height: 3px; background: rgba(255,255,255,.07); border-radius: 2px; }
-.wl-fill { height: 100%; border-radius: 2px; transition: width .4s; }
-.wl-ok   { background: var(--green); }
-.wl-warn { background: var(--amber); }
-.wl-over { background: var(--red); }
-
-/* toast */
-#toast {
-  position: fixed; bottom: 24px; right: 24px;
-  background: var(--gold); color: var(--navy);
-  padding: 11px 24px; font-size: 11px;
-  font-weight: 500; letter-spacing: .08em;
-  z-index: 9999; opacity: 0;
-  pointer-events: none; transition: opacity .3s;
-}
-#toast.show { opacity: 1; }
-
-/* ─────────────────────────────────────────────
-   RESPONSIVE
-───────────────────────────────────────────── */
-@media (max-width: 1100px) {
-  .kpi-row { grid-template-columns: repeat(3, 1fr); }
-  .two-col, .one-two { grid-template-columns: 1fr; }
-  .three-col { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 820px) {
-  :root { --sidebar-w: 0px; }
-  #sidebar { transform: translateX(-100%); }
-  #sidebar.mobile-open { transform: translateX(0); width: 256px; }
-  #main { margin-left: 0; }
-  #topbar { padding: 0 16px; }
-  #content { padding: 16px; }
-  .kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .two-col, .one-two, .three-col { grid-template-columns: 1fr; }
-  .form-row { grid-template-columns: 1fr; }
-  #menu-btn { display: flex !important; }
-}
-#menu-btn {
-  display: none;
-  align-items: center; justify-content: center;
-  width: 32px; height: 32px;
-  background: transparent;
-  border: 1px solid var(--border); color: var(--silver);
-  cursor: pointer; font-size: 16px; margin-right: 8px;
-  transition: border-color .2s;
-}
-#menu-btn:hover { border-color: var(--gold); }
-</style>
+<link rel="stylesheet" href="css/board.css" />
 </head>
 
-<body>
+<body class="ops-shell">
 
 <!-- ══════════════════════════════════════
      SIDEBAR
 ══════════════════════════════════════ -->
 <nav id="sidebar" role="navigation" aria-label="Main navigation">
-
-  <!-- Logo -->
   <div class="sb-logo">
-    <img class="sb-logo-img" src="images/favicon-logo-transparent.png" alt="SSA logo" />
-    <div class="sb-logo-text">
-      <span class="sb-lg-title">SSA Ops</span>
-      <span class="sb-lg-sub">Board Platform</span>
+    <img src="logo-images/logo-v3.png" alt="SSA logo" loading="lazy" />
+    <div class="sb-logo-txt">
+      <span>SSA Ops</span>
+      <span>Board Platform</span>
     </div>
   </div>
-
-  <!-- User -->
   <div class="sb-user">
     <div class="sb-user-name" id="sb-greeting">Hey Member,</div>
     <div class="sb-user-role" id="sb-role">Board Member</div>
-    <div class="sb-user-div" id="sb-div">Board Division</div>
+    <div class="sb-user-dept" id="sb-div">Board Division</div>
   </div>
-
-  <!-- Navigation -->
   <div class="sb-nav">
-    <div class="sb-nav-section">Tasks</div>
-    <div class="sb-nav-item active" onclick="navigate('tasks')" data-page="tasks">
-      <span class="sni">≡</span> My Tasks
-    </div>
-    <div class="sb-nav-item" onclick="navigate('urgent')" data-page="urgent">
-      <span class="sni">U</span> Urgent
-      <span class="sb-nav-badge" id="badge-urgent">1</span>
-    </div>
-    <div class="sb-nav-item" onclick="navigate('current')" data-page="current">
-      <span class="sni">C</span> Current
-    </div>
-    <div class="sb-nav-item" onclick="navigate('upcoming')" data-page="upcoming">
-      <span class="sni">N</span> Upcoming
-    </div>
-    <div class="sb-nav-item" onclick="navigate('past')" data-page="past">
-      <span class="sni">P</span> Past
-    </div>
-    <div class="sb-nav-item" onclick="navigate('failed')" data-page="failed">
-      <span class="sni">✕</span> Failed
-    </div>
-
-    <div class="sb-nav-section">Views</div>
-    <div class="sb-nav-item" onclick="navigate('dependency')" data-page="dependency">
-      <span class="sni">D</span> Dependency Graph
-    </div>
-    <div class="sb-nav-item" onclick="navigate('calendar')" data-page="calendar">
-      <span class="sni">K</span> Calendar
-    </div>
-    <div class="sb-nav-item" onclick="navigate('events')" data-page="events">
-      <span class="sni">E</span> Events
-    </div>
-    <div class="sb-nav-item" onclick="navigate('submit')" data-page="submit">
-      <span class="sni">S</span> Submit Work
-    </div>
+    <div class="sb-section-label">My Work</div>
+    <div class="sb-item active" onclick="navigate('tasks')" data-page="tasks"><span class="sb-icon">◈</span>My Tasks</div>
+    <div class="sb-item" onclick="navigate('current')" data-page="current"><span class="sb-icon">≡</span>Current</div>
+    <div class="sb-item" onclick="navigate('redo')" data-page="redo"><span class="sb-icon">↺</span>Redo</div>
+    <div class="sb-item" onclick="navigate('past')" data-page="past"><span class="sb-icon">P</span>Past</div>
+    <div class="sb-section-label">Views</div>
+    <div class="sb-item" onclick="navigate('dependency')" data-page="dependency"><span class="sb-icon">⊹</span>Dependency Graph</div>
+    <div class="sb-item" onclick="navigate('calendar')" data-page="calendar"><span class="sb-icon">◻</span>Calendar</div>
+    <div class="sb-item" onclick="navigate('events')" data-page="events"><span class="sb-icon">◆</span>Events</div>
+    <div class="sb-item" onclick="navigate('report-to-vp')" data-page="report-to-vp"><span class="sb-icon">↑</span>Report to VP</div>
+    <div class="sb-item" onclick="navigate('reports')" data-page="reports"><span class="sb-icon">▣</span>Reports</div>
+    <div class="sb-section-label" id="board-newsletter-section-label" style="display:none">Newsletter</div>
+    <div class="sb-item" id="sb-item-newsletter" onclick="navigate('newsletter')" data-page="newsletter" style="display:none"><span class="sb-icon">◐</span>Edit Newsletter</div>
+    <div class="sb-item" onclick="navigate('submit')" data-page="submit"><span class="sb-icon">→</span>Submit Work</div>
+    <div class="sb-item" onclick="navigate('site-gallery')" data-page="site-gallery"><span class="sb-icon">◷</span>Index</div>
   </div>
-
   <div class="sb-footer">
-    <span class="poll-dot"></span>Live sync every 30s
+    <div style="font-size:10px;color:var(--silver)"><span class="poll-dot"></span>Syncing every 30s</div>
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════
-     MAIN
-══════════════════════════════════════ -->
 <main id="main" role="main">
-
-  <!-- Topbar -->
-  <header id="topbar">
-    <div style="display:flex;align-items:center;">
-      <button id="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
-      <span class="topbar-title" id="topbar-title">Board Member Workspace</span>
+  <div class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button id="menu-btn" type="button" aria-label="Open menu" onclick="document.getElementById('sidebar').classList.toggle('mobile-open')">≡</button>
+      <h1 id="page-title">My Tasks</h1>
     </div>
     <div class="topbar-right">
-      <button class="btn btn-ghost btn-sm" onclick="navigate('tasks')">Home</button>
-      <button class="btn btn-outline btn-sm" onclick="goLoginPage()">Login Page</button>
-      <button class="btn btn-gold btn-sm" onclick="quickCompleteTask()">Complete Task</button>
+      <a href="index.html" class="btn btn-outline" style="text-decoration:none;color:inherit">Main Site</a>
+      <button class="btn btn-outline" onclick="goLoginPage()">Login Page</button>
+      <button class="btn btn-gold" onclick="quickCompleteTask()">Complete Task</button>
     </div>
-  </header>
-
-  <!-- ── CONTENT ── -->
-  <div id="content">
+  </div>
+  <div id="content" style="padding:32px;flex:1">
 
     <!-- ══════════════════════════════
          PAGE: MY TASKS (dashboard)
@@ -867,60 +94,37 @@ textarea, input, select { font-family: var(--fb); }
       <!-- KPI row -->
       <div class="kpi-row" id="kpi-row"></div>
 
-      <!-- Tasks + Dependency -->
-      <div class="two-col">
-
-        <!-- Left: role-aware task list -->
-        <div>
-          <div class="section-eyebrow">Role-Aware Tasks</div>
-          <div class="section-title">Your Current Board Work</div>
-          <div class="section-sub">Tasks assigned to you. Locked tasks are visible for planning.</div>
+      <!-- Tasks then Dependency (stacked, full width) -->
+      <div class="page-stack">
+        <div class="page-stack-item">
+          <div class="section-eyebrow">My Tasks</div>
+          <div class="section-title">My Tasks</div>
+          <div class="section-sub">Your assigned tasks across current, upcoming, redo, and past.</div>
           <div class="task-list" id="main-task-list"></div>
         </div>
-
-        <!-- Right: dependency graph -->
-        <div>
-          <div class="section-eyebrow">Workflow</div>
-          <div class="section-title">Dependency Graph</div>
-          <div class="section-sub">Your tasks are highlighted. Click any node to inspect.</div>
-          <div class="dep-graph-wrap" id="dep-graph-main"></div>
+        <div class="page-stack-item">
+          <div class="section-eyebrow">Deadlines</div>
+          <div class="section-title">Your Upcoming Deadlines</div>
+          <div id="my-deadlines-col"></div>
         </div>
-
-      </div>
-
-      <!-- Submission form + Events -->
-      <div class="two-col">
-
-        <!-- Left: submission form -->
-        <div>
-          <div class="section-eyebrow">Delivery</div>
-          <div class="section-title">Task Completion Submission</div>
-          <div class="section-sub">Submit a completed task for VP review.</div>
-          <div class="card">
-            <div id="submission-form-inner"></div>
-          </div>
-        </div>
-
-        <!-- Right: upcoming events + deadlines -->
-        <div>
+        <div class="page-stack-item">
           <div class="section-eyebrow">Schedule</div>
           <div class="section-title">Upcoming Events &amp; Deadlines</div>
           <div class="section-sub">Events your role is active on.</div>
           <div id="events-deadlines-col"></div>
         </div>
-
       </div>
     </section>
 
     <!-- ══════════════════════════════
-         PAGE: URGENT
+         PAGE: REDO
     ══════════════════════════════ -->
-    <section class="page" id="page-urgent">
-      <div class="breadcrumb"><span class="bc-active">Tasks</span> › <span>Urgent</span></div>
-      <div class="section-eyebrow">Priority</div>
-      <div class="section-title">Urgent Tasks</div>
-      <div class="section-sub">Tasks marked urgent or past deadline. Address immediately.</div>
-      <div class="task-list" id="urgent-list"></div>
+    <section class="page" id="page-redo">
+      <div class="breadcrumb"><span class="bc-active">Tasks</span> › <span>Redo</span></div>
+      <div class="section-eyebrow">Needs Revision</div>
+      <div class="section-title">Redo Tasks</div>
+      <div class="section-sub">Tasks returned for revision before approval.</div>
+      <div class="task-list" id="redo-list"></div>
     </section>
 
     <!-- ══════════════════════════════
@@ -930,7 +134,7 @@ textarea, input, select { font-family: var(--fb); }
       <div class="breadcrumb"><span class="bc-active">Tasks</span> › <span>Current</span></div>
       <div class="section-eyebrow">In Progress</div>
       <div class="section-title">Current Tasks</div>
-      <div class="section-sub">Unlocked and active. You can submit completions here.</div>
+      <div class="section-sub">In progress tasks assigned to you.</div>
       <div class="task-list" id="current-list"></div>
     </section>
 
@@ -939,12 +143,9 @@ textarea, input, select { font-family: var(--fb); }
     ══════════════════════════════ -->
     <section class="page" id="page-upcoming">
       <div class="breadcrumb"><span class="bc-active">Tasks</span> › <span>Upcoming</span></div>
-      <div class="info-banner">
-        <span class="info-banner-icon">INFO</span>
-        <span class="info-banner-text">Upcoming tasks are visible early so you can prepare context, gather materials, and understand dependencies. You cannot submit completion until each task unlocks based on its timeline.</span>
-      </div>
-      <div class="section-eyebrow">Locked</div>
+      <div class="section-eyebrow">Upcoming</div>
       <div class="section-title">Upcoming Tasks</div>
+      <div class="section-sub">Assigned tasks with future due dates.</div>
       <div class="task-list" id="upcoming-list"></div>
     </section>
 
@@ -959,29 +160,29 @@ textarea, input, select { font-family: var(--fb); }
     </section>
 
     <!-- ══════════════════════════════
-         PAGE: FAILED
-    ══════════════════════════════ -->
-    <section class="page" id="page-failed">
-      <div class="breadcrumb"><span class="bc-active">Tasks</span> › <span>Failed</span></div>
-      <div class="section-eyebrow">Missed</div>
-      <div class="section-title">Failed &amp; Missed Tasks</div>
-      <div class="section-sub">Tasks that passed their deadline without completion.</div>
-      <div class="task-list" id="failed-list"></div>
-    </section>
-
-    <!-- ══════════════════════════════
          PAGE: DEPENDENCY GRAPH
     ══════════════════════════════ -->
     <section class="page" id="page-dependency">
       <div class="breadcrumb"><span class="bc-active">Views</span> › <span>Dependency Graph</span></div>
       <div class="section-eyebrow">Workflow</div>
-      <div class="section-title">Full Board Dependency Chain</div>
-      <div class="section-sub">Task flow across all departments for active events. Your tasks are outlined. Click any node to inspect.</div>
-      <div class="card" style="padding:0">
-        <div style="padding:20px 22px 14px;border-bottom:1px solid var(--border)">
-          <strong style="font-family:var(--fd);font-size:17px;color:var(--white)" id="dep-event-name">Active Workflow</strong>
-          <span style="font-size:10px;color:var(--silver);margin-left:12px" id="dep-event-meta">Live dependency chain</span>
+      <div class="dep-map-header">
+        <div class="dep-map-title-wrap">
+          <h2 class="section-title" style="margin:0">Event Dependency Map</h2>
+          <div class="section-sub" style="margin-top:4px">Tasks are organized by stage. Only explicitly assigned prerequisites block completion.</div>
         </div>
+        <div class="dep-event-picker-wrap">
+          <div class="dep-event-picker" id="dep-event-picker" onclick="toggleDepEventDropdown()" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+            <span class="dep-event-picker-label" id="dep-event-name">Active Workflow</span>
+            <span class="dep-event-picker-meta" id="dep-event-meta">By event and stage</span>
+            <span class="dep-event-picker-chevron" id="dep-event-chevron">▾</span>
+          </div>
+          <div class="dep-event-dropdown" id="dep-event-dropdown" role="listbox">
+            <div class="dep-event-opt" data-value="" onclick="pickDepEvent('')" role="option">All events</div>
+          </div>
+        </div>
+      </div>
+      <input type="hidden" id="dep-event-select" />
+      <div class="card" style="padding:0">
         <div style="padding:20px">
           <div class="dep-graph-wrap" style="border:none;padding:0" id="dep-graph-full"></div>
         </div>
@@ -1018,9 +219,127 @@ textarea, input, select { font-family: var(--fb); }
     <section class="page" id="page-events">
       <div class="breadcrumb"><span class="bc-active">Views</span> › <span>Events</span></div>
       <div class="section-eyebrow">Programming</div>
-      <div class="section-title">Active Events</div>
-      <div class="section-sub">Events your role is contributing to.</div>
+      <div class="section-title">Events</div>
+      <div class="section-sub">View current and past events. Click any event to see full details.</div>
       <div id="events-full-list"></div>
+    </section>
+
+    <!-- ══════════════════════════════
+         PAGE: REPORTS (my reports to VP)
+    ══════════════════════════════ -->
+    <section class="page" id="page-reports">
+      <div class="breadcrumb"><span class="bc-active">Views</span> › <span>Reports</span></div>
+      <div class="section-eyebrow">Division</div>
+      <div class="section-title">Your Reports to Your Division VP</div>
+      <div class="section-sub">Reports you have sent to your Vice President. Only you and your VP see these.</div>
+      <div class="card" style="padding:20px;margin-bottom:16px">
+        <a href="javascript:void(0)" class="btn btn-gold" onclick="navigate('report-to-vp')">Report to your Division VP</a>
+      </div>
+      <div class="card" style="padding:20px">
+        <div id="reports-list" style="display:flex;flex-direction:column;gap:10px;margin-top:0"></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         PAGE: REPORT TO VP (escalation form – same UI as VP)
+    ══════════════════════════════ -->
+    <section class="page" id="page-report-to-vp">
+      <div class="esc-wrap">
+        <div class="esc-topbar">
+          <div class="esc-eyebrow">Report</div>
+          <div class="esc-breadcrumb"><span>Board</span> › Report to your Division VP</div>
+        </div>
+        <div class="esc-heading">
+          <div class="esc-title">Report to Your Division Vice President</div>
+          <div class="esc-desc">Use this when you need your VP’s decision, unblocking, or guidance — blockers, resource needs, or issues you can’t resolve on your own. Your report goes only to your division’s Vice President.</div>
+        </div>
+        <div class="esc-sl">Severity</div>
+        <div class="sev-grid">
+          <div class="sev-btn" data-sev="critical" onclick="boardEscSetSev(this)">
+            <div class="sev-dot-row"><div class="sev-dot" style="background:var(--red)"></div><span class="sev-sev">Critical</span></div>
+            <div class="sev-name">Needs Immediate Action</div>
+            <div class="sev-sub">Event at risk or hard deadline conflict requiring same-day resolution.</div>
+          </div>
+          <div class="sev-btn active-high" data-sev="high" onclick="boardEscSetSev(this)">
+            <div class="sev-dot-row"><div class="sev-dot" style="background:var(--amber)"></div><span class="sev-sev">High</span></div>
+            <div class="sev-name">Escalation Required</div>
+            <div class="sev-sub">Time-sensitive issue that needs VP input soon.</div>
+          </div>
+          <div class="sev-btn" data-sev="standard" onclick="boardEscSetSev(this)">
+            <div class="sev-dot-row"><div class="sev-dot" style="background:var(--gold)"></div><span class="sev-sev">Standard</span></div>
+            <div class="sev-name">Awaiting Decision</div>
+            <div class="sev-sub">Decision or guidance needed when your VP is available.</div>
+          </div>
+        </div>
+        <div class="esc-banner" id="board-sev-banner">
+          <span class="esc-banner-icon" id="board-sev-icon"></span>
+          <span class="esc-banner-text" id="board-sev-text"></span>
+        </div>
+        <div class="esc-dv"></div>
+        <div class="esc-sl">Issue Type</div>
+        <input type="hidden" id="board-report-reason" value="Cross-Division Blocker" />
+        <div class="type-grid">
+          <div class="type-chip on" data-reason="Cross-Division Blocker" onclick="boardEscTogType(this)">Cross-Division Blocker</div>
+          <div class="type-chip" data-reason="Accountability Concern" onclick="boardEscTogType(this)">Accountability Concern</div>
+          <div class="type-chip" data-reason="Resource Decision" onclick="boardEscTogType(this)">Resource Decision</div>
+          <div class="type-chip" data-reason="Strategic Conflict" onclick="boardEscTogType(this)">Strategic Conflict</div>
+          <div class="type-chip" data-reason="Deadline Risk" onclick="boardEscTogType(this)">Deadline Risk</div>
+          <div class="type-chip" data-reason="Personnel Issue" onclick="boardEscTogType(this)">Personnel Issue</div>
+        </div>
+        <div class="esc-dv"></div>
+        <div class="esc-sl">Link to event or task (optional)</div>
+        <div class="esc-row2">
+          <select id="board-report-event" class="esc-fi"><option value="">No linked event</option></select>
+          <select id="board-report-task" class="esc-fi"><option value="">No linked task</option></select>
+        </div>
+        <div class="esc-dv"></div>
+        <div class="esc-sl">Report Detail</div>
+        <div class="esc-fg">
+          <label class="esc-fl">What happened and what have you done?</label>
+          <textarea class="esc-fi esc-fta" id="board-report-notes" oninput="boardEscCountChars('board-report-notes','board-report-notes-hint')" placeholder="Be specific. Describe the situation, what you have tried, and what you need from your VP."></textarea>
+          <div class="esc-char-hint" id="board-report-notes-hint">0 / 800 recommended</div>
+        </div>
+        <div class="esc-fg">
+          <label class="esc-fl">Your Recommended Action</label>
+          <textarea class="esc-fi" style="min-height:72px;resize:vertical" id="board-report-action" oninput="boardEscCountChars('board-report-action','board-report-action-hint')" placeholder="What do you recommend your VP do? Be direct."></textarea>
+          <div class="esc-char-hint" id="board-report-action-hint">0 / 200 recommended</div>
+        </div>
+        <div class="esc-footer">
+          <div class="esc-footer-note" id="board-esc-footer-note"><strong>High severity</strong> — Your Division VP will be notified. Reports are visible only to you and your VP.</div>
+          <div class="esc-footer-btns">
+            <button type="button" class="esc-btn-cancel" onclick="navigate('reports')">Cancel</button>
+            <button type="button" class="esc-btn-send" id="board-esc-send-btn" onclick="sendReportToVP()">Send Report to VP</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         PAGE: NEWSLETTER (Director of Operations only)
+    ══════════════════════════════ -->
+    <section class="page" id="page-newsletter">
+      <div class="breadcrumb"><span class="bc-active">Views</span> › <span>Newsletter</span></div>
+      <div class="section-eyebrow">Community Newsletter</div>
+      <div class="section-title">Edit newsletter entries</div>
+      <div class="section-sub">Preview and edit the newsletter section for the homepage. Content is from <code>data/newsletter.json</code>. Push to GitHub to publish.</div>
+      <div class="card" style="margin-bottom:24px">
+        <div class="section-label">Current newsletter on site</div>
+        <div id="newsletter-preview-wrap" style="margin-top:16px;display:flex;flex-direction:column;gap:16px"></div>
+        <div style="margin-top:16px">
+          <button type="button" class="btn btn-outline" onclick="openNewsletterFullView()">View entire newsletter</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:16px">
+          <button type="button" class="btn btn-gold" onclick="newsletterAddEntry()">+ Add newsletter entry</button>
+          <button type="button" class="btn btn-outline" style="margin-left:10px" onclick="loadNewsletterPage()">Refresh</button>
+        </div>
+        <div id="newsletter-editor-list" style="display:flex;flex-direction:column;gap:20px"></div>
+        <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+          <button type="button" class="btn btn-gold" onclick="newsletterPushToGitHub()">Push Newsletter to Github</button>
+          <span id="newsletter-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+        </div>
+      </div>
     </section>
 
     <!-- ══════════════════════════════
@@ -1031,27 +350,54 @@ textarea, input, select { font-family: var(--fb); }
       <div class="section-eyebrow">Completion</div>
       <div class="section-title">Submit a Completed Task</div>
       <div class="section-sub">Fill this in fully. Your VP reviews every submission before approving. Incomplete submissions will be returned.</div>
-      <div class="two-col">
+      <div class="page-stack">
+        <div class="info-banner" style="margin-bottom:0">
+          <span class="info-banner-icon" style="color:var(--gold)">◈</span>
+          <div class="info-banner-text">
+            <strong style="color:var(--white);display:block;margin-bottom:4px">What makes a good submission?</strong>
+            Be specific about what you did, not just that you did it. If you created files, include links. If there were blockers, say so. The next person in the chain relies on your summary to understand context they didn't have. Write for them.
+          </div>
+        </div>
         <div class="card" id="submit-form-card"></div>
-        <div>
-          <div class="info-banner">
-            <span class="info-banner-icon" style="color:var(--gold)">◈</span>
-            <div class="info-banner-text">
-              <strong style="color:var(--white);display:block;margin-bottom:4px">What makes a good submission?</strong>
-              Be specific about what you did, not just that you did it. If you created files, include links. If there were blockers, say so. The next person in the chain relies on your summary to understand context they didn't have. Write for them.
-            </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════
+         PAGE: INDEX (gallery — photos on homepage)
+    ══════════════════════════════ -->
+    <section class="page" id="page-site-gallery">
+      <div class="breadcrumb"><span class="bc-active">Index</span> › <span>Photos on homepage</span></div>
+      <div class="section-eyebrow">Index gallery</div>
+      <div class="section-title">Photos on homepage</div>
+      <div class="section-sub">Gallery is loaded from the <code>gallery/</code> folder. Index shows 3 photos; Full Gallery shows all. Add or remove below — changes are immediate. Then push to GitHub.</div>
+      <div class="card" style="margin-top:16px">
+        <div class="site-gallery-drop-wrap" style="margin-bottom:16px">
+          <div class="site-drop-zone site-gallery-drop-wide" id="board-gallery-drop" ondragover="boardGalleryDragOver(event)" ondragleave="boardGalleryDragLeave(event)" ondrop="boardGalleryDrop(event)" onclick="document.getElementById('board-gallery-file').click()">
+            <div class="site-dz-text" id="board-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
+            <div class="site-dz-sub">PNG, JPG</div>
+            <input type="file" id="board-gallery-file" accept="image/*" style="display:none" onchange="boardGalleryFileChosen(this)" />
           </div>
-          <div class="card">
-            <div class="section-eyebrow">Downstream</div>
-            <div style="font-family:var(--fd);font-size:17px;color:var(--white);margin-bottom:12px">Tasks that unlock after this</div>
-            <div class="task-list" id="downstream-tasks"></div>
-          </div>
+        </div>
+        <div id="board-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
+        <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+          <button type="button" class="btn btn-gold" onclick="boardPushGalleryToGitHub()">Push Gallery Content to Github</button>
+          <span id="board-push-gallery-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
         </div>
       </div>
     </section>
 
   </div><!-- /content -->
 </main>
+
+<!-- Newsletter: view entire (zoomed) -->
+<div class="modal-backdrop" id="newsletter-full-modal" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="modal-header" style="justify-content:flex-end">
+      <button class="modal-close" onclick="closeModal('newsletter-full-modal')" aria-label="Close">✕</button>
+    </div>
+    <div id="newsletter-full-modal-body" style="padding:0 24px 24px;overflow-y:auto;flex:1"></div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════
      MODAL: TASK DETAIL
@@ -1064,8 +410,23 @@ textarea, input, select { font-family: var(--fb); }
     </div>
     <div class="modal-body" id="task-modal-body"></div>
     <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('task-modal')">Close</button>
       <button class="btn btn-outline btn-sm" id="task-modal-action" onclick="">Action</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: EVENT DETAIL
+══════════════════════════════════════ -->
+<div class="modal-backdrop" id="event-modal" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+  <div class="modal" style="max-width:860px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <span class="modal-header-title" id="event-modal-title">Event Detail</span>
+      <button class="modal-close" onclick="closeModal('event-modal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="event-modal-body" style="overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('event-modal')">Close</button>
     </div>
   </div>
 </div>
@@ -1091,1051 +452,41 @@ textarea, input, select { font-family: var(--fb); }
   </div>
 </div>
 
+<div class="modal-backdrop" id="submit-success-modal" role="dialog" aria-modal="true">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <span class="modal-header-title">Task Shipped to Review</span>
+      <button class="modal-close" onclick="closeModal('submit-success-modal')" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:22px 24px">
+      <div class="submit-success-check">✓</div>
+      <div class="confirm-msg" style="margin-bottom:6px">Great work — submitted!</div>
+      <div class="confirm-sub" id="submit-success-sub">Your VP has been notified and this task is now in review.</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;gap:10px">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('submit-success-modal')">Close</button>
+      <button class="btn btn-gold btn-sm" onclick="closeModal('submit-success-modal');navigate('tasks')">Back to My Tasks</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" role="status" aria-live="polite"></div>
 
-<!-- ══════════════════════════════════════
-     DATA + LOGIC
-══════════════════════════════════════ -->
-<script src="ops-common.js"></script>
-<script>
-/* ─────────────────────────────────────
-  DATA
-───────────────────────────────────── */
-let USER = {
-  first: "Member",
-  full: "Board Member",
-  role: "Board Member",
-  dept: "Board Operations",
-  div: "Board Division",
-  email: "",
-  permission: "board"
-};
-let TASKS = [];
-let EVENTS = [];
-let DEP_CHAINS = [];
-let CAL_EVENTS = {};
-let DASHBOARD = { tasks: [], events: [], dependencies: [] };
-let STAGED_FILES = {};
-
-/* ─────────────────────────────────────
-   CALENDAR STATE
-───────────────────────────────────── */
-let calYear  = 2026;
-let calMonth = 0; // 0-indexed: Jan = 0
-
-/* ─────────────────────────────────────
-   INIT
-───────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  initBoardLive();
-});
-
-/* ─────────────────────────────────────
-   USER
-───────────────────────────────────── */
-function applyUser() {
-  document.getElementById('sb-greeting').textContent = `Hey ${USER.first},`;
-  document.getElementById('sb-role').textContent      = USER.role;
-  document.getElementById('sb-div').textContent       = USER.div;
-  const crumb = document.getElementById("crumb-role");
-  if (crumb) crumb.textContent = USER.role || USER.dept || "Board";
-}
-
-function toUiStatus(status) {
-  if (status === "completed") return "done";
-  if (status === "pending_review") return "pending";
-  return status || "locked";
-}
-
-function normalizePriority(priority) {
-  const p = String(priority || "standard").toLowerCase();
-  if (p === "critical") return "urgent";
-  if (["urgent", "high", "medium", "low"].includes(p)) return p;
-  if (p === "standard") return "medium";
-  return "low";
-}
-
-function formatShortDate(iso) {
-  if (!iso) return "N/A";
-  const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return "N/A";
-  return d.toLocaleDateString(undefined, { month: "short", day: "2-digit", year: "numeric" });
-}
-
-function ensureBoardAccess(me) {
-  if (me.user.view_type === "president") {
-    window.location.href = "president.html";
-    return false;
-  }
-  if (me.user.view_type === "vp") {
-    const division = me.user.vp_type === "external" ? "external" : "internal";
-    window.location.href = `vp.html?division=${division}`;
-    return false;
-  }
-  return true;
-}
-
-function buildPhaseChains(tasks, dependencies) {
-  const byId = new Map(tasks.map((t) => [t.id, t]));
-  const incoming = new Map(tasks.map((t) => [t.id, 0]));
-  const outgoing = new Map();
-  dependencies.forEach((d) => {
-    incoming.set(d.task_id, (incoming.get(d.task_id) || 0) + 1);
-    const arr = outgoing.get(d.depends_on_task_id) || [];
-    arr.push(d.task_id);
-    outgoing.set(d.depends_on_task_id, arr);
-  });
-  const queue = tasks.filter((t) => (incoming.get(t.id) || 0) === 0).map((t) => t.id);
-  const level = new Map(queue.map((id) => [id, 0]));
-  while (queue.length) {
-    const cur = queue.shift();
-    const nextLevel = (level.get(cur) || 0) + 1;
-    (outgoing.get(cur) || []).forEach((n) => {
-      incoming.set(n, (incoming.get(n) || 1) - 1);
-      level.set(n, Math.max(level.get(n) || 0, nextLevel));
-      if ((incoming.get(n) || 0) === 0) queue.push(n);
-    });
-  }
-  const grouped = new Map();
-  tasks.forEach((t) => {
-    const lv = level.get(t.id) || 0;
-    const row = grouped.get(lv) || [];
-    row.push(t);
-    grouped.set(lv, row);
-  });
-  return [...grouped.keys()]
-    .sort((a, b) => a - b)
-    .map((lv) => ({
-      phase: `Phase ${lv + 1} — Workflow`,
-      nodes: (grouped.get(lv) || []).map((t) => ({
-        title: t.title,
-        div: t.department,
-        owner: t.owner_name,
-        status: toUiStatus(t.status),
-        mine: t.owner_email === USER.email
-      }))
-    }));
-}
-
-function buildCalendarEvents(events, tasks) {
-  CAL_EVENTS = {};
-  const put = (iso, label, cls) => {
-    const d = new Date(iso);
-    if (!Number.isFinite(d.getTime())) return;
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    if (!CAL_EVENTS[key]) CAL_EVENTS[key] = {};
-    const day = d.getDate();
-    if (!CAL_EVENTS[key][day]) CAL_EVENTS[key][day] = [];
-    CAL_EVENTS[key][day].push({ label, cls });
-  };
-  events.forEach((e) => put(e.event_date, e.name, "ev-normal"));
-  tasks.forEach((t) => {
-    const status = toUiStatus(t.status);
-    const cls = status === "done" ? "ev-done" : status === "overdue" ? "ev-overdue" : "ev-deadline";
-    put(t.due_at, `Task: ${t.title}`, cls);
-    put(t.unlock_at, `Unlock: ${t.title}`, "ev-normal");
-  });
-}
-
-async function hydrateBoardData() {
-  const me = await apiGet("/api/me");
-  if (!ensureBoardAccess(me)) return false;
-  const data = await apiGet("/api/dashboard");
-  DASHBOARD = data;
-  USER = {
-    first: (me.user.full_name || "Member").split(" ")[0],
-    full: me.user.full_name || "Board Member",
-    role: me.user.role_title || "Board Member",
-    dept: me.user.department || "Board Operations",
-    div: me.user.department || "Board Division",
-    email: me.user.email,
-    permission: me.user.permission_level || "board"
-  };
-  EVENTS = (data.events || []).map((e) => {
-    const mine = (data.tasks || []).filter((t) => t.event_id === e.id && t.owner_email === USER.email);
-    return {
-      id: e.id,
-      name: e.name,
-      date: formatShortDate(e.event_date),
-      venue: e.venue || e.location || e.scope || "TBD Location",
-      type: e.event_type || "Event",
-      progress: e.progress || 0,
-      yourTasks: mine.length,
-      yourDone: mine.filter((t) => t.status === "completed").length,
-      overdue: mine.filter((t) => t.status === "overdue").length,
-      tags: [e.event_type || "Event"]
-    };
-  });
-  const depEventName = document.getElementById("dep-event-name");
-  const depEventMeta = document.getElementById("dep-event-meta");
-  if (depEventName && depEventMeta) {
-    const focusEvent = EVENTS[0];
-    depEventName.textContent = focusEvent ? focusEvent.name : "Active Workflow";
-    depEventMeta.textContent = focusEvent ? `${focusEvent.date} · ${focusEvent.venue}` : "Live dependency chain";
-  }
-  const depByTask = new Map();
-  (data.dependencies || []).forEach((d) => {
-    const arr = depByTask.get(d.task_id) || [];
-    arr.push(d.depends_on_task_id);
-    depByTask.set(d.task_id, arr);
-  });
-  const taskById = new Map((data.tasks || []).map((t) => [t.id, t]));
-  TASKS = (data.tasks || []).map((t) => {
-    const deps = (depByTask.get(t.id) || []).map((depId) => {
-      const depTask = taskById.get(depId);
-      return depTask
-        ? {
-            title: depTask.title,
-            owner: depTask.owner_name,
-            status: toUiStatus(depTask.status)
-          }
-        : null;
-    }).filter(Boolean);
-    const eventName = ((data.events || []).find((e) => e.id === t.event_id) || {}).name || null;
-    return {
-      id: t.id,
-      title: t.title,
-      dept: t.department,
-      division: t.vp_scope === "external" ? "External" : t.vp_scope === "internal" ? "Internal" : "Board",
-      assigned: t.owner_name,
-      assigned_email: t.owner_email,
-      priority: normalizePriority(t.priority),
-      status: toUiStatus(t.status),
-      event: eventName,
-      due: formatShortDate(t.due_at),
-      unlock: formatShortDate(t.unlock_at),
-      due_at: t.due_at,
-      unlock_at: t.unlock_at,
-      meeting: t.meeting_date || t.meeting_location ? {
-        time: `${t.meeting_date || ""} ${t.meeting_time || ""}`.trim(),
-        location: t.meeting_location || "TBD"
-      } : null,
-      dep: deps,
-      description: t.description || "",
-      summary: t.previous_summary || "",
-      downstream: []
-    };
-  });
-  (data.dependencies || []).forEach((d) => {
-    const depTask = TASKS.find((t) => t.id === d.depends_on_task_id);
-    if (depTask) depTask.downstream.push(d.task_id);
-  });
-  DEP_CHAINS = buildPhaseChains(data.tasks || [], data.dependencies || []);
-  buildCalendarEvents(data.events || [], data.tasks || []);
-  return true;
-}
-
-async function initBoardLive() {
-  const token = getSessionToken();
-  if (!token) {
-    window.location.href = "ops-login.html";
-    return;
-  }
-  try {
-    const ok = await hydrateBoardData();
-    if (!ok) return;
-    applyUser();
-    renderKPIs();
-    renderAllTaskLists();
-    renderDepGraph('dep-graph-main', true);
-    renderDepGraph('dep-graph-full', false);
-    renderSubmissionForm('submission-form-inner');
-    renderSubmissionForm('submit-form-card');
-    renderEventsDeadlines();
-    renderEventsPage();
-    renderCalendar();
-    renderDownstream();
-    startPolling(async () => {
-      const hydrated = await hydrateBoardData();
-      if (!hydrated) return;
-      applyUser();
-      renderKPIs();
-      renderAllTaskLists();
-      renderDepGraph('dep-graph-main', true);
-      renderDepGraph('dep-graph-full', false);
-      renderSubmissionForm('submission-form-inner');
-      renderSubmissionForm('submit-form-card');
-      renderEventsDeadlines();
-      renderEventsPage();
-      renderCalendar();
-      renderDownstream();
-    });
-  } catch (_e) {
-    clearSession();
-    window.location.href = "ops-login.html";
-  }
-}
-
-async function apiPostMultipart(url, formData) {
-  const token = getSessionToken();
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "x-session-token": token },
-    body: formData
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-async function apiDelete(url) {
-  const token = getSessionToken();
-  const res = await fetch(url, {
-    method: "DELETE",
-    headers: { "x-session-token": token }
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-function quickCompleteTask() {
-  const mineCurrent = TASKS.find((t) => t.assigned_email === USER.email && t.status === "current");
-  if (!mineCurrent) {
-    showToast("No active task available to complete.");
-    return;
-  }
-  openCompletionForm(mineCurrent.id);
-}
-
-function goLoginPage() {
-  clearSession();
-  window.location.href = "ops-login.html";
-}
-
-async function removeTask(id) {
-  try {
-    await apiDelete(`/api/tasks/${id}`);
-    showToast("Task deleted");
-    await hydrateBoardData();
-    renderKPIs();
-    renderAllTaskLists();
-    renderDepGraph('dep-graph-main', true);
-    renderDepGraph('dep-graph-full', false);
-    renderSubmissionForm('submission-form-inner');
-    renderSubmissionForm('submit-form-card');
-    renderEventsDeadlines();
-    renderEventsPage();
-    renderCalendar();
-    renderDownstream();
-  } catch (err) {
-    showToast(err?.message || "Unable to delete task");
-  }
-}
-
-async function removeEvent(id) {
-  try {
-    await apiDelete(`/api/events/${id}`);
-    showToast("Event deleted");
-    await hydrateBoardData();
-    renderKPIs();
-    renderAllTaskLists();
-    renderDepGraph('dep-graph-main', true);
-    renderDepGraph('dep-graph-full', false);
-    renderSubmissionForm('submission-form-inner');
-    renderSubmissionForm('submit-form-card');
-    renderEventsDeadlines();
-    renderEventsPage();
-    renderCalendar();
-    renderDownstream();
-  } catch (err) {
-    showToast(err?.message || "Unable to delete event");
-  }
-}
-
-/* ─────────────────────────────────────
-   NAVIGATION
-───────────────────────────────────── */
-function navigate(pageId) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const el = document.getElementById('page-' + pageId);
-  if (el) el.classList.add('active');
-
-  document.querySelectorAll('.sb-nav-item').forEach(n => n.classList.remove('active'));
-  const navItem = document.querySelector(`[data-page="${pageId}"]`);
-  if (navItem) navItem.classList.add('active');
-
-  const titles = {
-    tasks: 'Board Member Workspace',
-    urgent: 'Urgent Tasks',
-    current: 'Current Tasks',
-    upcoming: 'Upcoming Tasks',
-    past: 'Past Tasks',
-    failed: 'Failed Tasks',
-    dependency: 'Dependency Graph',
-    calendar: 'Calendar',
-    events: 'Active Events',
-    submit: 'Submit Completed Work',
-  };
-  document.getElementById('topbar-title').textContent = titles[pageId] || 'Board Member Workspace';
-
-  // close sidebar on mobile
-  if (window.innerWidth <= 820) {
-    document.getElementById('sidebar').classList.remove('mobile-open');
-  }
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('mobile-open');
-}
-
-/* ─────────────────────────────────────
-   KPI CARDS
-───────────────────────────────────── */
-function renderKPIs() {
-  const now = Date.now();
-  const inThreeDays = now + 3 * 24 * 60 * 60 * 1000;
-  const isUrgent = (t) => {
-    const dueTs = t.due_at ? new Date(t.due_at).getTime() : null;
-    return t.status === "overdue" || t.priority === "urgent" || (Number.isFinite(dueTs) && dueTs <= inThreeDays);
-  };
-  const mine = TASKS.filter(t => t.assigned_email === USER.email);
-  const counts = {
-    urgent:   mine.filter(isUrgent).length,
-    current:  mine.filter(t => t.status === 'current').length,
-    upcoming: mine.filter(t => t.status === 'locked').length,
-    past:     mine.filter(t => t.status === 'done').length,
-    failed:   mine.filter(t => t.status === 'failed').length,
-  };
-
-  document.getElementById('badge-urgent').textContent = counts.urgent;
-
-  const defs = [
-    { key: 'urgent',   label: 'Urgent',   num: counts.urgent,   numCls: 'num-red',    cardCls: 'kpi-urgent', page: 'urgent' },
-    { key: 'current',  label: 'Current',  num: counts.current,  numCls: 'num-gold',   cardCls: '',           page: 'current' },
-    { key: 'upcoming', label: 'Upcoming', num: counts.upcoming, numCls: 'num-silver', cardCls: '',           page: 'upcoming' },
-    { key: 'past',     label: 'Past',     num: counts.past,     numCls: 'num-green',  cardCls: '',           page: 'past' },
-    { key: 'failed',   label: 'Failed',   num: counts.failed,   numCls: 'num-amber',  cardCls: 'kpi-failed', page: 'failed' },
-  ];
-
-  document.getElementById('kpi-row').innerHTML = defs.map(d => `
-    <div class="kpi-card ${d.cardCls}" onclick="navigate('${d.page}')" tabindex="0" role="button">
-      <div class="kpi-num ${d.numCls}">${d.num}</div>
-      <div class="kpi-label">${d.label}</div>
-    </div>`).join('');
-}
-
-/* ─────────────────────────────────────
-   TASK LISTS
-───────────────────────────────────── */
-function renderAllTaskLists() {
-  const now = Date.now();
-  const inThreeDays = now + 3 * 24 * 60 * 60 * 1000;
-  const mine    = TASKS.filter(t => t.assigned_email === USER.email);
-  const urgent  = mine.filter(t => {
-    const dueTs = t.due_at ? new Date(t.due_at).getTime() : null;
-    return t.status === 'overdue' || t.priority === 'urgent' || (Number.isFinite(dueTs) && dueTs <= inThreeDays);
-  });
-  const current = mine.filter(t => t.status === 'current');
-  const locked  = mine.filter(t => t.status === 'locked');
-  const done    = mine.filter(t => t.status === 'done');
-  const failed  = mine.filter(t => t.status === 'failed');
-
-  renderTaskList('main-task-list',  [...urgent, ...current, ...locked.slice(0, 2)]);
-  renderTaskList('urgent-list',     urgent);
-  renderTaskList('current-list',    current);
-  renderTaskList('upcoming-list',   locked);
-  renderTaskList('past-list',       done);
-  renderTaskList('failed-list',     failed, true);
-}
-
-function renderTaskList(containerId, tasks, showEmpty = false) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  if (!tasks.length) {
-    el.innerHTML = showEmpty
-      ? `<div class="empty-state">No tasks in this category.</div>`
-      : `<div class="empty-state">Nothing here — you're clear.</div>`;
-    return;
-  }
-  el.innerHTML = tasks.map(t => buildTaskCard(t)).join('');
-}
-
-function buildTaskCard(t) {
-  const statusCls = {
-    overdue: 'tc-overdue', current: '', locked: 'tc-locked',
-    done: 'tc-done', failed: 'tc-failed', pending: 'tc-pending',
-  }[t.status] || '';
-
-  const badgeCls = {
-    overdue: 'badge-overdue', current: 'badge-current', locked: 'badge-locked',
-    done: 'badge-done', failed: 'badge-failed', pending: 'badge-pending',
-  }[t.status] || 'badge-locked';
-
-  const badgeLabel = {
-    overdue: 'Overdue', current: 'In Progress', locked: 'Locked',
-    done: 'Completed', failed: 'Failed', pending: 'Pending Review',
-  }[t.status] || t.status;
-
-  const prioCls = {
-    urgent: 'prio-urgent', high: 'prio-high',
-    medium: 'prio-medium', low: 'prio-low',
-  }[t.priority] || 'prio-low';
-
-  const canComplete = t.status === 'current' && t.assigned_email === USER.email;
-  const isLocked    = t.status === 'locked';
-
-  // build dep chain if locked
-  let depHtml = '';
-  if (isLocked && t.dep && t.dep.length) {
-    depHtml = `<div class="tc-dep-banner">
-      <div class="tc-dep-label">Waiting on</div>
-      <div class="tc-dep-chain">
-        ${t.dep.map(d => `
-          <div class="dep-chip ${d.status}">${d.title}
-            <span style="font-size:9px;color:var(--silver);margin-left:4px">— ${d.owner}</span>
-          </div>
-          <span class="dep-arrow">→</span>`).join('')}
-        <div class="dep-chip active">Your task</div>
-      </div>
-    </div>`;
-  } else if (isLocked) {
-    depHtml = `<div class="tc-lock-banner">
-      <span style="opacity:.45">LOCK</span>
-      Unlocks ${t.unlock} — visible now so you can prepare
-    </div>`;
-  }
-
-  const meetingHtml = t.meeting ? `
-    <div class="tc-meeting">
-      <span>Meeting</span><span>${t.meeting.time}</span>
-      <span style="opacity:.45">·</span>
-      <span>${t.meeting.location}</span>
-    </div>` : '';
-
-  const actionBtn = canComplete
-    ? `<button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); openCompletionForm(${t.id})">Submit Complete</button>`
-    : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openTaskModal(${t.id})">Click to Review</button>`;
-
-  return `
-    <article class="task-card ${statusCls}" onclick="openTaskModal(${t.id})">
-      <div class="tc-inner">
-        <div class="tc-top">
-          <div>
-            <div class="tc-title">${t.title}</div>
-            <div class="tc-event">${t.event || 'Standalone Task'}</div>
-          </div>
-          <div class="tc-right">
-            <span class="badge ${badgeCls}">${badgeLabel}</span>
-            <span class="prio ${prioCls}">${t.priority}</span>
-          </div>
-        </div>
-        <div class="tc-meta">
-          <div class="tc-meta-item">
-            <span class="tc-meta-label">Dept</span>
-            <span class="tc-meta-val">${t.dept}</span>
-          </div>
-          <div class="tc-meta-item">
-            <span class="tc-meta-label">Due</span>
-            <span class="tc-meta-val">${t.due}</span>
-          </div>
-          <div class="tc-meta-item">
-            <span class="tc-meta-label">Unlocks</span>
-            <span class="tc-meta-val">${t.unlock}</span>
-          </div>
-          ${t.assigned_email !== USER.email ? `<div class="tc-meta-item"><span class="tc-meta-label">Owner</span><span class="tc-meta-val">${t.assigned}</span></div>` : ''}
-        </div>
-        <div class="tc-footer">
-          ${meetingHtml}
-          <div style="margin-left:auto;display:flex;gap:6px">
-            ${actionBtn}
-          </div>
-        </div>
-      </div>
-      ${depHtml}
-    </article>`;
-}
-
-/* ─────────────────────────────────────
-   DEP GRAPH
-───────────────────────────────────── */
-function renderDepGraph(containerId, compact) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  const chains = compact ? (DEP_CHAINS.length > 2 ? DEP_CHAINS.slice(2) : DEP_CHAINS) : DEP_CHAINS;
-
-  el.innerHTML = chains.map(phase => `
-    <div class="dep-phase">
-      <div class="dep-phase-label">${phase.phase}</div>
-      <div class="dep-phase-row">
-        ${phase.nodes.map((n, i) => `
-          <div class="dep-node ${nodeClass(n)}" onclick="openNodeInspect('${escHtml(n.title)}','${n.div}','${n.owner}','${n.status}')">
-            <div class="dep-node-div">${n.div}</div>
-            <div class="dep-node-title">${n.title}</div>
-            <div class="dep-node-owner">${n.owner}</div>
-          </div>
-          ${i < phase.nodes.length - 1 ? '<span class="dep-arrow-icon">→</span>' : ''}`).join('')}
-      </div>
-    </div>`).join('') + `
-    <div class="dep-legend">
-      <div class="dep-legend-item"><div class="dep-legend-dot" style="background:rgba(76,175,125,.6)"></div>Done</div>
-      <div class="dep-legend-item"><div class="dep-legend-dot" style="background:var(--gold)"></div>Active / Yours</div>
-      <div class="dep-legend-item"><div class="dep-legend-dot" style="background:rgba(255,255,255,.15)"></div>Locked</div>
-      <div class="dep-legend-item"><div class="dep-legend-dot" style="background:var(--red)"></div>Overdue</div>
-    </div>`;
-}
-
-function nodeClass(n) {
-  let cls = '';
-  if (n.status === 'done')    cls = 'done-node';
-  else if (n.status === 'overdue') cls = 'active-node overdue-node';
-  else if (n.status === 'current' || n.status === 'pending') cls = 'active-node';
-  else cls = 'locked-node';
-  if (n.mine) cls += ' mine-node';
-  return cls;
-}
-
-function escHtml(s) { return s.replace(/'/g, "\\'"); }
-
-function openNodeInspect(title, div, owner, status) {
-  const badgeCls = { done:'badge-done', current:'badge-current', locked:'badge-locked', overdue:'badge-overdue' }[status] || 'badge-locked';
-  const label    = { done:'Completed', current:'In Progress', locked:'Locked', overdue:'Overdue' }[status] || status;
-  const body = `
-    <div class="detail-row"><div class="detail-label">Title</div><div class="detail-val">${title}</div></div>
-    <div class="detail-row"><div class="detail-label">Division / Dept</div><div class="detail-val">${div}</div></div>
-    <div class="detail-row"><div class="detail-label">Owner</div><div class="detail-val">${owner}</div></div>
-    <div class="detail-row">
-      <div class="detail-label">Status</div>
-      <div class="detail-val"><span class="badge ${badgeCls}">${label}</span></div>
+<!-- Task selector for completion form (board) -->
+<div class="modal-backdrop" id="task-select-modal" role="dialog" aria-modal="true" aria-label="Select task">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-header-title">Select a task to complete</span>
+      <button class="modal-close" onclick="closeModal('task-select-modal')" aria-label="Close">✕</button>
     </div>
-    <div style="font-size:11px;color:var(--silver);margin-top:14px;line-height:1.7">
-      You can inspect this task for context. You cannot complete or edit it unless it is assigned to you.
-    </div>`;
-  document.getElementById('task-modal-title').textContent = title;
-  document.getElementById('task-modal-body').innerHTML = body;
-  document.getElementById('task-modal-action').textContent = 'Close';
-  document.getElementById('task-modal-action').onclick = () => closeModal('task-modal');
-  openModal('task-modal');
-}
+    <div class="modal-body" id="task-select-list" style="max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
 
-/* ─────────────────────────────────────
-   SUBMISSION FORM
-───────────────────────────────────── */
-function renderSubmissionForm(containerId) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = `
-    <div class="form-group">
-      <label class="form-label" for="${containerId}-task-sel">Task Being Completed</label>
-      <select class="form-select" id="${containerId}-task-sel">
-        <option value="">— Select task —</option>
-        ${TASKS.filter(t => t.status === 'current' && t.assigned_email === USER.email).map(t => `<option value="${t.id}">${t.title}</option>`).join('')}
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label" for="${containerId}-summary">Summary — What did you do?</label>
-      <textarea class="form-textarea" id="${containerId}-summary" style="min-height:100px"
-        placeholder="Describe specifically what was completed, how, and what the deliverable is. Write for the next person in the chain."></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="margin-bottom:0">
-        <label class="form-label" for="${containerId}-links">Proof Links (one per line)</label>
-        <textarea class="form-textarea" id="${containerId}-links" style="min-height:66px"
-          placeholder="https://drive.google.com/&#10;https://docs.google.com/"></textarea>
-      </div>
-      <div class="form-group" style="margin-bottom:0">
-        <label class="form-label" for="${containerId}-blockers">Blockers / Open Issues</label>
-        <textarea class="form-textarea" id="${containerId}-blockers" style="min-height:66px"
-          placeholder="Anything that slowed you down or needs follow-up?"></textarea>
-      </div>
-    </div>
-    <div class="form-group" style="margin-top:14px">
-      <label class="form-label">Difficulty</label>
-      <div class="difficulty-row" id="${containerId}-stars">
-        ${[1,2,3,4,5].map(n => `<span class="diff-star" data-val="${n}" onclick="setDiff('${containerId}',${n})">*</span>`).join('')}
-      </div>
-    </div>
-    <div class="drop-zone" id="${containerId}-drop"
-      ondragover="dragOver(event,'${containerId}-drop')"
-      ondragleave="dragLeave('${containerId}-drop')"
-      ondrop="dropFile(event,'${containerId}-drop')">
-      <div class="drop-icon">Upload</div>
-      <div class="drop-text">Drag files here or <span style="color:var(--gold);cursor:pointer" onclick="document.getElementById('${containerId}-file').click()">click to upload</span></div>
-      <div class="drop-sub">PDF, images, video, documents</div>
-      <input type="file" id="${containerId}-file" multiple style="display:none" onchange="handleFileInput(this,'${containerId}-drop')" />
-    </div>
-    <button class="btn btn-gold" style="width:100%" onclick="submitWork('${containerId}')">Submit for VP Review</button>
-    <div class="submit-helper">
-      Your submission goes to your VP for review. If approved, the next tasks in the dependency chain unlock automatically. If returned for redo, you will receive specific revision notes. Submissions are logged permanently.
-    </div>`;
-}
 
-function setDiff(prefix, val) {
-  document.querySelectorAll(`#${prefix}-stars .diff-star`).forEach(s => {
-    s.classList.toggle('active', parseInt(s.dataset.val) <= val);
-  });
-}
-
-function dragOver(e, id) {
-  e.preventDefault();
-  document.getElementById(id).classList.add('drag-over');
-}
-function dragLeave(id) {
-  document.getElementById(id).classList.remove('drag-over');
-}
-function dropFile(e, id) {
-  e.preventDefault();
-  dragLeave(id);
-  const files = Array.from(e.dataTransfer.files || []);
-  const names = files.map(f => f.name).join(', ');
-  const prefix = id.replace(/-drop$/, "");
-  STAGED_FILES[prefix] = files;
-  if (names) showToast(`Files staged: ${names}`);
-}
-function handleFileInput(input, dropId) {
-  const files = Array.from(input.files || []);
-  const names = files.map(f => f.name).join(', ');
-  const prefix = dropId.replace(/-drop$/, "");
-  STAGED_FILES[prefix] = files;
-  if (names) showToast(`Files staged: ${names}`);
-}
-
-function submitWork(prefix) {
-  const task = Number(document.getElementById(`${prefix}-task-sel`).value);
-  const summary = document.getElementById(`${prefix}-summary`).value.trim();
-  const links = document.getElementById(`${prefix}-links`).value.trim();
-  const blockers = document.getElementById(`${prefix}-blockers`).value.trim();
-  const stars = [...document.querySelectorAll(`#${prefix}-stars .diff-star.active`)].length;
-  if (!task)    { showToast('Select a task first'); return; }
-  if (!summary) { showToast('Summary cannot be empty'); return; }
-  openConfirmModal(
-    'Submit for Review?',
-    'Your VP will be notified immediately. You can\'t edit the submission after sending.',
-    'Submit',
-    async () => {
-      try {
-        const form = new FormData();
-        form.append("summary", summary);
-        form.append("proof_links", links);
-        form.append("blockers", blockers);
-        form.append("difficulty", String(stars || 1));
-        (STAGED_FILES[prefix] || []).forEach((f) => form.append("attachments", f));
-        await apiPostMultipart(`/api/tasks/${task}/submit-form`, form);
-        STAGED_FILES[prefix] = [];
-        showToast('Submitted and sent for VP review');
-        await hydrateBoardData();
-        renderKPIs();
-        renderAllTaskLists();
-        renderDepGraph('dep-graph-main', true);
-        renderDepGraph('dep-graph-full', false);
-        renderSubmissionForm('submission-form-inner');
-        renderSubmissionForm('submit-form-card');
-        renderEventsDeadlines();
-        renderEventsPage();
-        renderCalendar();
-        renderDownstream();
-      } catch (err) {
-        showToast(err?.message || 'Submission failed');
-      }
-    }
-  );
-}
-
-/* ─────────────────────────────────────
-   EVENTS + DEADLINES COL
-───────────────────────────────────── */
-function renderEventsDeadlines() {
-  const el = document.getElementById('events-deadlines-col');
-  if (!el) return;
-
-  const evHtml = EVENTS.map(e => `
-    <div class="event-item ${e.overdue ? 'ev-urgent' : ''}">
-      <div class="ev-date">${e.date} · ${e.venue}</div>
-      <div class="ev-name">${e.name}</div>
-      <div class="ev-meta">
-        <span class="ev-tag">${e.type}</span>
-        <span class="ev-tag">${e.yourTasks} your tasks</span>
-        ${e.overdue ? `<span class="ev-tag ev-tag-red">${e.overdue} overdue</span>` : ''}
-      </div>
-      <div class="progress-wrap">
-        <div class="progress-row-label"><span>Overall</span><span>${e.progress}%</span></div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%"></div></div>
-      </div>
-    </div>`).join('');
-
-  const deadlines = TASKS
-    .filter((t) => t.assigned_email === USER.email && t.due_at)
-    .sort((a, b) => new Date(a.due_at) - new Date(b.due_at))
-    .slice(0, 6)
-    .map((t) => {
-      const due = new Date(t.due_at);
-      return {
-        day: String(due.getDate()).padStart(2, "0"),
-        month: due.toLocaleDateString(undefined, { month: "short" }),
-        title: t.title,
-        sub: `${t.event || "Standalone Task"} · ${t.status === "locked" ? "Locked" : "Active"}`,
-        status: t.status
-      };
-    });
-
-  const dlHtml = `
-    <div class="section-eyebrow" style="margin-top:20px">Deadlines</div>
-    <div style="font-family:var(--fd);font-size:18px;color:var(--white);margin-bottom:12px">Your Upcoming Deadlines</div>
-    ${deadlines.map(d => `
-      <div class="deadline-row">
-        <div>
-          <div class="dl-date">${d.day}</div>
-          <div class="dl-month">${d.month}</div>
-        </div>
-        <div class="dl-body">
-          <div class="dl-title">${d.title}</div>
-          <div class="dl-sub">${d.sub}</div>
-        </div>
-        <div class="dl-right">
-          <span class="badge badge-${d.status === 'overdue' ? 'overdue' : d.status === 'locked' ? 'locked' : 'current'}">
-            ${d.status === 'overdue' ? 'Overdue' : d.status === 'locked' ? 'Locked' : 'Active'}
-          </span>
-        </div>
-      </div>`).join('')}`;
-
-  el.innerHTML = evHtml + dlHtml;
-}
-
-/* ─────────────────────────────────────
-   EVENTS FULL PAGE
-───────────────────────────────────── */
-function renderEventsPage() {
-  const el = document.getElementById('events-full-list');
-  if (!el) return;
-  el.innerHTML = EVENTS.map(e => `
-    <div class="card" style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-        <div>
-          <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">${e.date} · ${e.venue}</div>
-          <div style="font-family:var(--fd);font-size:24px;color:var(--white);margin-bottom:6px">${e.name}</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${e.tags.map(t => `<span class="ev-tag">${t}</span>`).join('')}
-            ${e.overdue ? `<span class="ev-tag ev-tag-red">${e.overdue} Overdue</span>` : ''}
-          </div>
-          ${(USER.permission === "president" || USER.permission === "vp")
-            ? `<div style="margin-top:10px"><button class="btn btn-red btn-sm" onclick="openConfirmModal('Delete this event?','Linked tasks will also be impacted.', 'Delete', () => removeEvent(${e.id}))">Delete Event</button></div>`
-            : ""}
-        </div>
-        <div style="text-align:right">
-          <div style="font-family:var(--fd);font-size:36px;color:var(--white);line-height:1">${e.progress}%</div>
-          <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver)">Complete</div>
-        </div>
-      </div>
-      <div class="progress-bar" style="margin-bottom:16px"><div class="progress-fill" style="width:${e.progress}%"></div></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px">
-        <div class="card-sm"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--gold);margin-bottom:4px">Your Tasks</div><span style="font-size:22px;font-family:var(--fd)">${e.yourTasks}</span></div>
-        <div class="card-sm"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--green);margin-bottom:4px">Done</div><span style="font-size:22px;font-family:var(--fd);color:var(--green)">${e.yourDone}</span></div>
-        <div class="card-sm"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:${e.overdue ? 'var(--red)' : 'var(--silver)'};margin-bottom:4px">Overdue</div><span style="font-size:22px;font-family:var(--fd);color:${e.overdue ? 'var(--red)' : 'var(--silver)'}">${e.overdue}</span></div>
-      </div>
-      <div style="margin-top:14px">
-        <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin-bottom:8px">Your Tasks on This Event</div>
-        <div class="task-list">
-          ${TASKS.filter(t => t.event === e.name && t.assigned_email === USER.email).map(t => buildTaskCard(t)).join('') || '<div class="empty-state">No tasks assigned.</div>'}
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-/* ─────────────────────────────────────
-   CALENDAR
-───────────────────────────────────── */
-function renderCalendar() {
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const label  = `${months[calMonth]} ${calYear}`;
-  document.getElementById('cal-month-label').textContent = label;
-  document.getElementById('cal-title') && (document.getElementById('cal-title').textContent = label);
-
-  const key = `${calYear}-${String(calMonth + 1).padStart(2,'0')}`;
-  const evMap = CAL_EVENTS[key] || {};
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysIn   = new Date(calYear, calMonth + 1, 0).getDate();
-  const today    = new Date();
-  const isToday  = (d) => today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d;
-
-  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  let html = days.map(d => `<div class="cal-hdr">${d}</div>`).join('');
-
-  // blank cells before month start
-  for (let i = 0; i < firstDay; i++) {
-    html += `<div class="cal-cell other"><div class="cal-day-num">${new Date(calYear, calMonth, -firstDay + i + 1).getDate()}</div></div>`;
-  }
-
-  for (let d = 1; d <= daysIn; d++) {
-    const evs = evMap[d] || [];
-    const hasEv = evs.length > 0;
-    const todayCls = isToday(d) ? ' today' : '';
-    const hasCls   = hasEv ? ' has-event' : '';
-    const max = 2;
-    const shown = evs.slice(0, max);
-    const extra = evs.length - max;
-
-    html += `<div class="cal-cell${todayCls}${hasCls}" onclick="calDayClick(${d})">
-      <div class="cal-day-num${isToday(d) ? ' today-num' : ''}">${d}</div>
-      ${shown.map(e => `<div class="cal-line ${e.cls}" title="${e.label}">${e.label}</div>`).join('')}
-      ${extra > 0 ? `<div class="cal-more">+${extra} more</div>` : ''}
-    </div>`;
-  }
-
-  // trailing cells
-  const total = firstDay + daysIn;
-  const trailing = total % 7 === 0 ? 0 : 7 - (total % 7);
-  for (let i = 1; i <= trailing; i++) {
-    html += `<div class="cal-cell other"><div class="cal-day-num">${i}</div></div>`;
-  }
-
-  document.getElementById('cal-grid').innerHTML = html;
-}
-
-function changeMonth(dir) {
-  calMonth += dir;
-  if (calMonth < 0)  { calMonth = 11; calYear--; }
-  if (calMonth > 11) { calMonth = 0;  calYear++; }
-  renderCalendar();
-}
-
-function calDayClick(day) {
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  showToast(`${months[calMonth]} ${day} — ${calYear}`);
-}
-
-/* ─────────────────────────────────────
-   DOWNSTREAM TASKS
-───────────────────────────────────── */
-function renderDownstream() {
-  const el = document.getElementById('downstream-tasks');
-  if (!el) return;
-  const downstreamIds = new Set();
-  TASKS.filter((t) => t.assigned_email === USER.email).forEach((t) => {
-    (t.downstream || []).forEach((id) => downstreamIds.add(id));
-  });
-  const downstream = TASKS.filter((t) => downstreamIds.has(t.id)).slice(0, 4);
-  el.innerHTML = downstream.map(t => buildTaskCard(t)).join('');
-}
-
-/* ─────────────────────────────────────
-   TASK DETAIL MODAL
-───────────────────────────────────── */
-function openTaskModal(id) {
-  const t = TASKS.find(x => x.id === id);
-  if (!t) return;
-
-  const badgeCls = {
-    overdue:'badge-overdue',current:'badge-current',locked:'badge-locked',done:'badge-done',pending:'badge-pending'
-  }[t.status] || 'badge-locked';
-  const label = { overdue:'Overdue',current:'In Progress',locked:'Locked',done:'Completed',pending:'Pending Review' }[t.status] || t.status;
-
-  const depHtml = t.dep && t.dep.length ? `
-    <div class="detail-row">
-      <div class="detail-label">Waiting On</div>
-      <div class="detail-val">
-        <div class="tc-dep-chain" style="margin-top:4px">
-          ${t.dep.map(d => `<div class="dep-chip ${d.status}">${d.title} — ${d.owner}</div><span class="dep-arrow">→</span>`).join('')}
-          <div class="dep-chip active">This task</div>
-        </div>
-      </div>
-    </div>` : '';
-
-  const summaryHtml = t.summary ? `
-    <div class="detail-row">
-      <div class="detail-label">Completion Summary</div>
-      <div class="detail-val">${t.summary}</div>
-    </div>` : '';
-
-  const meetHtml = t.meeting ? `
-    <div class="detail-row">
-      <div class="detail-label">Meeting</div>
-      <div class="detail-val">${t.meeting.time} · ${t.meeting.location}</div>
-    </div>` : '';
-
-  document.getElementById('task-modal-title').textContent = t.title;
-  document.getElementById('task-modal-body').innerHTML = `
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <span class="badge ${badgeCls}">${label}</span>
-      <span class="prio prio-${t.priority}">${t.priority}</span>
-    </div>
-    <div class="detail-row"><div class="detail-label">Description</div><div class="detail-val">${t.description}</div></div>
-    <div class="detail-row"><div class="detail-label">Event</div><div class="detail-val">${t.event || 'Standalone'}</div></div>
-    <div class="detail-row"><div class="detail-label">Department</div><div class="detail-val">${t.dept} · ${t.division} Division</div></div>
-    <div class="detail-row"><div class="detail-label">Assigned To</div><div class="detail-val">${t.assigned}</div></div>
-    <div class="detail-row"><div class="detail-label">Due Date</div><div class="detail-val">${t.due}</div></div>
-    <div class="detail-row"><div class="detail-label">Unlock Date</div><div class="detail-val">${t.unlock}</div></div>
-    ${meetHtml}${depHtml}${summaryHtml}`;
-
-  const canComplete = t.status === 'current' && t.assigned_email === USER.email;
-  const canManage = USER.permission === "president" || USER.permission === "vp";
-  const actionBtn = document.getElementById('task-modal-action');
-  if (canManage) {
-    actionBtn.textContent = 'Delete Task';
-    actionBtn.className = 'btn btn-red btn-sm';
-    actionBtn.onclick = () => openConfirmModal(
-      "Delete this task?",
-      "This removes it from dashboards, calendar, and dependency views.",
-      "Delete",
-      async () => {
-        closeModal('task-modal');
-        await removeTask(t.id);
-      }
-    );
-  } else {
-    actionBtn.textContent = canComplete ? 'Submit Completion' : 'Close';
-    actionBtn.className   = canComplete ? 'btn btn-gold btn-sm' : 'btn btn-ghost btn-sm';
-    actionBtn.onclick     = canComplete
-      ? () => { closeModal('task-modal'); openCompletionForm(t.id); }
-      : () => closeModal('task-modal');
-  }
-
-  openModal('task-modal');
-}
-
-function openCompletionForm(id) {
-  const t = TASKS.find(x => x.id === id);
-  if (!t) return;
-  navigate('submit');
-  // pre-select the task in the dropdown
-  const sel = document.getElementById('submit-form-card-task-sel');
-  if (sel) sel.value = id;
-  showToast(`Ready to submit: ${t.title}`);
-}
-
-/* ─────────────────────────────────────
-   MODALS
-───────────────────────────────────── */
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-function openConfirmModal(title, sub, actionLabel, callback) {
-  document.getElementById('confirm-modal-title').textContent = title || 'Confirm Action';
-  document.getElementById('confirm-msg').textContent   = title || 'Are you sure?';
-  document.getElementById('confirm-sub').textContent   = sub   || 'This action cannot be undone.';
-  const btn = document.getElementById('confirm-action-btn');
-  btn.textContent = actionLabel || 'Confirm';
-  btn.onclick = () => {
-    closeModal('confirm-modal');
-    if (typeof callback === 'function') callback();
-    else showToast('Action confirmed');
-  };
-  openModal('confirm-modal');
-}
-
-// close on backdrop click
-document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-  backdrop.addEventListener('click', e => {
-    if (e.target === backdrop) backdrop.classList.remove('open');
-  });
-});
-
-/* ─────────────────────────────────────
-   TOAST
-───────────────────────────────────── */
-let toastTimer;
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
-}
-
-/* live polling is handled in initBoardLive via startPolling */
-</script>
+<script src="js/ops-common.js"></script>
+<script src="js/board-app.js"></script>
+<script src="js/newsletter-admin.js"></script>
 </body>
 </html>

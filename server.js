@@ -5,7 +5,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const { OAuth2Client } = require("google-auth-library");
 const multer = require("multer");
-const { initDb, db } = require("./sqlite");
+const { initDb, db, seedUsers } = require("./lib/sqlite");
+const { setupNewsletterPlatform, canManageNewsletter } = require("./lib/newsletter-platform");
+const { parseGithubRepoConfig, pushFileToGithub, pushBufferToGithub } = require("./lib/github-push");
 
 dotenv.config();
 initDb();
@@ -17,11 +19,297 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID || undefined);
-const uploadsDir = path.join(__dirname, "uploads");
+// Use same persistent dir as SQLite when DATA_DIR is set (e.g. Render disk at /data).
+const dataDir = process.env.DATA_DIR || __dirname;
+const uploadsDir = path.join(dataDir, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const upload = multer({ dest: uploadsDir });
 
+const siteContentPath = path.join(dataDir, "site-content.json");
+// Static newsletter file (editable in repo). Prefer data/newsletter.json in project, else dataDir.
+const newsletterPath = fs.existsSync(path.join(__dirname, "data", "newsletter.json"))
+  ? path.join(__dirname, "data", "newsletter.json")
+  : path.join(dataDir, "newsletter.json");
+const eventsPath = fs.existsSync(path.join(__dirname, "data", "events.json"))
+  ? path.join(__dirname, "data", "events.json")
+  : path.join(dataDir, "events.json");
+const legacyImagesDir = path.join(__dirname, "images");
+const galleryDir = path.join(__dirname, "assets", "gallery");
+const boardImagesDir = path.join(__dirname, "assets", "board-members");
+const logoImagesDir = path.join(__dirname, "assets", "logos");
+const newsletterImagesDir = path.join(__dirname, "assets", "newsletter-images");
+const aboutSsaImagesDir = path.join(__dirname, "assets", "about");
+
+// Parse "Name - Role.png" filenames in board-images to build default board
+function defaultBoardFromFolder() {
+  try {
+    ensureDir(boardImagesDir);
+    const files = fs
+      .readdirSync(boardImagesDir)
+      .filter((name) => isImageFilename(name) && name.includes(" - "));
+    return files
+      .sort()
+      .map((name, idx) => {
+        const base = name.replace(/\.(png|jpg|jpeg|webp|gif)$/i, "");
+        const sep = " - ";
+        const i = base.lastIndexOf(sep);
+        const memberName = i >= 0 ? base.slice(0, i).trim() : base;
+        const role = i >= 0 ? base.slice(i + sep.length).trim() : "Executive Board Member";
+        return {
+          id: `bm-${idx + 1}`,
+          name: memberName,
+          role: role || "Executive Board Member",
+          major: "",
+          image: `board-images/${name}`,
+        };
+      });
+  } catch (_e) {
+    return [];
+  }
+}
+
+// Default homepage events for "Upcoming Events" calendar
+const DEFAULT_EVENTS = [
+  {
+    id: "ev-1",
+    day: "03",
+    month: "Apr",
+    title: "Somali Night 2025",
+    description: "Northrop Auditorium - Annual Flagship Cultural Production",
+    tag: "Flagship",
+    buttonText: "",
+    link: ""
+  },
+  {
+    id: "ev-2",
+    day: "20",
+    month: "Apr",
+    title: "Senior Night Gala",
+    description: "TBA",
+    tag: "Members",
+    buttonText: "RSVP Form",
+    link: "https://docs.google.com/forms/d/e/1FAIpQLScq-2fmzfquFErTorYbyMY7rWBGcTAWJrTDQiOu_WGB3a6Jgw/viewform"
+  }
+];
+
+function ensureDir(dirPath) {
+  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
+}
+function normalizeRelPath(p) {
+  return String(p || "").replace(/^\/+/, "");
+}
+function copyIfMissing(src, dest) {
+  try {
+    if (fs.existsSync(src) && !fs.existsSync(dest)) fs.copyFileSync(src, dest);
+  } catch (_e) {}
+}
+function isImageFilename(name) {
+  return /\.(png|jpg|jpeg|webp|gif)$/i.test(name);
+}
+function migrateLegacyImageAssets() {
+  ensureDir(galleryDir);
+  ensureDir(boardImagesDir);
+  ensureDir(logoImagesDir);
+  ensureDir(newsletterImagesDir);
+  ensureDir(aboutSsaImagesDir);
+  if (!fs.existsSync(legacyImagesDir)) return;
+  const files = fs.readdirSync(legacyImagesDir);
+  const boardSet = new Set([
+    "aisha-dakol-vice-president.png",
+    "dahir-munye-president.png",
+    "salman-said-updated.png",
+    "ruweyda-warsame-co-committee-chair.png",
+    "ikhlas-abdi-outreach-coordinator.png",
+    "ifrah-ali-treasurer.png",
+    "layla-salad-co-event-coordinator.png",
+    "ahlam-abdul.png",
+    "salma-tawane-secretary.png",
+    "maida-ahmed-co-public-relations.png"
+  ]);
+  for (const name of files) {
+    if (!isImageFilename(name) && !/\.svg$/i.test(name)) continue;
+    const src = path.join(legacyImagesDir, name);
+    let destDir = galleryDir;
+    if (/instagram|logo|favicon|lock-icon|ssa-logo/i.test(name)) destDir = logoImagesDir;
+    else if (/newsletter|february-newsletter/i.test(name)) destDir = newsletterImagesDir;
+    else if (/IMG_5340-4164bde8-0cef-4b51-9075-8e792591b108|about/i.test(name)) destDir = aboutSsaImagesDir;
+    else if (boardSet.has(name)) destDir = boardImagesDir;
+    copyIfMissing(src, path.join(destDir, name));
+  }
+}
+
+function defaultGalleryFromFolder() {
+  try {
+    ensureDir(galleryDir);
+    return fs
+      .readdirSync(galleryDir)
+      .filter(isImageFilename)
+      .sort()
+      .map((name) => ({ id: `gallery-${name}`, src: `gallery/${name}`, alt: "" }));
+  } catch (_e) {
+    return [];
+  }
+}
+function normalizeBoardMember(member, idx) {
+  const m = member || {};
+  let img = normalizeRelPath(m.image || "");
+  if (img.startsWith("images/")) img = `board-images/${path.basename(img)}`;
+  return {
+    id: m.id || `bm-${idx + 1}`,
+    name: String(m.name || "").trim(),
+    role: String(m.role || "Executive Board Member").trim(),
+    major: String(m.major || m.bio || "").trim(),
+    image: img
+  };
+}
+function normalizeGalleryImage(image, idx) {
+  const g = image || {};
+  let src = normalizeRelPath(g.src || "");
+  if (src.startsWith("images/")) src = `gallery/${path.basename(src)}`;
+  return {
+    id: g.id || `g-${idx + 1}`,
+    src,
+    alt: String(g.alt || "SSA event")
+  };
+}
+
+function readSiteContent() {
+  let galleryImages = defaultGalleryFromFolder();
+  let boardMembers = defaultBoardFromFolder();
+  let boardOrder = [];
+  let galleryOrder = [];
+  let newsletters = [];
+  // Homepage "Upcoming Events" calendar items
+  let events = DEFAULT_EVENTS.slice();
+  try {
+    if (fs.existsSync(newsletterPath)) {
+      const raw = fs.readFileSync(newsletterPath, "utf8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) newsletters = parsed;
+      else if (Array.isArray(parsed.newsletters)) newsletters = parsed.newsletters;
+    }
+  } catch (_e) {}
+  // Prefer static newsletter file; handled above when newsletterPath exists.
+  // Prefer static events file similar to newsletter.json.
+  try {
+    if (fs.existsSync(eventsPath)) {
+      const raw = fs.readFileSync(eventsPath, "utf8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        events = parsed.map((e, idx) => ({
+          id: String(e.id || `ev-${idx + 1}`),
+          day: String(e.day || "").padStart(2, "0"),
+          month: String(e.month || ""),
+          title: String(e.title || "").trim(),
+          description: String(e.description || "").trim(),
+          tag: String(e.tag || "Event").trim(),
+          buttonText: String(e.buttonText || "").trim(),
+          link: String(e.link || "").trim()
+        }));
+      }
+    }
+  } catch (_e) {}
+
+  try {
+    if (fs.existsSync(siteContentPath)) {
+      const raw = fs.readFileSync(siteContentPath, "utf8");
+      const data = JSON.parse(raw);
+      boardOrder = Array.isArray(data.boardOrder) ? data.boardOrder : [];
+      galleryOrder = Array.isArray(data.galleryOrder) ? data.galleryOrder : [];
+      if (newsletters.length === 0 && Array.isArray(data.newsletters)) newsletters = data.newsletters;
+      // For events, prefer dedicated events.json; fall back to site-content.json for backward compatibility.
+      if (events.length === 0 && Array.isArray(data.events) && data.events.length > 0) {
+        events = data.events.map((e, idx) => ({
+          id: String(e.id || `ev-${idx + 1}`),
+          day: String(e.day || "").padStart(2, "0"),
+          month: String(e.month || ""),
+          title: String(e.title || "").trim(),
+          description: String(e.description || "").trim(),
+          tag: String(e.tag || "Event").trim(),
+          buttonText: String(e.buttonText || "").trim(),
+          link: String(e.link || "").trim()
+        }));
+      }
+    }
+  } catch (_e) {}
+  if (galleryOrder.length) {
+    const byPath = new Map(galleryImages.map((g) => [normalizeRelPath(g.src), g]));
+    const ordered = [];
+    for (const p of galleryOrder) {
+      const key = normalizeRelPath(p);
+      if (byPath.has(key)) {
+        ordered.push(byPath.get(key));
+        byPath.delete(key);
+      }
+    }
+    byPath.forEach((g) => ordered.push(g));
+    galleryImages = ordered.map((g, idx) => normalizeGalleryImage(g, idx));
+  }
+  if (boardOrder.length) {
+    const byPath = new Map(boardMembers.map((m) => [normalizeRelPath(m.image), m]));
+    const ordered = [];
+    for (const p of boardOrder) {
+      const key = normalizeRelPath(p);
+      if (byPath.has(key)) {
+        ordered.push(byPath.get(key));
+        byPath.delete(key);
+      }
+    }
+    byPath.forEach((m) => ordered.push(m));
+    boardMembers = ordered;
+  }
+  return { galleryImages, boardMembers, boardOrder, galleryOrder, newsletters, events };
+}
+let _siteContentCache = null;
+let _siteContentCacheAt = 0;
+const SITE_CONTENT_TTL_MS = 30_000;
+
+function invalidateSiteContentCache() {
+  _siteContentCache = null;
+  _siteContentCacheAt = 0;
+}
+
+function writeSiteContent(data) {
+  const payload = {
+    galleryImages: [],
+    boardMembers: [],
+    boardOrder: Array.isArray(data.boardOrder) ? data.boardOrder : [],
+    galleryOrder: Array.isArray(data.galleryOrder) ? data.galleryOrder : [],
+    newsletters: Array.isArray(data.newsletters) ? data.newsletters : [],
+    events: Array.isArray(data.events) ? data.events : []
+  };
+  fs.writeFileSync(siteContentPath, JSON.stringify(payload, null, 2), "utf8");
+  invalidateSiteContentCache();
+  return payload;
+}
+function canEditGallery(user) {
+  if (!user) return false;
+  const level = user.permission_level || user.view_type || "";
+  return level === "president" || level === "vp" || level === "board";
+}
+function isPresident(user) {
+  if (!user) return false;
+  return (user.permission_level || user.view_type) === "president";
+}
+
+function canEditNewsletter(user) {
+  return canManageNewsletter(user);
+}
+
+migrateLegacyImageAssets();
+// Persist a normalized site-content file once on startup so legacy image paths migrate cleanly.
+writeSiteContent(readSiteContent());
+
 app.use(express.json({ limit: "2mb" }));
+// Cache image assets for 1 year (asset file names are content-addressed in most flows).
+app.use("/gallery", express.static(galleryDir, { maxAge: "1y", immutable: true }));
+app.use("/board-images", express.static(boardImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/logo-images", express.static(logoImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/newsletter-images", express.static(newsletterImagesDir, { maxAge: 0 }));
+app.use("/about-ssa-images", express.static(aboutSsaImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/events", express.static(path.join(__dirname, "assets", "events"), { maxAge: "1y", immutable: true }));
+// Legacy path kept for backward compatibility during migration.
+app.use("/images", express.static(legacyImagesDir, { maxAge: "1y", immutable: true }));
 app.use(express.static(path.join(__dirname)));
 app.use("/uploads", express.static(uploadsDir));
 
@@ -199,52 +487,84 @@ function recomputeTaskStatusesForEvent(eventId) {
     `
     )
     .all(eventId);
-  const depsByTask = new Map();
-  db.prepare(
-    `
-    SELECT task_id, depends_on_task_id
-    FROM task_dependencies
-    WHERE task_id IN (SELECT id FROM tasks WHERE event_id = ?)
-  `
-  )
-    .all(eventId)
-    .forEach((d) => {
-      const arr = depsByTask.get(d.task_id) || [];
-      arr.push(d.depends_on_task_id);
-      depsByTask.set(d.task_id, arr);
-    });
-  const statusById = new Map(tasks.map((t) => [t.id, t.status]));
   tasks.forEach((task) => {
     if (["completed", "pending_review", "redo"].includes(task.status)) return;
-    const deps = depsByTask.get(task.id) || [];
     const overdue = new Date(task.due_at).getTime() < Date.now();
-    let nextStatus = overdue ? "overdue" : "current";
-    if (deps.length && deps.some((depId) => statusById.get(depId) !== "completed")) {
-      nextStatus = overdue ? "overdue" : "locked";
-    }
+    const nextStatus = overdue ? "overdue" : "current";
     db.prepare(`UPDATE tasks SET status = ? WHERE id = ?`).run(nextStatus, task.id);
   });
+  recomputeEventProgress(eventId);
+}
+
+function firstIncompletePrerequisite(taskId) {
+  const rows = db
+    .prepare(
+      `
+      SELECT dep.id, dep.title, dep.status, dep.owner_name
+      FROM task_dependencies td
+      JOIN tasks dep ON dep.id = td.depends_on_task_id
+      WHERE td.task_id = ?
+    `
+    )
+    .all(taskId);
+  return rows.find((r) => r.status !== "completed") || null;
 }
 
 function wouldCreateCircularDependency(taskId, dependencyIds) {
+  const id = Number(taskId);
+  if (!Number.isFinite(id)) return true;
+  const proposedDeps = [...new Set((dependencyIds || []).map((x) => Number(x)).filter(Number.isFinite))];
+  if (proposedDeps.includes(id)) return true;
+
+  // Build forward prerequisite graph (task -> prerequisites).
   const graph = new Map();
   db.prepare(`SELECT task_id, depends_on_task_id FROM task_dependencies`)
     .all()
     .forEach((row) => {
-      const arr = graph.get(row.depends_on_task_id) || [];
-      arr.push(row.task_id);
-      graph.set(row.depends_on_task_id, arr);
+      const t = Number(row.task_id);
+      const d = Number(row.depends_on_task_id);
+      if (!Number.isFinite(t) || !Number.isFinite(d)) return;
+      const arr = graph.get(t) || [];
+      arr.push(d);
+      graph.set(t, arr);
     });
-  const stack = [...dependencyIds];
-  const seen = new Set();
-  while (stack.length) {
-    const current = Number(stack.pop());
-    if (!Number.isFinite(current) || seen.has(current)) continue;
-    if (current === taskId) return true;
-    seen.add(current);
-    (graph.get(current) || []).forEach((next) => stack.push(next));
-  }
-  return false;
+  // Replace this task's edges with the proposed dependency set.
+  graph.set(id, proposedDeps);
+
+  // A true cycle exists only if any proposed prerequisite can reach this task.
+  const reachesTask = (start) => {
+    const stack = [start];
+    const seen = new Set();
+    while (stack.length) {
+      const cur = Number(stack.pop());
+      if (!Number.isFinite(cur) || seen.has(cur)) continue;
+      if (cur === id) return true;
+      seen.add(cur);
+      (graph.get(cur) || []).forEach((next) => stack.push(next));
+    }
+    return false;
+  };
+  return proposedDeps.some((depId) => reachesTask(depId));
+}
+
+function recomputeEventProgress(eventId) {
+  const eid = Number(eventId);
+  if (!Number.isFinite(eid)) return;
+  const stats = db
+    .prepare(
+      `
+      SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed
+      FROM tasks
+      WHERE event_id = ?
+    `
+    )
+    .get(eid);
+  const total = Number(stats?.total || 0);
+  const completed = Number(stats?.completed || 0);
+  const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+  db.prepare(`UPDATE events SET progress = ? WHERE id = ?`).run(progress, eid);
 }
 
 function upsertUserByEmail(email, fullName, requestedRole, profile = {}) {
@@ -377,34 +697,48 @@ function createSession(user) {
 
 function getUserFromSession(token) {
   if (!token) return null;
-  const session = db
+  const row = db
     .prepare(
       `
-      SELECT token, user_email, expires_at
-      FROM sessions
-      WHERE token = ?
+      SELECT
+        u.email, u.full_name, u.role_title, u.department, u.permission_level, u.view_type, u.vp_type,
+        s.expires_at AS session_expires_at
+      FROM sessions s
+      JOIN users u ON u.email = s.user_email
+      WHERE s.token = ?
     `
     )
     .get(token);
 
-  if (!session) return null;
-  if (session.expires_at < Date.now()) {
+  if (!row) return null;
+  if (row.session_expires_at < Date.now()) {
     db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
     return null;
   }
 
-  return db
-    .prepare(
-      `
-      SELECT email, full_name, role_title, department, permission_level, view_type, vp_type
-      FROM users
-      WHERE email = ?
-    `
-    )
-    .get(session.user_email);
+  return {
+    email: row.email,
+    full_name: row.full_name,
+    role_title: row.role_title,
+    department: row.department,
+    permission_level: row.permission_level,
+    view_type: row.view_type,
+    vp_type: row.vp_type
+  };
 }
 
+function purgeExpiredSessions() {
+  try {
+    db.prepare("DELETE FROM sessions WHERE expires_at < ?").run(Date.now());
+  } catch (_e) { /* non-critical */ }
+}
+purgeExpiredSessions();
+const _sessionPurgeInterval = setInterval(purgeExpiredSessions, 1000 * 60 * 60);
+
 function selectDashboardData(user) {
+  const users = listUsersInScope(user);
+  const seededEmails = new Set(users.map((u) => u.email));
+
   const rolePredicate =
     user.permission_level === "president"
       ? "1=1"
@@ -416,21 +750,33 @@ function selectDashboardData(user) {
     .prepare(
       `
       SELECT
-        id, event_id, title, description, owner_email, owner_name, owner_role,
-        department, status, unlock_at, due_at, priority, visibility, vp_scope,
-        meeting_date, meeting_time, meeting_location, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules
+        tasks.id, tasks.event_id, tasks.title, tasks.description, tasks.owner_email, tasks.owner_name, tasks.owner_role,
+        tasks.department, tasks.status, tasks.unlock_at, tasks.due_at, tasks.priority, tasks.visibility, tasks.vp_scope,
+        tasks.meeting_date, tasks.meeting_time, tasks.meeting_location, tasks.meeting_link, tasks.previous_summary,
+        tasks.notes, tasks.attachments_json, tasks.redo_rules, tasks.escalation_rules, tasks.phase,
+        redo_latest.redo_notes,
+        redo_latest.redo_requested_at
       FROM tasks
+      LEFT JOIN (
+        SELECT task_id, notes AS redo_notes, created_at AS redo_requested_at
+        FROM (
+          SELECT task_id, notes, created_at,
+            ROW_NUMBER() OVER (PARTITION BY task_id ORDER BY datetime(created_at) DESC, id DESC) AS redo_rn
+          FROM redo_requests
+        ) redo_ranked
+        WHERE redo_ranked.redo_rn = 1
+      ) redo_latest ON redo_latest.task_id = tasks.id
       WHERE ${rolePredicate}
-      ORDER BY datetime(due_at) ASC
+      ORDER BY datetime(tasks.due_at) ASC
       LIMIT 120
     `
     )
     .all({ email: user.email, vpType: user.vp_type });
+  const onlySeededTasks = rawTasks.filter((t) => seededEmails.has(t.owner_email));
   const tasks =
     user.permission_level === "president"
-      ? rawTasks.map((t) => (t.status === "locked" ? { ...t, status: "current" } : t))
-      : rawTasks;
+      ? onlySeededTasks.map((t) => (t.status === "locked" ? { ...t, status: "current" } : t))
+      : onlySeededTasks;
 
   const eventsRaw = db
     .prepare(
@@ -453,7 +799,7 @@ function selectDashboardData(user) {
     constraints_json: safeJsonParse(e.constraints_json, {})
   }));
 
-  const dependencies = db
+  const rawDeps = db
     .prepare(
       `
       SELECT td.task_id, td.depends_on_task_id
@@ -464,27 +810,71 @@ function selectDashboardData(user) {
     `
     )
     .all({ email: user.email, vpType: user.vp_type });
+  const taskIds = new Set(tasks.map((t) => t.id));
+  const dependencies = rawDeps.filter(
+    (d) => taskIds.has(d.task_id) && taskIds.has(d.depends_on_task_id)
+  );
 
-  const users = listUsersInScope(user);
-  const reports =
-    user.permission_level === "president" || user.view_type === "president"
-      ? db
-          .prepare(
-            `
-            SELECT
-              r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
-              r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
-              r.status, r.clarification_notes, r.created_at,
-              e.name AS event_name, t.title AS task_title
-            FROM reports r
-            LEFT JOIN events e ON e.id = r.event_id
-            LEFT JOIN tasks t ON t.id = r.task_id
-            ORDER BY datetime(r.created_at) DESC
-            LIMIT 200
-          `
-          )
-          .all()
-      : [];
+  let reports = [];
+  if (user.permission_level === "president" || user.view_type === "president") {
+    reports = db
+      .prepare(
+        `
+        SELECT
+          r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
+          r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
+          r.status, r.clarification_notes, r.created_at,
+          r.escalated_to, r.target_vp_type,
+          e.name AS event_name, t.title AS task_title
+        FROM reports r
+        LEFT JOIN events e ON e.id = r.event_id
+        LEFT JOIN tasks t ON t.id = r.task_id
+        WHERE COALESCE(r.escalated_to, 'president') = 'president'
+        ORDER BY datetime(r.created_at) DESC
+        LIMIT 200
+      `
+      )
+      .all();
+  } else if (user.permission_level === "vp" || user.view_type === "vp") {
+    reports = db
+      .prepare(
+        `
+        SELECT
+          r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
+          r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
+          r.status, r.clarification_notes, r.created_at,
+          r.escalated_to, r.target_vp_type,
+          e.name AS event_name, t.title AS task_title
+        FROM reports r
+        LEFT JOIN events e ON e.id = r.event_id
+        LEFT JOIN tasks t ON t.id = r.task_id
+        WHERE (r.submitted_by_email = ?)
+           OR (COALESCE(r.escalated_to, 'president') = 'vp' AND r.target_vp_type = ?)
+        ORDER BY datetime(r.created_at) DESC
+        LIMIT 200
+      `
+      )
+      .all(user.email, user.vp_type || "");
+  } else if (user.permission_level === "board" || user.view_type === "board") {
+    reports = db
+      .prepare(
+        `
+        SELECT
+          r.id, r.submitted_by_email, r.submitted_by_name, r.submitted_by_role,
+          r.division, r.event_id, r.task_id, r.reason, r.notes, r.recommended_action,
+          r.status, r.clarification_notes, r.created_at,
+          r.escalated_to, r.target_vp_type,
+          e.name AS event_name, t.title AS task_title
+        FROM reports r
+        LEFT JOIN events e ON e.id = r.event_id
+        LEFT JOIN tasks t ON t.id = r.task_id
+        WHERE r.submitted_by_email = ?
+        ORDER BY datetime(r.created_at) DESC
+        LIMIT 200
+      `
+      )
+      .all(user.email);
+  }
 
   return { tasks, events, dependencies, users, reports };
 }
@@ -513,6 +903,21 @@ app.get("/api/config/public", (_req, res) => {
   });
 });
 
+function getCachedSiteContent() {
+  const now = Date.now();
+  if (_siteContentCache && now - _siteContentCacheAt < SITE_CONTENT_TTL_MS) {
+    return _siteContentCache;
+  }
+  _siteContentCache = readSiteContent();
+  _siteContentCacheAt = now;
+  return _siteContentCache;
+}
+
+app.get("/api/public/site-content", (_req, res) => {
+  const content = getCachedSiteContent();
+  res.json(content);
+});
+
 app.post("/api/auth/google", async (req, res) => {
   try {
     const { credential, role, profile } = req.body || {};
@@ -536,7 +941,8 @@ app.post("/api/auth/google", async (req, res) => {
         error: "This email is not authorized in board role mappings."
       });
     }
-    if (!userMatchesRequestedWorkspace(mappedUser, role, profile || {})) {
+    const requestedRole = role != null && String(role).trim() !== "" ? role : null;
+    if (requestedRole != null && !userMatchesRequestedWorkspace(mappedUser, requestedRole, profile || {})) {
       return res.status(403).json({
         error: "This email is not authorized for the selected workspace mode."
       });
@@ -547,7 +953,7 @@ app.post("/api/auth/google", async (req, res) => {
       token,
       expiresAt,
       user: mappedUser,
-      redirect_to: resolveRedirectPath(mappedUser, role)
+      redirect_to: resolveRedirectPath(mappedUser, requestedRole)
     });
   } catch (error) {
     res.status(401).json({
@@ -568,7 +974,8 @@ app.post("/api/auth/dev", (req, res) => {
   if (!mappedUser) {
     return res.status(403).json({ error: "This email is not authorized in board role mappings." });
   }
-  if (!userMatchesRequestedWorkspace(mappedUser, role, profile || {})) {
+  const requestedRole = role != null && String(role).trim() !== "" ? role : null;
+  if (requestedRole != null && !userMatchesRequestedWorkspace(mappedUser, requestedRole, profile || {})) {
     return res.status(403).json({ error: "This email is not authorized for the selected workspace mode." });
   }
   const { token, expiresAt } = createSession(mappedUser);
@@ -576,7 +983,7 @@ app.post("/api/auth/dev", (req, res) => {
     token,
     expiresAt,
     user: mappedUser,
-    redirect_to: resolveRedirectPath(mappedUser, role)
+    redirect_to: resolveRedirectPath(mappedUser, requestedRole)
   });
 });
 
@@ -599,6 +1006,26 @@ app.get("/api/dashboard", (req, res) => {
   res.json({ user, ...data });
 });
 
+app.get("/api/tasks/all-for-prereq", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.permission_level !== "vp" && user.view_type !== "president" && user.view_type !== "vp") {
+    return res.status(403).json({ error: "Admin access required." });
+  }
+  const tasks = db
+    .prepare(
+      `
+      SELECT id, title, owner_email, owner_name, owner_role, department, status
+      FROM tasks
+      ORDER BY title ASC
+      LIMIT 500
+    `
+    )
+    .all();
+  res.json({ tasks });
+});
+
 app.get("/api/submissions/pending", (req, res) => {
   const token = req.header("x-session-token") || req.query.token;
   const user = getUserFromSession(token);
@@ -618,6 +1045,7 @@ app.get("/api/submissions/pending", (req, res) => {
         t.title, t.owner_name, t.department, t.status
       FROM task_submissions s
       JOIN tasks t ON t.id = s.task_id
+      JOIN users u ON u.email = t.owner_email
       WHERE t.status = 'pending_review'
       ORDER BY datetime(s.created_at) DESC
       LIMIT 200
@@ -654,8 +1082,22 @@ app.post("/api/tasks/:id/submit", (req, res) => {
   if (task.owner_email !== user.email) {
     return res.status(403).json({ error: "You can only submit your own task." });
   }
-  if (new Date(task.unlock_at).getTime() > Date.now()) {
-    return res.status(400).json({ error: "Task is still locked." });
+  const hasRedoRequest = db
+    .prepare(
+      `
+      SELECT 1 AS x
+      FROM redo_requests
+      WHERE task_id = ?
+      ORDER BY datetime(created_at) DESC, id DESC
+      LIMIT 1
+    `
+    )
+    .get(taskId);
+
+  const blockedBy = task.status === "redo" || hasRedoRequest ? null : firstIncompletePrerequisite(taskId);
+  if (blockedBy) {
+    const ownerLabel = blockedBy.owner_name ? ` (assigned to ${blockedBy.owner_name})` : "";
+    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}${ownerLabel}` });
   }
 
   const {
@@ -695,8 +1137,22 @@ app.post("/api/tasks/:id/submit", (req, res) => {
     WHERE id = ?
   `
   ).run(String(summary), taskId);
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true });
+});
+
+// Generic upload for president/VP (e.g. task attachments in edit modal)
+app.post("/api/upload", upload.array("files", 10), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.permission_level !== "vp") {
+    return res.status(403).json({ error: "Admin access required." });
+  }
+  const paths = (req.files || []).map((f) => `/uploads/${f.filename}`);
+  res.json({ paths });
 });
 
 app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res) => {
@@ -714,7 +1170,7 @@ app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res
   const task = db
     .prepare(
       `
-      SELECT id, owner_email, unlock_at
+      SELECT id, owner_email, status
       FROM tasks
       WHERE id = ?
     `
@@ -726,8 +1182,22 @@ app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res
   if (task.owner_email !== user.email) {
     return res.status(403).json({ error: "You can only submit your own task." });
   }
-  if (new Date(task.unlock_at).getTime() > Date.now()) {
-    return res.status(400).json({ error: "Task is still locked." });
+  const hasRedoRequest = db
+    .prepare(
+      `
+      SELECT 1 AS x
+      FROM redo_requests
+      WHERE task_id = ?
+      ORDER BY datetime(created_at) DESC, id DESC
+      LIMIT 1
+    `
+    )
+    .get(taskId);
+
+  const blockedBy = task.status === "redo" || hasRedoRequest ? null : firstIncompletePrerequisite(taskId);
+  if (blockedBy) {
+    const ownerLabel = blockedBy.owner_name ? ` (assigned to ${blockedBy.owner_name})` : "";
+    return res.status(400).json({ error: `Complete prerequisite first: ${blockedBy.title}${ownerLabel}` });
   }
 
   const body = req.body || {};
@@ -766,6 +1236,8 @@ app.post("/api/tasks/:id/submit-form", upload.array("attachments", 8), (req, res
     WHERE id = ?
   `
   ).run(summary, taskId);
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true, uploaded: uploadedPaths });
 });
@@ -788,6 +1260,8 @@ app.post("/api/tasks/:id/approve", (req, res) => {
     WHERE id = ?
   `
   ).run(taskId);
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true });
 });
@@ -832,6 +1306,8 @@ app.post("/api/tasks/:id/redo", (req, res) => {
     `
     ).run(taskId);
   }
+  const taskEvent = db.prepare(`SELECT event_id FROM tasks WHERE id = ?`).get(taskId);
+  if (Number.isFinite(Number(taskEvent?.event_id))) recomputeEventProgress(Number(taskEvent.event_id));
 
   res.json({ ok: true });
 });
@@ -848,7 +1324,7 @@ app.get("/api/poll", (req, res) => {
     `
     UPDATE tasks
     SET status = 'overdue'
-    WHERE status IN ('current', 'locked', 'pending_review')
+    WHERE status IN ('current')
       AND datetime(due_at) < datetime('now')
   `
   ).run();
@@ -865,7 +1341,7 @@ app.get("/api/poll", (req, res) => {
       SELECT COUNT(*) AS count
       FROM tasks
       WHERE owner_email = ?
-        AND status IN ('current', 'locked', 'pending_review', 'redo')
+        AND status IN ('current', 'overdue', 'redo')
     `
     )
     .get(user.email).count;
@@ -939,6 +1415,92 @@ app.get("/api/notifications", (req, res) => {
       });
     });
 
+  const reportPings = db
+    .prepare(
+      `
+      SELECT id, reason, status, status_updated_at
+      FROM reports
+      WHERE submitted_by_email = ?
+        AND status IN ('reviewed', 'needs_clarification', 'archived')
+        AND status_updated_at IS NOT NULL
+        AND datetime(status_updated_at) >= datetime('now', '-14 day')
+      ORDER BY datetime(status_updated_at) DESC
+      LIMIT 20
+    `
+    )
+    .all(user.email);
+  reportPings.forEach((r) => {
+    const status = String(r.status || "").toLowerCase();
+    const title =
+      status === "needs_clarification"
+        ? `Clarification requested: ${r.reason}`
+        : status === "reviewed"
+        ? `Report reviewed: ${r.reason}`
+        : `Report archived: ${r.reason}`;
+    items.push({
+      type: status === "needs_clarification" ? "report_clarify" : status === "reviewed" ? "report_reviewed" : "report_archived",
+      title,
+      sub: "Update on your escalation report",
+      at: r.status_updated_at
+    });
+  });
+
+  const twoDaysMs = 2 * 24 * 60 * 60 * 1000;
+  data.tasks
+    .filter((t) => {
+      const rules = String(t.escalation_rules || "").toLowerCase();
+      if (!rules || rules === "none") return false;
+      const due = new Date(t.due_at).getTime();
+      if (!Number.isFinite(due) || due > now) return false;
+      const pastTwoDays = now - due >= twoDaysMs;
+      if (t.status === "completed") return false;
+      if (rules.includes("notify_vp_2days") && pastTwoDays) {
+        const dept = (t.department || "").toLowerCase();
+        const isInternal = dept.includes("internal");
+        if (user.permission_level === "vp" || user.view_type === "vp") {
+          const vpType = (user.vp_type || "internal").toLowerCase();
+          if (vpType === "internal" && isInternal) return true;
+          if (vpType === "external" && !isInternal) return true;
+        }
+      }
+      if (rules.includes("escalate_to_president") && pastTwoDays && (user.permission_level === "president" || user.view_type === "president")) return true;
+      if (rules.includes("auto_remind") && (t.owner_email || "").toLowerCase() === (user.email || "").toLowerCase()) return true;
+      return false;
+    })
+    .slice(0, 10)
+    .forEach((t) => {
+      const rules = String(t.escalation_rules || "").toLowerCase();
+      const dept = (t.department || "").toLowerCase();
+      const isInternal = dept.includes("internal");
+      if (rules.includes("notify_vp_2days") && (user.permission_level === "vp" || user.view_type === "vp")) {
+        const vpType = (user.vp_type || "internal").toLowerCase();
+        if ((vpType === "internal" && isInternal) || (vpType === "external" && !isInternal)) {
+          items.push({
+            type: "escalation_vp",
+            title: `Notify VP: ${t.title}`,
+            sub: `${t.owner_name} · ${t.department} · overdue`,
+            at: t.due_at
+          });
+        }
+      }
+      if (rules.includes("escalate_to_president") && (user.permission_level === "president" || user.view_type === "president")) {
+        items.push({
+          type: "escalation_president",
+          title: `Escalate: ${t.title}`,
+          sub: `${t.owner_name} · due ${new Date(t.due_at).toLocaleDateString()}`,
+          at: t.due_at
+        });
+      }
+      if (rules.includes("auto_remind") && (t.owner_email || "").toLowerCase() === (user.email || "").toLowerCase()) {
+        items.push({
+          type: "remind_assignee",
+          title: `Reminder: ${t.title}`,
+          sub: `Due ${new Date(t.due_at).toLocaleDateString()}`,
+          at: t.due_at
+        });
+      }
+    });
+
   items.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
   res.json({
     count: items.length,
@@ -954,8 +1516,10 @@ app.post("/api/reports", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!(user.permission_level === "vp" || user.view_type === "vp")) {
-    return res.status(403).json({ error: "VP access required." });
+  const isVp = user.permission_level === "vp" || user.view_type === "vp";
+  const isBoard = user.permission_level === "board" || user.view_type === "board";
+  if (!isVp && !isBoard) {
+    return res.status(403).json({ error: "VP or board access required to submit reports." });
   }
 
   const body = req.body || {};
@@ -965,14 +1529,18 @@ app.post("/api/reports", (req, res) => {
     return res.status(400).json({ error: "Reason and notes are required." });
   }
 
+  const escalatedTo = isVp ? "president" : "vp";
+  const targetVpType = isVp ? null : (user.vp_type || null);
+
   const info = db
     .prepare(
       `
       INSERT INTO reports (
         submitted_by_email, submitted_by_name, submitted_by_role, division,
-        event_id, task_id, reason, notes, recommended_action, status, clarification_notes
+        event_id, task_id, reason, notes, recommended_action, status, clarification_notes,
+        escalated_to, target_vp_type, status_updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, NULL)
     `
     )
     .run(
@@ -985,7 +1553,9 @@ app.post("/api/reports", (req, res) => {
       reason,
       notes,
       String(body.recommended_action || ""),
-      String(body.clarification_notes || "")
+      String(body.clarification_notes || ""),
+      escalatedTo,
+      targetVpType
     );
 
   res.json({ ok: true, id: info.lastInsertRowid });
@@ -995,28 +1565,83 @@ app.patch("/api/reports/:id", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
-  if (!(user.permission_level === "president" || user.view_type === "president")) {
-    return res.status(403).json({ error: "President access required." });
-  }
+  const isPresident = user.permission_level === "president" || user.view_type === "president";
+  const isVp = user.permission_level === "vp" || user.view_type === "vp";
 
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid report id." });
-  const body = req.body || {};
-  db.prepare(
-    `
-    UPDATE reports
-    SET
-      status = COALESCE(@status, status),
-      clarification_notes = COALESCE(@clarification_notes, clarification_notes)
-    WHERE id = @id
-  `
-  ).run({
-    id,
-    status: body.status ? String(body.status) : null,
-    clarification_notes: body.clarification_notes ? String(body.clarification_notes) : null
-  });
 
-  res.json({ ok: true });
+  if (isPresident) {
+    db.prepare(
+      `UPDATE reports
+       SET status = COALESCE(@status, status),
+           clarification_notes = COALESCE(@clarification_notes, clarification_notes),
+           status_updated_at = CASE WHEN @status IS NULL THEN status_updated_at ELSE datetime('now') END
+       WHERE id = @id`
+    ).run({
+      id,
+      status: req.body?.status ? String(req.body.status) : null,
+      clarification_notes: req.body?.clarification_notes ? String(req.body.clarification_notes) : null
+    });
+    return res.json({ ok: true });
+  }
+
+  if (isVp) {
+    const row = db.prepare(
+      `SELECT id, escalated_to, target_vp_type FROM reports WHERE id = ?`
+    ).get(id);
+    if (!row) return res.status(404).json({ error: "Report not found." });
+    const forThisVp = (row.escalated_to === "vp" && row.target_vp_type === (user.vp_type || ""));
+    if (!forThisVp) return res.status(403).json({ error: "You can only update reports sent to your division." });
+    db.prepare(
+      `UPDATE reports
+       SET status = COALESCE(@status, status),
+           clarification_notes = COALESCE(@clarification_notes, clarification_notes),
+           status_updated_at = CASE WHEN @status IS NULL THEN status_updated_at ELSE datetime('now') END
+       WHERE id = @id`
+    ).run({
+      id,
+      status: req.body?.status ? String(req.body.status) : null,
+      clarification_notes: req.body?.clarification_notes ? String(req.body.clarification_notes) : null
+    });
+    return res.json({ ok: true });
+  }
+
+  return res.status(403).json({ error: "President or VP access required to update reports." });
+});
+
+// Submit suggestion from join.html (public, no auth)
+app.post("/api/suggestions", (req, res) => {
+  const body = req.body || {};
+  const submitterName = body.submitter_name != null ? String(body.submitter_name).trim() : "";
+  const suggestionType = String(body.suggestion_type || "").trim();
+  const ideaText = String(body.idea_text || "").trim();
+  const audience = body.audience != null ? String(body.audience).trim() : "";
+  if (!ideaText) return res.status(400).json({ error: "Idea or suggestion text is required." });
+  if (!suggestionType) return res.status(400).json({ error: "Suggestion type is required." });
+
+  const info = db
+    .prepare(
+      `
+    INSERT INTO suggestions (submitter_name, suggestion_type, idea_text, audience, status)
+    VALUES (?, ?, ?, ?, 'new')
+  `
+    )
+    .run(submitterName || null, suggestionType, ideaText, audience || null);
+  res.json({ ok: true, id: info.lastInsertRowid });
+});
+
+// List suggestions (Internal VP only)
+app.get("/api/suggestions", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  const isInternalVp =
+    (user.permission_level === "vp" || user.view_type === "vp") && user.vp_type === "internal";
+  if (!isInternalVp) return res.status(403).json({ error: "Internal VP access required." });
+
+  const rows = db.prepare(`SELECT id, submitter_name, suggestion_type, idea_text, audience, status, created_at FROM suggestions ORDER BY created_at DESC`).all();
+  res.json({ suggestions: rows });
 });
 
 app.post("/api/events/generate", async (req, res) => {
@@ -1038,7 +1663,7 @@ app.post("/api/events/generate", async (req, res) => {
   }));
   const prompt = `
 You are planning operations tasks for a student organization board.
-Return JSON with this shape:
+Return JSON with this exact shape only (no extra fields, no trailing commas):
 {
   "tasks": [
     {
@@ -1050,18 +1675,27 @@ Return JSON with this shape:
       "dueOffsetDaysBeforeEvent": number,
       "priority": "low|medium|high|urgent",
       "dependsOnTitles": ["string"],
-      "description": "string"
+      "description": "string",
+      "phase": "Planning|Pre-Event|Execution|Wrap-up",
+      "goals": "string",
+      "successCriteria": "string",
+      "whatWeDontWant": "string"
     }
   ]
 }
 
-Use ONLY real people/roles from this board roster when assigning tasks. Do not invent vague roles.
+Rules:
+- Use ONLY real roles from the board roster. Use exact role titles.
+- phase: use exactly one of Planning, Pre-Event, Execution, Wrap-up (this maps to the dependency graph).
+- title: clear, specific task name (one short sentence or phrase; descriptive, not vague).
+- description: 2–4 sentences: scope, context, what the task involves, and why it matters.
+- goals: 1–2 sentences on what we're trying to achieve with this task.
+- successCriteria: 1–2 sentences on how we know this task is done well (concrete outcomes).
+- whatWeDontWant: 1–2 sentences on what to avoid or common pitfalls.
+Keep the full JSON valid and complete. Do not truncate.
+
 Board roster:
 ${JSON.stringify(actualBoard, null, 2)}
-
-If a role exists in the roster, use that exact role title.
-Prefer assigning tasks to the most relevant real role for the work.
-Generate meaningful recurring event templates and sequencing, not placeholder templates.
 
 Event details:
 ${JSON.stringify(payload, null, 2)}
@@ -1111,14 +1745,14 @@ ${JSON.stringify(payload, null, 2)}
               parts: [
                 {
                   text:
-                    `${prompt}\n\nReturn ONLY valid JSON. Do not include markdown fences, prose, or extra text.`
+                    `${prompt}\n\nReturn ONLY valid JSON. No markdown, no prose, no extra text. Ensure the entire JSON is complete (no cut-off descriptions).`
                 }
               ]
             }
           ],
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 2400,
+            maxOutputTokens: 8192,
             responseMimeType: "application/json"
           }
         })
@@ -1163,7 +1797,7 @@ ${JSON.stringify(payload, null, 2)}
             ],
             generationConfig: {
               temperature: 0,
-              maxOutputTokens: 2400,
+              maxOutputTokens: 8192,
               responseMimeType: "application/json"
             }
           })
@@ -1203,6 +1837,58 @@ function computeDateFromOffsets(eventDateIso, offsetDays) {
   return out;
 }
 
+/** Returns { error: string } if invalid, or null if valid. Ensures due not in past and unlock <= due. */
+function validateTaskDates(dueAt, unlockAt) {
+  const now = Date.now();
+  const dueMs = dueAt != null ? new Date(dueAt).getTime() : null;
+  const unlockMs = unlockAt != null ? new Date(unlockAt).getTime() : null;
+  if (dueMs != null && Number.isFinite(dueMs) && dueMs < now) return { error: "Due date cannot be in the past." };
+  if (dueMs != null && unlockMs != null && Number.isFinite(unlockMs) && unlockMs > dueMs) return { error: "Unlock date cannot be after due date." };
+  return null;
+}
+
+const PHASE_ORDER = ["Planning", "Pre-Event", "Execution", "Wrap-Up"];
+function normalizePhaseValue(phase) {
+  const p = String(phase || "").trim().toLowerCase();
+  if (p === "planning") return "Planning";
+  if (p === "pre-event" || p === "pre event") return "Pre-Event";
+  if (p === "execution") return "Execution";
+  if (p === "wrap-up" || p === "wrap up" || p === "wrapup") return "Wrap-Up";
+  return "Planning";
+}
+
+function pickAssignedTaskPhase(eventId, dependencyIds) {
+  const depIds = Array.isArray(dependencyIds)
+    ? dependencyIds.map((x) => Number(x)).filter((x) => Number.isFinite(x))
+    : [];
+  if (depIds.length) {
+    const placeholders = depIds.map(() => "?").join(",");
+    const depRows = db.prepare(`SELECT phase FROM tasks WHERE id IN (${placeholders})`).all(...depIds);
+    const maxIdx = depRows.reduce((acc, row) => {
+      const idx = PHASE_ORDER.indexOf(normalizePhaseValue(row.phase));
+      return Math.max(acc, idx < 0 ? 0 : idx);
+    }, 0);
+    return PHASE_ORDER[Math.min(maxIdx + 1, PHASE_ORDER.length - 1)];
+  }
+
+  const eid = Number(eventId);
+  if (Number.isFinite(eid)) {
+    const rows = db.prepare(`SELECT phase, status FROM tasks WHERE event_id = ?`).all(eid);
+    const planningRows = rows.filter((r) => normalizePhaseValue(r.phase) === "Planning");
+    const planningAllDone = planningRows.length > 0 && planningRows.every((r) => String(r.status || "").toLowerCase() === "completed");
+    if (planningAllDone) {
+      for (let i = 1; i < PHASE_ORDER.length; i += 1) {
+        const phase = PHASE_ORDER[i];
+        const hasUndone = rows.some(
+          (r) => normalizePhaseValue(r.phase) === phase && String(r.status || "").toLowerCase() !== "completed"
+        );
+        if (hasUndone) return phase;
+      }
+    }
+  }
+  return "Planning";
+}
+
 app.post("/api/events/publish", (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
@@ -1216,6 +1902,16 @@ app.post("/api/events/publish", (req, res) => {
   }
   if (!Array.isArray(tasks) || tasks.length === 0) {
     return res.status(400).json({ error: "At least one task is required." });
+  }
+
+  // Validate task dates: no due in the past. Event-published tasks are never locked (no unlock date).
+  for (const task of tasks) {
+    const dueAt = task.due_at
+      ? new Date(task.due_at)
+      : computeDateFromOffsets(event.event_date, task.dueOffsetDaysBeforeEvent || 7);
+    if (dueAt.getTime() < Date.now()) {
+      return res.status(400).json({ error: "Due date cannot be in the past. Fix task dates before publishing." });
+    }
   }
 
   const insertEvent = db.prepare(
@@ -1233,10 +1929,10 @@ app.post("/api/events/publish", (req, res) => {
     INSERT INTO tasks (
       event_id, title, description, owner_email, owner_name, owner_role,
       department, status, unlock_at, due_at, priority, visibility, vp_scope,
-        meeting_date, meeting_time, meeting_location, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules
+        meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
+        notes, attachments_json, redo_rules, escalation_rules, phase
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `
   );
   const insertDep = db.prepare(
@@ -1273,12 +1969,11 @@ app.post("/api/events/publish", (req, res) => {
     tasks.forEach((task) => {
       const dept = String(task.department || "Board Operations");
       const assignee = resolveAssigneeForTask(task, user);
-      const unlockAt = task.unlock_at
-        ? new Date(task.unlock_at)
-        : computeDateFromOffsets(event.event_date, task.unlockOffsetDaysBeforeEvent || 14);
       const dueAt = task.due_at
         ? new Date(task.due_at)
         : computeDateFromOffsets(event.event_date, task.dueOffsetDaysBeforeEvent || 7);
+      // Event-published tasks are never locked: use a past unlock time so no time-lock applies.
+      const unlockAtIso = new Date(0).toISOString();
 
       const newTaskId = insertTask.run(
         eventId,
@@ -1289,7 +1984,7 @@ app.post("/api/events/publish", (req, res) => {
         assignee.ownerRole,
         assignee.department || dept,
         "current",
-        unlockAt.toISOString(),
+        unlockAtIso,
         dueAt.toISOString(),
         String(task.priority || "medium"),
         "board",
@@ -1297,11 +1992,13 @@ app.post("/api/events/publish", (req, res) => {
         task.meeting_date ? String(task.meeting_date) : null,
         task.meeting_time ? String(task.meeting_time) : null,
         task.meeting_location ? String(task.meeting_location) : null,
+        task.meeting_link ? String(task.meeting_link) : null,
         String(task.previous_summary || ""),
         String(task.notes || ""),
         toJson(task.attachments || []),
         String(task.redo_rules || ""),
-        String(task.escalation_rules || "")
+        String(task.escalation_rules || ""),
+        String(task.phase || "")
       ).lastInsertRowid;
 
       insertedRows.push({
@@ -1354,40 +2051,27 @@ app.get("/api/assign/suggestions", (req, res) => {
   }
   const members = db.prepare(sql).all(params);
 
+  const memberEmails = members.map((m) => m.email);
+  const statsMap = new Map();
+  if (memberEmails.length) {
+    const ph = memberEmails.map(() => "?").join(",");
+    db.prepare(
+      `SELECT owner_email,
+              SUM(CASE WHEN status IN ('current','overdue','pending_review','redo') THEN 1 ELSE 0 END) AS active,
+              SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed
+       FROM tasks WHERE owner_email IN (${ph}) GROUP BY owner_email`
+    ).all(...memberEmails).forEach((r) => statsMap.set(r.owner_email, r));
+  }
+
   const withStats = members.map((m) => {
-    const activeCount = db
-      .prepare(
-        `
-      SELECT COUNT(*) AS count
-      FROM tasks
-      WHERE owner_email = ?
-        AND status IN ('current', 'locked', 'pending_review', 'redo')
-    `
-      )
-      .get(m.email).count;
-
-    const completedCount = db
-      .prepare(
-        `
-      SELECT COUNT(*) AS count
-      FROM tasks
-      WHERE owner_email = ?
-        AND status = 'completed'
-    `
-      )
-      .get(m.email).count;
-
+    const s = statsMap.get(m.email) || { active: 0, completed: 0 };
+    const activeCount = Number(s.active || 0);
+    const completedCount = Number(s.completed || 0);
     const score =
       (m.role_title.toLowerCase() === role.toLowerCase() ? 50 : 25) +
       Math.max(0, 20 - activeCount * 3) +
       Math.min(30, completedCount * 2);
-
-    return {
-      ...m,
-      activeCount,
-      completedCount,
-      score
-    };
+    return { ...m, activeCount, completedCount, score };
   });
 
   withStats.sort((a, b) => b.score - a.score);
@@ -1417,6 +2101,7 @@ app.post("/api/tasks/assign", (req, res) => {
     meeting_date,
     meeting_time,
     meeting_location,
+    meeting_link,
     notes,
     attachments,
     redo_rules,
@@ -1430,8 +2115,14 @@ app.post("/api/tasks/assign", (req, res) => {
   if (!taskTitle || !roleTitle || !desc || !due_at) {
     return res.status(400).json({ error: "Title, role, due date, priority, and description are required." });
   }
+  if (desc.length < 40) {
+    return res.status(400).json({ error: "Description must be at least 40 characters." });
+  }
   const due = new Date(due_at);
   if (!Number.isFinite(due.getTime())) return res.status(400).json({ error: "Invalid due date." });
+  const unlockIsoForValidate = unlock_at ? new Date(unlock_at).toISOString() : null;
+  const dateErr = validateTaskDates(due_at, unlockIsoForValidate);
+  if (dateErr) return res.status(400).json({ error: dateErr.error });
 
   let userSql = `
     SELECT email, full_name, role_title, department, vp_type
@@ -1456,47 +2147,36 @@ app.post("/api/tasks/assign", (req, res) => {
       return res.status(400).json({ error: "Chosen assignee is outside your allowed scope." });
     }
   } else {
+    const cEmails = candidates.map((c) => c.email);
+    const cPh = cEmails.map(() => "?").join(",");
+    const loadMap = new Map();
+    db.prepare(
+      `SELECT owner_email, COUNT(*) AS cnt FROM tasks
+       WHERE owner_email IN (${cPh}) AND status IN ('current','overdue','pending_review','redo')
+       GROUP BY owner_email`
+    ).all(...cEmails).forEach((r) => loadMap.set(r.owner_email, r.cnt));
     assignee = candidates
-      .map((c) => {
-        const activeCount = db
-          .prepare(
-            `
-          SELECT COUNT(*) AS count
-          FROM tasks
-          WHERE owner_email = ?
-            AND status IN ('current', 'locked', 'pending_review', 'redo')
-        `
-          )
-          .get(c.email).count;
-        return { ...c, activeCount };
-      })
+      .map((c) => ({ ...c, activeCount: Number(loadMap.get(c.email) || 0) }))
       .sort((a, b) => a.activeCount - b.activeCount)[0];
   }
 
   const nowIso = new Date().toISOString();
   const dueIso = due.toISOString();
   const unlockIso = unlock_at ? new Date(unlock_at).toISOString() : nowIso;
-  const unlockMs = new Date(unlockIso).getTime();
-  const status =
-    new Date(dueIso).getTime() < Date.now()
-      ? "overdue"
-      : Array.isArray(dependency_task_ids) && dependency_task_ids.length
-      ? "locked"
-      : Number.isFinite(unlockMs) && unlockMs > Date.now()
-      ? "locked"
-      : "current";
+  const status = new Date(dueIso).getTime() < Date.now() ? "overdue" : "current";
   const vpScope = assignee.vp_type || (isVpUser ? user.vp_type : null);
 
+  const assignedPhase = pickAssignedTaskPhase(event_id, dependency_task_ids);
   const taskId = db
     .prepare(
       `
       INSERT INTO tasks (
         event_id, title, description, owner_email, owner_name, owner_role,
         department, status, unlock_at, due_at, priority, visibility, vp_scope,
-        meeting_date, meeting_time, meeting_location, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules
+        meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
+        notes, attachments_json, redo_rules, escalation_rules, phase
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
     )
     .run(
@@ -1516,11 +2196,13 @@ app.post("/api/tasks/assign", (req, res) => {
       meeting_date ? String(meeting_date) : null,
       meeting_time ? String(meeting_time) : null,
       meeting_location ? String(meeting_location) : null,
+      meeting_link ? String(meeting_link) : null,
       "",
       String(notes || ""),
       toJson(Array.isArray(attachments) ? attachments : []),
       String(redo_rules || ""),
-      String(escalation_rules || "")
+      String(escalation_rules || ""),
+      assignedPhase
     ).lastInsertRowid;
 
   if (Array.isArray(dependency_task_ids)) {
@@ -1554,14 +2236,27 @@ app.patch("/api/tasks/:id", (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid task id." });
   const existing = db
-    .prepare(`SELECT id, event_id, vp_scope, owner_email FROM tasks WHERE id = ?`)
+    .prepare(`SELECT id, event_id, vp_scope, owner_email, due_at, unlock_at FROM tasks WHERE id = ?`)
     .get(id);
   if (!existing) return res.status(404).json({ error: "Task not found." });
   if ((user.permission_level === "vp" || user.view_type === "vp") && existing.vp_scope && existing.vp_scope !== user.vp_type) {
     return res.status(403).json({ error: "Task is outside your division scope." });
   }
+  // President and vice presidents may edit and change tasks even when locked (no lock check here).
 
   const body = req.body || {};
+  // When setting due_at, it cannot be in the past. Unlock cannot be after due. Allow editing already-overdue tasks without changing dates.
+  if (body.due_at != null) {
+    const dueMs = new Date(body.due_at).getTime();
+    if (Number.isFinite(dueMs) && dueMs < Date.now()) return res.status(400).json({ error: "Due date cannot be in the past." });
+  }
+  const effectiveDue = body.due_at != null ? body.due_at : existing.due_at;
+  const effectiveUnlock = body.unlock_at != null ? body.unlock_at : existing.unlock_at;
+  if (effectiveDue != null && effectiveUnlock != null) {
+    if (new Date(effectiveUnlock).getTime() > new Date(effectiveDue).getTime()) {
+      return res.status(400).json({ error: "Unlock date cannot be after due date." });
+    }
+  }
   let assignee = null;
   if (body.assignee_email || body.role || body.division) {
     const taskLike = {
@@ -1609,6 +2304,7 @@ app.patch("/api/tasks/:id", (req, res) => {
       meeting_date = COALESCE(@meeting_date, meeting_date),
       meeting_time = COALESCE(@meeting_time, meeting_time),
       meeting_location = COALESCE(@meeting_location, meeting_location),
+      meeting_link = COALESCE(@meeting_link, meeting_link),
       notes = COALESCE(@notes, notes),
       attachments_json = COALESCE(@attachments_json, attachments_json),
       redo_rules = COALESCE(@redo_rules, redo_rules),
@@ -1633,6 +2329,7 @@ app.patch("/api/tasks/:id", (req, res) => {
     meeting_date: body.meeting_date ? String(body.meeting_date) : null,
     meeting_time: body.meeting_time ? String(body.meeting_time) : null,
     meeting_location: body.meeting_location ? String(body.meeting_location) : null,
+    meeting_link: body.meeting_link ? String(body.meeting_link) : null,
     notes: body.notes ? String(body.notes) : null,
     attachments_json: body.attachments ? toJson(body.attachments) : null,
     redo_rules: body.redo_rules ? String(body.redo_rules) : null,
@@ -1658,7 +2355,7 @@ app.delete("/api/tasks/:id", (req, res) => {
   if (!isAdminUser(user)) return res.status(403).json({ error: "Admin access required." });
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Invalid task id." });
-  const existing = db.prepare(`SELECT id, vp_scope FROM tasks WHERE id = ?`).get(id);
+  const existing = db.prepare(`SELECT id, vp_scope, event_id FROM tasks WHERE id = ?`).get(id);
   if (!existing) return res.status(404).json({ error: "Task not found." });
   if ((user.permission_level === "vp" || user.view_type === "vp") && existing.vp_scope && existing.vp_scope !== user.vp_type) {
     return res.status(403).json({ error: "Task is outside your division scope." });
@@ -1667,6 +2364,7 @@ app.delete("/api/tasks/:id", (req, res) => {
   db.prepare(`DELETE FROM task_submissions WHERE task_id = ?`).run(id);
   db.prepare(`DELETE FROM redo_requests WHERE task_id = ?`).run(id);
   db.prepare(`DELETE FROM tasks WHERE id = ?`).run(id);
+  if (Number.isFinite(Number(existing.event_id))) recomputeEventProgress(Number(existing.event_id));
   res.json({ ok: true });
 });
 
@@ -1745,6 +2443,470 @@ app.patch("/api/events/:id", (req, res) => {
           ]
         : []
   });
+});
+
+function extractSeedUsersFunction(content) {
+  const start = content.indexOf("function seedUsers()");
+  if (start === -1) return content;
+  const openBrace = content.indexOf("{", start);
+  if (openBrace === -1) return content;
+  let depth = 1;
+  let i = openBrace + 1;
+  while (i < content.length && depth > 0) {
+    if (content[i] === "{") depth++;
+    else if (content[i] === "}") depth--;
+    i++;
+  }
+  return content.slice(start, depth === 0 ? i : content.length).trim();
+}
+
+function replaceSeedUsersInFile(fullContent, newSeedUsersBlock) {
+  const start = fullContent.indexOf("function seedUsers()");
+  if (start === -1) return null;
+  const openBrace = fullContent.indexOf("{", start);
+  if (openBrace === -1) return null;
+  let depth = 1;
+  let i = openBrace + 1;
+  while (i < fullContent.length && depth > 0) {
+    if (fullContent[i] === "{") depth++;
+    else if (fullContent[i] === "}") depth--;
+    i++;
+  }
+  if (depth !== 0) return null;
+  return fullContent.slice(0, start) + newSeedUsersBlock + fullContent.slice(i);
+}
+
+app.get("/api/admin/seed-users-snippet", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  try {
+    const sqlitePath = path.join(__dirname, "lib", "sqlite.js");
+    const fullContent = fs.readFileSync(sqlitePath, "utf8");
+    const content = extractSeedUsersFunction(fullContent);
+    res.json({ content, filename: "lib/sqlite.js" });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to read file." });
+  }
+});
+
+app.post("/api/admin/run-seed", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  try {
+    seedUsers();
+    res.json({ ok: true, message: "Seed users run successfully." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Seed failed." });
+  }
+});
+
+app.get("/api/admin/github-repo", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  const url = process.env.GITHUB_REPO || null;
+  const branch = process.env.GITHUB_BRANCH || "main";
+  res.json({ url, branch });
+});
+
+app.post("/api/admin/seed-users-push", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (user.permission_level !== "president" && user.view_type !== "president") {
+    return res.status(403).json({ error: "President access required." });
+  }
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) {
+    return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
+  }
+  const { content: newSeedUsersBlock } = req.body || {};
+  if (!newSeedUsersBlock || typeof newSeedUsersBlock !== "string") {
+    return res.status(400).json({ error: "Request body must include content (the seedUsers() function)." });
+  }
+  try {
+    const sqlitePath = path.join(__dirname, "lib", "sqlite.js");
+    const fullContent = fs.readFileSync(sqlitePath, "utf8");
+    const newFullContent = replaceSeedUsersInFile(fullContent, newSeedUsersBlock.trim());
+    if (!newFullContent) {
+      return res.status(400).json({ error: "Could not find seedUsers() in lib/sqlite.js to replace." });
+    }
+    await pushBufferToGithub(ghConfig, "lib/sqlite.js", Buffer.from(newFullContent, "utf8"), "Update seedUsers() from SSA Ops");
+    fs.writeFileSync(sqlitePath, newFullContent, "utf8");
+    res.json({ ok: true, message: "Pushed to GitHub and local file updated." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+// ---------- Site content (gallery + board): board/VP/president add gallery; president edits board & pushes ----------
+// Upload one image for gallery; save to gallery/ and return its path.
+app.post("/api/site/gallery/upload", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can add gallery photos." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const destName = `gallery-${crypto.randomUUID()}${safeExt}`;
+    const destPath = path.join(galleryDir, destName);
+    if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    res.json({ path: `gallery/${destName}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to save image." });
+  }
+});
+
+app.post("/api/site/board/upload", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can upload board photos." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const name = String(req.body && req.body.name || "").trim();
+    const role = String(req.body && req.body.role || "").trim();
+    let destName;
+    if (name && role) {
+      const safeName = name.replace(/[<>:"/\\|?*]/g, "").trim() || "member";
+      const safeRole = role.replace(/[<>:"/\\|?*]/g, "").trim() || "Executive Board Member";
+      destName = `${safeName} - ${safeRole}${safeExt}`;
+    } else {
+      destName = `board-${crypto.randomUUID()}${safeExt}`;
+    }
+    const destPath = path.join(boardImagesDir, destName);
+    if (!fs.existsSync(boardImagesDir)) fs.mkdirSync(boardImagesDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    res.json({ path: `board-images/${destName}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to save board photo." });
+  }
+});
+
+// Gallery: always loaded from folder. PUT kept for backwards compat but read uses folder.
+app.put("/api/site/gallery", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can edit gallery." });
+  const content = readSiteContent();
+  res.json({ ok: true, galleryImages: content.galleryImages });
+});
+
+// Add one image to gallery folder (no alt; list comes from folder).
+app.post("/api/site/gallery", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can add gallery photos." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const base = (file.originalname || "").replace(/\.[^.]+$/, "").replace(/[<>:"/\\|?*]/g, "") || "gallery";
+    const destName = `${base}${safeExt}`;
+    const destPath = path.join(galleryDir, destName);
+    if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    const content = readSiteContent();
+    res.json({ ok: true, path: `gallery/${destName}`, galleryImages: content.galleryImages });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Failed to save image." });
+  }
+});
+
+// Delete one image from gallery folder by filename (basename only).
+app.delete("/api/site/gallery/file/:filename", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can remove gallery photos." });
+  const raw = req.params.filename;
+  const filename = path.basename(raw);
+  if (!filename || filename.startsWith(".")) return res.status(400).json({ error: "Invalid filename." });
+  const filePath = path.join(galleryDir, filename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: "File not found." });
+  try {
+    fs.unlinkSync(filePath);
+    const content = readSiteContent();
+    res.json({ ok: true, galleryImages: content.galleryImages });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Delete failed." });
+  }
+});
+
+app.get("/api/site/board", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  const boardMembers = defaultBoardFromFolder();
+  res.json({ boardMembers });
+});
+
+// Delete one file from board-images folder (same pattern as gallery).
+app.delete("/api/site/board/file/:filename", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can remove board members." });
+  const raw = req.params.filename;
+  const filename = path.basename(raw);
+  if (!filename || filename.startsWith(".")) return res.status(400).json({ error: "Invalid filename." });
+  const filePath = path.join(boardImagesDir, filename);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: "File not found." });
+  try {
+    fs.unlinkSync(filePath);
+    const boardMembers = defaultBoardFromFolder();
+    res.json({ ok: true, boardMembers });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Delete failed." });
+  }
+});
+
+app.put("/api/site/board-order", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can reorder board." });
+  const { boardOrder } = req.body || {};
+  if (!Array.isArray(boardOrder)) return res.status(400).json({ error: "Request body must include boardOrder array." });
+  try {
+    const content = readSiteContent();
+    content.boardOrder = boardOrder.map((p) => String(p || "").trim()).filter(Boolean);
+    writeSiteContent(content);
+    const next = readSiteContent();
+    res.json({ ok: true, boardMembers: next.boardMembers });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Save failed." });
+  }
+});
+
+app.put("/api/site/gallery-order", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditGallery(user)) return res.status(403).json({ error: "Only board, VP, or president can reorder gallery." });
+  const { galleryOrder } = req.body || {};
+  if (!Array.isArray(galleryOrder)) return res.status(400).json({ error: "Request body must include galleryOrder array." });
+  try {
+    const content = readSiteContent();
+    content.galleryOrder = galleryOrder.map((p) => String(p || "").trim()).filter(Boolean);
+    writeSiteContent(content);
+    const next = readSiteContent();
+    res.json({ ok: true, galleryImages: next.galleryImages });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Save failed." });
+  }
+});
+
+// Newsletter: president can save and upload images.
+app.put("/api/site/newsletters", (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only President, Internal VP, or Director of Operations can edit newsletters." });
+  const { newsletters } = req.body || {};
+  if (!Array.isArray(newsletters)) return res.status(400).json({ error: "Request body must include newsletters array." });
+  try {
+    const normalized = newsletters.map((n) => ({
+      id: String(n.id || "").trim() || `nl-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      title: String(n.title || "").trim(),
+      date: String(n.date || "").trim(),
+      description: String(n.description || "").trim(),
+      image: String(n.image || "").trim(),
+      link: String(n.link || "").trim(),
+      secondaryLink: String(n.secondaryLink || "").trim()
+    }));
+    const dir = path.dirname(newsletterPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(newsletterPath, JSON.stringify(normalized, null, 2), "utf8");
+    const content = readSiteContent();
+    content.newsletters = normalized;
+    writeSiteContent(content);
+    res.json({ ok: true, newsletters: normalized });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Save failed." });
+  }
+});
+
+app.post("/api/site/newsletter-image", upload.single("photo"), (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only President, Internal VP, or Director of Operations can upload newsletter images." });
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: "No photo file uploaded." });
+  try {
+    const ext = path.extname(file.originalname || "") || ".png";
+    const safeExt = /^\.(png|jpg|jpeg|webp|gif)$/i.test(ext) ? ext : ".png";
+    const destName = `newsletter${safeExt}`;
+    const destPath = path.join(newsletterImagesDir, destName);
+    if (!fs.existsSync(newsletterImagesDir)) fs.mkdirSync(newsletterImagesDir, { recursive: true });
+    fs.copyFileSync(file.path, destPath);
+    res.json({ ok: true, path: `newsletter-images/${destName}` });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Upload failed." });
+  }
+});
+
+app.post("/api/site/push", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push site content to GitHub." });
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
+  try {
+    const content = readSiteContent();
+    await pushBufferToGithub(ghConfig, "data/site-content.json", Buffer.from(JSON.stringify(content, null, 2), "utf8"), "Update site content (gallery + board) from SSA Ops");
+    res.json({ ok: true, message: "Site content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+app.post("/api/site/push-gallery", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push gallery." });
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
+  try {
+    ensureDir(galleryDir);
+    const imageFiles = fs.readdirSync(galleryDir).filter(isImageFilename);
+    for (const filename of imageFiles) {
+      await pushFileToGithub(ghConfig, `assets/gallery/${filename}`, path.join(galleryDir, filename), "Update gallery image from SSA Ops");
+    }
+    res.json({ ok: true, message: "Gallery content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+app.post("/api/site/push-board", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push board." });
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
+  try {
+    writeSiteContent(readSiteContent());
+    await pushFileToGithub(ghConfig, "site-content.json", siteContentPath, "Update board member content from SSA Ops");
+    ensureDir(boardImagesDir);
+    const imageFiles = fs.readdirSync(boardImagesDir).filter(isImageFilename);
+    for (const filename of imageFiles) {
+      await pushFileToGithub(ghConfig, `assets/board-members/${filename}`, path.join(boardImagesDir, filename), "Update board member image from SSA Ops");
+    }
+    res.json({ ok: true, message: "Member content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+app.post("/api/site/push-events", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!isPresident(user)) return res.status(403).json({ error: "Only president can push events." });
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
+  try {
+    const body = req.body || {};
+    const inputEvents = Array.isArray(body.events) ? body.events : [];
+    const normalized = inputEvents.map((e, idx) => ({
+      id: String(e.id || `ev-${idx + 1}`),
+      day: String(e.day || "").padStart(2, "0"),
+      month: String(e.month || ""),
+      title: String(e.title || "").trim(),
+      description: String(e.description || "").trim(),
+      tag: String(e.tag || "Event").trim(),
+      buttonText: String(e.buttonText || "").trim(),
+      link: String(e.link || "").trim()
+    }));
+
+    const eventsDir = path.dirname(eventsPath);
+    if (!fs.existsSync(eventsDir)) fs.mkdirSync(eventsDir, { recursive: true });
+    fs.writeFileSync(eventsPath, JSON.stringify(normalized, null, 2), "utf8");
+
+    const current = readSiteContent();
+    current.events = normalized;
+    writeSiteContent(current);
+
+    const eventsRepoPath = path.relative(__dirname, eventsPath).replace(/\\/g, "/");
+    await pushFileToGithub(ghConfig, eventsRepoPath, eventsPath, "Update events content from SSA Ops");
+    await pushFileToGithub(ghConfig, "site-content.json", siteContentPath, "Update events site-content from SSA Ops");
+    res.json({ ok: true, message: "Homepage events pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+app.post("/api/site/push-newsletter", async (req, res) => {
+  const token = req.header("x-session-token");
+  const user = getUserFromSession(token);
+  if (!user) return res.status(401).json({ error: "Invalid session." });
+  if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only President, Internal VP, or Director of Operations can push newsletter." });
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
+  try {
+    const { newsletters: bodyNewsletters } = req.body || {};
+    if (Array.isArray(bodyNewsletters)) {
+      const normalized = bodyNewsletters.map((n) => ({
+        id: String(n.id || "").trim() || `nl-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        title: String(n.title || "").trim(),
+        date: String(n.date || "").trim(),
+        description: String(n.description || "").trim(),
+        image: String(n.image || "").trim(),
+        link: String(n.link || "").trim(),
+        secondaryLink: String(n.secondaryLink || "").trim()
+      }));
+      const dir = path.dirname(newsletterPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(newsletterPath, JSON.stringify(normalized, null, 2), "utf8");
+      const content = readSiteContent();
+      content.newsletters = normalized;
+      writeSiteContent(content);
+    }
+    const newsletterRepoPath = path.relative(__dirname, newsletterPath).replace(/\\/g, "/");
+    await pushFileToGithub(ghConfig, newsletterRepoPath, newsletterPath, "Update newsletter content from SSA Ops");
+    const imageFiles = fs.existsSync(newsletterImagesDir) ? fs.readdirSync(newsletterImagesDir).filter((f) => /\.(png|jpg|jpeg|webp|gif)$/i.test(f)) : [];
+    for (const filename of imageFiles) {
+      await pushFileToGithub(ghConfig, `assets/newsletter-images/${filename}`, path.join(newsletterImagesDir, filename), "Update newsletter image from SSA Ops");
+    }
+    res.json({ ok: true, message: "Newsletter content pushed to GitHub." });
+  } catch (e) {
+    res.status(500).json({ error: e.message || "Push failed." });
+  }
+});
+
+setupNewsletterPlatform({
+  app,
+  rootDir: __dirname,
+  upload,
+  getUserFromSession,
+  geminiApiKey: GEMINI_API_KEY,
+  newsletterImagesDir
 });
 
 app.delete("/api/events/:id", (req, res) => {

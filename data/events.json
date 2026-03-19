@@ -1,0 +1,22 @@
+[
+  {
+    "id": "ev-1",
+    "day": "03",
+    "month": "Apr",
+    "title": "Somali Night 2026",
+    "description": "Northrop Auditorium - Annual Cultural Event",
+    "tag": "Flagship",
+    "buttonText": "",
+    "link": ""
+  },
+  {
+    "id": "ev-2",
+    "day": "20",
+    "month": "Apr",
+    "title": "Senior Night Gala",
+    "description": "TBA",
+    "tag": "Members",
+    "buttonText": "RSVP Form",
+    "link": "https://docs.google.com/forms/d/e/1FAIpQLScq-2fmzfquFErTorYbyMY7rWBGcTAWJrTDQiOu_WGB3a6Jgw/viewform"
+  }
+]

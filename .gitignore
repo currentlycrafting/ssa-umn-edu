@@ -1,6 +1,8 @@
 node_modules/
 .env
+uploads/
+
+# SQLite database (generated at runtime)
 ssa-ops.db
 ssa-ops.db-shm
 ssa-ops.db-wal
-uploads/

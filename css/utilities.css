@@ -1,0 +1,44 @@
+.u-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.u-three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.u-flex {
+  display: flex;
+}
+
+.u-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.u-items-center {
+  align-items: center;
+}
+
+.u-justify-between {
+  justify-content: space-between;
+}
+
+.u-wrap {
+  flex-wrap: wrap;
+}
+
+.u-text-muted {
+  color: var(--silver);
+}
+
+.u-text-gold {
+  color: var(--gold);
+}
+
+.u-hidden {
+  display: none !important;
+}

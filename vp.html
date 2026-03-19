@@ -1,145 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="ops-shell">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-26GKQG2GXF');
+</script>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SSA Ops — Vice President</title>
+<link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --navy:#0b0f1c;--navy-mid:#141929;--navy-light:#1e2540;
-  --white:#f8f6f2;--silver:#9a9fad;--gold:#b89a5c;--gold-light:#d4b87a;--stone:#c4bdb0;--charcoal:#2a2e3d;
-  --red:#c0504d;--red-dim:rgba(192,80,77,.15);--green:#4caf7d;--green-dim:rgba(76,175,125,.12);
-  --amber:#d4914a;--amber-dim:rgba(212,145,74,.12);--blue:#7ba3d4;--blue-dim:rgba(123,163,212,.1);
-  --font-display:'Cormorant Garamond',serif;--font-body:'DM Sans',sans-serif;--sidebar:260px;
-}
-html,body{height:100%;overflow:hidden}
-body{background:var(--navy);color:var(--white);font-family:var(--font-body);font-weight:300;display:flex}
-#sidebar{width:var(--sidebar);flex-shrink:0;background:var(--navy-mid);border-right:1px solid rgba(184,154,92,.12);display:flex;flex-direction:column;height:100vh;overflow-y:auto;position:fixed;left:0;top:0;bottom:0;z-index:100}
-.sb-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px}
-.sb-logo img{height:38px;width:38px;object-fit:contain}
-.sb-logo-txt span{display:block;font-family:var(--font-display);font-size:13px;font-weight:500;letter-spacing:.15em;text-transform:uppercase}
-.sb-logo-txt span:last-child{font-family:var(--font-body);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--silver);margin-top:2px}
-.sb-user{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05)}
-.sb-user-name{font-family:var(--font-display);font-size:22px;font-weight:400;color:var(--white);line-height:1.1}
-.sb-user-role{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-top:4px}
-.sb-user-dept{font-size:11px;color:var(--silver);margin-top:2px}
-.sb-nav{padding:12px 0;flex:1}
-.sb-section-label{font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--silver);padding:14px 20px 6px;opacity:.6}
-.sb-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:12px;letter-spacing:.04em;color:var(--stone);cursor:pointer;transition:all .2s;border-left:2px solid transparent}
-.sb-item:hover{color:var(--white);background:rgba(255,255,255,.03);border-left-color:rgba(184,154,92,.3)}
-.sb-item.active{color:var(--white);background:rgba(184,154,92,.08);border-left-color:var(--gold)}
-.sb-icon{font-size:13px;width:16px;text-align:center;flex-shrink:0}
-.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:500;padding:2px 6px;border-radius:2px}
-.sb-badge.gold{background:var(--gold);color:var(--navy)}
-.sb-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.05)}
-.poll-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-#main{margin-left:var(--sidebar);flex:1;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:var(--navy-mid);border-bottom:1px solid rgba(184,154,92,.1);position:sticky;top:0;z-index:50}
-.topbar-left h1{font-family:var(--font-display);font-size:13px;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:var(--silver)}
-.topbar-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
-.notif-btn{position:relative;background:transparent;border:1px solid rgba(255,255,255,.1);width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .3s;font-size:14px}
-.notif-btn:hover{border-color:var(--gold)}
-.notif-count{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:8px;font-weight:500;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.btn{padding:8px 18px;font-family:var(--font-body);font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;transition:all .2s;border:none;font-weight:500}
-.btn-gold{background:var(--gold);color:var(--navy)}.btn-gold:hover{background:var(--gold-light)}
-.btn-outline{background:transparent;border:1px solid rgba(184,154,92,.4);color:var(--gold)}.btn-outline:hover{background:rgba(184,154,92,.08)}
-.btn-red{background:var(--red);color:#fff}.btn-green{background:var(--green);color:#fff}
-.page{display:none;padding:32px;flex-direction:column;gap:20px}
-.page.active{display:flex}
-.card{background:var(--navy-mid);border:1px solid rgba(255,255,255,.06);padding:24px}
-.card-sm{background:var(--navy-light);border:1px solid rgba(255,255,255,.05);padding:16px}
-.section-label{font-size:8px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.section-label::before{content:'';display:block;width:20px;height:1px;background:var(--gold)}
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.stat-card{background:var(--navy-light);padding:20px;border:1px solid rgba(255,255,255,.05);border-bottom:2px solid transparent;transition:border-color .3s}
-.stat-card:hover{border-bottom-color:var(--gold)}
-.stat-num{font-family:var(--font-display);font-size:40px;font-weight:300;color:var(--white);line-height:1}
-.stat-num.red{color:var(--red)}.stat-num.green{color:var(--green)}.stat-num.amber{color:var(--amber)}
-.stat-label{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--silver);margin-top:4px}
-.task-list{display:flex;flex-direction:column;gap:2px}
-.task-item{display:grid;grid-template-columns:8px 1fr auto;gap:14px;align-items:start;padding:14px;background:var(--navy-light);border:1px solid rgba(255,255,255,.04);cursor:pointer;transition:border-color .2s}
-.task-item:hover{border-color:rgba(184,154,92,.2)}
-.task-stripe{width:3px;border-radius:2px;align-self:stretch;min-height:40px}
-.task-stripe.urgent{background:var(--red)}.task-stripe.current{background:var(--gold)}
-.task-stripe.locked{background:rgba(255,255,255,.15)}.task-stripe.done{background:var(--green)}.task-stripe.redo{background:var(--amber)}
-.task-title{font-size:13px;font-weight:400;color:var(--white);margin-bottom:3px}
-.task-meta{font-size:11px;color:var(--silver)}.task-meta span{margin-right:10px}
-.task-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
-.status-badge{font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 10px;border-radius:2px}
-.sb-urgent{background:var(--red-dim);color:var(--red)}.sb-current{background:rgba(184,154,92,.12);color:var(--gold)}
-.sb-locked{background:rgba(255,255,255,.06);color:var(--silver)}.sb-done{background:var(--green-dim);color:var(--green)}
-.sb-redo{background:var(--amber-dim);color:var(--amber)}.sb-pending{background:var(--blue-dim);color:var(--blue)}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.event-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.05);padding:18px;border-left:3px solid var(--gold);cursor:pointer;transition:all .2s}
-.event-card:hover{background:var(--charcoal)}
-.event-name{font-family:var(--font-display);font-size:18px;color:var(--white);margin-bottom:4px}
-.event-date{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-.progress-bar{height:3px;background:rgba(255,255,255,.08)}.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .5s}
-.progress-wrap{margin-top:10px}.progress-row{display:flex;justify-content:space-between;font-size:10px;color:var(--silver);margin-bottom:3px}
-.approval-item{background:var(--navy-light);border:1px solid rgba(255,255,255,.05);padding:14px;border-top:2px solid var(--blue-dim);margin-bottom:2px}
-.approval-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:6px}
-.approval-task{font-size:13px;color:var(--white)}
-.approval-by{font-size:10px;color:var(--silver);margin-top:2px}
-.member-card{background:var(--navy-light);border:1px solid rgba(255,255,255,.05);padding:20px;transition:border-color .3s;cursor:pointer}
-.member-card:hover{border-color:rgba(184,154,92,.25)}
-.member-name{font-family:var(--font-display);font-size:18px;color:var(--white);margin-bottom:2px}
-.member-role{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
-.member-stats{display:flex;gap:16px}
-.member-stat{display:flex;flex-direction:column;gap:2px}
-.member-stat-num{font-size:18px;font-family:var(--font-display);color:var(--white)}
-.member-stat-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--silver)}
-.wl-bar{height:4px;background:rgba(255,255,255,.08);margin-top:8px}.wl-fill{height:100%;transition:width .4s}
-.wl-ok{background:var(--green)}.wl-warn{background:var(--amber)}.wl-over{background:var(--red)}
-.dep-graph{background:var(--navy);border:1px solid rgba(255,255,255,.06);padding:20px;min-height:200px}
-.dep-row{display:flex;gap:6px;align-items:center;margin-bottom:12px}
-.dep-node{background:var(--navy-mid);border:1px solid rgba(255,255,255,.1);padding:8px 12px;font-size:11px;color:var(--white);cursor:pointer;transition:all .2s;white-space:nowrap}
-.dep-node:hover{border-color:var(--gold)}.dep-node.done-node{border-color:var(--green);background:rgba(76,175,125,.06)}
-.dep-node.active-node{border-color:var(--gold);background:rgba(184,154,92,.08)}.dep-node.locked-node{opacity:.45}
-.dep-dept{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
-.dep-arrow{font-size:16px;color:rgba(184,154,92,.4);flex-shrink:0}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--navy-mid);border:1px solid rgba(184,154,92,.2);width:600px;max-width:94vw;max-height:86vh;overflow-y:auto}
-.modal-header{padding:22px 26px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--navy-mid);z-index:5}
-.modal-title{font-family:var(--font-display);font-size:22px;color:var(--white)}
-.modal-close{background:transparent;border:1px solid rgba(255,255,255,.15);width:28px;height:28px;color:var(--silver);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.modal-close:hover{border-color:var(--red);color:var(--red)}
-.modal-body{padding:24px;display:flex;flex-direction:column;gap:16px}
-.modal-footer{padding:14px 24px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:flex-end;gap:14px;background:var(--navy-mid);position:sticky;bottom:0;flex-wrap:wrap}
-.fg{display:flex;flex-direction:column;gap:6px}
-.fg label{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--silver)}
-.fg input,.fg select,.fg textarea{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.14);padding:13px 14px;font-family:var(--font-body);font-size:13px;color:var(--white);min-height:48px;border-radius:6px;outline:none;transition:border-color .3s}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold)}
-.fg select option{background:var(--navy-mid)}.fg textarea{min-height:80px;resize:vertical}.fg select{min-height:48px}
-.info-block{background:var(--navy);border:1px solid rgba(255,255,255,.05);padding:14px}
-.info-label{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-.info-val{font-size:13px;color:var(--silver);line-height:1.65}
-.division-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(184,154,92,.1);border:1px solid rgba(184,154,92,.3);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:20px}
-.breadcrumb{font-size:10px;color:var(--silver);letter-spacing:.1em;margin-bottom:16px;display:flex;align-items:center;gap:6px}
-.breadcrumb span{color:var(--gold)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cal-header{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--silver);text-align:center;padding:8px}
-.cal-day{min-height:54px;background:var(--navy-light);border:1px solid rgba(255,255,255,.04);padding:5px;font-size:10px;transition:background .2s}
-.cal-day:hover{background:var(--charcoal)}.cal-day.today{border-color:var(--gold);background:rgba(184,154,92,.06)}
-.cal-day-num{font-size:10px;color:var(--stone);margin-bottom:2px}.cal-task-line{font-size:9px;color:var(--silver);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cal-task-line.red{color:var(--red)}.cal-task-line.amber{color:var(--amber)}
-.overdue-alert{background:var(--red-dim);border:1px solid rgba(192,80,77,.3);padding:12px;display:flex;gap:10px;align-items:start;margin-bottom:6px}
-.alert-icon{color:var(--red);font-size:15px;flex-shrink:0;margin-top:2px}.alert-body{flex:1}
-.alert-title{font-size:12px;color:var(--white);margin-bottom:2px}.alert-sub{font-size:11px;color:var(--silver)}
-.alert-actions{display:flex;gap:6px;margin-top:6px}
-.assign-suggestion{background:var(--navy);border:1px solid rgba(255,255,255,.06);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-.assign-rank{font-family:var(--font-display);font-size:22px;color:rgba(184,154,92,.3);flex-shrink:0;width:28px}
-.assign-name{font-size:13px;color:var(--white)}.assign-reason{font-size:11px;color:var(--silver);margin-top:2px}
-.assign-load{font-size:11px;text-align:right}
-.perf-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:rgba(255,255,255,.02)}::-webkit-scrollbar-thumb{background:rgba(184,154,92,.3);border-radius:2px}
-@media(max-width:860px){#sidebar{display:none}#main{margin-left:0}.stat-row{grid-template-columns:1fr 1fr}.two-col,.three-col{grid-template-columns:1fr}}
-</style>
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/utilities.css" />
+<link rel="stylesheet" href="css/vp.css" />
 </head>
-<body>
+<body class="ops-shell">
 
 <script>
 // ── VP CONFIGURATION ───────────────────────────────────────────────────────
@@ -158,7 +40,7 @@ const VP_CONFIG = {
 
 <nav id="sidebar">
   <div class="sb-logo">
-    <img src="images/ssa-logo.png" alt="SSA"/>
+    <img src="logo-images/logo-v3.png" alt="SSA" loading="lazy" />
     <div class="sb-logo-txt"><span>SSA Ops</span><span>Board Platform</span></div>
   </div>
   <div class="sb-user">
@@ -176,15 +58,20 @@ const VP_CONFIG = {
     <div class="sb-section-label" id="div-nav-label">My Division</div>
     <div class="sb-item" onclick="showPage('members')"><span class="sb-icon">◉</span>Division Members</div>
     <div class="sb-item" onclick="showPage('div-tasks')"><span class="sb-icon">≋</span>Division Tasks</div>
-    <div class="sb-item" onclick="showPage('assign')"><span class="sb-icon">→</span>Assign Tasks</div>
+    <div class="sb-item" onclick="vpOpenAssignModal()"><span class="sb-icon">→</span>Assign Tasks</div>
 
     <div class="sb-section-label">Events</div>
-    <div class="sb-item" onclick="showPage('events')"><span class="sb-icon">◆</span>Active Events</div>
+    <div class="sb-item" onclick="showPage('events')"><span class="sb-icon">◆</span>Events</div>
     <div class="sb-item" onclick="showPage('dependency')"><span class="sb-icon">⊹</span>Dependency Graph</div>
     <div class="sb-item" onclick="showPage('calendar')"><span class="sb-icon">◻</span>Calendar</div>
 
     <div class="sb-section-label">Reports</div>
+    <div class="sb-item" id="sb-item-suggestions" onclick="showPage('suggestions')"><span class="sb-icon">◇</span>Suggestion Box</div>
+    <div class="sb-item" id="sb-item-reports" onclick="showPage('reports')"><span class="sb-icon">▣</span>Report Box <span class="sb-badge" id="reports-badge" style="display:none">0</span></div>
     <div class="sb-item" onclick="showPage('escalate')"><span class="sb-icon">★</span>Escalate to President</div>
+    <div class="sb-section-label">Newsletter</div>
+    <div class="sb-item" id="sb-item-newsletter" onclick="showPage('newsletter')"><span class="sb-icon">◐</span>Edit Newsletter</div>
+    <div class="sb-item" onclick="showPage('site-gallery')"><span class="sb-icon">◷</span>Index</div>
   </div>
   <div class="sb-footer">
     <div style="font-size:10px;color:var(--silver)"><span class="poll-dot"></span>Syncing every 30s</div>
@@ -197,7 +84,7 @@ const VP_CONFIG = {
     <div class="topbar-left"><h1 id="page-title">Division Hub</h1></div>
     <div class="topbar-right">
       <div class="division-badge" id="div-badge" style="margin:0">▲ Internal Division</div>
-      <button class="btn btn-outline" onclick="window.location.href='index.html'">Home</button>
+      <a href="index.html" class="btn btn-outline" style="text-decoration:none;color:inherit">Main Site</a>
       <button class="btn btn-outline" onclick="window.location.href='ops-login.html'">Login Page</button>
     </div>
   </div>
@@ -223,7 +110,7 @@ const VP_CONFIG = {
         </div>
         <div class="card">
           <div class="section-label">Events</div>
-          <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:12px">Active Events</div>
+          <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:12px">Events</div>
           <div id="overview-events"></div>
         </div>
       </div>
@@ -243,6 +130,7 @@ const VP_CONFIG = {
       <div class="division-badge" style="cursor:pointer;margin:0" onclick="filterMyTasks('all',this)">All</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('urgent',this)">Urgent</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('current',this)">Current</div>
+      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('redo',this)">Redo</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('locked',this)">Upcoming</div>
       <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterMyTasks('done',this)">Past</div>
     </div>
@@ -252,11 +140,11 @@ const VP_CONFIG = {
   <!-- ── DIVISION TASKS ── -->
   <div class="page" id="page-div-tasks">
     <div class="breadcrumb" id="div-tasks-bc"><span>Internal Division</span> / All Tasks</div>
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <div class="division-badge" style="cursor:pointer;margin:0" onclick="filterDivTasks('all',this)">All</div>
-      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('overdue',this)">Overdue</div>
-      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('pending',this)">Pending Review</div>
-      <div class="division-badge" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('done',this)">Completed</div>
+    <div id="div-task-filters" style="display:flex;gap:8px;margin-bottom:16px">
+      <div class="division-badge div-filter-badge active" data-filter="all" style="cursor:pointer;margin:0" onclick="filterDivTasks('all',this)">All</div>
+      <div class="division-badge div-filter-badge" data-filter="overdue" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('overdue',this)">Overdue</div>
+      <div class="division-badge div-filter-badge" data-filter="pending" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('pending',this)">Pending Review</div>
+      <div class="division-badge div-filter-badge" data-filter="done" style="cursor:pointer;margin:0;opacity:.5" onclick="filterDivTasks('done',this)">Completed</div>
     </div>
     <div class="task-list" id="div-task-list"></div>
   </div>
@@ -317,9 +205,9 @@ const VP_CONFIG = {
             <select id="assign-priority"><option value="standard">Standard</option><option value="high">High</option><option value="urgent">Urgent</option><option value="critical">Critical</option></select>
           </div>
           <div class="fg"><label>Linked Event</label><select id="assign-event"></select></div>
-          <div class="fg"><label>Unlock Date</label><input type="datetime-local" id="assign-unlock"/></div>
-          <div class="fg"><label>Description</label><textarea id="assign-description" placeholder="Describe scope and completion criteria"></textarea></div>
-          <div class="fg"><label>Prerequisite Tasks</label><div style="font-size:11px;color:var(--silver)">Select prerequisite tasks to chain dependency flow and lock this task until ready.</div><div id="assign-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
+          <div class="fg"><label>Meeting Link (optional)</label><input type="url" id="assign-meeting-link" placeholder="https://zoom.us/j/..."/></div>
+          <div class="fg"><label>Description</label><textarea id="assign-description" placeholder="Describe scope and completion criteria" oninput="updateAssignDescriptionHint()"></textarea><div style="font-size:9px;color:var(--gold);margin-top:4px;text-align:right" id="assign-desc-hint">Recommended 0/100 characters (minimum 40).</div></div>
+          <div class="fg"><label>Prerequisite Tasks</label><div style="font-size:11px;color:var(--silver)">Only active tasks are shown as prerequisites.</div><div id="assign-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
         </div>
       </div>
       <div class="card">
@@ -339,16 +227,27 @@ const VP_CONFIG = {
 
   <!-- ── EVENTS ── -->
   <div class="page" id="page-events">
-    <div class="breadcrumb"><span>Events</span> / Active</div>
+    <div class="breadcrumb"><span>Events</span> / Current &amp; Past</div>
     <div id="events-list" style="display:flex;flex-direction:column;gap:16px"></div>
   </div>
 
   <!-- ── DEPENDENCY ── -->
   <div class="page" id="page-dependency">
     <div class="breadcrumb"><span>Ops</span> / Dependency Graph</div>
+    <div class="dep-map-header">
+      <div class="dep-map-title-wrap">
+        <div style="font-family:var(--font-display);font-size:20px;color:var(--white)">Task Dependency Graph</div>
+      </div>
+      <div class="dep-event-picker-wrap" id="vp-dep-picker-wrap">
+        <div class="dep-event-picker" id="vp-dep-event-picker" onclick="toggleVpDepEventDropdown()" role="button" tabindex="0">
+          <span class="dep-event-picker-label" id="vp-dep-event-name">All events</span>
+          <span class="dep-event-picker-chevron">▾</span>
+        </div>
+        <div class="dep-event-dropdown" id="vp-dep-event-dropdown" role="listbox"></div>
+      </div>
+    </div>
+    <input type="hidden" id="vp-dep-event-select" />
     <div class="card">
-      <div class="section-label">Chain</div>
-      <div style="font-family:var(--font-display);font-size:20px;color:var(--white);margin-bottom:16px">Task Dependency Graph</div>
       <div class="dep-graph" id="dep-graph"></div>
       <div style="margin-top:16px;padding:14px;background:var(--navy);border:1px solid rgba(255,255,255,.05)">
         <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin-bottom:8px">Legend</div>
@@ -373,30 +272,234 @@ const VP_CONFIG = {
   </div>
 
 
+  <!-- ── SUGGESTION BOX (Internal VP: event ideas from join.html) ── -->
+  <div class="page" id="page-suggestions">
+    <div class="breadcrumb"><span>Community Input</span> / Suggestion Box</div>
+    <div class="card">
+      <div class="section-label">From Join Page</div>
+      <div style="font-family:var(--font-display);font-size:22px;color:var(--white);margin-bottom:8px">Event Ideas &amp; Suggestions</div>
+      <div style="font-size:13px;color:var(--silver);margin-bottom:20px">Suggestions submitted from the Join SSA page are routed here for the Internal VP.</div>
+      <div id="suggestions-list"></div>
+    </div>
+  </div>
+
+  <!-- ── REPORT BOX (division notifications + board reports to VP) ── -->
+  <div class="page" id="page-reports">
+    <div class="breadcrumb" id="reports-bc"><span>Reports</span> / Report Box</div>
+    <div class="card">
+      <div class="section-label">Division</div>
+      <div style="font-family:var(--font-display);font-size:22px;color:var(--white);margin-bottom:8px">Division Notifications</div>
+      <div style="font-size:13px;color:var(--silver);margin-bottom:20px">Pending reviews, overdue tasks, escalations, and reminders for your division.</div>
+      <div id="reports-list"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="section-label">From your division</div>
+      <div style="font-family:var(--font-display);font-size:18px;color:var(--white);margin-bottom:6px">Reports from board members</div>
+      <div style="font-size:13px;color:var(--silver);margin-bottom:16px">Board members in your division can send you reports. Review and mark status below.</div>
+      <div id="vp-board-reports-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <!-- ── NEWSLETTER (Edit Newsletter — President + Director of Operations only) ── -->
+  <div class="page" id="page-newsletter">
+    <div class="breadcrumb"><span>Newsletter</span> / Community Newsletter</div>
+    <div class="card" style="margin-bottom:24px">
+      <div class="section-label">Current newsletter on site</div>
+      <div class="card-title">Current newsletter</div>
+      <div id="newsletter-preview-wrap" style="margin-top:16px;display:flex;flex-direction:column;gap:16px"></div>
+      <div style="margin-top:16px">
+        <button type="button" class="btn btn-outline" onclick="openNewsletterFullView()">View entire newsletter</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">Community Newsletter</div>
+      <div class="card-title">Edit entries</div>
+      <div style="margin-bottom:16px">
+        <button type="button" class="btn btn-gold" onclick="newsletterAddEntry()">+ Add newsletter entry</button>
+        <button type="button" class="btn btn-outline" style="margin-left:10px" onclick="loadNewsletterPage()">Refresh</button>
+      </div>
+      <div id="newsletter-editor-list" style="display:flex;flex-direction:column;gap:20px"></div>
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="newsletterPushToGitHub()">Push Newsletter to Github</button>
+        <span id="newsletter-push-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INDEX (gallery: photos on homepage) ── -->
+  <div class="page" id="page-site-gallery">
+    <div class="breadcrumb"><span>Index</span> / Gallery</div>
+    <div class="card">
+      <div class="section-label">Index gallery</div>
+      <div class="card-title">Gallery</div>
+      <div class="site-gallery-drop-wrap" style="margin-bottom:16px">
+        <div class="site-drop-zone site-gallery-drop-wide" id="vp-gallery-drop" ondragover="vpGalleryDragOver(event)" ondragleave="vpGalleryDragLeave(event)" ondrop="vpGalleryDrop(event)" onclick="document.getElementById('vp-gallery-file').click()">
+          <div class="site-dz-text" id="vp-gallery-dz-text"><strong>Click to upload</strong> or drag and drop</div>
+          <div class="site-dz-sub">PNG, JPG</div>
+          <input type="file" id="vp-gallery-file" accept="image/*" style="display:none" onchange="vpGalleryFileChosen(this)" />
+        </div>
+      </div>
+      <div id="vp-gallery-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px"></div>
+      <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+        <button type="button" class="btn btn-gold" onclick="vpPushGalleryToGitHub()">Push Gallery Content to Github</button>
+        <span id="vp-push-gallery-status" style="font-size:11px;color:var(--silver);margin-left:12px"></span>
+      </div>
+    </div>
+  </div>
+
   <!-- ── ESCALATE ── -->
   <div class="page" id="page-escalate">
-    <div class="breadcrumb"><span>Reports</span> / Escalate to President</div>
-    <div class="card" style="max-width:600px">
-      <div class="section-label">Escalation</div>
-      <div style="font-family:var(--font-display);font-size:22px;color:var(--white);margin-bottom:8px">Flag for Executive Review</div>
-      <div style="font-size:13px;color:var(--silver);margin-bottom:24px;line-height:1.7">Use this when an issue exceeds your authority to resolve — strategic conflicts, cross-division blockers, serious accountability concerns, or resource decisions that need executive sign-off.</div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="fg"><label>Issue Type</label>
-          <select id="report-reason"><option>Cross-Division Blocker</option><option>Accountability Concern</option><option>Resource Decision</option><option>Strategic Conflict</option><option>Deadline Risk</option></select>
+    <div class="esc-wrap">
+      <div class="esc-topbar">
+        <div class="esc-eyebrow">Escalation</div>
+        <div class="esc-breadcrumb"><span>Vice President</span> › Escalate to President</div>
+      </div>
+      <div class="esc-heading">
+        <div class="esc-title">Flag for Executive Review</div>
+        <div class="esc-desc">Use this when an issue exceeds your authority to resolve — strategic conflicts, cross-division blockers, serious accountability concerns, or resource decisions that need executive sign-off. The President is notified immediately.</div>
+      </div>
+      <div class="esc-sl">Escalation Severity</div>
+      <div class="sev-grid">
+        <div class="sev-btn" data-sev="critical" onclick="vpSetSev(this)">
+          <div class="sev-dot-row"><div class="sev-dot" style="background:var(--red)"></div><span class="sev-sev">Critical</span></div>
+          <div class="sev-name">Needs Immediate Action</div>
+          <div class="sev-sub">Event at risk, serious breach, or hard deadline conflict requiring same-day resolution.</div>
         </div>
-        <div class="form-row">
-          <div class="fg"><label>Linked Event</label><select id="report-event"></select></div>
-          <div class="fg"><label>Linked Task</label><select id="report-task"></select></div>
+        <div class="sev-btn active-high" data-sev="high" onclick="vpSetSev(this)">
+          <div class="sev-dot-row"><div class="sev-dot" style="background:var(--amber)"></div><span class="sev-sev">High</span></div>
+          <div class="sev-name">Escalation Required</div>
+          <div class="sev-sub">Issue is real and time-sensitive but not yet causing immediate failure. Needs presidential input.</div>
         </div>
-        <div class="fg"><label>Summary</label><textarea id="report-notes" placeholder="What happened, what you've done, and what needs presidential decision..." style="min-height:100px"></textarea></div>
-        <div class="fg"><label>Recommended Action</label>
-          <input id="report-action" type="text" placeholder="What are you recommending the President do?"/>
+        <div class="sev-btn" data-sev="standard" onclick="vpSetSev(this)">
+          <div class="sev-dot-row"><div class="sev-dot" style="background:var(--gold)"></div><span class="sev-sev">Standard</span></div>
+          <div class="sev-name">Awaiting Decision</div>
+          <div class="sev-sub">Strategic or resource decision that VP cannot make unilaterally. No immediate risk.</div>
         </div>
-        <button class="btn btn-gold" style="align-self:flex-start" onclick="sendEscalation()">Send Escalation</button>
+      </div>
+      <div class="esc-banner" id="sev-banner">
+        <span class="esc-banner-icon" id="sev-icon"></span>
+        <span class="esc-banner-text" id="sev-text"></span>
+      </div>
+      <div class="esc-dv"></div>
+      <div class="esc-sl">Issue Type</div>
+      <input type="hidden" id="report-reason" value="Cross-Division Blocker" />
+      <div class="type-grid">
+        <div class="type-chip on" data-reason="Cross-Division Blocker" onclick="vpTogType(this)">Cross-Division Blocker</div>
+        <div class="type-chip" data-reason="Accountability Concern" onclick="vpTogType(this)">Accountability Concern</div>
+        <div class="type-chip" data-reason="Resource Decision" onclick="vpTogType(this)">Resource Decision</div>
+        <div class="type-chip" data-reason="Strategic Conflict" onclick="vpTogType(this)">Strategic Conflict</div>
+        <div class="type-chip" data-reason="Deadline Risk" onclick="vpTogType(this)">Deadline Risk</div>
+        <div class="type-chip" data-reason="Personnel Issue" onclick="vpTogType(this)">Personnel Issue</div>
+      </div>
+      <div class="esc-dv"></div>
+      <div class="esc-sl">Escalation Detail</div>
+      <div class="esc-fg">
+        <label class="esc-fl">What happened and what have you done?</label>
+        <textarea class="esc-fi esc-fta" id="report-notes" oninput="vpEscCountChars('report-notes','report-notes-hint')" placeholder="Be specific. Describe the situation, what you have already tried to resolve it, why it cannot be resolved at your level, and what decision you need the President to make."></textarea>
+        <div class="esc-char-hint" id="report-notes-hint">0 / 800 recommended</div>
+      </div>
+      <div class="esc-fg">
+        <label class="esc-fl">Your Recommended Action</label>
+        <textarea class="esc-fi" style="min-height:72px;resize:vertical" id="report-action" oninput="vpEscCountChars('report-action','report-action-hint')" placeholder="What are you recommending the President do? Be direct — a specific ask is more useful than a vague request."></textarea>
+        <div class="esc-char-hint" id="report-action-hint">0 / 200 recommended</div>
+      </div>
+      <div class="esc-footer">
+        <div class="esc-footer-note" id="esc-footer-note"><strong>High severity</strong> — The President will be notified immediately. Escalations are logged permanently and visible to executive leadership.</div>
+        <div class="esc-footer-btns">
+          <button type="button" class="esc-btn-cancel" onclick="showPage('overview')">Cancel</button>
+          <button type="button" class="esc-btn-send" id="esc-send-btn" onclick="sendEscalation()">Send Escalation</button>
+        </div>
       </div>
     </div>
   </div>
 </main>
+
+<!-- Modal: View entire newsletter (zoomed) -->
+<div class="modal-overlay" id="newsletter-full-modal">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div class="mh" style="flex-shrink:0;justify-content:flex-end">
+      <button type="button" class="modal-close" onclick="closeModal('newsletter-full-modal')" aria-label="Close">✕</button>
+    </div>
+    <div id="newsletter-full-modal-body" style="padding:0 24px 24px;overflow-y:auto;flex:1"></div>
+  </div>
+</div>
+
+<!-- VP ASSIGN TASK MODAL (same UI as president) -->
+<div class="modal-overlay" id="vpAssignTaskModal">
+  <div class="modal at-modal" style="max-width:720px">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Assign Task</div>
+        <div class="at-hsub" id="vp-assign-hsub">Division · SSA Board Platform</div>
+      </div>
+      <button class="at-close" type="button" onclick="closeModal('vpAssignTaskModal')">✕</button>
+    </div>
+    <div class="at-body">
+      <div class="at-progress-track"><div class="at-progress-val" id="vp-assign-progress" style="width:20%"></div></div>
+      <input type="hidden" id="vp-assign-priority" value="standard" />
+      <select id="vp-assign-role" style="display:none" aria-hidden="true"><option value="">—</option></select>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Task Title</label>
+          <input class="at-fi" id="vp-assign-title" type="text" placeholder="e.g. Launch promotional campaign" />
+        </div>
+        <div class="fg">
+          <label class="at-fl">Linked Event</label>
+          <select class="at-fi" id="vp-assign-event"><option value="">Standalone</option></select>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:4px;margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row">
+        <button type="button" class="at-prio-btn" data-prio="urgent" onclick="vpSetAssignPrio(this)">Urgent</button>
+        <button type="button" class="at-prio-btn" data-prio="high" onclick="vpSetAssignPrio(this)">High</button>
+        <button type="button" class="at-prio-btn active-standard" data-prio="standard" onclick="vpSetAssignPrio(this)">Standard</button>
+        <button type="button" class="at-prio-btn" data-prio="low" onclick="vpSetAssignPrio(this)">Low</button>
+      </div>
+      <div class="at-cols">
+        <div class="fg">
+          <label class="at-fl">Due Date</label>
+          <input class="at-fi" id="vp-assign-due" type="date" />
+        </div>
+        <div class="fg"></div>
+      </div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Assign to Role</div>
+      <div class="at-role-grid" id="vp-assign-role-chips"></div>
+      <div class="at-suggest-wrap">
+        <div class="at-suggest-hdr">
+          <span class="at-suggest-title">Smart Suggestions</span>
+          <span class="at-suggest-title" style="font-size:10px;color:var(--silver)">Sorted by role fit + workload (your division)</span>
+        </div>
+        <div class="at-suggest-list" id="vp-assign-suggestions">
+          <div style="font-size:12px;color:var(--silver);padding:8px 0">Select a role to load suggestions.</div>
+        </div>
+      </div></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:12px;margin-top:-8px">Only active tasks are shown as prerequisites. You can select tasks from any division.</div>
+      <div class="at-prereq-list" id="vp-assign-dependencies"></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight"><div class="at-sec-label">Description</div>
+      <div class="fg">
+        <textarea class="at-fi at-fta" id="vp-assign-description" placeholder="Describe the scope, what done looks like, and any context the assignee needs." oninput="vpUpdateAssignDescHint()"></textarea>
+        <div class="ce-disclaimer" id="vp-assign-desc-hint" style="font-size:9px;color:var(--gold);text-align:right;margin-top:4px">Recommended 0/100 characters (minimum 40).</div>
+      </div>
+      </div>
+      <div class="fg vp-meeting-link-wrap">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="vp-assign-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="vpValidateMeetingLink(this)" />
+        <span class="meeting-link-err" id="vp-assign-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
+      </div>
+    </div>
+    <div class="at-footer">
+      <div class="at-footer-left" id="vp-assign-footer-hint">Select a role and assignee above (division members only).</div>
+      <div class="at-footer-right">
+        <button type="button" class="btn btn-outline" onclick="closeModal('vpAssignTaskModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="vpAssignTask()">Assign Task</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- REDO MODAL -->
 <div class="modal-overlay" id="redoModal">
@@ -407,16 +510,20 @@ const VP_CONFIG = {
     </div>
     <div class="modal-body">
       <div class="info-block"><div class="info-label">Task</div><div class="info-val" id="redo-task-name">—</div></div>
-      <div class="fg"><label>What is missing?</label><textarea placeholder="Describe what was incomplete..."></textarea></div>
-      <div class="fg"><label>Specific revision instructions</label><textarea placeholder="What exactly needs to be redone?"></textarea></div>
+      <input type="hidden" id="redo-task-id" value="" />
+      <div class="fg">
+        <label>Redo notes</label>
+        <textarea id="redo-notes" placeholder="Write clear revision instructions. What needs to change, and what ‘done’ looks like."></textarea>
+        <div style="font-size:10px;color:var(--silver);text-align:right;margin-top:6px" id="redo-notes-hint">0 / 600 recommended</div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fg"><label>Updated Deadline</label><input type="date"/></div>
-        <div class="fg"><label>Priority</label><select><option>Standard</option><option>Urgent</option></select></div>
+        <div class="fg"><label>Updated Deadline (optional)</label><input id="redo-due" type="date"/></div>
+        <div class="fg"><label>Priority</label><select id="redo-priority"><option>Standard</option><option>Urgent</option></select></div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('redoModal')">Cancel</button>
-      <button class="btn btn-red" onclick="submitRedo()">Send Redo</button>
+      <button class="btn btn-red" id="redo-send-btn" onclick="submitRedo()">Send Redo</button>
     </div>
   </div>
 </div>
@@ -434,8 +541,23 @@ const VP_CONFIG = {
       <button class="btn btn-outline" onclick="editTaskLive()">Edit</button>
       <button class="btn btn-outline" onclick="markTaskOverdueLive()">Mark Overdue</button>
       <button class="btn btn-red" onclick="deleteTaskLive()">Delete</button>
-      <button class="btn btn-red" id="inspect-redo-btn" style="display:none" onclick="openModal('redoModal');closeModal('inspectModal')">Request Redo</button>
+      <button class="btn btn-red" id="inspect-redo-btn" style="display:none" onclick="openRedoModal(inspectId);closeModal('inspectModal')">Request Redo</button>
       <button class="btn btn-green" id="inspect-approve-btn" style="display:none" onclick="approveFromInspect()">Approve</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="vpEventDetailModal">
+  <div class="modal" style="max-width:860px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="vp-event-detail-title">Event Detail</div>
+      <button class="modal-close" onclick="closeModal('vpEventDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="vp-event-detail-body" style="overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="vp-event-detail-edit-btn" style="display:none">Edit</button>
+      <button class="btn btn-red" id="vp-event-detail-delete-btn" style="display:none">Delete</button>
+      <button class="btn btn-outline" onclick="closeModal('vpEventDetailModal')">Close</button>
     </div>
   </div>
 </div>
@@ -473,47 +595,78 @@ const VP_CONFIG = {
 </div>
 
 <div class="modal-overlay" id="vpTaskEditModal">
-  <div class="modal" style="max-width:900px">
-    <div class="modal-header">
-      <div class="modal-title">Edit Task</div>
-      <button class="modal-close" onclick="closeModal('vpTaskEditModal')">✕</button>
+  <div class="modal at-modal">
+    <div class="at-header">
+      <div>
+        <div class="at-htitle">Edit Task</div>
+        <div class="at-hsub" id="vp-edit-task-header-sub">Division · SSA Board Platform</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="task-id-badge" id="vp-edit-task-id-badge">TASK-000</span>
+        <button class="at-close" type="button" onclick="closeModal('vpTaskEditModal')">✕</button>
+      </div>
     </div>
-    <div class="modal-body">
+    <div class="at-body">
       <input type="hidden" id="vp-edit-task-id" />
-      <div class="form-row">
-        <div class="fg"><label>Task Title</label><input id="vp-edit-task-title" type="text" /></div>
-        <div class="fg"><label>Assigned Person</label><select id="vp-edit-task-assignee"></select></div>
+      <select id="vp-edit-task-status" style="display:none"><option value="current">Current</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select>
+      <select id="vp-edit-task-priority" style="display:none"><option value="urgent">Urgent</option><option value="high">High</option><option value="standard">Standard</option><option value="low">Low</option></select>
+      <div class="at-sec-label">Task Status</div>
+      <div class="status-grid" id="vp-edit-task-status-grid">
+        <div class="st-btn" data-s="current" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#b89a5c"></div><div class="st-label">Current</div></div>
+        <div class="st-btn" data-s="redo" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#d4914a"></div><div class="st-label">Redo</div></div>
+        <div class="st-btn" data-s="completed" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#4caf7d"></div><div class="st-label">Completed</div></div>
+        <div class="st-btn" data-s="overdue" onclick="vpSetEditStatus(this)"><div class="st-dot" style="background:#c0504d"></div><div class="st-label">Overdue</div></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Assigned Role</label><input id="vp-edit-task-role" type="text" /></div>
-        <div class="fg"><label>Assigned Division</label><input id="vp-edit-task-division" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Task Details</div>
+      <div class="at-cols">
+        <div class="fg"><label class="at-fl">Task Title</label><input class="at-fi" id="vp-edit-task-title" type="text" placeholder="Task title" /></div>
+        <div class="fg"><label class="at-fl">Linked Event</label><select class="at-fi" id="vp-edit-task-event"><option value="">Standalone</option></select></div>
       </div>
-      <div class="fg"><label>Description</label><textarea id="vp-edit-task-description"></textarea></div>
-      <div class="form-row">
-        <div class="fg"><label>Linked Event</label><select id="vp-edit-task-event"></select></div>
-        <div class="fg"><label>Priority</label><select id="vp-edit-task-priority"><option value="standard">Standard</option><option value="high">High</option><option value="urgent">Urgent</option><option value="critical">Critical</option></select></div>
+      <div class="fg" style="margin-bottom:6px"><label class="at-fl">Priority</label></div>
+      <div class="at-prio-row" id="vp-edit-task-prio-row">
+        <div class="at-prio-btn" data-p="urgent" onclick="vpSetEditPrio(this)">Urgent</div>
+        <div class="at-prio-btn" data-p="high" onclick="vpSetEditPrio(this)">High</div>
+        <div class="at-prio-btn" data-p="standard" onclick="vpSetEditPrio(this)">Standard</div>
+        <div class="at-prio-btn" data-p="low" onclick="vpSetEditPrio(this)">Low</div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Unlock Date / Time</label><input id="vp-edit-task-unlock" type="datetime-local" /></div>
-        <div class="fg"><label>Due Date</label><input id="vp-edit-task-due" type="datetime-local" /></div>
+      <div class="at-cols">
+        <div class="fg"><label class="at-fl">Due Date</label><input class="at-fi" id="vp-edit-task-due" type="datetime-local" /></div>
+        <div class="fg"><label class="at-fl">Lock until (optional)</label><input class="at-fi" id="vp-edit-task-unlock" type="datetime-local" /><div class="ce-disclaimer" style="margin-top:4px;font-size:10px">Leave empty to keep task unlocked.</div></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Status</label><select id="vp-edit-task-status"><option value="current">Current</option><option value="locked">Locked</option><option value="pending_review">Pending Review</option><option value="redo">Redo</option><option value="completed">Completed</option><option value="overdue">Overdue</option></select></div>
-        <div class="fg"><label>Meeting Date</label><input id="vp-edit-task-meeting-date" type="date" /></div>
       </div>
-      <div class="form-row">
-        <div class="fg"><label>Meeting Time</label><input id="vp-edit-task-meeting-time" type="time" /></div>
-        <div class="fg"><label>Meeting Location</label><input id="vp-edit-task-meeting-location" type="text" /></div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Assigned</div>
+      <div class="at-cols">
+        <div class="fg"><label class="at-fl">Assigned Person</label><select class="at-fi" id="vp-edit-task-assignee"></select></div>
+        <div class="fg"><label class="at-fl">Assigned Role</label><input class="at-fi" id="vp-edit-task-role" type="text" /></div>
       </div>
-      <div class="fg"><label>Dependencies</label><div style="font-size:11px;color:var(--silver)">Use this to update how the task appears in dependency graph sequencing.</div><div id="vp-edit-task-dependencies" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div></div>
-      <div class="fg"><label>Attachments</label><textarea id="vp-edit-task-attachments"></textarea></div>
-      <div class="fg"><label>Notes</label><textarea id="vp-edit-task-notes"></textarea></div>
-      <div class="fg"><label>Redo Rules</label><textarea id="vp-edit-task-redo-rules"></textarea></div>
-      <div class="fg"><label>Escalation Rules</label><textarea id="vp-edit-task-escalation-rules"></textarea></div>
+      <input id="vp-edit-task-division" type="hidden" />
+      </div>
+      <div class="at-divider at-divider-tight"></div>
+      <div class="at-sec-tight">
+      <div class="at-sec-label">Prerequisites</div>
+      <div style="font-size:11px;color:var(--silver);margin-bottom:10px;margin-top:-6px">Completion is blocked only when a selected prerequisite task is not completed. You can select tasks from any division.</div>
+      <div class="pre-list" id="vp-edit-task-dependencies"></div>
+      </div>
+      <div class="at-divider"></div>
+      <div class="at-sec-label">Description</div>
+      <div class="fg"><textarea class="at-fi at-fta" id="vp-edit-task-description" placeholder="Describe scope, deliverables, and what done looks like."></textarea></div>
+      <div class="fg vp-meeting-link-wrap">
+        <label class="at-fl">Meeting Link (optional)</label>
+        <input class="at-fi" id="vp-edit-task-meeting-link" type="url" placeholder="https://zoom.us/j/..." onblur="vpValidateMeetingLink(this)" />
+        <span class="meeting-link-err" id="vp-edit-task-meeting-link-err" style="display:none;font-size:11px;color:#c0504d;margin-top:4px"></span>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal('vpTaskEditModal')">Cancel</button>
-      <button class="btn btn-gold" onclick="saveVpTaskEdit()">Save Task</button>
+    <div class="at-footer">
+      <div class="at-footer-left" id="vp-edit-task-footer-hint" style="font-size:11px;color:var(--silver)">Assigned to · Status</div>
+      <div class="at-footer-right" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button type="button" class="btn-del" onclick="vpDeleteTaskFromEditModal()">Delete Task</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('vpTaskEditModal')">Cancel</button>
+        <button type="button" class="at-btn-assign" onclick="vpSaveTaskEdit()">Save Changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -534,992 +687,10 @@ const VP_CONFIG = {
   </div>
 </div>
 
-<script>
-// ── DATA ──────────────────────────────────────────────────────────────────
-const isInternal = VP_CONFIG.type === 'internal';
-const divLabel = isInternal ? 'Internal' : 'External';
 
-const MEMBERS = { internal: [], external: [] };
-
-const myMembers = isInternal ? MEMBERS.internal : MEMBERS.external;
-
-const ALL_TASKS = [];
-const MY_TASKS = [];
-
-const divTasks = ALL_TASKS.filter(t => t.div === VP_CONFIG.type);
-
-const NOTIFS = [];
-
-// ── INIT ──────────────────────────────────────────────────────────────────
-function init() {
-  // Apply config
-  document.getElementById('vp-greeting').textContent = `Hey ${VP_CONFIG.name.split(' ')[0]},`;
-  document.getElementById('vp-role').textContent = VP_CONFIG.role_title;
-  document.getElementById('vp-div').textContent = VP_CONFIG.division + ' · Division Admin';
-  document.getElementById('div-badge').textContent = (isInternal ? '▲' : '◯') + ' ' + VP_CONFIG.division;
-  document.getElementById('div-nav-label').textContent = 'My Division';
-  document.getElementById('bc-div').textContent = VP_CONFIG.division;
-  if (document.getElementById('div-tasks-bc')) document.getElementById('div-tasks-bc').innerHTML = `<span>${VP_CONFIG.division}</span> / Tasks`;
-  if (document.getElementById('members-bc')) document.getElementById('members-bc').innerHTML = `<span>${VP_CONFIG.division}</span> / Members`;
-
-  renderStats();
-  renderOverview();
-  renderMyTasks();
-  renderDivTasks();
-  renderFullApprovals();
-  renderFullOverdue();
-  renderMembers();
-  renderEvents();
-  renderDependency();
-  renderCalendar();
-  setInterval(() => {}, 30000);
-}
-
-// ── STATS ─────────────────────────────────────────────────────────────────
-function renderStats() {
-  const active = divTasks.filter(t => t.status === 'current' || t.status === 'pending').length;
-  const overdue = divTasks.filter(t => t.status === 'overdue').length;
-  const pending = divTasks.filter(t => t.status === 'pending').length;
-  const done = divTasks.filter(t => t.status === 'done').length;
-  document.getElementById('overview-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${active}</div><div class="stat-label">Active Tasks</div></div>
-    <div class="stat-card"><div class="stat-num red">${overdue}</div><div class="stat-label">Overdue</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--blue)">${pending}</div><div class="stat-label">Pending Review</div></div>
-    <div class="stat-card"><div class="stat-num green">${done}</div><div class="stat-label">Completed</div></div>`;
-}
-
-// ── OVERVIEW ──────────────────────────────────────────────────────────────
-function renderOverview() {
-  const pendingTasks = divTasks.filter(t => t.status === 'pending');
-  document.getElementById('overview-approvals').innerHTML = pendingTasks.length
-    ? pendingTasks.map(t => approvalHtml(t)).join('')
-    : '<div style="font-size:13px;color:var(--silver);padding:16px">No pending submissions.</div>';
-
-  const overdueTasks = divTasks.filter(t => t.status === 'overdue');
-  document.getElementById('overview-alerts').innerHTML = overdueTasks.map(t => `
-    <div class="overdue-alert">
-      <div class="alert-icon">⚠</div>
-      <div class="alert-body">
-        <div class="alert-title">${t.title}</div>
-        <div class="alert-sub">${t.assigned} · Due ${t.due}</div>
-        <div class="alert-actions">
-          <button class="btn btn-outline" style="font-size:9px;padding:4px 10px">Extend</button>
-          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal('${t.title}')">Redo</button>
-        </div>
-      </div>
-    </div>`).join('') || '<div style="font-size:13px;color:var(--silver);padding:8px">No overdue tasks.</div>';
-
-  document.getElementById('overview-events').innerHTML = '<div style="font-size:13px;color:var(--silver);padding:8px">Loading live events...</div>';
-
-  document.getElementById('member-snapshot').innerHTML = myMembers.map(m => {
-    const p = Math.min((m.tasks / m.max) * 100, 100);
-    const c = m.tasks >= m.max ? 'wl-over' : m.tasks >= m.max - 1 ? 'wl-warn' : 'wl-ok';
-    return `<div class="card-sm">
-      <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">${m.dept}</div>
-      <div style="font-size:15px;font-family:var(--font-display);color:var(--white)">${m.name.split(' ')[0]}</div>
-      <div style="font-size:10px;color:var(--silver);margin-bottom:8px">${m.tasks}/${m.max} tasks</div>
-      <div class="wl-bar"><div class="wl-fill ${c}" style="width:${p}%"></div></div>
-    </div>`;
-  }).join('');
-}
-
-function approvalHtml(t) {
-  return `<div class="approval-item">
-    <div class="approval-header">
-      <div><div class="approval-task">${t.title}</div><div class="approval-by">${t.assigned} · ${t.event}</div></div>
-      <div style="display:flex;gap:6px">
-        <button class="btn btn-green" style="font-size:9px;padding:4px 10px" onclick="approveTask(${t.id})">Approve</button>
-        <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal('${t.title}')">Redo</button>
-      </div>
-    </div>
-    ${t.summary ? `<div style="font-size:11px;color:var(--silver)">${t.summary}</div>` : ''}
-  </div>`;
-}
-
-// ── TASKS ─────────────────────────────────────────────────────────────────
-function taskHtml(t, canApprove=false) {
-  const sMap = {done:'sb-done',current:'sb-current',locked:'sb-locked',overdue:'sb-urgent',pending:'sb-pending',redo:'sb-redo',urgent:'sb-urgent'};
-  const stMap = {done:'done',current:'current',locked:'locked',overdue:'urgent',pending:'current',redo:'redo',urgent:'urgent'};
-  const lMap = {done:'Completed',current:'In Progress',locked:'Locked',overdue:'Overdue',pending:'Review',redo:'Redo',urgent:'Urgent'};
-  const meetingLine = t.meeting_date || t.meeting_location
-    ? `<span>Meeting ${t.meeting_date || ""} ${t.meeting_time || ""} ${t.meeting_location || ""}</span>`
-    : "<span>Meeting N/A</span>";
-  return `<div class="task-item" onclick="inspectTask(${t.id})">
-    <div class="task-stripe ${stMap[t.status]||'locked'}"></div>
-    <div>
-      <div class="task-title">${t.title}</div>
-      <div class="task-meta">
-        <span>${t.assigned}</span>
-        <span>${t.dept}</span>
-        <span>Priority ${t.priority || "Standard"}</span>
-        <span>Due ${t.due}</span>
-        <span>Event ${t.event || "N/A"}</span>
-        ${meetingLine}
-      </div>
-      ${t.description ? `<div style="font-size:11px;color:var(--silver);margin-top:6px">${t.description}</div>` : ""}
-    </div>
-    <div class="task-actions">
-      <span class="status-badge ${sMap[t.status]||'sb-locked'}">${lMap[t.status]||t.status}</span>
-      <button class="btn btn-outline" style="font-size:9px;padding:3px 8px" onclick="event.stopPropagation();inspectTask(${t.id})">Click to Review</button>
-      ${canApprove && t.status==='pending' ? `<button class="btn btn-green" style="font-size:9px;padding:3px 8px" onclick="event.stopPropagation();approveTask(${t.id})">✓</button>` : ''}
-    </div>
-  </div>`;
-}
-
-function renderMyTasks(filter='all') {
-  let tasks = MY_TASKS;
-  if (filter === "urgent") {
-    const soonMs = 1000 * 60 * 60 * 24 * 3;
-    tasks = MY_TASKS.filter((t) => {
-      const due = t.due_at ? new Date(t.due_at).getTime() : NaN;
-      const dueSoon = Number.isFinite(due) && due > Date.now() && due - Date.now() <= soonMs;
-      return String(t.priority || "").toLowerCase() === "critical" || dueSoon || t.status === "overdue";
-    });
-  } else if (filter !== 'all') {
-    tasks = MY_TASKS.filter(t => t.status===filter);
-  }
-  document.getElementById('my-task-list').innerHTML = tasks.map(t => taskHtml(t)).join('') || '<div style="color:var(--silver);font-size:13px;padding:16px">No tasks.</div>';
-}
-
-function renderDivTasks(filter='all') {
-  let tasks = divTasks;
-  if (filter !== 'all') tasks = divTasks.filter(t => t.status === filter);
-  document.getElementById('div-task-list').innerHTML = tasks.map(t => taskHtml(t, true)).join('');
-}
-
-function filterMyTasks(f, el) { renderMyTasks(f); }
-function filterDivTasks(f, el) { renderDivTasks(f); }
-
-function renderFullApprovals() {
-  const pending = divTasks.filter(t => t.status === 'pending');
-  document.getElementById('full-approvals').innerHTML = pending.map(t => approvalHtml(t)).join('') || '<div style="color:var(--silver);font-size:13px;padding:16px">No pending submissions.</div>';
-}
-
-function renderFullOverdue() {
-  const over = divTasks.filter(t => t.status === 'overdue');
-  document.getElementById('full-overdue').innerHTML = over.map(t => `
-    <div class="overdue-alert" style="margin-bottom:8px">
-      <div class="alert-icon">⚠</div>
-      <div class="alert-body">
-        <div class="alert-title">${t.title}</div>
-        <div class="alert-sub">${t.assigned} · ${t.dept} · Due ${t.due} · ${t.event}</div>
-        <div class="alert-actions">
-          <button class="btn btn-outline" style="font-size:9px;padding:4px 10px">Extend</button>
-          <button class="btn btn-outline" style="font-size:9px;padding:4px 10px">Reassign</button>
-          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="openRedoModal('${t.title}')">Redo</button>
-        </div>
-      </div>
-    </div>`).join('') || '<div style="color:var(--silver);font-size:13px;padding:16px">No overdue tasks.</div>';
-}
-
-// ── MEMBERS ───────────────────────────────────────────────────────────────
-function renderMembers() {
-  const mTasks = (name) => ALL_TASKS.filter(t => t.assigned === name);
-  document.getElementById('member-cards').innerHTML = myMembers.map(m => {
-    const mt = mTasks(m.name);
-    const active = mt.filter(t => t.status === 'current' || t.status === 'pending').length;
-    const done = mt.filter(t => t.status === 'done').length;
-    const p = Math.min((m.tasks/m.max)*100,100);
-    const c = m.tasks>=m.max?'wl-over':m.tasks>=m.max-1?'wl-warn':'wl-ok';
-    return `<div class="member-card">
-      <div class="member-role">${m.dept}</div>
-      <div class="member-name">${m.name}</div>
-      <div style="font-size:11px;color:var(--silver);margin-bottom:12px">${m.role}</div>
-      <div class="member-stats">
-        <div class="member-stat"><div class="member-stat-num">${active}</div><div class="member-stat-label">Active</div></div>
-        <div class="member-stat"><div class="member-stat-num">${done}</div><div class="member-stat-label">Done</div></div>
-        <div class="member-stat"><div class="member-stat-num">${m.rate}%</div><div class="member-stat-label">Rate</div></div>
-      </div>
-      <div class="wl-bar"><div class="wl-fill ${c}" style="width:${p}%"></div></div>
-      <div style="font-size:10px;color:var(--silver);margin-top:4px">${m.tasks}/${m.max} tasks</div>
-    </div>`;
-  }).join('');
-}
-
-// ── WORKLOAD ──────────────────────────────────────────────────────────────
-function renderWorkload() {
-  document.getElementById('workload-bars').innerHTML = myMembers.map(m => {
-    const p = Math.min((m.tasks/m.max)*100,100);
-    const c = m.tasks>=m.max?'wl-over':m.tasks>=m.max-1?'wl-warn':'wl-ok';
-    const warn = m.tasks>=m.max?'<span style="color:var(--red);font-size:10px;margin-left:8px">⚠ Overloaded</span>':m.tasks>=m.max-1?'<span style="color:var(--amber);font-size:10px;margin-left:8px">⚡ Near limit</span>':'';
-    return `<div style="background:var(--navy-light);padding:14px;border:1px solid rgba(255,255,255,.05);margin-bottom:6px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div><span style="font-size:13px;color:var(--white)">${m.name}</span>${warn}</div>
-        <span style="color:${m.tasks>=m.max?'var(--red)':m.tasks>=m.max-1?'var(--amber)':'var(--green)'}">${m.tasks}/${m.max}</span>
-      </div>
-      <div class="wl-bar"><div class="wl-fill ${c}" style="width:${p}%"></div></div>
-    </div>`;
-  }).join('');
-}
-
-// ── SMART ASSIGNMENT ──────────────────────────────────────────────────────
-function updateSuggestions() {
-  const role = document.getElementById("assign-role")?.value || "";
-  const root = document.getElementById("assign-suggestions");
-  if (!root) return;
-  if (!role) {
-    root.innerHTML =
-      '<div style="font-size:13px;color:var(--silver);text-align:center;padding:32px 0;opacity:.5">Select a role to see suggestions</div>';
-    return;
-  }
-  root.innerHTML =
-    '<div style="font-size:13px;color:var(--silver);padding:8px 0">Loading smart suggestions...</div>';
-}
-
-function selectAssignee(name) { showToast(`${name} selected`); }
-function assignTask() { showToast("Preparing assignment..."); }
-
-// ── EVENTS ────────────────────────────────────────────────────────────────
-function renderEvents() {
-  document.getElementById('events-list').innerHTML = '<div style="color:var(--silver);font-size:13px;padding:16px">Loading live events...</div>';
-}
-
-// ── DEPENDENCY ────────────────────────────────────────────────────────────
-function renderDependency() {
-  document.getElementById('dep-graph').innerHTML = '<div style="color:var(--silver);font-size:13px">Dependency graph loads from live tasks.</div>';
-}
-
-// ── CALENDAR ──────────────────────────────────────────────────────────────
-function renderCalendar() {
-  document.getElementById('cal-content').innerHTML = '<div style="color:var(--silver);font-size:13px;padding:8px 0">Calendar populates from live tasks and events.</div>';
-}
-
-// ── PERFORMANCE ──────────────────────────────────────────────────────────
-function renderPerformance() {
-  document.getElementById('perf-members').innerHTML = '<div style="color:var(--silver);font-size:13px">Live member performance appears after sync.</div>';
-  document.getElementById('perf-redo').innerHTML = '<div style="color:var(--silver);font-size:13px">Live redo history appears after sync.</div>';
-}
-
-// ── NOTIFICATIONS ─────────────────────────────────────────────────────────
-function renderNotifications() {
-  document.getElementById('notifList').innerHTML = NOTIFS.map(n => `
-    <div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer">
-      <div style="font-size:12px;color:var(--white);margin-bottom:2px">${n.title}</div>
-      <div style="font-size:11px;color:var(--silver)">${n.sub}</div>
-      <div style="font-size:10px;color:var(--gold);margin-top:2px">${n.time}</div>
-    </div>`).join('');
-}
-
-// ── MODALS ────────────────────────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function openRedoModal(taskName) {
-  if (taskName) document.getElementById('redo-task-name').textContent = taskName;
-  openModal('redoModal');
-}
-function submitRedo() { closeModal('redoModal'); showToast('Redo request sent to member'); }
-function approveTask(id) { showToast('Task approved'); updateBadge('appr-badge', -1); renderFullApprovals(); renderOverview(); }
-function approveFromInspect() { closeModal('inspectModal'); showToast('Task approved'); }
-
-let inspectId = null;
-function inspectTask(id) {
-  const t = [...ALL_TASKS,...MY_TASKS].find(x => x.id === id);
-  if (!t) return;
-  inspectId = id;
-  document.getElementById('inspect-title').textContent = t.title;
-  document.getElementById('inspect-body').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="info-block"><div class="info-label">Assigned</div><div class="info-val">${t.assigned} · ${t.owner_role || t.dept}</div></div>
-      <div class="info-block"><div class="info-label">Event</div><div class="info-val">${t.event || 'Standalone'}</div></div>
-      <div class="info-block"><div class="info-label">Due</div><div class="info-val">${t.due}</div></div>
-      <div class="info-block"><div class="info-label">Status</div><div class="info-val">${t.status}</div></div>
-      ${t.description ? `<div class="info-block"><div class="info-label">Description</div><div class="info-val">${t.description}</div></div>` : ''}
-      ${t.notes ? `<div class="info-block"><div class="info-label">Notes</div><div class="info-val">${t.notes}</div></div>` : ''}
-      ${t.summary ? `<div class="info-block"><div class="info-label">Completion Summary</div><div class="info-val">${t.summary}</div></div>` : ''}
-    </div>`;
-  const approveBtn = document.getElementById('inspect-approve-btn');
-  const redoBtn = document.getElementById('inspect-redo-btn');
-  approveBtn.style.display = t.status === 'pending' ? '' : 'none';
-  redoBtn.style.display = (t.status === 'pending' || t.status === 'current') ? '' : 'none';
-  openModal('inspectModal');
-}
-
-// ── NAV ───────────────────────────────────────────────────────────────────
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const el = document.getElementById('page-' + id);
-  if (el) el.classList.add('active');
-  const titles = {
-    'overview':'Division Hub','my-tasks':'My Tasks','approvals':'Review Queue',
-    'overdue':'Overdue Tasks','members':'Division Members','div-tasks':'Division Tasks',
-    'assign':'Smart Assignment','events':'Active Events',
-    'dependency':'Dependency Graph','calendar':'Calendar',
-    'escalate':'Escalate to President',
-  };
-  document.getElementById('page-title').textContent = titles[id] || id;
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
-}
-
-function updateBadge(id, delta) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const v = Math.max(0, parseInt(el.textContent) + delta);
-  el.textContent = v;
-  if (v === 0) el.style.display = 'none';
-}
-
-async function sendEscalation() { showToast('Submitting report...'); }
-
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--gold);color:var(--navy);padding:12px 24px;font-size:12px;font-weight:500;letter-spacing:.08em;z-index:9999;animation:fadeUp .3s';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-}
-
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
-init();
-</script>
-<script src="ops-common.js"></script>
-<script>
-// Live API integration layer for the existing VP UI.
-(async function wireVpLive() {
-  const token = getSessionToken();
-  if (!token) {
-    window.location.href = "ops-login.html";
-    return;
-  }
-
-  let dashboard = null;
-  let selectedAssigneeEmail = "";
-  let pendingVpConfirmAction = null;
-
-  function taskHtmlLive(t) {
-    const cls =
-      t.status === "completed"
-        ? "sb-done"
-        : t.status === "current"
-        ? "sb-current"
-        : t.status === "pending_review"
-        ? "sb-pending"
-        : t.status === "overdue"
-        ? "sb-urgent"
-        : t.status === "redo"
-        ? "sb-redo"
-        : "sb-locked";
-    const stripe =
-      t.status === "completed"
-        ? "done"
-        : t.status === "current"
-        ? "current"
-        : t.status === "overdue"
-        ? "urgent"
-        : t.status === "redo"
-        ? "redo"
-        : "locked";
-    const eventName = (dashboard?.events || []).find((e) => e.id === t.event_id)?.name || "N/A";
-    const meetingLine = t.meeting_date || t.meeting_location
-      ? `Meeting ${t.meeting_date || ""} ${t.meeting_time || ""} ${t.meeting_location || ""}`
-      : "Meeting N/A";
-    return `
-      <div class="task-item" onclick="inspectTask(${t.id})">
-        <div class="task-stripe ${stripe}"></div>
-        <div>
-          <div class="task-title">${t.title}</div>
-          <div class="task-meta">
-            <span>${t.owner_name}</span>
-            <span>${t.department}</span>
-            <span>Priority ${(t.priority || "standard").replace(/^./, (s) => s.toUpperCase())}</span>
-            <span>Due ${new Date(t.due_at).toLocaleDateString()}</span>
-            <span>Event ${eventName}</span>
-            <span>${meetingLine}</span>
-          </div>
-          ${t.description ? `<div style="font-size:11px;color:var(--silver);margin-top:6px">${t.description}</div>` : ""}
-        </div>
-        <div class="task-actions"><span class="status-badge ${cls}">${t.status.replaceAll("_", " ")}</span><button class="btn btn-outline" style="font-size:9px;padding:3px 8px" onclick="event.stopPropagation();inspectTask(${t.id})">Click to Review</button></div>
-      </div>
-    `;
-  }
-
-  function renderLiveStats(tasks) {
-    const active = tasks.filter((t) => ["current", "pending_review", "redo"].includes(t.status)).length;
-    const overdue = tasks.filter((t) => t.status === "overdue").length;
-    const pending = tasks.filter((t) => t.status === "pending_review").length;
-    const done = tasks.filter((t) => t.status === "completed").length;
-    const root = document.getElementById("overview-stats");
-    if (!root) return;
-    root.innerHTML = `
-      <div class="stat-card"><div class="stat-num">${active}</div><div class="stat-label">Active Tasks</div></div>
-      <div class="stat-card"><div class="stat-num red">${overdue}</div><div class="stat-label">Overdue</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:var(--blue)">${pending}</div><div class="stat-label">Pending Review</div></div>
-      <div class="stat-card"><div class="stat-num green">${done}</div><div class="stat-label">Completed</div></div>
-    `;
-  }
-
-  function openVpStyledConfirm(message, onConfirm) {
-    const msgEl = document.getElementById("vp-confirm-action-message");
-    const btn = document.getElementById("vp-confirm-action-btn");
-    if (msgEl) msgEl.textContent = message;
-    pendingVpConfirmAction = onConfirm;
-    if (btn) {
-      btn.onclick = async () => {
-        const fn = pendingVpConfirmAction;
-        pendingVpConfirmAction = null;
-        closeModal("vpConfirmActionModal");
-        if (typeof fn === "function") await fn();
-      };
-    }
-    openModal("vpConfirmActionModal");
-  }
-
-  function parseListInput(text) {
-    const raw = String(text || "").trim();
-    if (!raw) return [];
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed.map((v) => String(v).trim()).filter(Boolean);
-    } catch (_e) {}
-    return raw.split(/\n|,/).map((s) => s.trim()).filter(Boolean);
-  }
-
-  function populateReportSelectors() {
-    const eventRoot = document.getElementById("report-event");
-    const taskRoot = document.getElementById("report-task");
-    if (eventRoot) {
-      eventRoot.innerHTML = `<option value="">No linked event</option>${(dashboard?.events || [])
-        .map((e) => `<option value="${e.id}">${e.name}</option>`)
-        .join("")}`;
-    }
-    if (taskRoot) {
-      taskRoot.innerHTML = `<option value="">No linked task</option>${(dashboard?.tasks || [])
-        .map((t) => `<option value="${t.id}">${t.title}</option>`)
-        .join("")}`;
-    }
-  }
-
-  async function hydrate() {
-    const me = await apiGet("/api/me");
-    if (me.user.view_type !== "vp" && me.user.view_type !== "president") {
-      window.location.href = "board.html";
-      return;
-    }
-    if (me.user.view_type === "president") {
-      window.location.href = "president.html";
-      return;
-    }
-    const expectedDivision = me.user.vp_type === "external" ? "external" : "internal";
-    const currentDivision = new URLSearchParams(window.location.search).get("division") || "internal";
-    if (currentDivision !== expectedDivision) {
-      window.location.href = `vp.html?division=${expectedDivision}`;
-      return;
-    }
-    dashboard = await apiGet("/api/dashboard");
-    const pending = await apiGet("/api/submissions/pending").catch(() => ({ pending: [] }));
-    const notifications = await apiGet("/api/notifications").catch(() => ({ count: 0, items: [], stats: { pendingReview: 0, overdue: 0 } }));
-
-    document.getElementById("vp-greeting").textContent = `Hey ${me.user.full_name.split(" ")[0]},`;
-    document.getElementById("vp-role").textContent = me.user.role_title;
-    document.getElementById("vp-div").textContent = `${me.user.department} · Division Admin`;
-    populateReportSelectors();
-
-    renderLiveStats(dashboard.tasks);
-    if (typeof ALL_TASKS !== "undefined") {
-      ALL_TASKS.length = 0;
-      dashboard.tasks.forEach((t) =>
-        ALL_TASKS.push({
-          id: t.id,
-          title: t.title,
-          assigned: t.owner_name,
-          owner_role: t.owner_role,
-          dept: t.department,
-          event: (dashboard.events.find((e) => e.id === t.event_id) || {}).name || "",
-          due: new Date(t.due_at).toLocaleDateString(),
-          due_at: t.due_at,
-          priority: t.priority || "standard",
-          meeting_date: t.meeting_date || "",
-          meeting_time: t.meeting_time || "",
-          meeting_location: t.meeting_location || "",
-          status: t.status === "completed" ? "done" : t.status === "pending_review" ? "pending" : t.status,
-          summary: t.previous_summary || "",
-          description: t.description || "",
-          notes: t.notes || ""
-        })
-      );
-      MY_TASKS.length = 0;
-      ALL_TASKS.forEach((t) => MY_TASKS.push(t));
-    }
-    const tasksHtml = dashboard.tasks.map(taskHtmlLive).join("") || '<div style="color:var(--silver);font-size:13px;padding:16px">No tasks in your scope.</div>';
-    const myTaskList = document.getElementById("my-task-list");
-    const divTaskList = document.getElementById("div-task-list");
-    if (myTaskList) myTaskList.innerHTML = tasksHtml;
-    if (divTaskList) divTaskList.innerHTML = tasksHtml;
-
-    const pHtml = pending.pending
-      .map(
-        (s) => `
-      <div class="approval-item">
-        <div class="approval-header">
-          <div>
-            <div class="approval-task">${s.title}</div>
-            <div class="approval-by">${s.owner_name} · ${s.department}</div>
-          </div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-green" style="font-size:9px;padding:4px 10px" onclick="approveTaskLive(${s.task_id})">Approve</button>
-            <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="redoTaskLive(${s.task_id})">Redo</button>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--silver)">${s.summary}</div>
-      </div>
-    `
-      )
-      .join("");
-
-    const fullApprovals = document.getElementById("full-approvals");
-    const overviewApprovals = document.getElementById("overview-approvals");
-    if (fullApprovals) fullApprovals.innerHTML = pHtml || '<div style="color:var(--silver);font-size:13px;padding:16px">No pending submissions.</div>';
-    if (overviewApprovals) overviewApprovals.innerHTML = pHtml || '<div style="color:var(--silver);font-size:13px;padding:16px">No pending submissions.</div>';
-
-    const overdueTasks = dashboard.tasks.filter((t) => t.status === "overdue");
-    const overHtml = overdueTasks
-      .map(
-        (t) => `
-      <div class="overdue-alert">
-        <div class="alert-icon">⚠</div>
-        <div class="alert-body">
-          <div class="alert-title">${t.title}</div>
-          <div class="alert-sub">${t.owner_name} · Due ${new Date(t.due_at).toLocaleDateString()}</div>
-          <div class="alert-actions">
-            <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="extendTaskDeadlineLive(${t.id})">Extend Deadline</button>
-            <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="reassignOverdueTaskLive(${t.id})">Reassign</button>
-            <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="markTaskOverdueById(${t.id})">Mark Overdue</button>
-          </div>
-        </div>
-      </div>
-    `
-      )
-      .join("");
-    const fullOver = document.getElementById("full-overdue");
-    const overviewAlerts = document.getElementById("overview-alerts");
-    if (fullOver) fullOver.innerHTML = overHtml || '<div style="color:var(--silver);font-size:13px;padding:16px">No overdue tasks.</div>';
-    if (overviewAlerts) overviewAlerts.innerHTML = overHtml || '<div style="color:var(--silver);font-size:13px;padding:16px">No overdue tasks.</div>';
-
-    const apprBadge = document.getElementById("appr-badge");
-    if (apprBadge) apprBadge.textContent = String(notifications.stats?.pendingReview || 0);
-    const overBadge = document.getElementById("over-badge");
-    if (overBadge) overBadge.textContent = String(notifications.stats?.overdue || 0);
-    const assignEvent = document.getElementById("assign-event");
-    if (assignEvent) {
-      assignEvent.innerHTML = `<option value="">Standalone</option>${dashboard.events
-        .map((e) => `<option value="${e.id}">${e.name}</option>`)
-        .join("")}`;
-    }
-    const assignDeps = document.getElementById("assign-dependencies");
-    if (assignDeps) {
-      assignDeps.innerHTML = dashboard.tasks
-        .map((t) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px"><input type="checkbox" value="${t.id}" /> <span>${t.title}</span></label>`)
-        .join("");
-    }
-
-    const eventHtml = dashboard.events
-      .map(
-        (e) => `
-      <div class="event-card">
-        <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px">
-          <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="editEventLive(${e.id}, '${String(e.name || "").replaceAll("'", "\\'")}')">Edit</button>
-          <button class="btn btn-red" style="font-size:9px;padding:4px 10px" onclick="deleteEventLive(${e.id})">Delete</button>
-        </div>
-        <div class="event-name">${e.name}</div>
-        <div class="event-date">${new Date(e.event_date).toLocaleDateString()} · ${e.venue || e.location || e.scope || "TBD Location"}</div>
-        <div class="progress-wrap"><div class="progress-row"><span>Progress</span><span>${e.progress}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${e.progress}%"></div></div></div>
-      </div>
-    `
-      )
-      .join("");
-    const eventsList = document.getElementById("events-list");
-    const overviewEvents = document.getElementById("overview-events");
-    if (eventsList) eventsList.innerHTML = eventHtml;
-    if (overviewEvents) overviewEvents.innerHTML = eventHtml;
-
-    const memberBuckets = {};
-    dashboard.tasks.forEach((t) => {
-      const key = t.owner_email || t.owner_name || "unknown";
-      if (!memberBuckets[key]) {
-        memberBuckets[key] = {
-          name: t.owner_name || "Unassigned",
-          role: t.owner_role || "",
-          active: 0,
-          done: 0,
-          total: 0
-        };
-      }
-      memberBuckets[key].total += 1;
-      if (["current", "locked", "pending_review", "redo"].includes(t.status)) memberBuckets[key].active += 1;
-      if (t.status === "completed") memberBuckets[key].done += 1;
-    });
-    const members = Object.values(memberBuckets);
-    const snapshot = document.getElementById("member-snapshot");
-    if (snapshot) {
-      snapshot.innerHTML = members.length
-        ? members
-            .map((m) => {
-              const pct = Math.round((m.active / Math.max(1, m.total)) * 100);
-              const c = pct >= 90 ? "wl-over" : pct >= 70 ? "wl-warn" : "wl-ok";
-              return `<div class="card-sm">
-                <div style="font-size:15px;font-family:var(--font-display);color:var(--white)">${m.name}</div>
-                <div style="font-size:10px;color:var(--silver);margin-bottom:8px">${m.role || "Board Member"}</div>
-                <div style="font-size:10px;color:var(--silver);margin-bottom:6px">${m.active} active / ${m.total} total</div>
-                <div class="wl-bar"><div class="wl-fill ${c}" style="width:${pct}%"></div></div>
-              </div>`;
-            })
-            .join("")
-        : '<div style="color:var(--silver);font-size:13px">No division members in current task scope.</div>';
-    }
-
-    const memberCards = document.getElementById("member-cards");
-    if (memberCards) {
-      memberCards.innerHTML = snapshot ? snapshot.innerHTML : "";
-    }
-
-    const workloadBars = document.getElementById("workload-bars");
-    if (workloadBars) {
-      workloadBars.innerHTML = members
-        .map((m) => {
-          const pct = Math.round((m.active / Math.max(1, m.total)) * 100);
-          const c = pct >= 90 ? "wl-over" : pct >= 70 ? "wl-warn" : "wl-ok";
-          return `<div style="background:var(--navy-light);padding:14px;border:1px solid rgba(255,255,255,.05);margin-bottom:6px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div><span style="font-size:13px;color:var(--white)">${m.name}</span></div>
-              <span style="color:var(--silver)">${m.active}/${m.total}</span>
-            </div>
-            <div class="wl-bar"><div class="wl-fill ${c}" style="width:${pct}%"></div></div>
-          </div>`;
-        })
-        .join("");
-    }
-
-    const perfMembers = document.getElementById("perf-members");
-    if (perfMembers) {
-      perfMembers.innerHTML = members
-        .map((m) => {
-          const rate = Math.round((m.done / Math.max(1, m.total)) * 100);
-          return `<div class="perf-row">
-            <div><div style="font-size:12px;color:var(--white)">${m.name}</div><div style="font-size:10px;color:var(--silver)">${m.role || "Board Member"}</div></div>
-            <div style="text-align:right"><div style="font-size:13px;color:${rate>=85?'var(--green)':rate>=70?'var(--amber)':'var(--red)'}">${rate}%</div><div style="font-size:9px;color:var(--silver)">completion</div></div>
-          </div>`;
-        })
-        .join("") || '<div style="color:var(--silver);font-size:13px">No performance data.</div>';
-    }
-    const perfRedo = document.getElementById("perf-redo");
-    if (perfRedo) {
-      const redos = dashboard.tasks.filter((t) => t.status === "redo").slice(0, 8);
-      perfRedo.innerHTML = redos.length
-        ? redos.map((t) => `<div style="font-size:12px;color:var(--silver);padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">${t.title} · ${t.owner_name}</div>`).join("")
-        : '<div style="font-size:12px;color:var(--silver)">No redo requests in current scope.</div>';
-    }
-
-    renderOperationalCalendar(document.getElementById("cal-content"), dashboard.events, dashboard.tasks);
-    renderDependencyGraph(document.getElementById("dep-graph"), dashboard.tasks, dashboard.dependencies);
-  }
-
-  window.approveTaskLive = async function approveTaskLive(taskId) {
-    await apiPost(`/api/tasks/${taskId}/approve`, {});
-    showToast("Task approved.");
-    await hydrate();
-  };
-  window.redoTaskLive = async function redoTaskLive(taskId) {
-    const notes = prompt("Redo notes:");
-    if (!notes) return;
-    await apiPost(`/api/tasks/${taskId}/redo`, { notes });
-    showToast("Redo request sent.");
-    await hydrate();
-  };
-  window.updateSuggestions = async function updateSuggestionsLive() {
-    selectedAssigneeEmail = "";
-    const role = document.getElementById("assign-role")?.value || "";
-    const root = document.getElementById("assign-suggestions");
-    if (!root) return;
-    if (!role) {
-      root.innerHTML =
-        '<div style="font-size:13px;color:var(--silver);text-align:center;padding:32px 0;opacity:.5">Select a role to see suggestions</div>';
-      return;
-    }
-    const suggestions = await apiGet(`/api/assign/suggestions?role=${encodeURIComponent(role)}`);
-    if (!root) return;
-    root.innerHTML = (suggestions.suggestions || [])
-      .map(
-        (m, i) => `
-      <div class="assign-suggestion">
-        <div class="assign-rank">${i + 1}</div>
-        <div style="flex:1">
-          <div class="assign-name">${m.full_name}</div>
-          <div class="assign-reason">${m.role_title} · active ${m.activeCount}</div>
-          <div style="font-size:10px;color:var(--silver);margin-top:2px">${m.email}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <div class="assign-load">${m.score}</div>
-          <button class="btn btn-outline" style="font-size:9px;padding:4px 10px" onclick="selectAssignee('${m.email}')">Select</button>
-        </div>
-      </div>`
-      )
-      .join("") || '<div style="font-size:13px;color:var(--silver);padding:8px 0">No users found in DB for that role and scope.</div>';
-  };
-
-  window.selectAssignee = function selectAssigneeLive(email) {
-    selectedAssigneeEmail = String(email || "").trim().toLowerCase();
-    showToast(`Selected ${selectedAssigneeEmail}`);
-  };
-
-  window.assignTask = async function assignTaskLive() {
-    const title = document.getElementById("assign-task-title")?.value?.trim() || "";
-    const role = document.getElementById("assign-role")?.value?.trim() || "";
-    const dueDate = document.getElementById("assign-due")?.value || "";
-    const priority = document.getElementById("assign-priority")?.value || "standard";
-    const eventId = document.getElementById("assign-event")?.value || "";
-    const unlockAt = document.getElementById("assign-unlock")?.value || "";
-    const description =
-      document.getElementById("assign-description")?.value?.trim() || "Assigned by division admin.";
-    const dependency_task_ids = [...document.querySelectorAll("#assign-dependencies input:checked")].map((el) => Number(el.value));
-    if (!title || !role) {
-      showToast("Fill at least task title and role.");
-      return;
-    }
-    const finalDueDate =
-      dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const dueAt = new Date(`${finalDueDate}T23:59:00`);
-    try {
-      await apiPost("/api/tasks/assign", {
-        title,
-        role,
-        due_at: dueAt.toISOString(),
-        priority,
-        description,
-        assignee_email: selectedAssigneeEmail || undefined,
-        event_id: eventId || undefined,
-        unlock_at: unlockAt ? new Date(unlockAt).toISOString() : undefined,
-        dependency_task_ids
-      });
-      showToast("Task assigned.");
-      document.getElementById("assign-task-title").value = "";
-      document.getElementById("assign-description").value = "";
-      document.getElementById("assign-due").value = "";
-      if (document.getElementById("assign-event")) document.getElementById("assign-event").value = "";
-      if (document.getElementById("assign-unlock")) document.getElementById("assign-unlock").value = "";
-      document.querySelectorAll("#assign-dependencies input").forEach((el) => { el.checked = false; });
-      selectedAssigneeEmail = "";
-      await hydrate();
-      await window.updateSuggestions();
-    } catch (error) {
-      showToast(String(error?.message || "Unable to assign task."));
-    }
-  };
-
-  window.editTaskLive = async function editTaskLive() {
-    if (!inspectId) return;
-    const t = (dashboard?.tasks || []).find((x) => x.id === inspectId);
-    closeModal("inspectModal");
-    document.getElementById("vp-edit-task-id").value = String(t.id);
-    document.getElementById("vp-edit-task-title").value = t.title || "";
-    document.getElementById("vp-edit-task-role").value = t.owner_role || "";
-    document.getElementById("vp-edit-task-division").value = t.department || "";
-    document.getElementById("vp-edit-task-description").value = t.description || "";
-    document.getElementById("vp-edit-task-priority").value = t.priority || "standard";
-    document.getElementById("vp-edit-task-status").value = t.status || "current";
-    document.getElementById("vp-edit-task-unlock").value = t.unlock_at ? new Date(t.unlock_at).toISOString().slice(0,16) : "";
-    document.getElementById("vp-edit-task-due").value = t.due_at ? new Date(t.due_at).toISOString().slice(0,16) : "";
-    document.getElementById("vp-edit-task-meeting-date").value = t.meeting_date || "";
-    document.getElementById("vp-edit-task-meeting-time").value = t.meeting_time || "";
-    document.getElementById("vp-edit-task-meeting-location").value = t.meeting_location || "";
-    document.getElementById("vp-edit-task-notes").value = t.notes || "";
-    document.getElementById("vp-edit-task-attachments").value = t.attachments_json || "[]";
-    document.getElementById("vp-edit-task-redo-rules").value = t.redo_rules || "";
-    document.getElementById("vp-edit-task-escalation-rules").value = t.escalation_rules || "";
-    const eventRoot = document.getElementById("vp-edit-task-event");
-    eventRoot.innerHTML = `<option value="">Standalone</option>${(dashboard?.events || [])
-      .map((e) => `<option value="${e.id}">${e.name}</option>`)
-      .join("")}`;
-    eventRoot.value = t.event_id ? String(t.event_id) : "";
-    const assigneeRoot = document.getElementById("vp-edit-task-assignee");
-    assigneeRoot.innerHTML = (dashboard?.users || [])
-      .map((u) => `<option value="${u.email}">${u.full_name} · ${u.role_title}</option>`)
-      .join("");
-    assigneeRoot.value = t.owner_email || "";
-    const depIds = new Set((dashboard?.dependencies || []).filter((d) => d.task_id === t.id).map((d) => d.depends_on_task_id));
-    document.getElementById("vp-edit-task-dependencies").innerHTML = (dashboard?.tasks || [])
-      .filter((x) => x.id !== t.id)
-      .map((x) => `<label style="font-size:11px;color:var(--silver);display:flex;gap:8px"><input type="checkbox" value="${x.id}" ${depIds.has(x.id) ? "checked" : ""}/> <span>${x.title}</span></label>`)
-      .join("");
-    openModal("vpTaskEditModal");
-  };
-
-  window.deleteTaskLive = async function deleteTaskLive() {
-    if (!inspectId) return;
-    openVpStyledConfirm("Delete this task permanently from workflow?", async () => {
-      const token = getSessionToken();
-      const res = await fetch(`/api/tasks/${inspectId}`, {
-        method: "DELETE",
-        headers: { "x-session-token": token }
-      });
-      if (!res.ok) {
-        showToast("Unable to delete task.");
-        return;
-      }
-      closeModal("inspectModal");
-      showToast("Task deleted.");
-      await hydrate();
-    });
-  };
-
-  window.deleteEventLive = async function deleteEventLive(eventId) {
-    openVpStyledConfirm("Delete this event and related tasks?", async () => {
-      const token = getSessionToken();
-      const res = await fetch(`/api/events/${eventId}`, {
-        method: "DELETE",
-        headers: { "x-session-token": token }
-      });
-      if (!res.ok) {
-        showToast("Unable to delete event.");
-        return;
-      }
-      showToast("Event deleted.");
-      await hydrate();
-    });
-  };
-
-  window.editEventLive = async function editEventLive(eventId, currentName) {
-    const event = (dashboard?.events || []).find((e) => e.id === eventId);
-    if (!event) return;
-    document.getElementById("vp-edit-event-id").value = String(event.id);
-    document.getElementById("vp-edit-event-name").value = event.name || currentName || "";
-    document.getElementById("vp-edit-event-budget").value = event.budget_limit || "";
-    document.getElementById("vp-edit-event-type").value = event.event_type || "";
-    document.getElementById("vp-edit-event-date").value = event.event_date ? String(event.event_date).slice(0, 10) : "";
-    document.getElementById("vp-edit-event-scope").value = event.scope || "";
-    document.getElementById("vp-edit-event-venue").value = event.venue || "";
-    document.getElementById("vp-edit-event-location").value = event.location || "";
-    document.getElementById("vp-edit-event-notes").value = event.planning_notes || "";
-    document.getElementById("vp-edit-event-timeline").value = event.timeline_assumptions || "";
-    document.getElementById("vp-edit-event-workflow").value = Array.isArray(event.workflow_json)
-      ? event.workflow_json.join("\n")
-      : event.workflow_json || "";
-    openModal("vpEventEditModal");
-  };
-
-  window.saveVpTaskEdit = async function saveVpTaskEdit() {
-    const taskId = Number(document.getElementById("vp-edit-task-id").value || 0);
-    if (!taskId) return;
-    const dependency_task_ids = [...document.querySelectorAll("#vp-edit-task-dependencies input:checked")].map((el) => Number(el.value));
-    try {
-      await apiPatch(`/api/tasks/${taskId}`, {
-        title: document.getElementById("vp-edit-task-title").value,
-        description: document.getElementById("vp-edit-task-description").value,
-        assignee_email: document.getElementById("vp-edit-task-assignee").value,
-        role: document.getElementById("vp-edit-task-role").value,
-        department: document.getElementById("vp-edit-task-division").value,
-        event_id: document.getElementById("vp-edit-task-event").value || null,
-        due_at: document.getElementById("vp-edit-task-due").value ? new Date(document.getElementById("vp-edit-task-due").value).toISOString() : null,
-        unlock_at: document.getElementById("vp-edit-task-unlock").value ? new Date(document.getElementById("vp-edit-task-unlock").value).toISOString() : null,
-        priority: document.getElementById("vp-edit-task-priority").value,
-        status: document.getElementById("vp-edit-task-status").value,
-        meeting_date: document.getElementById("vp-edit-task-meeting-date").value,
-        meeting_time: document.getElementById("vp-edit-task-meeting-time").value,
-        meeting_location: document.getElementById("vp-edit-task-meeting-location").value,
-        notes: document.getElementById("vp-edit-task-notes").value,
-        attachments: JSON.parse(document.getElementById("vp-edit-task-attachments").value || "[]"),
-        redo_rules: document.getElementById("vp-edit-task-redo-rules").value,
-        escalation_rules: document.getElementById("vp-edit-task-escalation-rules").value,
-        dependency_task_ids
-      });
-      closeModal("vpTaskEditModal");
-      showToast("Task updated.");
-      await hydrate();
-    } catch (_e) {
-      showToast("Unable to save task edit.");
-    }
-  };
-
-  window.saveVpEventEdit = async function saveVpEventEdit() {
-    const eventId = Number(document.getElementById("vp-edit-event-id").value || 0);
-    if (!eventId) return;
-    try {
-      const res = await apiPatch(`/api/events/${eventId}`, {
-        name: document.getElementById("vp-edit-event-name").value,
-        budget_limit: document.getElementById("vp-edit-event-budget").value,
-        event_type: document.getElementById("vp-edit-event-type").value,
-        event_date: document.getElementById("vp-edit-event-date").value,
-        scope: document.getElementById("vp-edit-event-scope").value,
-        venue: document.getElementById("vp-edit-event-venue").value,
-        location: document.getElementById("vp-edit-event-location").value,
-        planning_notes: document.getElementById("vp-edit-event-notes").value,
-        timeline_assumptions: document.getElementById("vp-edit-event-timeline").value,
-        workflow: parseListInput(document.getElementById("vp-edit-event-workflow").value)
-      });
-      closeModal("vpEventEditModal");
-      showToast(res.warnings?.length ? res.warnings[0] : "Event updated.");
-      await hydrate();
-    } catch (_e) {
-      showToast("Unable to save event edit.");
-    }
-  };
-
-  window.sendEscalation = async function sendEscalationLive() {
-    try {
-      await apiPost("/api/reports", {
-        reason: document.getElementById("report-reason").value,
-        event_id: document.getElementById("report-event").value || null,
-        task_id: document.getElementById("report-task").value || null,
-        notes: document.getElementById("report-notes").value,
-        recommended_action: document.getElementById("report-action").value
-      });
-      document.getElementById("report-notes").value = "";
-      document.getElementById("report-action").value = "";
-      showToast("Report sent to Executive President.");
-    } catch (_e) {
-      showToast("Unable to send report.");
-    }
-  };
-
-  window.markTaskOverdueLive = async function markTaskOverdueLive() {
-    if (!inspectId) return;
-    await apiPatch(`/api/tasks/${inspectId}`, { status: "overdue" });
-    closeModal("inspectModal");
-    showToast("Task marked overdue.");
-    await hydrate();
-  };
-
-  window.markTaskOverdueById = async function markTaskOverdueById(taskId) {
-    await apiPatch(`/api/tasks/${taskId}`, { status: "overdue" });
-    showToast("Task marked overdue.");
-    await hydrate();
-  };
-
-  window.extendTaskDeadlineLive = async function extendTaskDeadlineLive(taskId) {
-    const nextDate = prompt("New due date (YYYY-MM-DD):");
-    if (!nextDate) return;
-    const dueAt = new Date(`${nextDate}T23:59:00`);
-    if (!Number.isFinite(dueAt.getTime())) {
-      showToast("Invalid date.");
-      return;
-    }
-    await apiPatch(`/api/tasks/${taskId}`, { due_at: dueAt.toISOString(), status: "current" });
-    showToast("Deadline updated.");
-    await hydrate();
-  };
-
-  window.reassignOverdueTaskLive = async function reassignOverdueTaskLive(taskId) {
-    const task = (dashboard?.tasks || []).find((t) => t.id === taskId);
-    if (!task) return;
-    const suggestions = await apiGet(`/api/assign/suggestions?role=${encodeURIComponent(task.owner_role || "")}`).catch(() => ({ suggestions: [] }));
-    if (!suggestions.suggestions?.length) {
-      showToast("No reassignment options found.");
-      return;
-    }
-    const selected = suggestions.suggestions[0];
-    await apiPatch(`/api/tasks/${taskId}`, {
-      assignee_email: selected.email,
-      role: selected.role_title,
-      department: selected.department,
-      status: "current"
-    });
-    showToast(`Reassigned to ${selected.full_name}.`);
-    await hydrate();
-  };
-
-  await hydrate();
-  setInterval(async () => {
-    await hydrate();
-  }, 30000);
-})();
-</script>
+<script src="js/vp-core.js"></script>
+<script src="js/ops-common.js"></script>
+<script src="js/vp-live.js"></script>
+<script src="js/newsletter-admin.js"></script>
 </body>
 </html>

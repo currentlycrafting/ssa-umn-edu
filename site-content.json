@@ -1,0 +1,68 @@
+{
+  "galleryImages": [],
+  "boardMembers": [],
+  "boardOrder": [
+    "board-images/Dahir Munye - President.png",
+    "board-images/Aisha Dakol - Vice President.png",
+    "board-images/Ruweyda Warsame - Co-Committee Chair.png",
+    "board-images/Salman Said - Co-Committee Chair.png",
+    "board-images/Ifrah Ali - Treasurer.png",
+    "board-images/Ikhlas Abdi - Outreach Coordinator.png",
+    "board-images/Ashaar Ali - Co-Public Relations.png",
+    "board-images/Maida Ahmed - Co-Public Relations.png",
+    "board-images/Salma Tawane - Secretary.png",
+    "board-images/Ahmed Abdul - Co-Event Coordinator.png",
+    "board-images/Layla Salad - Co-Event Coordinator.png"
+  ],
+  "galleryOrder": [
+    "gallery/100_0556.JPG",
+    "gallery/100_0913.JPEG",
+    "gallery/100_0628.JPG",
+    "gallery/100_0591.JPG",
+    "gallery/100_1734.JPG",
+    "gallery/100_1012.JPG",
+    "gallery/100_1179.JPG",
+    "gallery/100_0626.JPG",
+    "gallery/100_1759.JPG",
+    "gallery/100_1763.JPG",
+    "gallery/IMG_3253.JPG",
+    "gallery/IMG_3565.jpeg",
+    "gallery/IMG_6147.JPG",
+    "gallery/guys02.JPG",
+    "gallery/khalid-hanan.JPG",
+    "gallery/team01.JPG"
+  ],
+  "newsletters": [
+    {
+      "id": "february-2026",
+      "title": "February Newsletter",
+      "date": "February 2026",
+      "description": "On February 20th, we held Melting Points: ICE Out in collaboration with Mi Gente and the Black Student Union. We discussed how the presence of ICE on campus is impacting our respective communities and the student body as a whole. Students came together to vent, discuss, and find community. Especially in these turbulent times\n\nOn February 23rd, we hosted our annual Ramadan dinner for the Somali student boards in collaboration with SIBAT, SAPHS, SIS, SSC, and SPDA. We were honored to have Sheikh Hamad as our guest speaker. He gave a meaningful lecture on Islam, youth, and how to balance faith and school life. It was a beautiful evening of community, reflection, and connection during Ramadan.\n\nOn February 24th, we were honored to speak at the BSU annual Unity Dinner. Their event was dedicated to celebrating community and being together.\n\nOn February 26th, we hosted our Muslim Ramadan Dinner in collaboration with MPMA, AMC, MAS, and MBA. The evening was a meaningful opportunity to reflect and come together as a community during this blessed month. We were especially honored to welcome Ahmed Billo as our guest speaker.",
+      "image": "newsletter-images/newsletter.png",
+      "link": "https://www.instagram.com/p/DVmjjfGDhtk/",
+      "secondaryLink": "https://www.instagram.com/p/DVsD4UoDmTX/"
+    }
+  ],
+  "events": [
+    {
+      "id": "ev-1",
+      "day": "03",
+      "month": "Apr",
+      "title": "Somali Night 2026",
+      "description": "Northrop Auditorium - Annual Cultural Event",
+      "tag": "Flagship",
+      "buttonText": "",
+      "link": ""
+    },
+    {
+      "id": "ev-2",
+      "day": "20",
+      "month": "Apr",
+      "title": "Senior Night Gala",
+      "description": "TBA",
+      "tag": "Members",
+      "buttonText": "RSVP Form",
+      "link": "https://docs.google.com/forms/d/e/1FAIpQLScq-2fmzfquFErTorYbyMY7rWBGcTAWJrTDQiOu_WGB3a6Jgw/viewform"
+    }
+  ]
+}

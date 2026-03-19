@@ -1,0 +1,447 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SSA Newsletter — Somali Night Season Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy:       #0b0f1c;
+    --navy-mid:   #141929;
+    --navy-light: #1e2540;
+    --white:      #f8f6f2;
+    --off-white:  #ede9e1;
+    --silver:     #9a9fad;
+    --gold:       #b89a5c;
+    --gold-light: #d4b87a;
+    --stone:      #c4bdb0;
+    --charcoal:   #2a2e3d;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-text-size-adjust: none;
+    background-color: var(--navy); /* Ensure body background matches newsletter wrapper */
+  }
+
+  .newsletter {
+    width: 900px;
+    margin: 0 auto;
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* Masthead */
+  .masthead {
+    background: var(--navy-mid);
+    border-bottom: 1px solid rgba(184,154,92,.18);
+    padding: 36px 60px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .masthead-logo {
+    display: flex;
+    align-items: center;
+  }
+  .masthead-logo img {
+    width: 38px;
+    height: 38px;
+    margin-right: 12px;
+  }
+  .masthead-logo-text {
+    display: flex;
+    flex-direction: column;
+  }
+  .masthead-logo-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .masthead-logo-sub {
+    font-size: 8px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--silver);
+    margin-top: 2px;
+  }
+  .masthead-right {
+    text-align: right;
+  }
+  .masthead-issue {
+    font-size: 9px;
+    color: var(--gold);
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .masthead-date {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--stone);
+  }
+
+  /* Hero Band */
+  .hero-band {
+    background: var(--navy-light);
+    border-top: 1px solid rgba(184,154,92,.1);
+    border-bottom: 3px solid var(--gold);
+    padding: 48px 60px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::before,
+  .hero-eyebrow::after {
+    content: '';
+    display: inline-block;
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    vertical-align: middle;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 64px;
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--stone);
+  }
+  .hero-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--silver);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero-crescent {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    color: var(--gold);
+    opacity: .7;
+    letter-spacing: .3em;
+  }
+
+  /* Story Block (General) */
+  .story {
+    padding: 56px 60px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .story:nth-child(even) {
+    background: var(--navy-mid);
+  }
+  .story-inner {
+    display: grid;
+    align-items: start;
+  }
+  .story-inner.img-left {
+    grid-template-columns: 320px 1fr;
+    gap: 36px;
+  }
+  .story-inner.img-right {
+    grid-template-columns: 1fr 320px;
+    gap: 36px;
+  }
+  .story-inner.img-right .story-content {
+    order: 1;
+  }
+  .story-inner.img-right .story-image {
+    order: 2;
+  }
+  .story-image {
+    position: relative;
+  }
+  .story-image img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    object-position: center 20%;
+    filter: brightness(.92) contrast(1.05);
+    display: block;
+  }
+  .story-image-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    padding: 18px 15px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    color: var(--stone);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    box-sizing: border-box;
+  }
+  .section-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 8px;
+    color: var(--gold);
+    letter-spacing: .38em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 1px;
+    background: var(--gold);
+    vertical-align: middle;
+  }
+  .story-date-tag {
+    background: var(--gold);
+    color: var(--navy);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    display: inline-block;
+    margin-bottom: 18px;
+  }
+  .story-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--white);
+    line-height: 1.2;
+    margin-bottom: 18px;
+  }
+  .story-body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--silver);
+    line-height: 1.85;
+    margin-bottom: 24px;
+  }
+  .story-highlight {
+    border-left: 2px solid var(--gold);
+    background: rgba(184,154,92,.06);
+    padding: 18px 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--stone);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+  .story-highlight strong {
+    color: var(--gold-light);
+    font-weight: 500;
+  }
+  .collab-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .collab-tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid rgba(184,154,92,.25);
+    color: var(--stone);
+    white-space: nowrap;
+  }
+  .gold-rule {
+    width: 60px;
+    height: 1px;
+    background: var(--gold);
+    margin-top: 24px;
+  }
+
+  /* Wide Story (Story 3) */
+  .story-wide {
+    padding: 56px 60px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    background: var(--navy);
+  }
+  .story-wide-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .story-wide-images img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    filter: brightness(.9) contrast(1.05);
+    display: block;
+  }
+  .story-wide-content {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  /* Footer */
+  .newsletter-footer {
+    background: var(--navy-mid);
+    border-top: 1px solid rgba(184,154,92,.15);
+    padding: 28px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-left {
+    display: flex;
+    align-items: center;
+  }
+  .footer-left img {
+    height: 22px;
+    opacity: .65;
+    margin-right: 10px;
+  }
+  .footer-left span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--silver);
+  }
+  .footer-center {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: rgba(154,159,173,.45);
+  }
+  .footer-right {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+</style>
+</head>
+<body>
+<div class="newsletter">
+
+  <div class="masthead">
+    <div class="masthead-logo">
+      <img src="logo-v3.png" alt="SSA"/>
+      <div class="masthead-logo-text">
+        <span class="masthead-logo-title">SSA</span>
+        <span class="masthead-logo-sub">University of Minnesota</span>
+      </div>
+    </div>
+    <div class="masthead-right">
+      <div class="masthead-issue">Somali Night Season Edition · 2026</div>
+      <div class="masthead-date">March 2026</div>
+    </div>
+  </div>
+
+  <div class="hero-band">
+    <div class="hero-eyebrow">Community Newsletter</div>
+    <div class="hero-title">Somali Night<br/><em>Executives</em></div>
+    <div class="hero-subtitle">New Executive Roles · Senior Gala Honors · Somali Night on April 3</div>
+    <div class="hero-crescent">☽ ✦ ☽</div>
+  </div>
+
+  <!-- STORY 1 — img-left -->
+  <div class="story">
+    <div class="story-inner img-left">
+      <div class="story-image">
+        <img src="100-1756-jpg-1773874652860.jpg" alt="New Executive Board Roles Announced"/>
+        <div class="story-image-caption">Newly announced SSA executive leadership for the upcoming year.</div>
+      </div>
+      <div class="story-content">
+        <div class="section-label">Executive Board Announcements</div>
+        <div class="story-date-tag">Recently Announced</div>
+        <div class="story-heading">New Executive Board Roles Announced</div>
+        <div class="story-body">SSA is excited to announce its new executive board roles as the organization prepares for an important new chapter. These newly announced positions reflect SSA’s continued commitment to strong leadership, thoughtful planning, and building a more impactful presence on campus. The new executive team will help guide programming, support members, and strengthen the organization’s long-term vision.</div>
+        <div class="story-highlight">SSA officially announced its <strong>new executive board roles</strong> for the upcoming term.</div>
+        <div class="collab-row">
+          <span class="collab-tag">SSA</span>
+          <span class="collab-tag">Executive Board</span>
+          <span class="collab-tag">UMN Students</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORY 2 — img-right -->
+  <div class="story">
+    <div class="story-inner img-right">
+      <div class="story-content">
+        <div class="section-label">Senior Gala</div>
+        <div class="story-date-tag">Spring 2026</div>
+        <div class="story-heading">Celebrating Our Graduating Seniors</div>
+        <div class="story-body">SSA is preparing for its Senior Gala, a special event honoring graduating seniors and their achievements. The evening will recognize the leadership, dedication, and impact seniors have made throughout their time in the organization and across campus. It is both a celebration and a reflection on the lasting contributions of this graduating class.</div>
+        <div class="story-highlight">Senior Gala will honor graduating seniors and celebrate their <strong>contributions to SSA</strong>.</div>
+        <div class="collab-row">
+          <span class="collab-tag">SSA</span>
+          <span class="collab-tag">Graduating Seniors</span>
+          <span class="collab-tag">UMN Community</span>
+        </div>
+      </div>
+      <div class="story-image">
+        <img src="img-5578-1773874652863.jpg" alt="Celebrating Our Graduating Seniors"/>
+        <div class="story-image-caption">Celebrating the graduating seniors who helped shape SSA.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORY 3 — wide, two images -->
+  <div class="story-wide">
+    <div class="story-wide-images">
+      <img src="dsc07352-jpg-1773874652863.jpg" alt="Anticipation Builds for Somali Night"/>
+      <img src="img-2978-jpg-1773874652866.jpg" alt="Anticipation Builds for Somali Night"/>
+    </div>
+    <div class="story-wide-content">
+      <div class="section-label">Somali Night 2026</div>
+      <div class="story-date-tag">April 3rd</div>
+      <div class="story-heading">Anticipation Builds for Somali Night</div>
+      <div class="story-body">SSA is looking ahead to Somali Night on April 3rd, one of the organization’s most anticipated events of the year. It brings together students, families, alumni, and community members for an evening celebrating Somali culture, talent, and pride. The event highlights performances, community spirit, and the vibrancy of Somali identity on campus.</div>
+      <div class="story-highlight">Somali Night will take place on April 3rd and celebrate <strong>Somali culture, talent, and community pride</strong>.</div>
+      <div class="collab-row">
+        <span class="collab-tag">SSA</span>
+        <span class="collab-tag">Somali Community</span>
+        <span class="collab-tag">UMN Students</span>
+        <span class="collab-tag">Families</span>
+        <span class="collab-tag">Alumni</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="newsletter-footer">
+    <div class="footer-left">
+      <img src="logo-v3.png" alt="SSA"/>
+      <span>Somali Student Association — UMN</span>
+    </div>
+    <div class="footer-center">© 2026 SSA Newsletter · University of Minnesota, Twin Cities</div>
+    <div class="footer-right">Together in Pride</div>
+  </div>
+
+</div>
+</body>
+</html>
