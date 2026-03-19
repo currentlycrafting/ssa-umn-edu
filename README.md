@@ -201,9 +201,9 @@ Dashboard pages poll `/api/dashboard` every 30 seconds to stay current.
 
 | Level | Users | Access |
 |---|---|---|
-| **President** | 2 Executive Presidents | Full access — all tasks, events, reports, site content, GitHub push, seed user management |
+| **President** | 1 Executive Presidents | Full access — all tasks, events, reports, site content, GitHub push, seed user management |
 | **VP** | 2 Vice Presidents (Internal + External) | Division-scoped — tasks in their division, approve/redo, event management, gallery, newsletter |
-| **Board** | ~10 Directors / Executive Producers | Personal — assigned tasks, submit completions, view events, gallery management, VP escalation |
+| **Board** | ~12 Directors / Executive Producers | Personal — assigned tasks, submit completions, view events, gallery management, VP escalation |
 
 VPs are further scoped by **division type** (`internal` or `external`), which determines which tasks and members they can see.
 
