@@ -1,13 +1,13 @@
 const path = require("path");
 const crypto = require("crypto");
 const fs = require("fs");
-const { execSync } = require("child_process");
 const express = require("express");
 const dotenv = require("dotenv");
 const { OAuth2Client } = require("google-auth-library");
 const multer = require("multer");
-const { initDb, db, seedUsers } = require("./sqlite");
-const { setupNewsletterPlatform, canManageNewsletter } = require("./newsletter-platform");
+const { initDb, db, seedUsers } = require("./lib/sqlite");
+const { setupNewsletterPlatform, canManageNewsletter } = require("./lib/newsletter-platform");
+const { parseGithubRepoConfig, pushFileToGithub, pushBufferToGithub } = require("./lib/github-push");
 
 dotenv.config();
 initDb();
@@ -34,11 +34,11 @@ const eventsPath = fs.existsSync(path.join(__dirname, "data", "events.json"))
   ? path.join(__dirname, "data", "events.json")
   : path.join(dataDir, "events.json");
 const legacyImagesDir = path.join(__dirname, "images");
-const galleryDir = path.join(__dirname, "gallery");
-const boardImagesDir = path.join(__dirname, "board-images");
-const logoImagesDir = path.join(__dirname, "logo-images");
-const newsletterImagesDir = path.join(__dirname, "newsletter-images");
-const aboutSsaImagesDir = path.join(__dirname, "about-ssa-images");
+const galleryDir = path.join(__dirname, "assets", "gallery");
+const boardImagesDir = path.join(__dirname, "assets", "board-members");
+const logoImagesDir = path.join(__dirname, "assets", "logos");
+const newsletterImagesDir = path.join(__dirname, "assets", "newsletter-images");
+const aboutSsaImagesDir = path.join(__dirname, "assets", "about");
 
 // Parse "Name - Role.png" filenames in board-images to build default board
 function defaultBoardFromFolder() {
@@ -67,20 +67,6 @@ function defaultBoardFromFolder() {
     return [];
   }
 }
-
-const CONFIRMED_BOARD = [
-  { id: "bm-1", name: "Aisha Dakol", role: "Vice President", major: "", image: "board-images/Aisha Dakol - Vice President.png" },
-  { id: "bm-2", name: "Dahir Munye", role: "President", major: "", image: "board-images/Dahir Munye - President.png" },
-  { id: "bm-3", name: "Salman Said", role: "Co-Committee Chair", major: "", image: "board-images/Salman Said - Co-Committee Chair.png" },
-  { id: "bm-4", name: "Ruweyda Warsame", role: "Co-Committee Chair", major: "", image: "board-images/Ruweyda Warsame - Co-Committee Chair.png" },
-  { id: "bm-5", name: "Ikhlas Abdi", role: "Outreach Coordinator", major: "", image: "board-images/Ikhlas Abdi - Outreach Coordinator.png" },
-  { id: "bm-6", name: "Ifrah Ali", role: "Treasurer", major: "", image: "board-images/Ifrah Ali - Treasurer.png" },
-  { id: "bm-7", name: "Layla Salad", role: "Co-Event Coordinator", major: "", image: "board-images/Layla Salad - Co-Event Coordinator.png" },
-  { id: "bm-8", name: "Ahlam Abdul", role: "Co-Event Coordinator", major: "", image: "board-images/Ahlam Abdul - Co-Event Coordinator.png" },
-  { id: "bm-9", name: "Salma Tawane", role: "Secretary", major: "", image: "board-images/Salma Tawane - Secretary.png" },
-  { id: "bm-10", name: "Maida Ahmed", role: "Co-Public Relations", major: "", image: "board-images/Maida Ahmed - Co-Public Relations.png" },
-  { id: "bm-11", name: "Ashaar Ali", role: "Co-Public Relations", major: "", image: "board-images/Ashaar Ali - Co-Public Relations.png" }
-];
 
 // Default homepage events for "Upcoming Events" calendar
 const DEFAULT_EVENTS = [
@@ -120,14 +106,6 @@ function copyIfMissing(src, dest) {
 function isImageFilename(name) {
   return /\.(png|jpg|jpeg|webp|gif)$/i.test(name);
 }
-function boardFilenameFromName(name) {
-  return String(name || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") + ".png";
-}
-
 function migrateLegacyImageAssets() {
   ensureDir(galleryDir);
   ensureDir(boardImagesDir);
@@ -160,14 +138,6 @@ function migrateLegacyImageAssets() {
   }
 }
 
-function defaultBoardMembers() {
-  const fromFolder = defaultBoardFromFolder();
-  if (fromFolder.length > 0) return fromFolder.map((m, idx) => ({ ...m, id: m.id || `bm-${idx + 1}` }));
-  return CONFIRMED_BOARD.map((m) => ({
-    ...m,
-    image: m.image || `board-images/${boardFilenameFromName(m.name)}`
-  }));
-}
 function defaultGalleryFromFolder() {
   try {
     ensureDir(galleryDir);
@@ -290,6 +260,15 @@ function readSiteContent() {
   }
   return { galleryImages, boardMembers, boardOrder, galleryOrder, newsletters, events };
 }
+let _siteContentCache = null;
+let _siteContentCacheAt = 0;
+const SITE_CONTENT_TTL_MS = 30_000;
+
+function invalidateSiteContentCache() {
+  _siteContentCache = null;
+  _siteContentCacheAt = 0;
+}
+
 function writeSiteContent(data) {
   const payload = {
     galleryImages: [],
@@ -300,6 +279,7 @@ function writeSiteContent(data) {
     events: Array.isArray(data.events) ? data.events : []
   };
   fs.writeFileSync(siteContentPath, JSON.stringify(payload, null, 2), "utf8");
+  invalidateSiteContentCache();
   return payload;
 }
 function canEditGallery(user) {
@@ -327,6 +307,7 @@ app.use("/board-images", express.static(boardImagesDir, { maxAge: "1y", immutabl
 app.use("/logo-images", express.static(logoImagesDir, { maxAge: "1y", immutable: true }));
 app.use("/newsletter-images", express.static(newsletterImagesDir, { maxAge: 0 }));
 app.use("/about-ssa-images", express.static(aboutSsaImagesDir, { maxAge: "1y", immutable: true }));
+app.use("/events", express.static(path.join(__dirname, "assets", "events"), { maxAge: "1y", immutable: true }));
 // Legacy path kept for backward compatibility during migration.
 app.use("/images", express.static(legacyImagesDir, { maxAge: "1y", immutable: true }));
 app.use(express.static(path.join(__dirname)));
@@ -716,32 +697,43 @@ function createSession(user) {
 
 function getUserFromSession(token) {
   if (!token) return null;
-  const session = db
+  const row = db
     .prepare(
       `
-      SELECT token, user_email, expires_at
-      FROM sessions
-      WHERE token = ?
+      SELECT
+        u.email, u.full_name, u.role_title, u.department, u.permission_level, u.view_type, u.vp_type,
+        s.expires_at AS session_expires_at
+      FROM sessions s
+      JOIN users u ON u.email = s.user_email
+      WHERE s.token = ?
     `
     )
     .get(token);
 
-  if (!session) return null;
-  if (session.expires_at < Date.now()) {
+  if (!row) return null;
+  if (row.session_expires_at < Date.now()) {
     db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
     return null;
   }
 
-  return db
-    .prepare(
-      `
-      SELECT email, full_name, role_title, department, permission_level, view_type, vp_type
-      FROM users
-      WHERE email = ?
-    `
-    )
-    .get(session.user_email);
+  return {
+    email: row.email,
+    full_name: row.full_name,
+    role_title: row.role_title,
+    department: row.department,
+    permission_level: row.permission_level,
+    view_type: row.view_type,
+    vp_type: row.vp_type
+  };
 }
+
+function purgeExpiredSessions() {
+  try {
+    db.prepare("DELETE FROM sessions WHERE expires_at < ?").run(Date.now());
+  } catch (_e) { /* non-critical */ }
+}
+purgeExpiredSessions();
+const _sessionPurgeInterval = setInterval(purgeExpiredSessions, 1000 * 60 * 60);
 
 function selectDashboardData(user) {
   const users = listUsersInScope(user);
@@ -758,27 +750,24 @@ function selectDashboardData(user) {
     .prepare(
       `
       SELECT
-        id, event_id, title, description, owner_email, owner_name, owner_role,
-        department, status, unlock_at, due_at, priority, visibility, vp_scope,
-        meeting_date, meeting_time, meeting_location, meeting_link, previous_summary,
-        notes, attachments_json, redo_rules, escalation_rules, phase,
-        (
-          SELECT rr.notes
-          FROM redo_requests rr
-          WHERE rr.task_id = tasks.id
-          ORDER BY datetime(rr.created_at) DESC, rr.id DESC
-          LIMIT 1
-        ) AS redo_notes,
-        (
-          SELECT rr.created_at
-          FROM redo_requests rr
-          WHERE rr.task_id = tasks.id
-          ORDER BY datetime(rr.created_at) DESC, rr.id DESC
-          LIMIT 1
-        ) AS redo_requested_at
+        tasks.id, tasks.event_id, tasks.title, tasks.description, tasks.owner_email, tasks.owner_name, tasks.owner_role,
+        tasks.department, tasks.status, tasks.unlock_at, tasks.due_at, tasks.priority, tasks.visibility, tasks.vp_scope,
+        tasks.meeting_date, tasks.meeting_time, tasks.meeting_location, tasks.meeting_link, tasks.previous_summary,
+        tasks.notes, tasks.attachments_json, tasks.redo_rules, tasks.escalation_rules, tasks.phase,
+        redo_latest.redo_notes,
+        redo_latest.redo_requested_at
       FROM tasks
+      LEFT JOIN (
+        SELECT task_id, notes AS redo_notes, created_at AS redo_requested_at
+        FROM (
+          SELECT task_id, notes, created_at,
+            ROW_NUMBER() OVER (PARTITION BY task_id ORDER BY datetime(created_at) DESC, id DESC) AS redo_rn
+          FROM redo_requests
+        ) redo_ranked
+        WHERE redo_ranked.redo_rn = 1
+      ) redo_latest ON redo_latest.task_id = tasks.id
       WHERE ${rolePredicate}
-      ORDER BY datetime(due_at) ASC
+      ORDER BY datetime(tasks.due_at) ASC
       LIMIT 120
     `
     )
@@ -914,8 +903,18 @@ app.get("/api/config/public", (_req, res) => {
   });
 });
 
+function getCachedSiteContent() {
+  const now = Date.now();
+  if (_siteContentCache && now - _siteContentCacheAt < SITE_CONTENT_TTL_MS) {
+    return _siteContentCache;
+  }
+  _siteContentCache = readSiteContent();
+  _siteContentCacheAt = now;
+  return _siteContentCache;
+}
+
 app.get("/api/public/site-content", (_req, res) => {
-  const content = readSiteContent();
+  const content = getCachedSiteContent();
   res.json(content);
 });
 
@@ -2052,40 +2051,27 @@ app.get("/api/assign/suggestions", (req, res) => {
   }
   const members = db.prepare(sql).all(params);
 
+  const memberEmails = members.map((m) => m.email);
+  const statsMap = new Map();
+  if (memberEmails.length) {
+    const ph = memberEmails.map(() => "?").join(",");
+    db.prepare(
+      `SELECT owner_email,
+              SUM(CASE WHEN status IN ('current','overdue','pending_review','redo') THEN 1 ELSE 0 END) AS active,
+              SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed
+       FROM tasks WHERE owner_email IN (${ph}) GROUP BY owner_email`
+    ).all(...memberEmails).forEach((r) => statsMap.set(r.owner_email, r));
+  }
+
   const withStats = members.map((m) => {
-    const activeCount = db
-      .prepare(
-        `
-      SELECT COUNT(*) AS count
-      FROM tasks
-      WHERE owner_email = ?
-        AND status IN ('current', 'overdue', 'pending_review', 'redo')
-    `
-      )
-      .get(m.email).count;
-
-    const completedCount = db
-      .prepare(
-        `
-      SELECT COUNT(*) AS count
-      FROM tasks
-      WHERE owner_email = ?
-        AND status = 'completed'
-    `
-      )
-      .get(m.email).count;
-
+    const s = statsMap.get(m.email) || { active: 0, completed: 0 };
+    const activeCount = Number(s.active || 0);
+    const completedCount = Number(s.completed || 0);
     const score =
       (m.role_title.toLowerCase() === role.toLowerCase() ? 50 : 25) +
       Math.max(0, 20 - activeCount * 3) +
       Math.min(30, completedCount * 2);
-
-    return {
-      ...m,
-      activeCount,
-      completedCount,
-      score
-    };
+    return { ...m, activeCount, completedCount, score };
   });
 
   withStats.sort((a, b) => b.score - a.score);
@@ -2161,20 +2147,16 @@ app.post("/api/tasks/assign", (req, res) => {
       return res.status(400).json({ error: "Chosen assignee is outside your allowed scope." });
     }
   } else {
+    const cEmails = candidates.map((c) => c.email);
+    const cPh = cEmails.map(() => "?").join(",");
+    const loadMap = new Map();
+    db.prepare(
+      `SELECT owner_email, COUNT(*) AS cnt FROM tasks
+       WHERE owner_email IN (${cPh}) AND status IN ('current','overdue','pending_review','redo')
+       GROUP BY owner_email`
+    ).all(...cEmails).forEach((r) => loadMap.set(r.owner_email, r.cnt));
     assignee = candidates
-      .map((c) => {
-        const activeCount = db
-          .prepare(
-            `
-          SELECT COUNT(*) AS count
-          FROM tasks
-          WHERE owner_email = ?
-            AND status IN ('current', 'overdue', 'pending_review', 'redo')
-        `
-          )
-          .get(c.email).count;
-        return { ...c, activeCount };
-      })
+      .map((c) => ({ ...c, activeCount: Number(loadMap.get(c.email) || 0) }))
       .sort((a, b) => a.activeCount - b.activeCount)[0];
   }
 
@@ -2502,10 +2484,10 @@ app.get("/api/admin/seed-users-snippet", (req, res) => {
     return res.status(403).json({ error: "President access required." });
   }
   try {
-    const sqlitePath = path.join(__dirname, "sqlite.js");
+    const sqlitePath = path.join(__dirname, "lib", "sqlite.js");
     const fullContent = fs.readFileSync(sqlitePath, "utf8");
     const content = extractSeedUsersFunction(fullContent);
-    res.json({ content, filename: "sqlite.js" });
+    res.json({ content, filename: "lib/sqlite.js" });
   } catch (e) {
     res.status(500).json({ error: e.message || "Failed to read file." });
   }
@@ -2545,56 +2527,22 @@ app.post("/api/admin/seed-users-push", async (req, res) => {
   if (user.permission_level !== "president" && user.view_type !== "president") {
     return res.status(403).json({ error: "President access required." });
   }
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) {
-    return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) {
+    return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
   }
   const { content: newSeedUsersBlock } = req.body || {};
   if (!newSeedUsersBlock || typeof newSeedUsersBlock !== "string") {
     return res.status(400).json({ error: "Request body must include content (the seedUsers() function)." });
   }
-  const repoUrl = process.env.GITHUB_REPO || "";
-  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
-  if (!match) {
-    return res.status(400).json({ error: "GITHUB_REPO is missing or invalid (e.g. https://github.com/owner/repo)." });
-  }
-  const [, owner, repo] = match;
-  const branch = process.env.GITHUB_BRANCH || "main";
   try {
-    const sqlitePath = path.join(__dirname, "sqlite.js");
+    const sqlitePath = path.join(__dirname, "lib", "sqlite.js");
     const fullContent = fs.readFileSync(sqlitePath, "utf8");
     const newFullContent = replaceSeedUsersInFile(fullContent, newSeedUsersBlock.trim());
     if (!newFullContent) {
-      return res.status(400).json({ error: "Could not find seedUsers() in sqlite.js to replace." });
+      return res.status(400).json({ error: "Could not find seedUsers() in lib/sqlite.js to replace." });
     }
-    const getRes = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/sqlite.js?ref=${encodeURIComponent(branch)}`,
-      { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } }
-    );
-    const getData = await getRes.json();
-    const sha = getData && getData.sha ? getData.sha : null;
-    const body = {
-      message: "Update seedUsers() from SSA Ops",
-      content: Buffer.from(newFullContent, "utf8").toString("base64"),
-      branch
-    };
-    if (sha) body.sha = sha;
-    const putRes = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/sqlite.js`,
-      {
-        method: "PUT",
-        headers: {
-          Accept: "application/vnd.github.v3+json",
-          Authorization: `Bearer ${githubToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      }
-    );
-    if (!putRes.ok) {
-      const errData = await putRes.json().catch(() => ({}));
-      return res.status(502).json({ error: errData.message || "GitHub API error." });
-    }
+    await pushBufferToGithub(ghConfig, "lib/sqlite.js", Buffer.from(newFullContent, "utf8"), "Update seedUsers() from SSA Ops");
     fs.writeFileSync(sqlitePath, newFullContent, "utf8");
     res.json({ ok: true, message: "Pushed to GitHub and local file updated." });
   } catch (e) {
@@ -2825,95 +2773,29 @@ app.post("/api/site/push", async (req, res) => {
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push site content to GitHub." });
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
-  const repoUrl = process.env.GITHUB_REPO || "";
-  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
-  if (!match) return res.status(400).json({ error: "GITHUB_REPO is missing or invalid." });
-  const [, owner, repo] = match;
-  const branch = process.env.GITHUB_BRANCH || "main";
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
   try {
     const content = readSiteContent();
-    const jsonStr = JSON.stringify(content, null, 2);
-    const getRes = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/data/site-content.json?ref=${encodeURIComponent(branch)}`,
-      { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } }
-    );
-    const getData = await getRes.json();
-    const sha = getData && getData.sha ? getData.sha : null;
-    const putBody = {
-      message: "Update site content (gallery + board) from SSA Ops",
-      content: Buffer.from(jsonStr, "utf8").toString("base64"),
-      branch
-    };
-    if (sha) putBody.sha = sha;
-    const putRes = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/contents/data/site-content.json`,
-      {
-        method: "PUT",
-        headers: {
-          Accept: "application/vnd.github.v3+json",
-          Authorization: `Bearer ${githubToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(putBody)
-      }
-    );
-    if (!putRes.ok) {
-      const errData = await putRes.json().catch(() => ({}));
-      return res.status(502).json({ error: errData.message || "GitHub API error." });
-    }
+    await pushBufferToGithub(ghConfig, "data/site-content.json", Buffer.from(JSON.stringify(content, null, 2), "utf8"), "Update site content (gallery + board) from SSA Ops");
     res.json({ ok: true, message: "Site content pushed to GitHub." });
   } catch (e) {
     res.status(500).json({ error: e.message || "Push failed." });
   }
 });
 
-function ensureGitIdentity() {
-  const email = (process.env.GIT_USER_EMAIL || "ops@ssa-website.local").replace(/"/g, '\\"');
-  const name = (process.env.GIT_USER_NAME || "SSA Ops").replace(/"/g, '\\"');
-  try {
-    execSync(`git config user.email "${email}"`, { cwd: __dirname });
-    execSync(`git config user.name "${name}"`, { cwd: __dirname });
-  } catch (_e) {}
-}
-
-// Push only gallery folder to GitHub via GitHub API (uses GITHUB_TOKEN / GITHUB_REPO / GITHUB_BRANCH).
 app.post("/api/site/push-gallery", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push gallery." });
-
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
-  const repoUrl = process.env.GITHUB_REPO || "";
-  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
-  if (!match) return res.status(400).json({ error: "GITHUB_REPO is missing or invalid." });
-  const [, owner, repo] = match;
-  const branch = process.env.GITHUB_BRANCH || "main";
-  const gh = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}?ref=${encodeURIComponent(branch)}`;
-  const ghPut = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}`;
-  const headers = { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}`, "Content-Type": "application/json" };
-
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
   try {
     ensureDir(galleryDir);
     const imageFiles = fs.readdirSync(galleryDir).filter(isImageFilename);
     for (const filename of imageFiles) {
-      const filePath = path.join(galleryDir, filename);
-      const repoPath = `gallery/${filename}`;
-      const buf = fs.readFileSync(filePath);
-      const contentB64 = buf.toString("base64");
-      const getImg = await fetch(gh(repoPath), { headers });
-      const getImgData = await getImg.json().catch(() => ({}));
-      const shaImg = getImgData && getImgData.sha ? getImgData.sha : null;
-      const putImgBody = { message: "Update gallery image from SSA Ops", content: contentB64, branch };
-      if (shaImg) putImgBody.sha = shaImg;
-      const putImg = await fetch(ghPut(repoPath), { method: "PUT", headers, body: JSON.stringify(putImgBody) });
-      if (!putImg.ok) {
-        const errData = await putImg.json().catch(() => ({}));
-        return res.status(502).json({ error: errData.message || `GitHub API error (gallery/${filename}).` });
-      }
+      await pushFileToGithub(ghConfig, `assets/gallery/${filename}`, path.join(galleryDir, filename), "Update gallery image from SSA Ops");
     }
     res.json({ ok: true, message: "Gallery content pushed to GitHub." });
   } catch (e) {
@@ -2921,87 +2803,34 @@ app.post("/api/site/push-gallery", async (req, res) => {
   }
 });
 
-// Push board-images folder and site-content (board order) to GitHub via GitHub API.
 app.post("/api/site/push-board", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push board." });
-
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
-  const repoUrl = process.env.GITHUB_REPO || "";
-  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
-  if (!match) return res.status(400).json({ error: "GITHUB_REPO is missing or invalid." });
-  const [, owner, repo] = match;
-  const branch = process.env.GITHUB_BRANCH || "main";
-  const gh = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}?ref=${encodeURIComponent(branch)}`;
-  const ghPut = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}`;
-  const headers = { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}`, "Content-Type": "application/json" };
-
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
   try {
-    // Ensure site-content.json on disk is in a normalized shape before pushing.
     writeSiteContent(readSiteContent());
-
-    // Push site-content.json
-    const siteContentRepoPath = "site-content.json";
-    const siteContentRaw = fs.readFileSync(siteContentPath, "utf8");
-    const siteContentB64 = Buffer.from(siteContentRaw, "utf8").toString("base64");
-    const getSc = await fetch(gh(siteContentRepoPath), { headers });
-    const getScData = await getSc.json().catch(() => ({}));
-    const shaSc = getScData && getScData.sha ? getScData.sha : null;
-    const putScBody = { message: "Update board member content from SSA Ops", content: siteContentB64, branch };
-    if (shaSc) putScBody.sha = shaSc;
-    const putSc = await fetch(ghPut(siteContentRepoPath), { method: "PUT", headers, body: JSON.stringify(putScBody) });
-    if (!putSc.ok) {
-      const errData = await putSc.json().catch(() => ({}));
-      return res.status(502).json({ error: errData.message || "GitHub API error (site-content.json)." });
-    }
-
-    // Push board-images/*
+    await pushFileToGithub(ghConfig, "site-content.json", siteContentPath, "Update board member content from SSA Ops");
     ensureDir(boardImagesDir);
     const imageFiles = fs.readdirSync(boardImagesDir).filter(isImageFilename);
     for (const filename of imageFiles) {
-      const filePath = path.join(boardImagesDir, filename);
-      const repoPath = `board-images/${filename}`;
-      const buf = fs.readFileSync(filePath);
-      const contentB64 = buf.toString("base64");
-      const getImg = await fetch(gh(repoPath), { headers });
-      const getImgData = await getImg.json().catch(() => ({}));
-      const shaImg = getImgData && getImgData.sha ? getImgData.sha : null;
-      const putImgBody = { message: "Update board member image from SSA Ops", content: contentB64, branch };
-      if (shaImg) putImgBody.sha = shaImg;
-      const putImg = await fetch(ghPut(repoPath), { method: "PUT", headers, body: JSON.stringify(putImgBody) });
-      if (!putImg.ok) {
-        const errData = await putImg.json().catch(() => ({}));
-        return res.status(502).json({ error: errData.message || `GitHub API error (board-images/${filename}).` });
-      }
+      await pushFileToGithub(ghConfig, `assets/board-members/${filename}`, path.join(boardImagesDir, filename), "Update board member image from SSA Ops");
     }
-
     res.json({ ok: true, message: "Member content pushed to GitHub." });
   } catch (e) {
     res.status(500).json({ error: e.message || "Push failed." });
   }
 });
 
-// Push homepage events (Upcoming Events calendar) via GitHub API, writing events.json + site-content.json.
 app.post("/api/site/push-events", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!isPresident(user)) return res.status(403).json({ error: "Only president can push events." });
-
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
-  const repoUrl = process.env.GITHUB_REPO || "";
-  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
-  if (!match) return res.status(400).json({ error: "GITHUB_REPO is missing or invalid." });
-  const [, owner, repo] = match;
-  const branch = process.env.GITHUB_BRANCH || "main";
-  const gh = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}?ref=${encodeURIComponent(branch)}`;
-  const ghPut = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}`;
-  const headers = { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}`, "Content-Type": "application/json" };
-
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
   try {
     const body = req.body || {};
     const inputEvents = Array.isArray(body.events) ? body.events : [];
@@ -3016,70 +2845,30 @@ app.post("/api/site/push-events", async (req, res) => {
       link: String(e.link || "").trim()
     }));
 
-    // Write static events file on disk.
     const eventsDir = path.dirname(eventsPath);
     if (!fs.existsSync(eventsDir)) fs.mkdirSync(eventsDir, { recursive: true });
     fs.writeFileSync(eventsPath, JSON.stringify(normalized, null, 2), "utf8");
 
-    // Also mirror into site-content.json for public API.
     const current = readSiteContent();
     current.events = normalized;
     writeSiteContent(current);
 
-    // Push events.json (or equivalent) to repo.
-    const eventsRepoPath = path
-      .relative(__dirname, eventsPath)
-      .replace(/\\/g, "/");
-    const eventsRaw = fs.readFileSync(eventsPath, "utf8");
-    const eventsB64 = Buffer.from(eventsRaw, "utf8").toString("base64");
-    const getEv = await fetch(gh(eventsRepoPath), { headers });
-    const getEvData = await getEv.json().catch(() => ({}));
-    const shaEv = getEvData && getEvData.sha ? getEvData.sha : null;
-    const putEvBody = { message: "Update events content from SSA Ops", content: eventsB64, branch };
-    if (shaEv) putEvBody.sha = shaEv;
-    const putEv = await fetch(ghPut(eventsRepoPath), { method: "PUT", headers, body: JSON.stringify(putEvBody) });
-    if (!putEv.ok) {
-      const errData = await putEv.json().catch(() => ({}));
-      return res.status(502).json({ error: errData.message || "GitHub API error (events file)." });
-    }
-
-    // Push site-content.json snapshot as well so public API stays in sync.
-    const siteContentRepoPath = "site-content.json";
-    const siteContentRaw = fs.readFileSync(siteContentPath, "utf8");
-    const siteContentB64 = Buffer.from(siteContentRaw, "utf8").toString("base64");
-    const getSc = await fetch(gh(siteContentRepoPath), { headers });
-    const getScData = await getSc.json().catch(() => ({}));
-    const shaSc = getScData && getScData.sha ? getScData.sha : null;
-    const putScBody = { message: "Update events site-content from SSA Ops", content: siteContentB64, branch };
-    if (shaSc) putScBody.sha = shaSc;
-    const putSc = await fetch(ghPut(siteContentRepoPath), { method: "PUT", headers, body: JSON.stringify(putScBody) });
-    if (!putSc.ok) {
-      const errData = await putSc.json().catch(() => ({}));
-      return res.status(502).json({ error: errData.message || "GitHub API error (site-content.json for events)." });
-    }
-
+    const eventsRepoPath = path.relative(__dirname, eventsPath).replace(/\\/g, "/");
+    await pushFileToGithub(ghConfig, eventsRepoPath, eventsPath, "Update events content from SSA Ops");
+    await pushFileToGithub(ghConfig, "site-content.json", siteContentPath, "Update events site-content from SSA Ops");
     res.json({ ok: true, message: "Homepage events pushed to GitHub." });
   } catch (e) {
     res.status(500).json({ error: e.message || "Push failed." });
   }
 });
 
-// Push newsletter (data/newsletter.json + newsletter-images) via GitHub API. Writes request body to file first so commit has latest content.
 app.post("/api/site/push-newsletter", async (req, res) => {
   const token = req.header("x-session-token");
   const user = getUserFromSession(token);
   if (!user) return res.status(401).json({ error: "Invalid session." });
   if (!canEditNewsletter(user)) return res.status(403).json({ error: "Only President, Internal VP, or Director of Operations can push newsletter." });
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) return res.status(400).json({ error: "GITHUB_TOKEN is not set. Add it in .env to push to GitHub." });
-  const repoUrl = process.env.GITHUB_REPO || "";
-  const match = repoUrl.match(/github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/);
-  if (!match) return res.status(400).json({ error: "GITHUB_REPO is missing or invalid." });
-  const [, owner, repo] = match;
-  const branch = process.env.GITHUB_BRANCH || "main";
-  const gh = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}?ref=${encodeURIComponent(branch)}`;
-  const ghPut = (p) => `https://api.github.com/repos/${owner}/${repo}/contents/${p}`;
-  const headers = { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}`, "Content-Type": "application/json" };
+  const ghConfig = parseGithubRepoConfig();
+  if (!ghConfig) return res.status(400).json({ error: "GITHUB_TOKEN or GITHUB_REPO is not configured." });
   try {
     const { newsletters: bodyNewsletters } = req.body || {};
     if (Array.isArray(bodyNewsletters)) {
@@ -3100,34 +2889,10 @@ app.post("/api/site/push-newsletter", async (req, res) => {
       writeSiteContent(content);
     }
     const newsletterRepoPath = path.relative(__dirname, newsletterPath).replace(/\\/g, "/");
-    const newsletterRaw = fs.readFileSync(newsletterPath, "utf8");
-    const newsletterB64 = Buffer.from(newsletterRaw, "utf8").toString("base64");
-    const getNl = await fetch(gh(newsletterRepoPath), { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } });
-    const getNlData = await getNl.json();
-    const shaNl = getNlData && getNlData.sha ? getNlData.sha : null;
-    const putNlBody = { message: "Update newsletter content from SSA Ops", content: newsletterB64, branch };
-    if (shaNl) putNlBody.sha = shaNl;
-    const putNl = await fetch(ghPut(newsletterRepoPath), { method: "PUT", headers, body: JSON.stringify(putNlBody) });
-    if (!putNl.ok) {
-      const errData = await putNl.json().catch(() => ({}));
-      return res.status(502).json({ error: errData.message || "GitHub API error (newsletter.json)." });
-    }
+    await pushFileToGithub(ghConfig, newsletterRepoPath, newsletterPath, "Update newsletter content from SSA Ops");
     const imageFiles = fs.existsSync(newsletterImagesDir) ? fs.readdirSync(newsletterImagesDir).filter((f) => /\.(png|jpg|jpeg|webp|gif)$/i.test(f)) : [];
     for (const filename of imageFiles) {
-      const filePath = path.join(newsletterImagesDir, filename);
-      const repoPath = `newsletter-images/${filename}`;
-      const buf = fs.readFileSync(filePath);
-      const contentB64 = buf.toString("base64");
-      const getImg = await fetch(gh(repoPath), { headers: { Accept: "application/vnd.github.v3+json", Authorization: `Bearer ${githubToken}` } });
-      const getImgData = await getImg.json();
-      const shaImg = getImgData && getImgData.sha ? getImgData.sha : null;
-      const putImgBody = { message: "Update newsletter image from SSA Ops", content: contentB64, branch };
-      if (shaImg) putImgBody.sha = shaImg;
-      const putImg = await fetch(ghPut(repoPath), { method: "PUT", headers, body: JSON.stringify(putImgBody) });
-      if (!putImg.ok) {
-        const errData = await putImg.json().catch(() => ({}));
-        return res.status(502).json({ error: errData.message || `GitHub API error (${filename}).` });
-      }
+      await pushFileToGithub(ghConfig, `assets/newsletter-images/${filename}`, path.join(newsletterImagesDir, filename), "Update newsletter image from SSA Ops");
     }
     res.json({ ok: true, message: "Newsletter content pushed to GitHub." });
   } catch (e) {

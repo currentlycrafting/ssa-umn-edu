@@ -1,0 +1,271 @@
+/* Ops workspace shell layout */
+html.ops-shell,
+html.ops-shell body {
+  overflow: hidden;
+}
+
+body.ops-shell {
+  display: flex;
+  font-size: 13px;
+}
+
+#sidebar {
+  width: var(--sidebar);
+  flex-shrink: 0;
+  background: var(--navy-mid);
+  border-right: 1px solid rgba(184, 154, 92, 0.12);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+
+.sb-logo {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sb-logo img {
+  height: 38px;
+  width: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sb-logo-txt {
+  line-height: 1;
+}
+
+.sb-logo-txt span:first-child {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.sb-logo-txt span:last-child {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--silver);
+  margin-top: 2px;
+}
+
+.sb-user {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sb-user-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--white);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.sb-user-role {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-top: 4px;
+}
+
+.sb-user-dept,
+.sb-user-div {
+  font-size: 11px;
+  color: var(--silver);
+  margin-top: 2px;
+}
+
+.sb-nav {
+  padding: 12px 0;
+  flex: 1;
+}
+
+.sb-section-label {
+  font-size: 8px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--silver);
+  padding: 14px 20px 6px;
+  opacity: 0.6;
+}
+
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--stone);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.sb-item:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.03);
+  border-left-color: rgba(184, 154, 92, 0.3);
+}
+
+.sb-item.active {
+  color: var(--white);
+  background: rgba(184, 154, 92, 0.08);
+  border-left-color: var(--gold);
+}
+
+.sb-icon {
+  font-size: 13px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sb-badge {
+  margin-left: auto;
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 2px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.sb-badge.gold {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.sb-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 10px;
+  color: var(--silver);
+}
+
+.poll-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+  vertical-align: middle;
+  animation: blink 2s ease infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+#main {
+  margin-left: var(--sidebar);
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--navy-mid);
+  border-bottom: 1px solid rgba(184, 154, 92, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-shrink: 0;
+}
+
+.topbar-left h1,
+#topbar .topbar-left h1 {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--silver);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+#topbar {
+  height: auto;
+  min-height: 56px;
+}
+
+.topbar-title {
+  font-family: var(--fd);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--silver);
+}
+
+#content {
+  padding: 24px 28px 40px;
+  flex: 1;
+}
+
+.page {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page.active {
+  display: flex;
+}
+
+@media (max-width: 860px) {
+  #sidebar {
+    display: none;
+  }
+
+  #main {
+    margin-left: 0;
+  }
+
+  .two-col,
+  .three-col,
+  .stat-row {
+    grid-template-columns: 1fr;
+  }
+}

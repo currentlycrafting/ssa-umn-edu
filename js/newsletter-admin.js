@@ -711,10 +711,10 @@
     frameWrap.style.display = "flex";
     frameWrap.style.justifyContent = "center";
     frameWrap.style.alignItems = "flex-start";
-    frameWrap.style.background = "rgba(255,255,255,.03)";
-    frameWrap.style.border = "1px solid rgba(255,255,255,.08)";
-    frameWrap.style.borderRadius = "10px";
-    frameWrap.style.padding = "10px";
+    frameWrap.style.background = "transparent";
+    frameWrap.style.border = "0";
+    frameWrap.style.borderRadius = "0";
+    frameWrap.style.padding = "0";
     const iframe = document.createElement("iframe");
     iframe.style.width = "133%";
     iframe.style.height = "96vh";

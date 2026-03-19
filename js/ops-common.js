@@ -95,12 +95,17 @@ async function requireSession() {
 }
 
 function startPolling(onUpdate) {
+  let busy = false;
   const run = async () => {
+    if (busy) return;
+    busy = true;
     try {
       const data = await apiGet("/api/poll");
       onUpdate(data);
     } catch (_e) {
       // ignore polling errors in UI
+    } finally {
+      busy = false;
     }
   };
   run();
