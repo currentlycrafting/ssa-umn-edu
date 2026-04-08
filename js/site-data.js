@@ -37,19 +37,7 @@ var defaultData = {
       link: 'https://docs.google.com/forms/d/e/1FAIpQLScq-2fmzfquFErTorYbyMY7rWBGcTAWJrTDQiOu_WGB3a6Jgw/viewform'
     }
   ],
-  boardMembers: [
-    { id: crypto.randomUUID(), name: 'Aisha Dakol', role: 'Vice President', major: '', image: 'board-images/Aisha Dakol - Vice President.png' },
-    { id: crypto.randomUUID(), name: 'Dahir Munye', role: 'President', major: '', image: 'board-images/Dahir Munye - President.png' },
-    { id: crypto.randomUUID(), name: 'Salman Said', role: 'Co-Committee Chair', major: '', image: 'board-images/Salman Said - Co-Committee Chair.png' },
-    { id: crypto.randomUUID(), name: 'Ruweyda Warsame', role: 'Co-Committee Chair', major: '', image: 'board-images/Ruweyda Warsame - Co-Committee Chair.png' },
-    { id: crypto.randomUUID(), name: 'Ikhlas Abdi', role: 'Outreach Coordinator', major: '', image: 'board-images/Ikhlas Abdi - Outreach Coordinator.png' },
-    { id: crypto.randomUUID(), name: 'Ifrah Ali', role: 'Treasurer', major: '', image: 'board-images/Ifrah Ali - Treasurer.png' },
-    { id: crypto.randomUUID(), name: 'Layla Salad', role: 'Co-Event Coordinator', major: '', image: 'board-images/Layla Salad - Co-Event Coordinator.png' },
-    { id: crypto.randomUUID(), name: 'Ahlam Abdul', role: 'Co-Event Coordinator', major: '', image: 'board-images/Ahlam Abdul - Co-Event Coordinator.png' },
-    { id: crypto.randomUUID(), name: 'Salma Tawane', role: 'Secretary', major: '', image: 'board-images/Salma Tawane - Secretary.png' },
-    { id: crypto.randomUUID(), name: 'Maida Ahmed', role: 'Co-Public Relations', major: '', image: 'board-images/Maida Ahmed - Co-Public Relations.png' },
-    { id: crypto.randomUUID(), name: 'Ashaar Ali', role: 'Co-Public Relations', major: '', image: 'board-images/Ashaar Ali - Co-Public Relations.png' }
-  ],
+  boardMembers: [],
   galleryImages: [
     { id: crypto.randomUUID(), src: 'gallery/100_0556.JPG', alt: 'SSA community' },
     { id: crypto.randomUUID(), src: 'gallery/100_0591.JPG', alt: 'SSA community' },
@@ -89,7 +77,7 @@ function loadSiteData() {
       ...parsed,
       newsletters: parsed.newsletters?.length ? parsed.newsletters : structuredClone(defaultData.newsletters),
       events: parsed.events?.length ? parsed.events : structuredClone(defaultData.events),
-      boardMembers: parsed.boardMembers?.length ? parsed.boardMembers : structuredClone(defaultData.boardMembers),
+      boardMembers: Array.isArray(parsed.boardMembers) ? parsed.boardMembers : structuredClone(defaultData.boardMembers),
       galleryImages: parsed.galleryImages?.length ? parsed.galleryImages : structuredClone(defaultData.galleryImages),
       directText: parsed.directText || {},
       editableLinks: parsed.editableLinks || {},
@@ -130,13 +118,14 @@ function toInstagramEmbedUrl(link) {
 
 function getBoardMembers() {
   var fromServer = serverSiteContent.boardMembers;
+  if (fromServer !== null && fromServer !== undefined && Array.isArray(fromServer)) {
+    return fromServer.filter(function(m) { return String(m.image || '').replace(/^\/+/, '').startsWith('board-images/'); });
+  }
   var fromLocal = siteData.boardMembers;
   var members =
-    fromServer && fromServer.length
-      ? fromServer
-      : fromLocal && fromLocal.length
-        ? fromLocal
-        : structuredClone(defaultData.boardMembers);
+    fromLocal && fromLocal.length
+      ? fromLocal
+      : structuredClone(defaultData.boardMembers);
   return (members || []).filter(function(m) { return String(m.image || '').replace(/^\/+/, '').startsWith('board-images/'); });
 }
 

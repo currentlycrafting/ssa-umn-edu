@@ -75,6 +75,7 @@
     <div class="topbar-right">
       <a href="index.html" class="btn btn-outline" style="text-decoration:none;color:inherit">Main Site</a>
       <button class="btn btn-outline" onclick="goLoginPage()">Login Page</button>
+      <button class="btn btn-outline" type="button" onclick="openBoardTour()">Quick Tour</button>
       <button class="btn btn-gold" onclick="quickCompleteTask()">Complete Task</button>
     </div>
   </div>
@@ -481,6 +482,22 @@
       <button class="modal-close" onclick="closeModal('task-select-modal')" aria-label="Close">✕</button>
     </div>
     <div class="modal-body" id="task-select-list" style="max-height:60vh;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- ── Quick Tour (Board) ── -->
+<div class="modal-backdrop" id="board-tour-modal" role="dialog" aria-modal="true" aria-label="Board dashboard tutorial">
+  <div class="modal" style="max-width:760px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <span class="modal-header-title" id="board-tour-title">Quick Tour</span>
+      <button class="modal-close" onclick="closeBoardTour()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="board-tour-body" style="overflow-y:auto"></div>
+    <div class="modal-footer" style="justify-content:flex-end;gap:10px">
+      <button type="button" class="btn btn-outline btn-sm" onclick="boardTourPrev()">Back</button>
+      <button type="button" class="btn btn-outline btn-sm" onclick="boardTourNext()">Next</button>
+      <button type="button" class="btn btn-gold btn-sm" onclick="finishBoardTour()">Got it</button>
+    </div>
   </div>
 </div>
 

@@ -78,6 +78,7 @@
     <div class="topbar-right">
       <a href="index.html" class="btn btn-outline" style="text-decoration:none;color:inherit">Main Site</a>
       <button class="btn btn-outline" onclick="window.location.href='ops-login.html'">Login Page</button>
+      <button class="btn btn-outline" type="button" onclick="openPresidentTour()">Quick Tour</button>
       <button class="btn btn-outline" onclick="openModal('assignTaskModal')">Assign Task</button>
       <button class="btn btn-gold" onclick="openModal('eventCreateModal')">+ Create Event</button>
     </div>
@@ -284,14 +285,15 @@
     <div class="card" style="margin-top:24px">
       <div class="section-label">Board section (Executive Board on index)</div>
       <div class="card-title">Edit members</div>
-      <div class="card-sub">Board is loaded from <code>board-images/</code>. Add (upload photo + name/role) or remove, reorder with ↺↻, then push.</div>
+      <div class="card-sub">Board names, roles, order, and each member’s image path live in <code>site-content.json</code> only. Photo files go in <code>assets/board-members/</code> with any filename (uploads use random names). Edit here, save, then push to GitHub.</div>
       <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
         <button type="button" class="btn btn-gold" onclick="openViewBoard()">View Board</button>
       </div>
       <div id="site-board-list" style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px"></div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:20px">
         <button type="button" class="btn btn-outline" onclick="siteAddBoardMember()">+ Add member</button>
-        <button type="button" class="btn btn-outline" onclick="siteSaveBoard()">Refresh from folder</button>
+        <button type="button" class="btn btn-gold" onclick="siteSaveBoardToServer()">Save board to site</button>
+        <button type="button" class="btn btn-outline" onclick="siteSaveBoard()">Reload from server</button>
       </div>
       <div style="padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
         <button type="button" class="btn btn-gold" onclick="sitePushBoardToGitHub()">Push Member Content to Github</button>
@@ -448,10 +450,9 @@
             <div class="ce-dv" style="margin:14px 0 6px"></div>
             <div class="ce-fl" style="margin-bottom:8px;font-size:9px">External Division</div>
             <div class="checkbox-group cb-role-grid">
-              <div class="cb-item checked" data-role="Director of Brand & Marketing" data-division="external" onclick="toggleCb(this)">Director of Brand & Marketing</div>
+              <div class="cb-item checked" data-role="Director of Brand & Marketing — Creative & Engagement" data-division="external" onclick="toggleCb(this)">Director of Brand & Marketing — Creative & Engagement</div>
+              <div class="cb-item checked" data-role="Director of Brand & Marketing — Content & Narrative" data-division="external" onclick="toggleCb(this)">Director of Brand & Marketing — Content & Narrative</div>
               <div class="cb-item" data-role="Director of Strategic Relations & Advancement" data-division="external" onclick="toggleCb(this)">Director of Strategic Relations & Advancement</div>
-              <div class="cb-item" data-role="Director of Editorial & Communications" data-division="external" onclick="toggleCb(this)">Director of Editorial & Communications</div>
-              <div class="cb-item checked" data-role="Director of Campus Activation" data-division="external" onclick="toggleCb(this)">Director of Campus Activation</div>
               <div class="cb-item" data-role="Executive Producer, Somali Night — Creative" data-division="external" onclick="toggleCb(this)">Executive Producer, Somali Night — Creative</div>
             </div>
             <div class="ce-dv" style="margin:14px 0 6px"></div>
@@ -896,6 +897,22 @@
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="cancelStyledConfirm()">Cancel</button>
       <button class="btn btn-red hold-to-confirm-btn" id="confirm-action-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Quick Tour (President) ── -->
+<div class="modal-overlay" id="president-tour-modal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="President dashboard tutorial" style="max-width:860px;max-height:90vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title" id="president-tour-title">Quick Tour</div>
+      <button class="modal-close" onclick="closePresidentTour()" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="president-tour-body" style="overflow-y:auto"></div>
+    <div class="modal-footer" style="justify-content:flex-end;gap:10px">
+      <button type="button" class="btn btn-outline" onclick="presidentTourPrev()">Back</button>
+      <button type="button" class="btn btn-outline" onclick="presidentTourNext()">Next</button>
+      <button type="button" class="btn btn-gold" onclick="finishPresidentTour()">Got it</button>
     </div>
   </div>
 </div>

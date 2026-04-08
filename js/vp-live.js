@@ -118,6 +118,84 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
   let selectedVpAssigneeEmail = "";
   let pendingVpConfirmAction = null;
   let hydrateBusy = false;
+  let __vpTourInited = false;
+  let __vpTourIdx = 0;
+  const VP_TOUR_STORAGE_KEY = "ssa_tour_seen_vp_v1";
+  const VP_TOUR_STEPS = [
+    {
+      title: "Welcome",
+      body: `
+        <div style="font-size:12px;color:var(--silver);line-height:1.8">
+          This is your division hub. Your job is to <strong style="color:var(--white)">review submissions</strong>, keep the division moving,
+          and escalate issues to the President when needed.
+        </div>
+      `
+    },
+    {
+      title: "What to do each week",
+      body: `
+        <div style="font-size:12px;color:var(--silver);line-height:1.9">
+          <ol style="margin:0;padding-left:18px">
+            <li>Open <strong style="color:var(--white)">Submissions to Review</strong> and approve or request redo.</li>
+            <li>Check <strong style="color:var(--white)">Overdue & Alerts</strong> for anything at risk.</li>
+            <li>Open <strong style="color:var(--white)">Events</strong> to spot bottlenecks.</li>
+          </ol>
+        </div>
+      `
+    },
+    {
+      title: "Escalations",
+      body: `
+        <div style="font-size:12px;color:var(--silver);line-height:1.9">
+          Use <strong style="color:var(--white)">Escalate to President</strong> when a blocker affects the whole event or requires executive judgment.
+          Keep it short: what’s happening, what you need, and what decision is required.
+        </div>
+      `
+    }
+  ];
+
+  function renderVpTour() {
+    const step = VP_TOUR_STEPS[Math.max(0, Math.min(__vpTourIdx, VP_TOUR_STEPS.length - 1))];
+    const title = document.getElementById("vp-tour-title");
+    const body = document.getElementById("vp-tour-body");
+    if (title) title.textContent = `Quick Tour · ${step.title}`;
+    if (body) body.innerHTML = step.body;
+  }
+
+  window.openVpTour = function openVpTour() {
+    const host = document.getElementById("vp-tour-modal");
+    if (!host) return;
+    __vpTourIdx = 0;
+    renderVpTour();
+    host.classList.add("open");
+    host.setAttribute("aria-hidden", "false");
+  };
+  window.closeVpTour = function closeVpTour() {
+    const host = document.getElementById("vp-tour-modal");
+    if (!host) return;
+    host.classList.remove("open");
+    host.setAttribute("aria-hidden", "true");
+  };
+  window.vpTourNext = function vpTourNext() {
+    __vpTourIdx = Math.min(VP_TOUR_STEPS.length - 1, __vpTourIdx + 1);
+    renderVpTour();
+  };
+  window.vpTourPrev = function vpTourPrev() {
+    __vpTourIdx = Math.max(0, __vpTourIdx - 1);
+    renderVpTour();
+  };
+  window.finishVpTour = function finishVpTour() {
+    try { localStorage.setItem(VP_TOUR_STORAGE_KEY, "1"); } catch (_e) {}
+    window.closeVpTour();
+  };
+  function maybeAutoOpenVpTour() {
+    if (__vpTourInited) return;
+    __vpTourInited = true;
+    try {
+      if (localStorage.getItem(VP_TOUR_STORAGE_KEY) === "1") return;
+    } catch (_e) {}
+    setTimeout(() => window.openVpTour && window.openVpTour(), 500);
+  }
 
   window.vpOpenAssignModal = async function vpOpenAssignModal() {
     if (!dashboard) return;
@@ -800,6 +878,7 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
 
     renderOperationalCalendar(document.getElementById("cal-content"), dashboard.events, dashboard.tasks);
     window.VP_DASHBOARD = dashboard;
+    maybeAutoOpenVpTour();
     const events = dashboard.events || [];
     const vpDepSelect = document.getElementById("vp-dep-event-select");
     const vpDepName = document.getElementById("vp-dep-event-name");
@@ -943,7 +1022,6 @@ window.vpPushGalleryToGitHub = async function vpPushGalleryToGitHub() {
                       <div style="font-size:10px;color:var(--gold);margin-top:6px">${meta.replace(/</g, "&lt;")}</div>
                     </div>
                     <div class="approval-actions">
-                      <button type="button" class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="vpUpdateReportStatus(${r.id}, 'reviewed')">Marked Review</button>
                       <button type="button" class="btn btn-red" style="font-size:9px;padding:5px 10px" onclick="vpUpdateReportStatus(${r.id}, 'archived')">Archive</button>
                     </div>
                   </div>

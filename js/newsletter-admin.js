@@ -208,14 +208,12 @@
         <div style="border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.02);padding:14px;border-radius:12px;">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
             <div>
-              <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);">Update current</div>
-              <div style="font-size:14px;color:var(--silver);margin-top:2px">Edit details and text below, apply changes or generate new draft, then publish.</div>
+              <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);">Newsletter</div>
+              <div style="font-size:13px;color:var(--silver);margin-top:4px">Update fields below, generate a draft, then publish.</div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button class="btn btn-outline" type="button" id="nl-edit-apply-text">Apply text changes</button>
-              <button class="btn btn-gold" type="button" id="${IDS.editGenerate}">Generate updated draft</button>
-              <button class="btn btn-outline" type="button" id="${IDS.editPreview}" disabled>View draft</button>
-              <button class="btn btn-gold" type="button" id="${IDS.editPublish}" disabled>Approve & publish</button>
+              <button class="btn btn-gold" type="button" id="${IDS.editGenerate}">Generate draft</button>
+              <button class="btn btn-gold" type="button" id="${IDS.editPublish}" disabled>Publish</button>
             </div>
           </div>
           <div id="${IDS.editStatus}" style="margin-top:10px;color:var(--silver);font-size:12px;">Ready.</div>
@@ -293,18 +291,16 @@
     setupAssetDropZone({ dropId: "nl-edit-image-4-drop", inputId: "nl-edit-image-4-file", accept: "image/*", multiple: false });
 
     const genBtn = byId(IDS.editGenerate);
-    const previewBtn = byId(IDS.editPreview);
     const publishBtn = byId(IDS.editPublish);
     const statusEl = byId(IDS.editStatus);
 
     function setDraftButtonsEnabled() {
-      if (previewBtn) previewBtn.disabled = !state.draftHtml;
-      if (publishBtn) publishBtn.disabled = !(state.draftHtml && state.draftValidationOk && state.draftViewed);
+      if (publishBtn) publishBtn.disabled = !state.draftHtml;
     }
     setDraftButtonsEnabled();
 
     genBtn.onclick = async function () {
-      setButtonsBusy([genBtn, previewBtn, publishBtn], true);
+      setButtonsBusy([genBtn, publishBtn], true);
       state.draftHtml = "";
       state.draftValidationOk = false;
       state.draftViewed = false;
@@ -321,9 +317,9 @@
         stopLoading();
         if (statusEl) {
           if (state.draftValidationOk) {
-            statusEl.textContent = `Draft ready (${data.model || "Gemini"}). Click View draft to unlock publishing.`;
+            statusEl.textContent = `Draft ready (${data.model || "Gemini"}). Click Publish when satisfied.`;
           } else {
-            statusEl.textContent = `Draft ready, but validation failed: ${data.validation_error || "Output did not match the design contract."} (You can preview, but publishing is disabled.)`;
+            statusEl.textContent = `Draft ready; validation note: ${data.validation_error || "Output did not match the design contract."} You may still publish.`;
           }
         }
         setDraftButtonsEnabled();
@@ -333,21 +329,14 @@
         if (statusEl) statusEl.textContent = msg;
         toast(msg);
       } finally {
-        setButtonsBusy([genBtn, previewBtn, publishBtn], false);
+        setButtonsBusy([genBtn, publishBtn], false);
         setDraftButtonsEnabled();
       }
     };
 
-    previewBtn.onclick = function () {
-      if (!state.draftHtml) return;
-      previewHtmlInFullModal(state.draftHtml);
-      state.draftViewed = true;
-      setDraftButtonsEnabled();
-    };
-
     publishBtn.onclick = async function () {
       if (!state.draftHtml) return;
-      setButtonsBusy([previewBtn, publishBtn], true);
+      setButtonsBusy([publishBtn], true);
       if (statusEl) statusEl.textContent = "Publishing...";
       try {
         const meta = collectMetadata("nl-edit");
@@ -372,62 +361,13 @@
         if (statusEl) statusEl.textContent = msg;
         toast(msg);
       } finally {
-        setButtonsBusy([previewBtn, publishBtn], false);
+        setButtonsBusy([publishBtn], false);
         setDraftButtonsEnabled();
       }
     };
 
     const createBtn = byId("nl-open-create-modal");
     if (createBtn) createBtn.onclick = openCreateModal;
-
-    const applyTextBtn = byId("nl-edit-apply-text");
-    if (applyTextBtn) {
-      applyTextBtn.onclick = function () {
-        const baseHtml = state.draftHtml || state.current_html || "";
-        if (!baseHtml.trim()) {
-          toast("No newsletter content to update. Generate a draft first or ensure current newsletter is loaded.");
-          return;
-        }
-        const get = (id) => (byId(id)?.value || "").trim();
-        const values = {
-          hero_line_1: get("nl-edit-hero-1"),
-          hero_line_2: get("nl-edit-hero-2"),
-          hero_subtitle: get("nl-edit-hero-subtitle"),
-          closing_phrase: get("nl-edit-closing"),
-          story1: {
-            section_label: get("nl-edit-s1-label"),
-            date: get("nl-edit-s1-date"),
-            heading: get("nl-edit-s1-heading"),
-            body: get("nl-edit-s1-body"),
-            highlight: get("nl-edit-s1-highlight"),
-            caption: get("nl-edit-s1-caption")
-          },
-          story2: {
-            section_label: get("nl-edit-s2-label"),
-            date: get("nl-edit-s2-date"),
-            heading: get("nl-edit-s2-heading"),
-            body: get("nl-edit-s2-body"),
-            highlight: get("nl-edit-s2-highlight"),
-            caption: get("nl-edit-s2-caption")
-          },
-          story3: {
-            section_label: get("nl-edit-s3-label"),
-            date: get("nl-edit-s3-date"),
-            heading: get("nl-edit-s3-heading"),
-            body: get("nl-edit-s3-body"),
-            highlight: get("nl-edit-s3-highlight"),
-            caption: ""
-          }
-        };
-        state.draftHtml = applyNewsletterText(baseHtml, values);
-        state.draftMode = "edit";
-        state.draftValidationOk = true;
-        state.draftViewed = false;
-        if (statusEl) statusEl.textContent = "Text applied. Click View draft to preview, then Approve & publish.";
-        toast("Text applied.");
-        setDraftButtonsEnabled();
-      };
-    }
   }
 
   function inputStyle() {
@@ -813,12 +753,9 @@ Image caption 2 (optional):"
               ${assetDropHtml("nl-new-image-4", "Story image 4", "image/*", "Image 4")}
             </div>
 
-            <div class="modal-footer" style="justify-content:space-between;gap:10px;padding:16px 26px;">
-              <button type="button" class="btn btn-outline" id="${IDS.createPreview}" disabled>View draft</button>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-                <button type="button" class="btn btn-gold" id="${IDS.createGenerate}">Generate with Gemini</button>
-                <button type="button" class="btn btn-gold" id="${IDS.createPublish}" disabled>Approve & publish</button>
-              </div>
+            <div class="modal-footer" style="justify-content:flex-end;gap:10px;padding:16px 26px;">
+              <button type="button" class="btn btn-gold" id="${IDS.createGenerate}">Generate draft</button>
+              <button type="button" class="btn btn-gold" id="${IDS.createPublish}" disabled>Publish</button>
             </div>
           </div>
         </div>
@@ -856,9 +793,7 @@ Image caption 2 (optional):"
     state.draftHtml = "";
     state.draftValidationOk = false;
     state.draftViewed = false;
-    const previewBtn = byId(IDS.createPreview);
     const publishBtn = byId(IDS.createPublish);
-    if (previewBtn) previewBtn.disabled = true;
     if (publishBtn) publishBtn.disabled = true;
 
     const statusEl = byId(IDS.createStatus);
@@ -870,10 +805,9 @@ Image caption 2 (optional):"
 
   function bindCreateActions() {
     const genBtn = byId(IDS.createGenerate);
-    const previewBtn = byId(IDS.createPreview);
     const publishBtn = byId(IDS.createPublish);
     const statusEl = byId(IDS.createStatus);
-    if (!genBtn || !previewBtn || !publishBtn || !statusEl) return;
+    if (!genBtn || !publishBtn || !statusEl) return;
 
     genBtn.onclick = async function () {
       genBtn.disabled = true;
@@ -881,7 +815,6 @@ Image caption 2 (optional):"
       state.draftValidationOk = false;
       state.draftViewed = false;
       const stopLoading = startLoadingStatus(statusEl, "Generating draft with Gemini");
-      if (previewBtn) previewBtn.disabled = true;
       if (publishBtn) publishBtn.disabled = true;
 
       showGenerateLoadingPopup();
@@ -902,31 +835,22 @@ Image caption 2 (optional):"
         state.draftValidationOk = data.validation_ok !== false;
         if (statusEl) {
           if (state.draftValidationOk) {
-            statusEl.textContent = `Draft ready (${data.model || "Gemini"}). Click View draft to unlock publishing.`;
+            statusEl.textContent = `Draft ready (${data.model || "Gemini"}). Click Publish when satisfied.`;
           } else {
-            statusEl.textContent = `Draft generated, but validation failed: ${data.validation_error || "Output did not match the design contract."} (You can preview, publishing is disabled.)`;
+            statusEl.textContent = `Draft ready; validation note: ${data.validation_error || "Output did not match the design contract."} You may still publish.`;
           }
         }
-        if (previewBtn) previewBtn.disabled = !state.draftHtml;
-        if (publishBtn) publishBtn.disabled = !(state.draftHtml && state.draftValidationOk && state.draftViewed);
+        if (publishBtn) publishBtn.disabled = !state.draftHtml;
       } catch (e) {
         stopLoading();
         const msg = e.message || "Draft generation failed.";
         if (statusEl) statusEl.textContent = msg;
         toast(msg);
-        if (previewBtn) previewBtn.disabled = true;
         if (publishBtn) publishBtn.disabled = true;
       } finally {
         hideGenerateLoadingPopup();
         genBtn.disabled = false;
       }
-    };
-
-    previewBtn.onclick = function () {
-      if (!state.draftHtml) return;
-      previewHtmlInFullModal(state.draftHtml);
-      state.draftViewed = true;
-      if (publishBtn) publishBtn.disabled = !(state.draftHtml && state.draftValidationOk && state.draftViewed);
     };
 
     publishBtn.onclick = async function () {

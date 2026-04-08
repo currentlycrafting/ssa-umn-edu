@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/public-shared.css" />
   <style>
-    /* Shared public primitives now live in css/public-shared.css */
     body {
       background: var(--navy);
       color: var(--white);
@@ -30,7 +29,6 @@
       min-height: 0;
     }
 
-    /* Top bar: minimal */
     .topbar {
       display: flex;
       align-items: center;
@@ -85,7 +83,6 @@
       border-color: rgba(184,154,92,.5);
     }
 
-    /* Edition label: one line, subtle */
     .edition-label {
       display: flex;
       align-items: baseline;
@@ -117,7 +114,6 @@
       color: var(--silver);
     }
 
-    /* Newsletter document: fills remaining viewport, scroll inside iframe only */
     .newsletter-frame-wrap {
       background: var(--navy-mid);
       border-radius: 12px;
@@ -135,28 +131,6 @@
       min-height: 0;
       border: 0;
       background: var(--navy);
-    }
-
-    .nl-download-btn {
-      font-family: var(--font-body);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold-light);
-      background: transparent;
-      border: 1px solid rgba(184,154,92,.4);
-      border-radius: 8px;
-      padding: 8px 14px;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
-    .nl-download-btn:hover {
-      background: rgba(184,154,92,.1);
-      border-color: rgba(184,154,92,.6);
-    }
-    .nl-download-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
     }
 
   </style>
@@ -179,10 +153,7 @@
         <div class="eyebrow">Newsletter</div>
         <h1 class="name" id="nl-title">SSA Monthly Publication</h1>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <button type="button" id="nl-download-png" class="nl-download-btn">Download as PNG</button>
-        <div class="date" id="nl-date">Loading…</div>
-      </div>
+      <div class="date" id="nl-date"></div>
     </div>
 
     <div class="newsletter-frame-wrap">
@@ -199,76 +170,12 @@
         var data = res.ok ? await res.json() : {};
         var current = data.current || {};
         if (titleEl) titleEl.textContent = (current && current.edition_name) ? current.edition_name : "SSA Monthly Publication";
-        if (dateEl) dateEl.textContent = (current && current.date_range) ? current.date_range : "—";
+        if (dateEl) dateEl.textContent = (current && current.date_range) ? current.date_range : "";
         if (frame && data.current_html_path) frame.src = data.current_html_path;
       } catch (e) {
-        if (dateEl) dateEl.textContent = "—";
+        if (dateEl) dateEl.textContent = "";
         if (titleEl) titleEl.textContent = "SSA Monthly Publication";
       }
-    })();
-
-    (function () {
-      var btn = document.getElementById("nl-download-png");
-      var frame = document.getElementById("nl-frame");
-      if (!btn || !frame) return;
-
-      window.addEventListener("message", function (ev) {
-        if (ev.data && ev.data.type === "nl-png") {
-          var dataUrl = ev.data.data;
-          if (dataUrl) {
-            var titleEl = document.getElementById("nl-title");
-            var base = (titleEl && titleEl.textContent)
-              ? titleEl.textContent.replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").trim().slice(0, 40) || "ssa-newsletter";
-            var link = document.createElement("a");
-            link.download = (base + ".png").replace(/--+/g, "-");
-            link.href = dataUrl;
-            link.click();
-          } else {
-            alert("Could not create image. Try again.");
-          }
-          btn.disabled = false;
-          btn.textContent = "Download as PNG";
-        }
-      });
-
-      btn.addEventListener("click", function () {
-        var doc = frame.contentDocument;
-        if (!doc || !doc.body) {
-          alert("Newsletter is still loading. Try again in a moment.");
-          return;
-        }
-        var el = doc.querySelector(".newsletter") || doc.body;
-        btn.disabled = true;
-        btn.textContent = "Creating image…";
-        var script = doc.createElement("script");
-        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-        script.crossOrigin = "anonymous";
-        script.onload = function () {
-          if (typeof doc.defaultView.html2canvas !== "function") {
-            btn.disabled = false;
-            btn.textContent = "Download as PNG";
-            alert("Could not create image. Try again.");
-            return;
-          }
-          doc.defaultView.html2canvas(el, {
-            useCORS: true,
-            allowTaint: true,
-            scale: 2,
-            backgroundColor: "#0b0f1c",
-            logging: false
-          }).then(function (canvas) {
-            parent.postMessage({ type: "nl-png", data: canvas.toDataURL("image/png") }, "*");
-          }).catch(function () {
-            parent.postMessage({ type: "nl-png", data: null }, "*");
-          });
-        };
-        script.onerror = function () {
-          btn.disabled = false;
-          btn.textContent = "Download as PNG";
-          alert("Could not load image tool. Check your connection and try again.");
-        };
-        doc.head.appendChild(script);
-      });
     })();
   </script>
 </body>

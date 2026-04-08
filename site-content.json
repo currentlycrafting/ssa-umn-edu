@@ -1,18 +1,72 @@
 {
   "galleryImages": [],
-  "boardMembers": [],
+  "boardMembers": [
+    {
+      "id": "bm-4",
+      "name": "Dahir Munye",
+      "role": "President",
+      "major": "",
+      "image": "board-images/Dahir Munye - President.png"
+    },
+    {
+      "id": "bm-2",
+      "name": "Aisha Dakol",
+      "role": "Vice President",
+      "major": "",
+      "image": "board-images/Aisha Dakol - Vice President.png"
+    },
+    {
+      "id": "bm-9",
+      "name": "Ruweyda Warsame",
+      "role": "Co-Committee Chair",
+      "major": "",
+      "image": "board-images/Ruweyda Warsame - Co-Committee Chair.png"
+    },
+    {
+      "id": "bm-11",
+      "name": "Salman Said",
+      "role": "Co-Committee Chair",
+      "major": "",
+      "image": "board-images/Salman Said - Co-Committee Chair.png"
+    },
+    {
+      "id": "bm-5",
+      "name": "Ifrah Ali",
+      "role": "Treasurer",
+      "major": "",
+      "image": "board-images/Ifrah Ali - Treasurer.png"
+    },
+    {
+      "id": "bm-6",
+      "name": "Ikhlas Abdi",
+      "role": "Outreach Coordinator",
+      "major": "",
+      "image": "board-images/Ikhlas Abdi - Outreach Coordinator.png"
+    },
+    {
+      "id": "bm-3",
+      "name": "Ashaar Ali",
+      "role": "Co-Public Relations",
+      "major": "",
+      "image": "board-images/Ashaar Ali - Co-Public Relations.png"
+    },
+    {
+      "id": "bm-10",
+      "name": "Salma Tawane",
+      "role": "Secretary",
+      "major": "",
+      "image": "board-images/Salma Tawane - Secretary.png"
+    }
+  ],
   "boardOrder": [
-    "board-images/Dahir Munye - President.png",
-    "board-images/Aisha Dakol - Vice President.png",
-    "board-images/Ruweyda Warsame - Co-Committee Chair.png",
-    "board-images/Salman Said - Co-Committee Chair.png",
-    "board-images/Ifrah Ali - Treasurer.png",
-    "board-images/Ikhlas Abdi - Outreach Coordinator.png",
-    "board-images/Ashaar Ali - Co-Public Relations.png",
-    "board-images/Maida Ahmed - Co-Public Relations.png",
-    "board-images/Salma Tawane - Secretary.png",
-    "board-images/Ahlam Abdul - Co-Event Coordinator.png",
-    "board-images/Layla Salad - Co-Event Coordinator.png"
+    "bm-4",
+    "bm-2",
+    "bm-9",
+    "bm-11",
+    "bm-5",
+    "bm-6",
+    "bm-3",
+    "bm-10"
   ],
   "galleryOrder": [
     "gallery/100_0556.JPG",

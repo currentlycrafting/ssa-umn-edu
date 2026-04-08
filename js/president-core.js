@@ -705,10 +705,9 @@ function renderRoleDeliverableInputs() {
     "Director of Finance & Development - Development": "e.g. Sponsorship targets confirmed; grant narrative drafted; funding checklist by [date].",
     "Director of Events & Experiences": "e.g. Event day timeline locked; volunteer assignments and run-of-show shared with ops by [date].",
     "Executive Producer, Somali Night — Production": "e.g. Rehearsal schedule and run-of-show finalized; technical and backstage coordination confirmed by [date].",
-    "Director of Brand & Marketing": "e.g. Campaign assets and social calendar approved; promo materials ready for review by [date].",
+    "Director of Brand & Marketing — Creative & Engagement": "e.g. Campaign visuals, social rollout, and activation beats approved; promo kit ready by [date].",
+    "Director of Brand & Marketing — Content & Narrative": "e.g. Announcements, captions, newsletters, and web copy finalized; messaging brief by [date].",
     "Director of Strategic Relations & Advancement": "e.g. Sponsor commitments and outreach log updated; partnership deliverables by [date].",
-    "Director of Editorial & Communications": "e.g. Announcements, captions, and event copy finalized; newsletter blurb by [date].",
-    "Director of Campus Activation": "e.g. Campus outreach plan and tabling schedule confirmed; activation checklist by [date].",
     "Executive Producer, Somali Night — Creative": "e.g. Creative direction and content milestones approved; creative handoff to production by [date].",
     "Executive President": "e.g. Executive sign-off on scope and timeline; key decisions documented by [date].",
     "Vice President, Chief of Internal Affairs": "e.g. Internal division alignment and resource check; internal sign-off by [date].",
@@ -1035,6 +1034,40 @@ window.siteRemoveGalleryPhoto = function siteRemoveGalleryPhoto(filename) {
     })
     .catch(function () { showToast('Remove failed.'); });
 };
+var _boardPersistTimer = null;
+function schedulePersistBoard() {
+  if (_boardPersistTimer) clearTimeout(_boardPersistTimer);
+  _boardPersistTimer = setTimeout(function () {
+    _boardPersistTimer = null;
+    sitePersistBoardMembers().catch(function () {});
+  }, 600);
+}
+
+function sitePersistBoardMembers() {
+  const token = typeof getSessionToken === 'function' ? getSessionToken() : '';
+  if (!token) {
+    showToast('You must be logged in.');
+    return Promise.reject(new Error('no token'));
+  }
+  const boardOrder = siteContentBoard.map(function (m) {
+    const id = String(m.id || '').trim();
+    return id || String(m.image || '').trim();
+  }).filter(Boolean);
+  return fetch('/api/site/board-members', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'x-session-token': token },
+    body: JSON.stringify({ boardMembers: siteContentBoard, boardOrder: boardOrder })
+  })
+    .then(function (r) { return r.json().then(function (data) { if (!r.ok) throw new Error(data.error || 'Save failed'); return data; }); })
+    .then(function (data) {
+      if (data.boardMembers) {
+        siteContentBoard = data.boardMembers;
+        renderSiteBoardList();
+      }
+      return data;
+    });
+}
+
 function renderSiteBoardList() {
   const boardHtml = siteContentBoard.map(function (m, i) {
     const imgSrc = (m.image && m.image.startsWith('/')) ? (window.location.origin + m.image) : (m.image || '');
@@ -1066,9 +1099,20 @@ function renderSiteBoardList() {
       const idx = parseInt(input.dataset.boardIndex, 10);
       const field = input.dataset.boardField;
       if (siteContentBoard[idx]) siteContentBoard[idx][field] = input.value;
+      schedulePersistBoard();
     });
   });
 }
+
+window.siteSaveBoardToServer = function siteSaveBoardToServer() {
+  if (_boardPersistTimer) {
+    clearTimeout(_boardPersistTimer);
+    _boardPersistTimer = null;
+  }
+  sitePersistBoardMembers()
+    .then(function () { showToast('Saved to site-content.json.'); })
+    .catch(function (e) { showToast((e && e.message) ? e.message : 'Save failed'); });
+};
 var siteBoardPhotoInput = null;
 function siteBoardPhotoInputEl() {
   if (!siteBoardPhotoInput) {
@@ -1086,19 +1130,23 @@ function siteBoardPhotoInputEl() {
       if (!file || !siteContentBoard[idx]) return;
       var fd = new FormData();
       fd.append('photo', file);
-      fd.append('name', siteContentBoard[idx].name || '');
-      fd.append('role', siteContentBoard[idx].role || '');
       var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
       fetch('/api/site/board/upload', { method: 'POST', headers: { 'x-session-token': token }, body: fd })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (data.path) {
-            fetch('/api/public/site-content').then(function (r) { return r.json(); }).then(function (content) {
-              if (content.boardMembers) { siteContentBoard = content.boardMembers; renderSiteBoardList(); showToast('Photo saved to folder.'); }
-            });
+            var prev = (siteContentBoard[idx].image || '').split('/').pop();
+            var nextBase = data.path.split('/').pop();
+            siteContentBoard[idx].image = data.path;
+            var p = Promise.resolve();
+            if (prev && prev !== nextBase) {
+              p = fetch('/api/site/board/file/' + encodeURIComponent(prev), { method: 'DELETE', headers: { 'x-session-token': token } }).catch(function () {});
+            }
+            return p.then(function () { return sitePersistBoardMembers(); });
           }
         })
-        .catch(function () {});
+        .then(function () { showToast('Photo saved.'); })
+        .catch(function (e) { showToast((e && e.message) ? e.message : 'Upload failed'); });
     };
     document.body.appendChild(siteBoardPhotoInput);
   }
@@ -1235,15 +1283,16 @@ window.siteSaveBoard = async function siteSaveBoard() {
     if (res.ok && Array.isArray(data.boardMembers)) {
       siteContentBoard = data.boardMembers;
       renderSiteBoardList();
-      showToast('Board refreshed from folder.');
+      showToast('Board reloaded from site-content.json.');
     }
   } catch (e) {
     showToast(e.message || 'Refresh failed');
   }
 };
 window.siteAddBoardMember = function siteAddBoardMember() {
+  var nid = (typeof crypto !== 'undefined' && crypto.randomUUID) ? ('bm-' + crypto.randomUUID()) : ('bm-' + Date.now());
   siteContentBoard.push({
-    id: 'new-' + Date.now(),
+    id: nid,
     name: '',
     role: 'Executive Board Member',
     major: '',
@@ -1260,7 +1309,9 @@ window.siteMoveBoardMember = function siteMoveBoardMember(index, delta) {
   arr[next] = t;
   siteContentBoard = arr;
   renderSiteBoardList();
-  var order = siteContentBoard.map(function (m) { return m.image || ''; }).filter(Boolean);
+  var order = siteContentBoard.map(function (m) {
+    return String(m.id || '').trim() || String(m.image || '').trim();
+  }).filter(Boolean);
   if (order.length === 0) return;
   var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
   if (!token) return;
@@ -1279,6 +1330,7 @@ window.siteRemoveBoardMember = function siteRemoveBoardMember(index) {
   if (!filename) {
     siteContentBoard.splice(index, 1);
     renderSiteBoardList();
+    sitePersistBoardMembers().then(function () { showToast('Member removed.'); }).catch(function () { showToast('Save failed.'); });
     return;
   }
   var token = typeof getSessionToken === 'function' ? getSessionToken() : '';
@@ -1289,7 +1341,7 @@ window.siteRemoveBoardMember = function siteRemoveBoardMember(index) {
       if (data.boardMembers) {
         siteContentBoard = data.boardMembers;
         renderSiteBoardList();
-        showToast('Member removed from folder.');
+        showToast('Member removed.');
       } else {
         showToast('Remove failed.');
       }

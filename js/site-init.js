@@ -9,9 +9,8 @@
   setupAdminPanel();
   setupScrollAndReveal();
   setupFullGalleryModal();
-  setupFullCalendarModal();
   setupGalleryLightbox();
   setupCursorGlow();
-  setupVoicesCarousel();
+  setupFeaturedMedia();
   setupIndexInfoPopup();
 })();

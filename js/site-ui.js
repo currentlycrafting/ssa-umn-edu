@@ -52,36 +52,6 @@ function setupFullGalleryModal() {
   });
 }
 
-function setupFullCalendarModal() {
-  var openBtn = document.getElementById('open-full-calendar');
-  var modal = document.getElementById('full-calendar-modal');
-  var closeBtn = document.getElementById('close-full-calendar');
-  var backdrop = document.querySelector('[data-close-full-calendar]');
-
-  var openModal = function() {
-    if (!modal) return;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('gallery-open');
-  };
-  var closeModal = function() {
-    if (!modal) return;
-    modal.classList.remove('open');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('gallery-open');
-  };
-
-  openBtn?.addEventListener('click', function(e) {
-    e.preventDefault();
-    openModal();
-  });
-  closeBtn?.addEventListener('click', closeModal);
-  backdrop?.addEventListener('click', closeModal);
-  window.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal?.classList.contains('open')) closeModal();
-  });
-}
-
 function setupGalleryLightbox() {
   var lightbox = document.getElementById('gallery-lightbox');
   var lightboxImg = document.getElementById('gallery-lightbox-img');
@@ -141,34 +111,109 @@ function setupCursorGlow() {
   window.addEventListener('mouseleave', function() { glow.style.opacity = '0'; });
 }
 
-function setupVoicesCarousel() {
-  var track = document.getElementById('voices-track');
-  var prev = document.getElementById('voices-prev');
-  var next = document.getElementById('voices-next');
-  if (!track) return;
-  var cards = Array.from(track.children).filter(function(el) { return el instanceof HTMLElement; });
-  if (cards.length <= 1) return;
-  var index = 0;
+function setupFeaturedMedia() {
+  var posterImg = document.getElementById('somali-night-poster-img');
+  var posterCfg = window.SSA_POSTER;
+  if (posterImg && posterCfg && posterCfg.somaliNightPosterSrc) {
+    posterImg.src = posterCfg.somaliNightPosterSrc;
+  }
 
-  var cardGap = 14;
-  var apply = function() {
-    var card = cards[index];
-    var w = card?.getBoundingClientRect().width || 0;
-    track.style.transform = 'translateX(' + (-index * (w + cardGap)) + 'px)';
-  };
-  var go = function(dir) {
-    index = (index + dir + cards.length) % cards.length;
-    apply();
-  };
+  var modal = document.getElementById('ssa-video-modal');
+  var iframe = document.getElementById('ssa-video-iframe');
+  var nativeVideo = document.getElementById('ssa-video-native');
+  var titleEl = document.getElementById('ssa-video-modal-title');
+  var unconf = document.getElementById('ssa-video-unconfigured');
+  var closeBtn = document.getElementById('close-ssa-video');
+  var backdrop = document.querySelector('[data-close-ssa-video]');
+  if (!modal || !iframe) return;
 
-  prev?.addEventListener('click', function() { go(-1); });
-  next?.addEventListener('click', function() { go(1); });
-  window.addEventListener('resize', apply, { passive: true });
+  function closeVideoModal() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('gallery-open');
+    iframe.src = '';
+    iframe.style.display = '';
+    if (nativeVideo) {
+      nativeVideo.pause();
+      nativeVideo.removeAttribute('src');
+      nativeVideo.load();
+      nativeVideo.style.display = 'none';
+    }
+    if (unconf) unconf.style.display = 'none';
+  }
 
-  var timer = window.setInterval(function() { go(1); }, 6500);
-  track.addEventListener('mouseenter', function() { if (timer) window.clearInterval(timer); timer = 0; });
-  track.addEventListener('mouseleave', function() { if (!timer) timer = window.setInterval(function() { go(1); }, 6500); });
-  apply();
+  /**
+   * @param {string} title
+   * @param {{ youtubeId?: string, videoSrc?: string }} opts
+   */
+  function openVideoModal(title, opts) {
+    opts = opts || {};
+    var youtubeId = opts.youtubeId != null ? String(opts.youtubeId).trim() : '';
+    var videoSrc = opts.videoSrc != null ? String(opts.videoSrc).trim() : '';
+
+    if (titleEl) titleEl.textContent = title || 'Video';
+
+    if (videoSrc && nativeVideo) {
+      if (unconf) unconf.style.display = 'none';
+      iframe.src = '';
+      iframe.style.display = 'none';
+      nativeVideo.style.display = 'block';
+      nativeVideo.src = videoSrc;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('gallery-open');
+      return;
+    }
+
+    iframe.style.display = '';
+    if (nativeVideo) {
+      nativeVideo.style.display = 'none';
+      nativeVideo.pause();
+      nativeVideo.removeAttribute('src');
+      nativeVideo.load();
+    }
+
+    if (!youtubeId) {
+      iframe.src = '';
+      if (unconf) unconf.style.display = 'block';
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('gallery-open');
+      return;
+    }
+
+    if (unconf) unconf.style.display = 'none';
+    iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(youtubeId) + '?rel=0';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('gallery-open');
+  }
+
+  var snBtn = document.getElementById('open-somali-night-video');
+  if (snBtn) {
+    snBtn.addEventListener('click', function () {
+      var id = (window.SSA_PUBLIC_MEDIA && window.SSA_PUBLIC_MEDIA.somaliNightYoutubeId) || '';
+      openVideoModal('Somali Night', { youtubeId: id });
+    });
+  }
+  var atBtn = document.getElementById('open-aisha-tribute-video');
+  if (atBtn) {
+    atBtn.addEventListener('click', function () {
+      var m = window.SSA_PUBLIC_MEDIA || {};
+      var fileSrc = (m.aishaTributeVideoSrc || '').trim();
+      var ytId = (m.aishaTributeYoutubeId || '').trim();
+      if (fileSrc) {
+        openVideoModal('Aisha’s tribute', { videoSrc: fileSrc });
+      } else {
+        openVideoModal('Aisha’s tribute', { youtubeId: ytId });
+      }
+    });
+  }
+  closeBtn && closeBtn.addEventListener('click', closeVideoModal);
+  backdrop && backdrop.addEventListener('click', closeVideoModal);
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeVideoModal();
+  });
 }
 
 function setupIndexInfoPopup() {
@@ -241,17 +286,6 @@ function setupIndexInfoPopup() {
       return { eyebrow: tag || 'Upcoming Events', title: title, bodyHtml: (desc ? '<p>' + escapeHtml(desc) + '</p>' : '') + linkHtml };
     }
 
-    if (el.classList.contains('voice-card')) {
-      var quote = el.querySelector('.voice-quote')?.textContent?.trim() || 'Voice';
-      var body = el.querySelector('.voice-body')?.textContent?.trim() || '';
-      var name = el.querySelector('.voice-name')?.textContent?.trim() || '';
-      var tag = el.querySelector('.voice-tag')?.textContent?.trim() || '';
-      var footer = (name || tag)
-        ? '<p style="margin-top:16px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-light);">' + escapeHtml([name, tag].filter(Boolean).join(' · ')) + '</p>'
-        : '';
-      return { eyebrow: 'Voices', title: quote.replace(/^"|"$/g, ''), bodyHtml: (body ? '<p>' + escapeHtml(body) + '</p>' : '') + footer };
-    }
-
     if (el.classList.contains('alumni-card')) {
       var title = el.querySelector('h3')?.textContent?.trim() || 'Alumni';
       var role = el.querySelector('.role')?.textContent?.trim() || '';
@@ -269,7 +303,7 @@ function setupIndexInfoPopup() {
       node.setAttribute('role', 'button');
     });
   };
-  makeClickable('.event-image-side, .pillar, .voice-card, .alumni-card');
+  makeClickable('.event-image-side, .pillar, .leader-card, .alumni-card');
 
   document.addEventListener('click', function(e) {
     var t = e.target;
@@ -277,8 +311,6 @@ function setupIndexInfoPopup() {
       t.closest('.event-image-side') ||
       t.closest('.pillar') ||
       t.closest('.leader-card') ||
-      t.closest('.event-row') ||
-      t.closest('.voice-card') ||
       t.closest('.alumni-card');
     if (!target) return;
     if (t.closest('a, button')) return;
@@ -295,8 +327,6 @@ function setupIndexInfoPopup() {
       t.closest('.event-image-side') ||
       t.closest('.pillar') ||
       t.closest('.leader-card') ||
-      t.closest('.event-row') ||
-      t.closest('.voice-card') ||
       t.closest('.alumni-card');
     if (!target) return;
     if (!target.classList.contains('click-popup')) return;

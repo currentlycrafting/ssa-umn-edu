@@ -34,7 +34,7 @@
     </a>
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
-      <li><a href="#events">Events</a></li>
+      <li><a href="join.html#events">Events</a></li>
       <li><a href="newsletter.html">Newsletter</a></li>
       <li><a href="#gallery">Gallery</a></li>
       <li><a href="#leadership">Leadership</a></li>
@@ -62,13 +62,6 @@
         <a href="ops-login.html" class="btn-ghost">Are You a Board Member?</a>
       </div>
     </div>
-    <div class="hero-scroll-indicator" aria-label="Scroll to explore">
-      <svg class="scroll-mouse" viewBox="0 0 24 38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <rect x="4" y="2" width="16" height="28" rx="8"/>
-        <line x1="12" y1="8" x2="12" y2="14"/>
-        <path d="M8 20l4 4 4-4"/>
-      </svg>
-    </div>
   </section>
 
   <section id="mission">
@@ -93,7 +86,7 @@
 
   <section id="signature-event">
     <div class="event-image-side">
-      <img src="events/somali_night_poster.png" alt="Somali Night — Echoes from the Past" loading="lazy" />
+      <img id="somali-night-poster-img" src="events/somali-night-official-poster.png" alt="Somali Night poster" loading="lazy" onerror="this.onerror=null;this.src='events/somali_night_poster.png'" />
       <div class="event-image-overlay"></div>
     </div>
     <div class="event-content-side">
@@ -118,7 +111,7 @@
           </div>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <a href="#events" class="btn-primary admin-editable-link" data-link-key="signature-dates-link">View Upcoming Dates</a>
+          <button type="button" class="btn-primary" id="open-somali-night-video">View Video</button>
         </div>
       </div>
     </div>
@@ -148,6 +141,9 @@
       </p>
       <p>
         From cultural events to academic resources, community dinners to large-scale productions, SSA has been a home for Somali students at UMN for over a decade.
+      </p>
+      <p style="margin-top:20px;">
+        <button type="button" class="btn-primary" id="open-aisha-tribute-video" style="border-color:var(--gold);background:linear-gradient(135deg,rgba(184,154,92,.25),rgba(184,154,92,.08));color:var(--gold-light);">View Aisha’s Tribute</button>
       </p>
       <div class="about-pillars">
         <div class="pillar">
@@ -179,149 +175,6 @@
     <div id="leadership-grid" class="leadership-grid reveal reveal-delay-1"></div>
   </section>
 
-  <section id="events">
-    <div class="events-header reveal">
-      <div>
-        <div class="section-label">Calendar</div>
-        <h2>Upcoming Events</h2>
-      </div>
-      <a href="#" id="open-full-calendar" class="btn-ghost" style="font-size:10px;">Full Calendar</a>
-    </div>
-    <div id="events-list" class="events-list reveal reveal-delay-1"></div>
-  </section>
-
-  <section id="voices">
-    <div class="voices-header reveal">
-      <div>
-        <div class="section-label">Voices</div>
-        <h2>What SSA feels like</h2>
-      </div>
-      <div class="voices-controls">
-        <button type="button" class="voices-btn" id="voices-prev" aria-label="Previous">‹</button>
-        <button type="button" class="voices-btn" id="voices-next" aria-label="Next">›</button>
-      </div>
-    </div>
-    <div class="voices-track-wrap reveal reveal-delay-1">
-      <div class="voices-track" id="voices-track">
-        <article class="voice-card">
-          <div class="voice-quote">"A real home on campus."</div>
-          <div class="voice-body">SSA is where culture, ambition, and community meet. You show up, you're seen, and you're pushed to execute.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Member</div>
-            <div class="voice-tag">Community</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"High standards, real leadership."</div>
-          <div class="voice-body">It's not just events — it's systems, accountability, and people who care about doing things the right way.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Board alum</div>
-            <div class="voice-tag">Leadership</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"You grow fast here."</div>
-          <div class="voice-body">You learn how to run timelines, collaborate across roles, and deliver. SSA makes excellence feel normal.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Intern</div>
-            <div class="voice-tag">Pipeline</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"The kind of community that lasts."</div>
-          <div class="voice-body">People actually check on you, push you, and celebrate you. It's not surface-level — it's real.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Member</div>
-            <div class="voice-tag">Belonging</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"I learned execution, not just ideas."</div>
-          <div class="voice-body">SSA taught me how to plan, communicate early, and close the loop. That skill stays with you.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Board alum</div>
-            <div class="voice-tag">Systems</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"Culture, but elevated."</div>
-          <div class="voice-body">Everything feels intentional — from the way events are run to how people show up for each other.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Member</div>
-            <div class="voice-tag">Heritage</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"Leadership with accountability."</div>
-          <div class="voice-body">You're expected to deliver, but you're also supported. That balance is rare on campus.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Intern</div>
-            <div class="voice-tag">Growth</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"Somali Night made it click."</div>
-          <div class="voice-body">Seeing everyone coordinate across roles showed me what SSA means by excellence.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Attendee</div>
-            <div class="voice-tag">Flagship</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"A standard I wanted to match."</div>
-          <div class="voice-body">Being around driven people raised my own expectations — in school and beyond.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Member</div>
-            <div class="voice-tag">Excellence</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"I found my people."</div>
-          <div class="voice-body">I came for community and stayed for the purpose. It feels like family, with direction.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Member</div>
-            <div class="voice-tag">Community</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"Confidence through contribution."</div>
-          <div class="voice-body">When you're trusted with real work, you grow. SSA made me believe I could lead.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Intern</div>
-            <div class="voice-tag">Pipeline</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"Structured, but still warm."</div>
-          <div class="voice-body">It's organized without feeling rigid — the systems exist to help people succeed together.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Board alum</div>
-            <div class="voice-tag">Operations</div>
-          </div>
-        </article>
-        <article class="voice-card">
-          <div class="voice-quote">"SSA made campus feel smaller."</div>
-          <div class="voice-body">You always have faces you recognize and people you can count on. That changes everything.</div>
-          <div class="voice-meta">
-            <div class="voice-name">Member</div>
-            <div class="voice-tag">Support</div>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <div id="full-calendar-modal" class="full-gallery-modal" aria-hidden="true">
-    <div class="full-gallery-backdrop" data-close-full-calendar></div>
-    <div class="full-gallery-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <h3 style="font-family:var(--font-display);font-size:32px;font-weight:400;">Full Calendar</h3>
-        <button id="close-full-calendar" class="btn-ghost" type="button">Close</button>
-      </div>
-      <div id="full-calendar-list" class="events-list" style="margin-top:18px;"></div>
-    </div>
-  </div>
-
   <section id="alumni">
     <div class="alumni-header reveal">
       <div class="section-label" style="justify-content:center;"><span style="display:block;width:24px;height:1px;background:var(--gold)"></span>Alumni</div>
@@ -331,38 +184,56 @@
     <div class="alumni-grid reveal reveal-delay-1">
       <div class="alumni-card">
         <div class="alumni-avatar">
-          <img src="about-ssa-images/about-ssa.JPG" alt="Alumni" style="object-position: 15% 5%;" loading="lazy" />
+          <img src="assets/alumni/mowlid-hassan.png" alt="Mowlid Hassan" loading="lazy" />
         </div>
         <div class="alumni-info">
           <h3>Mowlid Hassan</h3>
-          <div class="role">President</div>
+          <div class="role">Alumni</div>
         </div>
       </div>
       <div class="alumni-card">
         <div class="alumni-avatar">
-          <img src="about-ssa-images/about-ssa.JPG" alt="Alumni" style="object-position: 80% 5%;" loading="lazy" />
+          <img src="assets/alumni/anisa-hassan.png" alt="Anisa Hassan" loading="lazy" />
         </div>
         <div class="alumni-info">
           <h3>Anisa Hassan</h3>
-          <div class="role">President</div>
+          <div class="role">Alumni</div>
         </div>
       </div>
       <div class="alumni-card">
         <div class="alumni-avatar">
-          <img src="about-ssa-images/about-ssa.JPG" alt="Alumni" style="object-position: 75% 5%;" loading="lazy" />
+          <img src="assets/alumni/adnan-jeilani.png" alt="Adnan Jeilani" loading="lazy" />
         </div>
         <div class="alumni-info">
-          <h3>Adnan Jeylani</h3>
-          <div class="role">Vice President</div>
+          <h3>Adnan Jeilani</h3>
+          <div class="role">Alumni</div>
         </div>
       </div>
       <div class="alumni-card">
         <div class="alumni-avatar">
-          <img src="about-ssa-images/about-ssa.JPG" alt="Alumni" style="object-position: 45% 5%;" loading="lazy" />
+          <img src="assets/alumni/bahja-mohamed.png" alt="Bahja Mohamed" loading="lazy" />
         </div>
         <div class="alumni-info">
           <h3>Bahja Mohamed</h3>
-          <div class="role">Vice President</div>
+          <div class="role">Alumni</div>
+        </div>
+      </div>
+      <div class="alumni-card">
+        <div class="alumni-avatar">
+          <img src="assets/alumni/dahir-munye.png" alt="Dahir Munye" loading="lazy" />
+        </div>
+        <div class="alumni-info">
+          <h3>Dahir Munye</h3>
+          <div class="role">Alumni</div>
+        </div>
+      </div>
+      <div class="alumni-card">
+        <div class="alumni-avatar">
+          <img src="assets/alumni/aisha-dakol.png" alt="Aisha Dakol" loading="lazy" />
+        </div>
+        <div class="alumni-info">
+          <h3>Aisha Dakol</h3>
+          <div class="role">Alumni</div>
         </div>
       </div>
     </div>
@@ -408,6 +279,21 @@
       </a>
     </div>
   </footer>
+
+  <div id="ssa-video-modal" class="full-gallery-modal ssa-video-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Video">
+    <div class="full-gallery-backdrop" data-close-ssa-video></div>
+    <div class="full-gallery-card ssa-video-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+        <h3 id="ssa-video-modal-title" style="font-family:var(--font-display);font-size:22px;font-weight:400;margin:0;">Video</h3>
+        <button type="button" id="close-ssa-video" class="ssa-video-close-x" aria-label="Close video">✕</button>
+      </div>
+      <div class="ssa-video-frame-wrap">
+        <iframe id="ssa-video-iframe" title="Video player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <video id="ssa-video-native" class="ssa-video-native" controls playsinline preload="metadata" title="Aisha Dakol tribute"></video>
+      </div>
+      <p id="ssa-video-unconfigured" style="display:none;font-size:13px;color:var(--silver);margin-top:12px;">Set a video in <code>js/public-media.js</code> (e.g. <code>aishaTributeVideoSrc</code> or YouTube IDs).</p>
+    </div>
+  </div>
 
   <div id="full-gallery-modal" class="full-gallery-modal" aria-hidden="true">
     <div class="full-gallery-backdrop" data-close-full-gallery></div>
@@ -465,6 +351,7 @@
     </div>
   </div>
 
+  <script src="js/public-media.js"></script>
   <script src="js/site-data.js"></script>
   <script src="js/site-render.js"></script>
   <script src="js/site-admin.js"></script>

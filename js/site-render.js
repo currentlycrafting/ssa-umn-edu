@@ -160,7 +160,22 @@ function renderGallery() {
 
   var images = getGalleryImages();
   homeGrid.innerHTML = renderItems(images.slice(0, 3));
-  fullGrid.innerHTML = renderItems(images);
+  var extraFull = [
+    { id: 'full-gallery-about', src: 'about-ssa-images/about-ssa.JPG', alt: 'SSA members' },
+    { id: 'full-gallery-sn-poster', src: 'events/somali-night-official-poster.png', alt: 'Somali Night poster' },
+    { id: 'full-gallery-sn-fallback', src: 'events/somali_night_poster.png', alt: 'Somali Night' }
+  ];
+  var seen = {};
+  images.forEach(function (img) { seen[String(img.src || '').replace(/^\/+/, '')] = true; });
+  var merged = images.concat(
+    extraFull.filter(function (img) {
+      var k = String(img.src || '').replace(/^\/+/, '');
+      if (!k || seen[k]) return false;
+      seen[k] = true;
+      return true;
+    })
+  );
+  fullGrid.innerHTML = renderItems(merged);
 }
 
 function renderAllDynamicSections() {
@@ -175,7 +190,11 @@ function loadSiteContentFromServer() {
     .then(function(data) {
       if (data) {
         if (Array.isArray(data.galleryImages)) serverSiteContent.galleryImages = data.galleryImages;
-        if (Array.isArray(data.boardMembers)) serverSiteContent.boardMembers = data.boardMembers;
+        if (Array.isArray(data.boardMembers)) {
+          serverSiteContent.boardMembers = data.boardMembers;
+          siteData.boardMembers = data.boardMembers.map(function (m) { return Object.assign({}, m); });
+          saveSiteData();
+        }
         if (Array.isArray(data.newsletters)) serverSiteContent.newsletters = data.newsletters;
         if (Array.isArray(data.events)) {
           serverSiteContent.events = data.events;

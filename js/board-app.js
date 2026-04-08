@@ -22,6 +22,96 @@ let ACTIVE_DEP_EVENT_ID = null;
 let SUBMIT_EVENT_FILTER = null;
 
 /* ─────────────────────────────────────
+   QUICK TOUR (Board)
+───────────────────────────────────── */
+let __boardTourIdx = 0;
+let __boardTourInited = false;
+const BOARD_TOUR_STORAGE_KEY = "ssa_tour_seen_board_v1";
+const BOARD_TOUR_STEPS = [
+  {
+    title: "Welcome",
+    body: `
+      <div style="font-size:12px;color:var(--silver);line-height:1.8">
+        This dashboard is your personal workspace. You’ll mostly live in <strong style="color:var(--white)">My Tasks</strong>.
+        When you finish something, you submit it for review, and your VP (or President) signs it off.
+      </div>
+    `
+  },
+  {
+    title: "Where to work",
+    body: `
+      <div style="display:grid;gap:10px">
+        <div class="card-sm">
+          <div class="section-label">My Tasks</div>
+          <div style="font-size:12px;color:var(--silver);line-height:1.8">Your full list. Open a task to see details and what “done” should look like.</div>
+        </div>
+        <div class="card-sm">
+          <div class="section-label">Redo</div>
+          <div style="font-size:12px;color:var(--silver);line-height:1.8">If a reviewer sends something back, it shows here. Fix it, then submit again.</div>
+        </div>
+        <div class="card-sm">
+          <div class="section-label">Submit Work</div>
+          <div style="font-size:12px;color:var(--silver);line-height:1.8">Submit a completion update for review. Keep the summary clear and specific.</div>
+        </div>
+      </div>
+    `
+  },
+  {
+    title: "How to complete tasks (recommended)",
+    body: `
+      <div style="font-size:12px;color:var(--silver);line-height:1.9">
+        <ol style="margin:0;padding-left:18px">
+          <li>Open the task and read the description + due date.</li>
+          <li>Do the work.</li>
+          <li>Go to <strong style="color:var(--white)">Submit Work</strong> and write a short completion summary (what you did + what’s ready for review).</li>
+          <li>Submit. Your VP reviews it and either approves or requests redo.</li>
+        </ol>
+      </div>
+    `
+  }
+];
+
+function renderBoardTour() {
+  const step = BOARD_TOUR_STEPS[Math.max(0, Math.min(__boardTourIdx, BOARD_TOUR_STEPS.length - 1))];
+  const title = document.getElementById("board-tour-title");
+  const body = document.getElementById("board-tour-body");
+  if (title) title.textContent = `Quick Tour · ${step.title}`;
+  if (body) body.innerHTML = step.body;
+}
+
+window.openBoardTour = function openBoardTour() {
+  const host = document.getElementById("board-tour-modal");
+  if (!host) return;
+  __boardTourIdx = 0;
+  renderBoardTour();
+  openModal("board-tour-modal");
+};
+window.closeBoardTour = function closeBoardTour() {
+  closeModal("board-tour-modal");
+};
+window.boardTourNext = function boardTourNext() {
+  __boardTourIdx = Math.min(BOARD_TOUR_STEPS.length - 1, __boardTourIdx + 1);
+  renderBoardTour();
+};
+window.boardTourPrev = function boardTourPrev() {
+  __boardTourIdx = Math.max(0, __boardTourIdx - 1);
+  renderBoardTour();
+};
+window.finishBoardTour = function finishBoardTour() {
+  try { localStorage.setItem(BOARD_TOUR_STORAGE_KEY, "1"); } catch (_e) {}
+  closeModal("board-tour-modal");
+};
+function maybeAutoOpenBoardTour() {
+  if (__boardTourInited) return;
+  __boardTourInited = true;
+  try {
+    if (localStorage.getItem(BOARD_TOUR_STORAGE_KEY) === "1") return;
+  } catch (_e) {}
+  // Slight delay so the UI is visible before the modal pops.
+  setTimeout(() => window.openBoardTour && window.openBoardTour(), 500);
+}
+
+/* ─────────────────────────────────────
    INDEX GALLERY (board can add/remove/reorder; president pushes)
 ───────────────────────────────────── */
 var boardGalleryImagesCurrent = [];
@@ -422,6 +512,7 @@ async function initBoardLive() {
     renderCalendar();
     renderDownstream();
     renderReportsLive();
+    maybeAutoOpenBoardTour();
     startPolling(async () => {
       const hydrated = await hydrateBoardData();
       if (!hydrated) return;
@@ -1184,8 +1275,6 @@ function renderReportsLive() {
         const meta = `${r.event_name || 'No event'}${r.task_title ? ' · ' + r.task_title : ''} · ${r.created_at ? new Date(r.created_at).toLocaleString() : ''}`;
         const actions = USER.permission === 'president'
           ? `<div class="approval-actions">
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'reviewed')">Mark Reviewed</button>
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'needs_clarification')">Clarify</button>
               <button class="btn btn-red" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'archived')">Archive</button>
             </div>`
           : '';

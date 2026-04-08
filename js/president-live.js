@@ -13,6 +13,127 @@
   let pendingConfirmAction = null;
   let hydrateDashboardBusy = false;
   window.__showArchivedReports = false;
+  let __presTourInited = false;
+  let __presTourIdx = 0;
+  const PRES_TOUR_STORAGE_KEY = "ssa_tour_seen_president_v1";
+  const PRES_TOUR_STEPS = [
+    {
+      title: "Welcome",
+      body: `
+        <div style="font-size:12px;color:var(--silver);line-height:1.8">
+          This is the Executive President command center. Your core loop is:
+          <strong style="color:var(--white)">create events → assign tasks → review submissions → keep timelines moving</strong>.
+        </div>
+      `
+    },
+    {
+      title: "Create an event (fast path)",
+      body: `
+        <div style="font-size:12px;color:var(--silver);line-height:1.9">
+          <ol style="margin:0;padding-left:18px">
+            <li>Click <strong style="color:var(--white)">+ Create Event</strong>.</li>
+            <li>Fill name/date/type/scope.</li>
+            <li>Select roles involved.</li>
+            <li>Use <strong style="color:var(--white)">Event Templates</strong> when possible.</li>
+            <li>Publish so tasks appear for members.</li>
+          </ol>
+        </div>
+      `
+    },
+    {
+      title: "Assign + edit tasks",
+      body: `
+        <div style="display:grid;gap:10px">
+          <div class="card-sm">
+            <div class="section-label">Assign</div>
+            <div style="font-size:12px;color:var(--silver);line-height:1.8">Use <strong style="color:var(--white)">Assign Tasks</strong> for one-off work. Choose role + due date. Keep descriptions concrete.</div>
+          </div>
+          <div class="card-sm">
+            <div class="section-label">Edit</div>
+            <div style="font-size:12px;color:var(--silver);line-height:1.8">Open a task → <strong style="color:var(--white)">Edit Task</strong> to adjust owner, due date, stage, and description.</div>
+          </div>
+          <div class="card-sm">
+            <div class="section-label">Review</div>
+            <div style="font-size:12px;color:var(--silver);line-height:1.8">In <strong style="color:var(--white)">Approval Queue</strong>, approve or request redo with a clear note.</div>
+          </div>
+        </div>
+      `
+    },
+    {
+      title: "Event templates",
+      body: `
+        <div style="font-size:12px;color:var(--silver);line-height:1.9">
+          Templates are the quickest way to build a clean workflow. Pick a template, apply it, then tweak tasks before publishing.
+        </div>
+      `
+    },
+    {
+      title: "Newsletter (AI workflow)",
+      body: `
+        <div style="font-size:12px;color:var(--silver);line-height:1.9">
+          <div class="card-sm" style="margin-bottom:10px">
+            <div class="section-label">1</div>
+            <div style="font-size:12px;color:var(--silver);line-height:1.8">In <strong style="color:var(--white)">Edit Newsletter</strong>, click <strong style="color:var(--white)">Generate draft</strong>.</div>
+          </div>
+          <div class="card-sm" style="margin-bottom:10px">
+            <div class="section-label">2</div>
+            <div style="font-size:12px;color:var(--silver);line-height:1.8">Copy the generated HTML and paste it into a separate AI prompt.</div>
+          </div>
+          <div class="card-sm" style="margin-bottom:10px">
+            <div class="section-label">3</div>
+            <div style="font-size:12px;color:var(--silver);line-height:1.8">Tell the AI to keep <strong style="color:var(--white)">the exact structure and tags</strong>; only change text/links.</div>
+          </div>
+          <div class="card-sm">
+            <div class="section-label">4</div>
+            <div style="font-size:12px;color:var(--silver);line-height:1.8">Paste the final structured HTML back into the source, then click <strong style="color:var(--white)">Publish</strong>.</div>
+          </div>
+        </div>
+      `
+    }
+  ];
+
+  function renderPresidentTour() {
+    const step = PRES_TOUR_STEPS[Math.max(0, Math.min(__presTourIdx, PRES_TOUR_STEPS.length - 1))];
+    const title = document.getElementById("president-tour-title");
+    const body = document.getElementById("president-tour-body");
+    if (title) title.textContent = `Quick Tour · ${step.title}`;
+    if (body) body.innerHTML = step.body;
+  }
+
+  window.openPresidentTour = function openPresidentTour() {
+    const host = document.getElementById("president-tour-modal");
+    if (!host) return;
+    __presTourIdx = 0;
+    renderPresidentTour();
+    host.classList.add("open");
+    host.setAttribute("aria-hidden", "false");
+  };
+  window.closePresidentTour = function closePresidentTour() {
+    const host = document.getElementById("president-tour-modal");
+    if (!host) return;
+    host.classList.remove("open");
+    host.setAttribute("aria-hidden", "true");
+  };
+  window.presidentTourNext = function presidentTourNext() {
+    __presTourIdx = Math.min(PRES_TOUR_STEPS.length - 1, __presTourIdx + 1);
+    renderPresidentTour();
+  };
+  window.presidentTourPrev = function presidentTourPrev() {
+    __presTourIdx = Math.max(0, __presTourIdx - 1);
+    renderPresidentTour();
+  };
+  window.finishPresidentTour = function finishPresidentTour() {
+    try { localStorage.setItem(PRES_TOUR_STORAGE_KEY, "1"); } catch (_e) {}
+    window.closePresidentTour();
+  };
+  function maybeAutoOpenPresidentTour() {
+    if (__presTourInited) return;
+    __presTourInited = true;
+    try {
+      if (localStorage.getItem(PRES_TOUR_STORAGE_KEY) === "1") return;
+    } catch (_e) {}
+    setTimeout(() => window.openPresidentTour && window.openPresidentTour(), 600);
+  }
   let confirmHoldTimer = null;
   let confirmHoldElapsed = 0;
 
@@ -246,10 +367,9 @@
     "Director of Finance & Development - Development",
     "Director of Events & Experiences",
     "Executive Producer, Somali Night — Production",
-    "Director of Brand & Marketing",
+    "Director of Brand & Marketing — Creative & Engagement",
+    "Director of Brand & Marketing — Content & Narrative",
     "Director of Strategic Relations & Advancement",
-    "Director of Editorial & Communications",
-    "Director of Campus Activation",
     "Executive Producer, Somali Night — Creative",
     "Executive President",
     "Vice President, Chief of Internal Affairs",
@@ -387,7 +507,7 @@
     const reports = window.__showArchivedReports ? allReports : allReports.filter((r) => String(r.status || "").toLowerCase() !== "archived");
     const esc = (s) => (s == null || s === "") ? "" : String(s).replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     root.innerHTML = reports.length
-      ? `<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="toggleArchivedReports()">${window.__showArchivedReports ? "Hide Archived" : "View Archived"}</button></div>` + reports
+      ? `<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="toggleArchivedReports()">${window.__showArchivedReports ? "Hide archived" : "View archived"}</button></div>` + reports
           .map(
             (r) => {
               const status = (r.status || "open").replace(/_/g, " ");
@@ -407,8 +527,6 @@
               <div style="font-size:10px;color:var(--silver);margin-top:8px">${esc(r.event_name || "No event")}${r.task_title ? " · " + esc(r.task_title) : ""} · ${r.created_at ? new Date(r.created_at).toLocaleString() : ""}</div>
             </div>
             <div class="approval-actions">
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'reviewed')">Review</button>
-              <button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="clarifyReport(${r.id})">Clarify</button>
               <button class="btn btn-red" style="font-size:9px;padding:5px 10px" onclick="updateReportStatus(${r.id}, 'archived')">Archive</button>
             </div>
           </div>
@@ -417,7 +535,7 @@
             }
           )
           .join("")
-      : `<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="toggleArchivedReports()">${window.__showArchivedReports ? "Hide Archived" : "View Archived"}</button></div><div style="font-size:13px;color:var(--silver);padding:12px">No escalation reports yet.</div>`;
+      : `<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn btn-outline" style="font-size:9px;padding:5px 10px" onclick="toggleArchivedReports()">${window.__showArchivedReports ? "Hide archived" : "View archived"}</button></div><div style="font-size:13px;color:var(--silver);padding:12px">No escalation reports yet.</div>`;
   }
 
   window.renderEventPanel = function renderEventPanelLive(name) {
@@ -594,7 +712,8 @@
             "Director of Operations",
             "Director of Finance & Development - Finance",
             "Director of Events & Experiences",
-            "Director of Brand & Marketing",
+            "Director of Brand & Marketing — Creative & Engagement",
+            "Director of Brand & Marketing — Content & Narrative",
             "Executive Producer, Somali Night — Production",
             "Executive Producer, Somali Night — Creative"
           ],
@@ -602,8 +721,9 @@
             { title: "Finalize Event Budget & Secure Initial Funding", department: "Internal Division", role: "Director of Finance & Development - Finance", priority: "high", dependsOnTitles: [] },
             { title: "Confirm Venue Booking & Layout", department: "Internal Division", role: "Director of Operations", priority: "high", dependsOnTitles: ["Finalize Event Budget & Secure Initial Funding"] },
             { title: "Recruit & Confirm Performers/Cultural Groups", department: "Internal Division", role: "Director of Events & Experiences", priority: "high", dependsOnTitles: ["Confirm Venue Booking & Layout"] },
-            { title: "Launch Full Marketing Campaign", department: "External Division", role: "Director of Brand & Marketing", priority: "high", dependsOnTitles: ["Recruit & Confirm Performers/Cultural Groups"] },
-            { title: "Finalize Production Run-of-Show", department: "Internal Division", role: "Executive Producer, Somali Night — Production", priority: "critical", dependsOnTitles: ["Launch Full Marketing Campaign"] }
+            { title: "Launch Full Marketing Campaign", department: "External Division", role: "Director of Brand & Marketing — Creative & Engagement", priority: "high", dependsOnTitles: ["Recruit & Confirm Performers/Cultural Groups"] },
+            { title: "Align Show Messaging & Narrative", department: "External Division", role: "Director of Brand & Marketing — Content & Narrative", priority: "high", dependsOnTitles: ["Recruit & Confirm Performers/Cultural Groups"] },
+            { title: "Finalize Production Run-of-Show", department: "Internal Division", role: "Executive Producer, Somali Night — Production", priority: "critical", dependsOnTitles: ["Launch Full Marketing Campaign", "Align Show Messaging & Narrative"] }
           ]
         }
       },
@@ -615,16 +735,15 @@
           event_type: "Campus Kickoff",
           scope: "Medium (100–500)",
           roles: [
-            "Director of Campus Activation",
             "Director of Strategic Relations & Advancement",
-            "Director of Brand & Marketing",
+            "Director of Brand & Marketing — Creative & Engagement",
             "Director of Operations"
           ],
           tasks: [
             { title: "Book Campus Activation Space", department: "Internal Division", role: "Director of Operations", priority: "high", dependsOnTitles: [] },
             { title: "Build Sponsor Outreach List", department: "External Division", role: "Director of Strategic Relations & Advancement", priority: "standard", dependsOnTitles: [] },
-            { title: "Prepare Tabling Assets & Flyers", department: "External Division", role: "Director of Brand & Marketing", priority: "standard", dependsOnTitles: ["Book Campus Activation Space"] },
-            { title: "Execute Campus Activation Plan", department: "External Division", role: "Director of Campus Activation", priority: "high", dependsOnTitles: ["Prepare Tabling Assets & Flyers"] }
+            { title: "Prepare Tabling Assets & Flyers", department: "External Division", role: "Director of Brand & Marketing — Creative & Engagement", priority: "standard", dependsOnTitles: ["Book Campus Activation Space"] },
+            { title: "Execute Campus Activation Plan", department: "External Division", role: "Director of Brand & Marketing — Creative & Engagement", priority: "high", dependsOnTitles: ["Prepare Tabling Assets & Flyers"] }
           ]
         }
       },
@@ -637,13 +756,13 @@
           scope: "Medium (100–500)",
           roles: [
             "Director of Operations",
-            "Director of Editorial & Communications",
-            "Director of Brand & Marketing"
+            "Director of Brand & Marketing — Content & Narrative",
+            "Director of Brand & Marketing — Creative & Engagement"
           ],
           tasks: [
             { title: "Finalize Speaker Contract & Travel", department: "Internal Division", role: "Director of Operations", priority: "high", dependsOnTitles: [] },
-            { title: "Publish Speaker Messaging Brief", department: "External Division", role: "Director of Editorial & Communications", priority: "standard", dependsOnTitles: ["Finalize Speaker Contract & Travel"] },
-            { title: "Launch Speaker Event Promotion", department: "External Division", role: "Director of Brand & Marketing", priority: "high", dependsOnTitles: ["Publish Speaker Messaging Brief"] }
+            { title: "Publish Speaker Messaging Brief", department: "External Division", role: "Director of Brand & Marketing — Content & Narrative", priority: "standard", dependsOnTitles: ["Finalize Speaker Contract & Travel"] },
+            { title: "Launch Speaker Event Promotion", department: "External Division", role: "Director of Brand & Marketing — Creative & Engagement", priority: "high", dependsOnTitles: ["Publish Speaker Messaging Brief"] }
           ]
         }
       },
@@ -657,12 +776,12 @@
           roles: [
             "Director of Finance & Development - Development",
             "Director of Strategic Relations & Advancement",
-            "Director of Brand & Marketing"
+            "Director of Brand & Marketing — Creative & Engagement"
           ],
           tasks: [
             { title: "Set Fundraising Target & Budget Framework", department: "Internal Division", role: "Director of Finance & Development - Development", priority: "high", dependsOnTitles: [] },
             { title: "Secure External Partners", department: "External Division", role: "Director of Strategic Relations & Advancement", priority: "standard", dependsOnTitles: ["Set Fundraising Target & Budget Framework"] },
-            { title: "Launch Fundraiser Creative Campaign", department: "External Division", role: "Director of Brand & Marketing", priority: "high", dependsOnTitles: ["Secure External Partners"] }
+            { title: "Launch Fundraiser Creative Campaign", department: "External Division", role: "Director of Brand & Marketing — Creative & Engagement", priority: "high", dependsOnTitles: ["Secure External Partners"] }
           ]
         }
       }
@@ -786,6 +905,7 @@
       );
     }
 
+    maybeAutoOpenPresidentTour();
     renderOverviewLive(data);
     if (typeof renderAllTasks === "function") renderAllTasks();
     if (typeof renderApprovals === "function") renderApprovals();
@@ -1853,17 +1973,9 @@
     renderReportsLive();
   };
 
-  window.clarifyReport = async function clarifyReport(reportId) {
-    const note = prompt("Clarification note to send back:");
-    if (note == null) return;
-    await updateReportStatus(reportId, "needs_clarification", note);
-  };
-
   window.updateReportStatus = async function updateReportStatus(reportId, status, clarificationNotes) {
     await apiPatch(`/api/reports/${reportId}`, { status, clarification_notes: clarificationNotes || null });
     if (status === "archived") showToast("Report archived.");
-    else if (status === "needs_clarification") showToast("Clarification sent.");
-    else if (status === "reviewed") showToast("Report reviewed.");
     else showToast("Report updated.");
     await hydrateDashboard();
   };

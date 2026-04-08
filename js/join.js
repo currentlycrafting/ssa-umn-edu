@@ -3,7 +3,7 @@
 // ── Scroll progress, navbar, side-nav tracking ──
 (function () {
   var bar = document.getElementById('scroll-progress');
-  var sectionIds = ['hero','board','how-it-works','interns','committee','events','conduct','applications','suggestion','funding'];
+  var sectionIds = ['hero','board','interns','committee','events','applications','suggestion'];
   var dots = document.querySelectorAll('.side-dot');
 
   window.addEventListener('scroll', function () {
@@ -101,6 +101,8 @@ applyDisclaimerClose?.addEventListener('click', closeApplyDisclaimer);
 applyDisclaimerModal?.addEventListener('click', function (e) { if (e.target === applyDisclaimerModal) closeApplyDisclaimer(); });
 window.addEventListener('keydown', function (e) { if (e.key === 'Escape' && applyDisclaimerModal?.classList.contains('open')) closeApplyDisclaimer(); });
 document.querySelectorAll('.apply-cta').forEach(function (el) {
+  // Kept for backwards compatibility if any apply-cta remains.
+  // Join now links directly to the Google Form.
   el.addEventListener('click', showApplyDisclaimer);
 });
 
