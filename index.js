@@ -549,12 +549,11 @@ const checklistRing = document.getElementById('checklistRing');
 const checklistRingText = document.getElementById('checklistRingText');
 let completedSteps = JSON.parse(localStorage.getItem('ssaChecklist') || '[]');
 
-const CHECKLIST_TOTAL = 5;
+const CHECKLIST_TOTAL = 4;
 const progressMessages = [
   'Pick a step. Each one explains the page and moves you to the right section.',
   'Nice start. Keep going to learn how SSA works.',
   'You are getting the full picture of SSA.',
-  'More than halfway. A couple of steps left.',
   'Almost there. One last step: the newsletter.',
   'All done. You are ready for SSA.'
 ];
