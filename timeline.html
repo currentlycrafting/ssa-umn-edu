@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSA Timeline — Somali Student Association</title>
+  <link rel="icon" type="image/png" href="assets/brand/ssa-logo.png" />
+  <link rel="apple-touch-icon" href="assets/brand/ssa-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+  <script>
+    (function () {
+      var stored = localStorage.getItem('ssaTheme');
+      var theme = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body class="timeline-page">
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="index.html" aria-label="SSA home">
+      <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
+      <span>SSA</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="timeline.html" class="active">Timeline</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="connections.html">Game</a>
+    </div>
+    <div class="nav-tools">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+      <a class="nav-action connect" href="index.html#contact">Connect <span aria-hidden="true">↪</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="timeline-hero">
+      <img src="assets/brand/ssa-logo.png" alt="" />
+      <span class="eyebrow">SSA Timeline</span>
+      <h1>What has happened so far.</h1>
+      <p>A running record of events, meetings, and community moments from SSA.</p>
+    </section>
+
+    <section class="timeline-section" aria-label="SSA event timeline">
+      <div class="timeline-line"></div>
+
+      <article class="timeline-card">
+        <time>June 11</time>
+        <div class="timeline-content">
+          <span class="pill">Board Bonding</span>
+          <h2>SSA Board Bonding - Field Day</h2>
+          <p class="held-at">Held at Van Cleve Park</p>
+          <p>The full board met each other as a team for the first time through a field day built around connection, games, and setting the tone for the year.</p>
+          <a class="button button-dark" href="https://www.tiktok.com/t/ZTS2dNXa6/" target="_blank" rel="noopener noreferrer">View the fun</a>
+        </div>
+      </article>
+
+      <article class="timeline-card">
+        <time>June 25</time>
+        <div class="timeline-content">
+          <span class="pill">Board Meeting</span>
+          <h2>First Board Meeting</h2>
+          <p class="held-at">Held with the SSA board</p>
+          <p>The first official board meeting set expectations, aligned leadership responsibilities, and started the operational rhythm for the year.</p>
+        </div>
+      </article>
+
+      <article class="timeline-card">
+        <time>July 2</time>
+        <div class="timeline-content">
+          <span class="pill">Community Event</span>
+          <h2>Somali Cinema Week</h2>
+          <p class="held-at">Held during Somali Cinema Week</p>
+          <p>A community-centered film moment that brought students together around Somali storytelling, culture, and shared conversation.</p>
+          <a class="button button-dark" href="https://www.instagram.com/reel/DaEia-nONFR/?igsh=MWpoZ3gydWYybHVtag==" target="_blank" rel="noopener noreferrer">View the fun</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-card">
+      <a class="footer-brand" href="index.html"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
+      <nav aria-label="Footer">
+        <a href="index.html#about">About Us</a>
+        <a href="index.html#events">Events</a>
+        <a href="index.html#programs">Programs</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="connections.html">Game</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+      <div class="social-row">
+        <a href="mailto:ssa@umn.edu">Email</a>
+        <a href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">TikTok</a>
+        <a href="https://www.linkedin.com/in/somali-student-association-at-the-university-of-minnesota-b435362a2" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </div>
+      <small>© 2026 Somali Student Association — University of Minnesota</small>
+    </div>
+  </footer>
+
+  <script>
+    var t = document.getElementById('themeToggle');
+    if (t) {
+      t.addEventListener('click', function () {
+        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('ssaTheme', next);
+      });
+    }
+  </script>
+</body>
+</html>

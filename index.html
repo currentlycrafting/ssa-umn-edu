@@ -1,361 +1,442 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-26GKQG2GXF');
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Somali Student Association — University of Minnesota</title>
-  <link rel="icon" href="logo-images/logo-v3.png" type="image/png" />
+  <link rel="icon" type="image/png" href="assets/brand/ssa-logo.png" />
+  <link rel="apple-touch-icon" href="assets/brand/ssa-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/public-shared.css" />
-  <link rel="stylesheet" href="css/index.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+  <script>
+    (function () {
+      var stored = localStorage.getItem('ssaTheme');
+      var theme = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body>
-
-  <div id="scroll-progress"></div>
-  <div id="cursor-glow" aria-hidden="true"></div>
-
-  <nav id="navbar">
-    <a href="#" class="nav-logo">
-      <img src="logo-images/logo-v3.png" alt="SSA Logo" />
-      <div class="nav-logo-text">
-        <span>SSA</span>
-        <span>University of Minnesota</span>
-      </div>
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="index.html" aria-label="SSA home">
+      <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
+      <span>SSA</span>
     </a>
-    <ul class="nav-links">
-      <li><a href="#about">About</a></li>
-      <li><a href="join.html#events">Events</a></li>
-      <li><a href="newsletter.html">Newsletter</a></li>
-      <li><a href="#gallery">Gallery</a></li>
-      <li><a href="#leadership">Leadership</a></li>
-      <li><a href="#alumni">Alumni</a></li>
-      <li><a href="join.html" class="nav-cta">Join</a></li>
-    </ul>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="timeline.html">Timeline</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="connections.html">Game</a>
+    </div>
+    <div class="nav-tools">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+      <div class="signup-menu">
+        <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu">Connect <span aria-hidden="true">↪</span></button>
+        <div class="signup-dropdown" id="signupMenu" aria-label="Connect options">
+          <a href="#newsletterForm">Sign up to newsletter</a>
+          <a href="#messageForm">Contact us</a>
+          <a href="#donate">Donation</a>
+        </div>
+      </div>
+    </div>
   </nav>
 
-  <section id="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <div class="hero-eyebrow">Somali Student Association</div>
-      <h1 class="hero-title">
-        Heritage.<br />
-        <em>Excellence.</em><br />
-        Community.
-      </h1>
-      <p class="hero-sub">
-        A cultural and academic institution at the University of Minnesota — built by students who carry their roots with pride.
-      </p>
-      <div class="hero-actions">
-        <a href="#about" class="btn-primary">Explore the Association</a>
-        <a href="join.html" class="btn-ghost">Join</a>
-        <a href="ops-login.html" class="btn-ghost">Are You a Board Member?</a>
-      </div>
-    </div>
-  </section>
+  <nav class="side-nav" id="sideNav" aria-label="Section navigation">
+    <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
+    <a href="#stories" data-section="stories"><span class="dot" aria-hidden="true"></span><span class="side-label">Stories</span></a>
+    <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">Highlights</span></a>
+    <a href="#about" data-section="about"><span class="dot" aria-hidden="true"></span><span class="side-label">About</span></a>
+    <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Events</span></a>
+    <a href="#programs" data-section="programs"><span class="dot" aria-hidden="true"></span><span class="side-label">Programs</span></a>
+    <a href="#donate" data-section="donate"><span class="dot" aria-hidden="true"></span><span class="side-label">Donate</span></a>
+    <a href="#board" data-section="board"><span class="dot" aria-hidden="true"></span><span class="side-label">Board</span></a>
+    <a href="#contact" data-section="contact"><span class="dot" aria-hidden="true"></span><span class="side-label">Contact</span></a>
+  </nav>
 
-  <section id="mission">
-    <div class="mission-left reveal">
-      <div class="mission-year">Est. University of Minnesota</div>
-      <div class="mission-stat">500+</div>
-      <div class="mission-stat-label">Members & Community</div>
-      <div class="gold-divider"></div>
-      <div class="mission-stat" style="font-size: 48px;">Since 1998</div>
-      <div class="mission-stat-label">SSA Legacy</div>
-    </div>
-    <div class="mission-right reveal reveal-delay-1">
-      <div class="section-label">Our Purpose</div>
-      <h2>
-        A space where <em>Somali excellence</em><br />meets academic ambition.
-      </h2>
-      <p>
-        The Somali Student Association at the University of Minnesota exists to celebrate our shared heritage, uplift our community, and create a home away from home for every Somali student who walks through our doors. We are more than a club — we are a legacy in progress, rooted in culture and driven by purpose.
-      </p>
-    </div>
-  </section>
-
-  <section id="signature-event">
-    <div class="event-image-side">
-      <img id="somali-night-poster-img" src="events/somali-night-official-poster.png" alt="Somali Night poster" loading="lazy" onerror="this.onerror=null;this.src='events/somali_night_poster.png'" />
-      <div class="event-image-overlay"></div>
-    </div>
-    <div class="event-content-side">
-      <div class="reveal">
-        <div class="event-tag">Signature Event</div>
-        <h2>Somali Night</h2>
-        <p>
-          Our flagship annual celebration is a full-scale cultural production — featuring theatrical performances, traditional fashion, original music, spoken word, and dance choreography that draws hundreds from across campus and beyond.
-        </p>
-        <div class="event-meta">
-          <div class="event-meta-item">
-            <span>Format</span>
-            <span>Live Stage Production</span>
-          </div>
-          <div class="event-meta-item">
-            <span>Scale</span>
-            <span>1200+ Attendees</span>
-          </div>
-          <div class="event-meta-item">
-            <span>Frequency</span>
-            <span>Annual</span>
-          </div>
+  <main id="top">
+    <section class="hero" id="hero">
+      <svg class="doodle doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
+      <svg class="doodle doodle-2" viewBox="0 0 80 40" aria-hidden="true"><path d="M4 24 Q14 4 24 24 T44 24 T64 24 T76 18" /></svg>
+      <svg class="doodle doodle-3" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" /><path d="M21 26 V32 M39 26 V32 M20 38 Q30 48 40 38" /></svg>
+      <svg class="doodle doodle-4" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,6 36,24 54,24 40,35 45,54 30,43 15,54 20,35 6,24 24,24" /></svg>
+      <svg class="doodle doodle-5" viewBox="0 0 50 50" aria-hidden="true"><path d="M6 25 L44 25 M30 12 L44 25 L30 38" /></svg>
+      <svg class="doodle doodle-6" viewBox="0 0 50 50" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
+      <div class="hero-center">
+        <div class="hero-logo-wrap">
+          <img class="hero-logo" src="assets/brand/ssa-logo.png" alt="SSA lion logo" />
+          <svg class="logo-circle" viewBox="0 0 200 200" preserveAspectRatio="none" aria-hidden="true"><path d="M100 14 C150 12 192 52 188 102 C184 156 140 190 96 186 C44 182 10 140 14 92 C18 46 56 16 104 16" /></svg>
         </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;">
-          <button type="button" class="btn-primary" id="open-somali-night-video">View Video</button>
+        <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
+        <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
+        <div class="hero-actions">
+          <button class="button button-dark handdrawn shimmer hero-connect has-tip" type="button" data-open-signup data-tip="Newsletter, contact, or donate">Connect with SSA <span aria-hidden="true">↪</span></button>
+          <a class="button button-line handdrawn has-tip" href="connections.html" data-tip="Play SSA Connections">Play the Game</a>
+          <svg class="hero-arrow" viewBox="0 0 70 50" aria-hidden="true"><path d="M6 40 C20 10 44 6 60 14 M60 14 L48 12 M60 14 L56 26" /></svg>
+        </div>
+        <div class="hero-meter year-montage" aria-label="SSA since 1998">
+          <span class="ym-label">Serving Somali students</span>
+          <div class="ym-year" id="ymYear">1998</div>
+          <div class="ym-caption" id="ymCaption">Flipping through the years…</div>
         </div>
       </div>
-    </div>
-  </section>
+      <div class="trust-row" aria-label="Core values">
+        <span class="has-tip" data-tip="Language, food, history, art">Culture</span>
+        <span class="has-tip" data-tip="Events, mixers, service">Community</span>
+        <span class="has-tip" data-tip="Committees and board roles">Leadership</span>
+        <span class="has-tip" data-tip="Mentorship and belonging">Student Support</span>
+      </div>
+    </section>
 
-  <section id="gallery">
-    <div class="gallery-header reveal">
+    <section class="section carousel-section" id="stories">
+      <div class="section-head">
+        <span class="eyebrow">Stories</span>
+        <h2>What SSA looks like in practice.</h2>
+        <p>From your first event to a seat on the board — here's how students grow with SSA.</p>
+      </div>
+      <div class="carousel" id="storyCarousel" aria-label="SSA story carousel">
+        <button class="carousel-arrow" type="button" data-carousel-prev aria-label="Previous story">‹</button>
+        <div class="carousel-track">
+          <article class="carousel-slide active">
+            <span class="eyebrow">Welcome</span>
+            <h3>From first hello to first event.</h3>
+            <p>New students can use SSA as a soft landing place: meet people, learn the campus, and find support early.</p>
+          </article>
+          <article class="carousel-slide">
+            <span class="eyebrow">Community</span>
+            <h3>Events with a reason behind them.</h3>
+            <p>Mixers, cultural nights, field days, and service projects all help students build belonging beyond classes.</p>
+          </article>
+          <article class="carousel-slide">
+            <span class="eyebrow">Leadership</span>
+            <h3>Small roles become real ownership.</h3>
+            <p>Students can move from attending, to volunteering, to committees, to board-level leadership.</p>
+          </article>
+        </div>
+        <button class="carousel-arrow" type="button" data-carousel-next aria-label="Next story">›</button>
+        <div class="carousel-dots" id="carouselDots" aria-label="Carousel progress"></div>
+      </div>
+    </section>
+
+    <section class="section stats" id="demo">
+      <div class="section-head">
+        <span class="eyebrow">By the numbers</span>
+        <h2>SSA at the U, at a glance.</h2>
+        <p>One of the largest Somali student communities on campus — built on culture, programming, and student leadership. Tap any <strong>i</strong> for context.</p>
+      </div>
+      <div class="stat-grid">
+        <article class="stat-card" style="--bar:62%" data-tip="Follow @ssa.umn on Instagram for event announcements, recaps, and culture content.">
+          <button class="info-button" type="button" aria-label="Instagram context">i</button>
+          <strong>6K</strong>
+          <span>Instagram followers</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+        <article class="stat-card" style="--bar:95%" data-tip="Our TikTok @ssaumn shares event clips, dance team moments, and behind-the-scenes fun.">
+          <button class="info-button" type="button" aria-label="TikTok context">i</button>
+          <strong>15K</strong>
+          <span>TikTok followers</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+        <article class="stat-card" style="--bar:100%" data-tip="SSA is the largest student organization at the University of Minnesota by community and engagement.">
+          <button class="info-button" type="button" aria-label="Size context">i</button>
+          <strong>#1</strong>
+          <span>Largest org at the U of M</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+        <article class="stat-card" style="--bar:100%" data-tip="A home for Somali students — Minnesota is home to the largest Somali diaspora in the United States.">
+          <button class="info-button" type="button" aria-label="Community context">i</button>
+          <strong>1</strong>
+          <span>Home for MN's largest diaspora</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+        <article class="stat-card" style="--bar:50%" data-tip="On average SSA hosts about two events every month — mixers, culture nights, service, and socials.">
+          <button class="info-button" type="button" aria-label="Events context">i</button>
+          <strong>2</strong>
+          <span>Events every month</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+        <article class="stat-card" style="--bar:78%" data-tip="Hundreds of members and regulars show up across the year — plus alumni, families, and partners.">
+          <button class="info-button" type="button" aria-label="Members context">i</button>
+          <strong>500+</strong>
+          <span>Members &amp; regulars</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+        <article class="stat-card" style="--bar:100%" data-tip="SSA is fully student-run — every event, decision, and program is led by students.">
+          <button class="info-button" type="button" aria-label="Leadership context">i</button>
+          <strong>100%</strong>
+          <span>Student-led</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+        <article class="stat-card" style="--bar:100%" data-tip="Serving Somali students at the University of Minnesota since 1998.">
+          <button class="info-button" type="button" aria-label="History context">i</button>
+          <strong>1998</strong>
+          <span>Serving since</span>
+          <div class="stat-bar"><i></i></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section split" id="about">
       <div>
-        <div class="section-label">Community</div>
-        <h2>Life at SSA</h2>
+        <span class="eyebrow">About</span>
+        <h2>A home for Somali students at the U.</h2>
       </div>
-      <a href="#" id="open-full-gallery" class="btn-ghost" style="font-size:10px;">Full Gallery</a>
-    </div>
-    <div id="gallery-grid" class="gallery-grid reveal reveal-delay-1"></div>
-  </section>
+      <div class="copy-stack">
+        <p>SSA is a student-led organization dedicated to promoting Somali culture, supporting Somali students, and building meaningful connections across campus and the broader Twin Cities community.</p>
+        <div class="mission-list">
+          <article>
+            <span class="line-icon"></span>
+            <h3>Culture</h3>
+            <p>Language, food, history, poetry, fashion, storytelling, and cultural education.</p>
+          </article>
+          <article>
+            <span class="line-icon"></span>
+            <h3>Community</h3>
+            <p>Events and partnerships that connect students, alumni, families, and local leaders.</p>
+          </article>
+          <article>
+            <span class="line-icon"></span>
+            <h3>Leadership</h3>
+            <p>Committee roles, project ownership, and board pathways for student growth.</p>
+          </article>
+        </div>
+      </div>
+    </section>
 
-  <section id="about">
-    <div class="about-image-wrap reveal">
-      <img src="about-ssa-images/about-ssa.JPG" alt="SSA members in cultural attire" loading="lazy" />
-      <div class="about-image-accent"></div>
-    </div>
-    <div class="about-content reveal reveal-delay-1">
-      <div class="section-label">About SSA</div>
-      <h2>Grounded in culture.<br />Driven by excellence.</h2>
-      <p>
-        The Somali Student Association at the University of Minnesota is an organization built on the belief that heritage and academic excellence are not in conflict — they are complementary. We organize, we celebrate, we support, and we lead.
-      </p>
-      <p>
-        From cultural events to academic resources, community dinners to large-scale productions, SSA has been a home for Somali students at UMN for over a decade.
-      </p>
-      <p style="margin-top:20px;">
-        <button type="button" class="btn-primary" id="open-aisha-tribute-video" style="border-color:var(--gold);background:linear-gradient(135deg,rgba(184,154,92,.25),rgba(184,154,92,.08));color:var(--gold-light);">View Aisha’s Tribute</button>
-      </p>
-      <div class="about-pillars">
-        <div class="pillar">
-          <div class="pillar-title">Heritage</div>
-          <p>Preserving and celebrating Somali culture through art, performance, and community.</p>
-        </div>
-        <div class="pillar">
-          <div class="pillar-title">Excellence</div>
-          <p>Holding ourselves to the highest standard in everything we produce.</p>
-        </div>
-        <div class="pillar">
-          <div class="pillar-title">Community</div>
-          <p>Building lasting bonds among Somali students across generations.</p>
-        </div>
-        <div class="pillar">
-          <div class="pillar-title">Leadership</div>
-          <p>Developing the next generation of Somali leaders on campus and beyond.</p>
-        </div>
+    <section class="section" id="events">
+      <div class="section-head">
+        <span class="eyebrow">Calendar</span>
+        <h2>Upcoming SSA moments.</h2>
       </div>
-    </div>
-  </section>
+      <div class="event-grid">
+        <article class="event-card">
+          <span class="event-date">Sep 15</span>
+          <h3>Freshman Mixer</h3>
+          <p>Meet students, learn the campus, and find your first SSA connections.</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15">RSVP Interest</button>
+        </article>
+        <article class="event-card">
+          <span class="event-date">Sep 24</span>
+          <h3>Fall Kickoff</h3>
+          <p>A clean reset for the school year with food, music, and community.</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24">RSVP Interest</button>
+        </article>
+        <article class="event-card">
+          <span class="event-date">Oct TBD</span>
+          <h3>Family Feud</h3>
+          <p>A community game night built for teams, laughter, and friendly competition.</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD">RSVP Interest</button>
+        </article>
+        <article class="event-card">
+          <span class="event-date">Oct TBD</span>
+          <h3>Field Day</h3>
+          <p>An outdoor community day with games, bonding, and space to meet more SSA members.</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD">RSVP Interest</button>
+        </article>
+      </div>
+    </section>
 
-  <section id="leadership">
-    <div class="leadership-header reveal">
-      <div class="section-label" style="justify-content:center;"><span style="display:block;width:24px;height:1px;background:var(--gold)"></span>Leadership</div>
-      <h2>Executive Board</h2>
-      <p>The people who make it happen — dedicated students shaping SSA's future.</p>
-    </div>
-    <div id="leadership-grid" class="leadership-grid reveal reveal-delay-1"></div>
-  </section>
+    <section class="section" id="programs">
+      <div class="section-head">
+        <span class="eyebrow">Programs</span>
+        <h2>How SSA programs its events.</h2>
+        <p>Every SSA event falls into one of two buckets. It shapes the size, the goal, and how we plan it.</p>
+      </div>
+      <div class="focus-grid">
+        <article class="focus-card">
+          <span class="eyebrow">Campus-Focused</span>
+          <h3>Campus-Focused Events</h3>
+          <p>Designed for broad student reach. Typically larger, more social, and attendance-driven — the goal is visibility, engagement, and campus presence.</p>
+          <ul>
+            <li>Higher attendance targets</li>
+            <li>More promotional infrastructure required</li>
+            <li>Energy-forward programming</li>
+            <li>Designed to grow SSA's campus footprint</li>
+            <li>Often tied to seasonal moments or high-traffic windows</li>
+          </ul>
+        </article>
+        <article class="focus-card">
+          <span class="eyebrow">Community-Focused</span>
+          <h3>Community-Focused Events</h3>
+          <p>Intentional and specific. They prioritize depth over scale — conversation, reflection, service, and genuine community value. The goal is connection, not just attendance.</p>
+          <ul>
+            <li>More thoughtful, discussion-driven programming</li>
+            <li>Designed for targeted audiences or specific purposes</li>
+            <li>Impact-oriented over attendance-oriented</li>
+            <li>Often more intimate in format and setting</li>
+            <li>Reflects SSA's responsibility to the broader Somali community</li>
+          </ul>
+        </article>
+      </div>
+    </section>
 
-  <section id="alumni">
-    <div class="alumni-header reveal">
-      <div class="section-label" style="justify-content:center;"><span style="display:block;width:24px;height:1px;background:var(--gold)"></span>Alumni</div>
-      <h2>Board Alumni</h2>
-      <p>Those who led before us — the foundation of what SSA is today.</p>
-    </div>
-    <div class="alumni-grid reveal reveal-delay-1">
-      <div class="alumni-card">
-        <div class="alumni-avatar">
-          <img src="assets/alumni/mowlid-hassan.png" alt="Mowlid Hassan" loading="lazy" />
-        </div>
-        <div class="alumni-info">
-          <h3>Mowlid Hassan</h3>
-          <div class="role">Alumni</div>
-        </div>
+    <section class="section donate-section" id="donate">
+      <div class="section-head">
+        <span class="eyebrow">Support</span>
+        <h2>Donate to SSA.</h2>
+        <p>Every dollar funds events, culture nights, and student programming. The fastest way to give is right here.</p>
       </div>
-      <div class="alumni-card">
-        <div class="alumni-avatar">
-          <img src="assets/alumni/anisa-hassan.png" alt="Anisa Hassan" loading="lazy" />
-        </div>
-        <div class="alumni-info">
-          <h3>Anisa Hassan</h3>
-          <div class="role">Alumni</div>
-        </div>
+      <div class="donate-hero">
+        <button class="button button-dark donate-main" id="kofiOpen" type="button">
+          <span class="kofi-heart" aria-hidden="true">♥</span> Donate on Ko-fi
+        </button>
+        <span class="donate-sub">Secure checkout — Apple Pay, card, or PayPal. Opens in a window, no clutter on the page.</span>
       </div>
-      <div class="alumni-card">
-        <div class="alumni-avatar">
-          <img src="assets/alumni/adnan-jeilani.png" alt="Adnan Jeilani" loading="lazy" />
-        </div>
-        <div class="alumni-info">
-          <h3>Adnan Jeilani</h3>
-          <div class="role">Alumni</div>
-        </div>
+      <p class="donate-or">or pick a quick amount</p>
+      <div class="donation-grid donation-grid-mini">
+        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$5</strong><small>Supporter</small></a>
+        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$10</strong><small>Friend</small></a>
+        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$25</strong><small>Advocate</small></a>
+        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$50</strong><small>Patron</small></a>
+        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$100</strong><small>Champion</small></a>
       </div>
-      <div class="alumni-card">
-        <div class="alumni-avatar">
-          <img src="assets/alumni/bahja-mohamed.png" alt="Bahja Mohamed" loading="lazy" />
-        </div>
-        <div class="alumni-info">
-          <h3>Bahja Mohamed</h3>
-          <div class="role">Alumni</div>
-        </div>
-      </div>
-      <div class="alumni-card">
-        <div class="alumni-avatar">
-          <img src="assets/alumni/dahir-munye.png" alt="Dahir Munye" loading="lazy" />
-        </div>
-        <div class="alumni-info">
-          <h3>Dahir Munye</h3>
-          <div class="role">Alumni</div>
-        </div>
-      </div>
-      <div class="alumni-card">
-        <div class="alumni-avatar">
-          <img src="assets/alumni/aisha-dakol.png" alt="Aisha Dakol" loading="lazy" />
-        </div>
-        <div class="alumni-info">
-          <h3>Aisha Dakol</h3>
-          <div class="role">Alumni</div>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="cta">
-    <div class="section-label reveal">Community</div>
-    <h2 class="reveal reveal-delay-1">
-      Your roots.<br />
-      <em>Your community.</em>
-    </h2>
-    <p class="reveal reveal-delay-2">
-      Whether you are Somali or simply someone who believes in the power of culture and community — SSA welcomes you.
-    </p>
-    <div class="cta-actions reveal reveal-delay-3">
-      <a href="join.html" class="btn-primary">Join SSA</a>
-      <a href="mailto:ssa@umn.edu" class="btn-ghost">Contact Us</a>
-    </div>
-  </section>
+    <section class="section" id="board">
+      <div class="section-head">
+        <span class="eyebrow">Leadership</span>
+        <h2>Meet the president.</h2>
+      </div>
+      <article class="president-card">
+        <img src="assets/people/salman-said.png" alt="Salman Said" />
+        <div>
+          <span class="eyebrow">President</span>
+          <h3>Salman Said</h3>
+          <p>Salman leads SSA's vision and direction — setting priorities for the year, representing the org across campus, and making sure culture and community stay at the center of every decision.</p>
+          <div class="president-links">
+            <a href="mailto:said0106@umn.edu">said0106@umn.edu</a>
+            <a href="https://www.linkedin.com/in/salman-said-14701b2a2/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          </div>
+        </div>
+      </article>
+    </section>
 
-  <footer>
-    <div class="footer-left">
-      <img src="logo-images/logo-v3.png" alt="SSA Logo" loading="lazy" />
-      <span>Somali Student Association — UMN</span>
-    </div>
-    <div class="footer-center">ssa@umn.edu</div>
-    <div class="footer-right">
-      <a class="footer-social" href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">
-        <img src="logo-images/instagram-logo.png" alt="Instagram" loading="lazy" />
-        <span>Instagram</span>
-      </a>
-      <a class="footer-social" href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">
-        <img src="https://www.google.com/s2/favicons?sz=64&domain=tiktok.com" alt="TikTok" loading="lazy" />
-        <span>TikTok</span>
-      </a>
-      <a class="footer-social" href="https://www.linkedin.com/in/somali-student-association-b435362a2/" target="_blank" rel="noopener noreferrer">
-        <img src="https://www.google.com/s2/favicons?sz=64&domain=linkedin.com" alt="LinkedIn" loading="lazy" />
-        <span>LinkedIn</span>
-      </a>
-      <a id="admin-entry" class="admin-link" href="ops-login.html">
-        <img src="logo-images/lock-icon.svg" alt="Admin" loading="lazy" />
-        <span>Are You a Board Member?</span>
-      </a>
+    <section class="section contact" id="contact">
+      <div class="section-head">
+        <span class="eyebrow">Get in touch</span>
+        <h2>Send SSA a message.</h2>
+      </div>
+      <div class="contact-single">
+        <form id="messageForm" class="form-card">
+          <h3>Send a message</h3>
+          <p>Questions, partnership ideas, or community opportunities.</p>
+          <input type="text" name="name" placeholder="Name" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <textarea name="message" placeholder="Message" required></textarea>
+          <button type="submit" class="button button-dark">Send Message</button>
+          <output></output>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-card">
+      <a class="footer-brand" href="#top"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
+      <nav aria-label="Footer">
+        <a href="#about">About Us</a>
+        <a href="#events">Events</a>
+        <a href="#programs">Programs</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="connections.html">Game</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="social-row">
+        <a href="mailto:ssa@umn.edu">Email</a>
+        <a href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">TikTok</a>
+        <a href="https://www.linkedin.com/in/somali-student-association-at-the-university-of-minnesota-b435362a2" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      </div>
+      <small>© 2026 Somali Student Association — University of Minnesota</small>
     </div>
   </footer>
 
-  <div id="ssa-video-modal" class="full-gallery-modal ssa-video-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Video">
-    <div class="full-gallery-backdrop" data-close-ssa-video></div>
-    <div class="full-gallery-card ssa-video-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
-        <h3 id="ssa-video-modal-title" style="font-family:var(--font-display);font-size:22px;font-weight:400;margin:0;">Video</h3>
-        <button type="button" id="close-ssa-video" class="ssa-video-close-x" aria-label="Close video">✕</button>
-      </div>
-      <div class="ssa-video-frame-wrap">
-        <iframe id="ssa-video-iframe" title="Video player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        <video id="ssa-video-native" class="ssa-video-native" controls playsinline preload="metadata" title="Aisha Dakol tribute"></video>
-      </div>
-      <p id="ssa-video-unconfigured" style="display:none;font-size:13px;color:var(--silver);margin-top:12px;">Set a video in <code>js/public-media.js</code> (e.g. <code>aishaTributeVideoSrc</code> or YouTube IDs).</p>
+  <div class="modal-backdrop" id="rsvpModal" aria-hidden="true">
+    <div class="rsvp-modal" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
+      <button class="modal-close" id="rsvpClose" type="button" aria-label="Close RSVP form">×</button>
+      <span class="eyebrow">RSVP Interest</span>
+      <h2 id="rsvpTitle">Event interest</h2>
+      <p id="rsvpMeta"></p>
+      <form id="rsvpForm">
+        <input type="hidden" name="event" />
+        <input type="hidden" name="date" />
+        <input type="text" name="name" placeholder="Name" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <button class="button button-dark" type="submit">Send Interest</button>
+        <output></output>
+      </form>
+      <div class="rsvp-result" id="rsvpResult" hidden></div>
     </div>
   </div>
 
-  <div id="full-gallery-modal" class="full-gallery-modal" aria-hidden="true">
-    <div class="full-gallery-backdrop" data-close-full-gallery></div>
-    <div class="full-gallery-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <h3 style="font-family:var(--font-display);font-size:32px;font-weight:400;">Full Gallery</h3>
-        <button id="close-full-gallery" class="btn-ghost" type="button">Close</button>
-      </div>
-      <div id="full-gallery-grid" class="full-gallery-grid"></div>
+  <div class="modal-backdrop kofi-modal-backdrop" id="kofiModal" aria-hidden="true">
+    <div class="kofi-modal" role="dialog" aria-modal="true" aria-label="Donate to Somali Student Association">
+      <button class="modal-close" id="kofiClose" type="button" aria-label="Close donation window">×</button>
+      <iframe id="kofiframe" title="Donate to Somali Student Association" loading="lazy"></iframe>
     </div>
   </div>
 
-  <div id="gallery-lightbox" class="gallery-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Zoomed image">
-    <div class="gallery-lightbox-backdrop" data-close-lightbox></div>
-    <div class="gallery-lightbox-inner">
-      <button type="button" class="gallery-lightbox-close" id="close-gallery-lightbox" aria-label="Close">✕</button>
-      <img id="gallery-lightbox-img" src="" alt="" />
+  <div class="modal-backdrop newsletter-takeover" id="newsletterModal" aria-hidden="true">
+    <div class="newsletter-sheet" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
+      <button class="modal-close" id="newsletterClose" type="button" aria-label="Close">×</button>
+      <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
+      <svg class="doodle nl-doodle-2" viewBox="0 0 60 60" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
+      <span class="eyebrow">Last step</span>
+      <h2 id="nlTitle">Join the SSA newsletter</h2>
+      <p>Drop your email to get events, announcements, and Somali Night updates. This finishes your checklist.</p>
+      <form id="newsletterModalForm">
+        <input type="email" name="email" placeholder="your@email.com" required />
+        <button class="button button-dark handdrawn shimmer" type="submit">Subscribe</button>
+        <output></output>
+      </form>
+      <button class="nl-skip" id="newsletterSkip" type="button">Maybe later</button>
     </div>
   </div>
 
-  <div id="info-modal" class="info-modal" aria-hidden="true">
-    <div class="info-modal-card" role="dialog" aria-modal="true" aria-label="More information">
-      <button type="button" class="info-modal-close" id="info-modal-close" aria-label="Close">×</button>
-      <div class="info-modal-eyebrow" id="info-modal-eyebrow" style="display:none;"></div>
-      <div class="info-modal-title" id="info-modal-title"></div>
-      <div class="info-modal-body" id="info-modal-body"></div>
+  <button class="checklist-trigger" id="checklistTrigger" type="button" aria-expanded="false">
+    <span class="ring" id="checklistRing" aria-hidden="true"><span id="checklistRingText">0</span></span>
+    <span id="checklistLabel">Start</span>
+  </button>
+  <aside class="checklist-panel" id="checklistPanel" aria-hidden="true">
+    <header>
+      <div>
+        <span class="eyebrow">Checklist</span>
+        <h2>Explore SSA</h2>
+        <p><span id="checklistCount">0</span> of 5 complete</p>
+      </div>
+      <button id="checklistClose" type="button" aria-label="Close">×</button>
+    </header>
+    <div class="checklist-progress"><span id="checklistProgress"></span></div>
+    <div class="checklist-pop" id="checklistPop" role="status"></div>
+    <div class="checklist-steps" id="checklistSteps">
+      <button type="button" data-step="about" data-target="about" data-note="SSA is the cultural and community home base.">Learn about SSA</button>
+      <button type="button" data-step="events" data-target="events" data-note="Events are the fastest way to meet people.">Explore events</button>
+      <button type="button" data-step="programs" data-target="programs" data-note="Programs show how SSA supports students year-round.">Discover programs</button>
+      <button type="button" data-step="board" data-target="board" data-note="Leadership gives you a point of contact.">Meet the board</button>
+      <button type="button" data-step="newsletter" data-target="contact" data-note="The final step: subscribe to the SSA newsletter.">Subscribe to newsletter</button>
     </div>
-  </div>
-
-  <div id="admin-panel" class="admin-panel" aria-hidden="true">
-    <div class="admin-backdrop"></div>
-    <div class="admin-shell">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-        <h3 style="font-family:var(--font-display);font-size:34px;font-weight:400;">Admin Edit Mode</h3>
-        <button id="admin-close" class="btn-ghost" type="button">Close</button>
-      </div>
-
-      <div id="admin-login">
-        <p style="color:var(--silver);margin-top:8px;">Enter the admin password to unlock editing tools.</p>
-        <input id="admin-password" type="password" placeholder="Enter password" />
-        <div class="admin-toolbar">
-          <button id="admin-unlock" class="btn-primary" type="button">Unlock Admin</button>
-          <span id="admin-login-message" style="color:#f4b8b8;"></span>
-        </div>
-      </div>
-
-      <div id="admin-tools" hidden>
-        <div class="admin-toolbar">
-          <button id="admin-toggle-direct-edit" class="btn-ghost" type="button">Enable Direct Text Edit</button>
-          <button id="admin-save-all" class="btn-primary" type="button">Save Changes</button>
-          <button id="admin-logout" class="btn-ghost" type="button">Lock Admin</button>
-        </div>
-        <div id="admin-dynamic-forms"></div>
-      </div>
+    <div class="checklist-complete" id="checklistComplete">
+      <span class="spark" aria-hidden="true">✓</span>
+      <h3>Ready for SSA.</h3>
+      <p>You explored the full page flow. Take the last step and join.</p>
+      <a href="#contact" class="button button-dark">Sign Up <span aria-hidden="true">↪</span></a>
     </div>
-  </div>
+    <button class="reset" id="checklistReset" type="button">Reset checklist</button>
+  </aside>
 
-  <script src="js/public-media.js"></script>
-  <script src="js/site-data.js"></script>
-  <script src="js/site-render.js"></script>
-  <script src="js/site-admin.js"></script>
-  <script src="js/site-ui.js"></script>
-  <script src="js/site-init.js"></script>
+  <script src="index.js"></script>
+  <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+  <script>
+    if (window.kofiWidgetOverlay) {
+      kofiWidgetOverlay.draw('somalistudentassociation', {
+        type: 'floating-chat',
+        'floating-chat.donateButton.text': 'Donate',
+        'floating-chat.donateButton.background-color': '#ffffff',
+        'floating-chat.donateButton.text-color': '#323842'
+      });
+    }
+  </script>
 </body>
 </html>

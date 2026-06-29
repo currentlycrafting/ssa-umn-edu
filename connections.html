@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSA Connections — Somali Student Association</title>
+  <link rel="icon" type="image/png" href="assets/brand/ssa-logo.png" />
+  <link rel="apple-touch-icon" href="assets/brand/ssa-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+  <script>
+    (function () {
+      var stored = localStorage.getItem('ssaTheme');
+      var theme = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body class="game-page">
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href="index.html" aria-label="SSA home">
+      <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
+      <span>SSA</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="timeline.html">Timeline</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="connections.html" class="active">Game</a>
+    </div>
+    <div class="nav-tools">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+      <a class="nav-action connect" href="index.html#contact">Connect <span aria-hidden="true">↪</span></a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="game-wrap">
+      <span class="eyebrow">SSA Connections</span>
+      <h1>Soo Xidh</h1>
+      <p>Find four groups of four. You get four mistakes. Come back to climb the leaderboard.</p>
+
+      <div class="game-status" id="status">Select four words you think belong together.</div>
+      <div id="solved"></div>
+      <div class="game-grid" id="grid" aria-label="Connections board"></div>
+
+      <div class="mistakes">Mistakes remaining <span id="pips"></span></div>
+
+      <div class="game-controls">
+        <button class="button button-line" id="shuffle" type="button">Shuffle</button>
+        <button class="button button-line" id="deselect" type="button">Deselect</button>
+        <button class="button button-dark" id="submit" type="button">Submit</button>
+      </div>
+
+      <form id="nameForm" class="leaderboard" style="display:none; margin-top:26px;">
+        <h2 id="resultTitle">Nice solve.</h2>
+        <p id="resultMeta" style="color:var(--muted); margin:0 0 12px;"></p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <input id="nameInput" type="text" maxlength="24" placeholder="Your name for the leaderboard" style="flex:1; min-width:200px; border:2px solid var(--line-strong); border-radius:14px; padding:13px 14px; background:var(--surface); color:var(--ink); font-weight:700;" />
+          <button class="button button-dark" type="submit">Save score</button>
+          <button class="button button-line" type="button" id="playAgain">Play again</button>
+        </div>
+      </form>
+
+      <div class="leaderboard" id="leaderboard">
+        <h2>Leaderboard</h2>
+        <ol id="board"><li class="empty">Loading…</li></ol>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-card">
+      <a class="footer-brand" href="index.html"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
+      <nav aria-label="Footer">
+        <a href="index.html#about">About Us</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="connections.html">Game</a>
+        <a href="index.html#contact">Contact</a>
+      </nav>
+      <small>© 2026 Somali Student Association — University of Minnesota</small>
+    </div>
+  </footer>
+
+  <script>
+    var t = document.getElementById('themeToggle');
+    if (t) {
+      t.addEventListener('click', function () {
+        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('ssaTheme', next);
+      });
+    }
+  </script>
+  <script src="connections.js"></script>
+</body>
+</html>
