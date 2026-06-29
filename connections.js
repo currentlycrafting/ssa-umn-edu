@@ -266,6 +266,10 @@ nameForm.addEventListener('submit', (event) => {
   const name = (nameInput.value || 'Anonymous').trim() || 'Anonymous';
   const seconds = parseInt(nameForm.dataset.seconds, 10) || 0;
   saveScore(name, seconds);
+  if (localStorage.getItem('ssaGameSubmitted') !== '1') {
+    localStorage.setItem('ssaGameSubmitted', '1');
+    window.markChecklistStep?.('game', 'Score saved — game step complete.');
+  }
   resultMeta.textContent = 'Saved. Thanks for playing — come back to beat your time.';
   nameInput.style.display = 'none';
   nameForm.querySelector('button[type="submit"]').style.display = 'none';

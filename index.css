@@ -171,17 +171,20 @@ button, input, textarea { font: inherit; }
 .theme-toggle:hover { transform: rotate(20deg) scale(1.06); border-color: var(--ink); }
 .theme-toggle .theme-icon {
   position: relative;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: var(--ink);
-  transition: transform .35s ease, box-shadow .35s ease;
-  box-shadow: 0 0 0 2px transparent;
+  background: transparent;
+  box-shadow: inset 4px -1px 0 0 var(--ink);
+  transform: rotate(-16deg) translate(0.5px, 0);
+  transition: transform .35s ease, background .35s ease, box-shadow .35s ease, width .35s ease, height .35s ease;
 }
 [data-theme="dark"] .theme-toggle .theme-icon {
-  background: transparent;
-  box-shadow: inset -5px -3px 0 0 var(--ink);
-  transform: rotate(-20deg);
+  width: 16px;
+  height: 16px;
+  background: var(--ink);
+  box-shadow: none;
+  transform: none;
 }
 .nav-action {
   border: 0;
@@ -1166,7 +1169,7 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 /* Connect modal */
 .connect-sheet { text-align: left; }
 .connect-sheet h2 { text-align: center; }
-.connect-lead, .connect-form, #connectFormLead {
+.connect-lead, .connect-form, .connect-form-lead {
   color: var(--muted);
   line-height: 1.6;
   font-size: 15px;
@@ -1208,6 +1211,21 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   padding: 0;
 }
 .connect-back:hover { color: var(--ink); }
+.connect-inline {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: left;
+}
+.connect-inline .connect-options { max-width: none; }
+.contact .section-head .connect-lead {
+  text-align: center;
+  margin: 0 auto;
+  max-width: 480px;
+}
+.connect-inline .connect-form-title {
+  margin: 0 0 8px;
+  font-size: clamp(22px, 3vw, 28px);
+}
 .connect-form {
   display: grid;
   gap: 10px;
@@ -1539,6 +1557,7 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 }
 .checklist-panel.complete .checklist-steps { display: none; }
 .checklist-panel.complete .checklist-complete { display: block; animation: popIn .45s cubic-bezier(.2,.9,.3,1.5); }
+.checklist-complete .button { margin-top: 12px; width: 100%; }
 @keyframes popIn {
   from { opacity: 0; transform: scale(.92); }
   to { opacity: 1; transform: scale(1); }
@@ -1897,22 +1916,40 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   transform-origin: center;
 }
 .ym-year.flip { animation: yearFlip .16s ease; }
+.ym-year.rewinding.flip { animation: yearFlipRewind .14s ease-in; }
 @keyframes yearFlip {
   0% { transform: rotateX(0deg); opacity: 1; }
   50% { transform: rotateX(-82deg) translateY(-4px); opacity: .2; }
   100% { transform: rotateX(0deg); opacity: 1; }
+}
+@keyframes yearFlipRewind {
+  0% { transform: rotateX(0deg) scale(1); opacity: 1; }
+  45% { transform: rotateX(72deg) translateY(3px) scale(.96); opacity: .35; }
+  100% { transform: rotateX(0deg) scale(1); opacity: 1; }
+}
+.ym-year.rewind-end {
+  animation: yearSlowdown .42s cubic-bezier(.4, 0, .2, 1) forwards;
+}
+@keyframes yearSlowdown {
+  0% { transform: scale(1); opacity: 1; filter: blur(0); }
+  100% { transform: scale(.94); opacity: .55; filter: blur(.6px); }
+}
+.ym-year.finale {
+  font-size: clamp(34px, 6.5vw, 52px);
+  letter-spacing: -.02em;
+  animation: yearFinale .9s cubic-bezier(.22, .84, .26, 1) forwards;
+}
+@keyframes yearFinale {
+  0% { transform: scale(.88) translateY(10px); opacity: 0; filter: blur(2px); letter-spacing: .06em; }
+  45% { transform: scale(1.06) translateY(-3px); opacity: 1; filter: blur(0); }
+  72% { transform: scale(.98) translateY(1px); }
+  100% { transform: scale(1) translateY(0); opacity: 1; letter-spacing: -.02em; }
 }
 .ym-caption {
   font-size: 13px;
   font-weight: 800;
   color: var(--accent);
   min-height: 18px;
-}
-.ym-year.done { animation: yearPop .5s cubic-bezier(.2,.9,.3,1.6); }
-@keyframes yearPop {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.14); }
-  100% { transform: scale(1); }
 }
 .hero-meter .bar {
   height: 9px;

@@ -37,18 +37,34 @@ if (ymYear) {
   }
 
   function rewind() {
-    const back = window.setInterval(() => {
+    ymYear.classList.add('rewinding');
+    let delay = 32;
+
+    function tick() {
       year -= 1;
       flipTo(year);
       if (year <= START_YEAR) {
-        window.clearInterval(back);
-        window.setTimeout(() => {
-          ymYear.classList.remove('flip');
-          ymYear.classList.add('done');
-          ymYear.textContent = `Since ${START_YEAR}`;
-        }, 220);
+        window.setTimeout(finishMontage, delay + 80);
+        return;
       }
-    }, 45);
+      if (year <= START_YEAR + 10) delay = Math.min(delay + 10, 140);
+      window.setTimeout(tick, delay);
+    }
+
+    window.setTimeout(tick, 160);
+  }
+
+  function finishMontage() {
+    year = START_YEAR;
+    ymYear.classList.remove('flip', 'rewinding');
+    ymYear.classList.add('rewind-end');
+    ymYear.textContent = String(START_YEAR);
+    window.setTimeout(() => {
+      ymYear.classList.remove('rewind-end');
+      ymYear.classList.add('finale');
+      ymYear.textContent = `Since ${START_YEAR}`;
+      if (ymCaption) ymCaption.textContent = '';
+    }, 420);
   }
 
   const forward = window.setInterval(() => {
@@ -138,17 +154,17 @@ sideLinks.forEach((link) => {
 
 const signupMenu = document.querySelector('.signup-menu');
 const signupToggle = document.getElementById('signupToggle');
+document.querySelectorAll('[data-open-connect]').forEach((button) => {
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    openConnectModal();
+  });
+});
 if (signupMenu && signupToggle) {
   signupToggle.addEventListener('click', (event) => {
     event.stopPropagation();
     const open = signupMenu.classList.toggle('open');
     signupToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  document.querySelectorAll('[data-open-connect]').forEach((button) => {
-    button.addEventListener('click', (event) => {
-      event.stopPropagation();
-      openConnectModal();
-    });
   });
   document.addEventListener('click', (event) => {
     if (!signupMenu.contains(event.target)) {
@@ -309,7 +325,7 @@ if (newsletterForm) {
     try {
       await postJson('/api/newsletter', { email });
       localStorage.setItem('ssaNewsletterSubscribed', '1');
-      markChecklistStep('newsletter', 'Newsletter saved. That checklist step is now complete.');
+      window.markChecklistStep?.('newsletter', 'Newsletter saved. That checklist step is now complete.');
       newsletterForm.reset();
       setOutput(newsletterForm, 'Subscribed and saved.');
       button.textContent = 'Subscribed';
@@ -326,32 +342,6 @@ if (newsletterForm) {
   });
 }
 
-const messageForm = document.getElementById('messageForm');
-if (messageForm) {
-  messageForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const payload = {
-      name: messageForm.name.value.trim(),
-      email: messageForm.email.value.trim(),
-      message: messageForm.message.value.trim()
-    };
-    const button = messageForm.querySelector('button');
-    button.disabled = true;
-    try {
-      await postJson('/api/messages', payload);
-      messageForm.reset();
-      setOutput(messageForm, 'Message saved.');
-      button.textContent = 'Sent';
-    } catch (error) {
-      setOutput(messageForm, 'Run python3 server.py to save messages.', false);
-    } finally {
-      window.setTimeout(() => {
-        button.disabled = false;
-        button.textContent = 'Send Message';
-      }, 1800);
-    }
-  });
-}
 
 const rsvpModal = document.getElementById('rsvpModal');
 const rsvpForm = document.getElementById('rsvpForm');
@@ -479,7 +469,7 @@ if (rsvpForm) {
     button.disabled = true;
     try {
       const data = await postJson('/api/rsvp', payload);
-      markChecklistStep('events', 'RSVP interest saved. Events step complete.');
+      window.markChecklistStep?.('events', 'RSVP interest saved. Events step complete.');
       addRsvpedEvent(eventName);
       updateRsvpCard(eventName, data.count || 0);
       renderRsvpResult(data, data.already);
@@ -498,11 +488,10 @@ getRsvpedEvents().forEach((name) => {
     .catch(() => updateRsvpCard(name, 0));
 });
 
-// Full-screen newsletter takeover — appears when the user reaches the contact section
+// Full-screen newsletter takeover — opened from Options menu or checklist
 const newsletterModal = document.getElementById('newsletterModal');
 const newsletterModalForm = document.getElementById('newsletterModalForm');
 const newsletterSkip = document.getElementById('newsletterSkip');
-const contactSection = document.getElementById('contact');
 
 function newsletterSubscribed() {
   return localStorage.getItem('ssaNewsletterSubscribed') === '1';
@@ -520,12 +509,6 @@ function closeNewsletterModal(dismiss) {
   if (dismiss) sessionStorage.setItem('ssaNlDismissed', '1');
 }
 
-if (contactSection && newsletterModal) {
-  const nlObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => { if (entry.isIntersecting) openNewsletterModal(); });
-  }, { threshold: 0.45 });
-  nlObserver.observe(contactSection);
-}
 newsletterSkip && newsletterSkip.addEventListener('click', () => closeNewsletterModal(true));
 attachModalClose(newsletterModal, () => closeNewsletterModal(true));
 if (newsletterModalForm) {
@@ -538,7 +521,7 @@ if (newsletterModalForm) {
     try {
       await postJson('/api/newsletter', { email });
       localStorage.setItem('ssaNewsletterSubscribed', '1');
-      markChecklistStep('newsletter', 'Newsletter saved. Checklist complete.');
+      window.markChecklistStep?.('newsletter', 'Newsletter saved. Checklist complete.');
       if (out) out.textContent = 'You are in. Welcome to SSA.';
       window.setTimeout(() => closeNewsletterModal(false), 1100);
     } catch (error) {
@@ -573,119 +556,15 @@ document.querySelectorAll('[data-open-newsletter]').forEach((link) => {
   });
 });
 
-const checklistTrigger = document.getElementById('checklistTrigger');
-const checklistPanel = document.getElementById('checklistPanel');
-const checklistClose = document.getElementById('checklistClose');
-const checklistSteps = document.getElementById('checklistSteps');
-const checklistProgress = document.getElementById('checklistProgress');
-const checklistCount = document.getElementById('checklistCount');
-const checklistLabel = document.getElementById('checklistLabel');
-const checklistPop = document.getElementById('checklistPop');
-const checklistReset = document.getElementById('checklistReset');
-const checklistRing = document.getElementById('checklistRing');
-const checklistRingText = document.getElementById('checklistRingText');
-let completedSteps = JSON.parse(localStorage.getItem('ssaChecklist') || '[]');
-
-const CHECKLIST_TOTAL = 4;
-const progressMessages = [
-  'Pick a step. Each one explains the page and moves you to the right section.',
-  'Nice start. Keep going to learn how SSA works.',
-  'You are getting the full picture of SSA.',
-  'Almost there. One last step: the newsletter.',
-  'All done. You are ready for SSA.'
-];
-
-function stepKey(button) {
-  return button.dataset.step || button.dataset.target + button.textContent;
+if (sessionStorage.getItem('ssaOpenNewsletter') === '1') {
+  sessionStorage.removeItem('ssaOpenNewsletter');
+  window.setTimeout(() => openNewsletterModal(), 300);
 }
 
-function pulseRing() {
-  if (!checklistRing) return;
-  checklistRing.classList.remove('pulse');
-  void checklistRing.offsetWidth;
-  checklistRing.classList.add('pulse');
-}
-
-function updateChecklist(animate) {
-  const total = CHECKLIST_TOTAL;
-  const count = Math.min(completedSteps.length, total);
-  const pct = Math.round((count / total) * 100);
-  checklistProgress.style.width = `${pct}%`;
-  checklistCount.textContent = String(count);
-  if (checklistRingText) checklistRingText.textContent = count === total ? '✓' : String(count);
-  checklistLabel.textContent = count ? (count === total ? 'Done' : `${count} of ${total}`) : 'Start';
-  checklistTrigger.style.setProperty('--progress', `${pct}%`);
-  checklistPanel.classList.toggle('complete', count === total);
-  checklistSteps.querySelectorAll('button').forEach((button) => {
-    button.classList.toggle('done', completedSteps.includes(stepKey(button)));
-  });
-  if (animate) pulseRing();
-  localStorage.setItem('ssaChecklist', JSON.stringify(completedSteps));
-}
-
-function setProgressMessage() {
-  if (checklistPop) checklistPop.textContent = progressMessages[Math.min(completedSteps.length, CHECKLIST_TOTAL)];
-}
-
-function markChecklistStep(step, note) {
-  if (!checklistSteps) return;
-  const button = checklistSteps.querySelector(`[data-step="${step}"]`);
-  if (!button) return;
-  const key = stepKey(button);
-  const wasDone = completedSteps.includes(key);
-  if (!wasDone) completedSteps.push(key);
-  if (checklistPop && note) checklistPop.textContent = note;
-  updateChecklist(!wasDone);
-}
-
-function openChecklist(open) {
-  checklistPanel.classList.toggle('open', open);
-  checklistPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
-  checklistTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
-}
-
-if (checklistTrigger && checklistPanel) {
-  checklistTrigger.addEventListener('click', () => openChecklist(!checklistPanel.classList.contains('open')));
-  checklistClose.addEventListener('click', () => openChecklist(false));
-  checklistSteps.querySelectorAll('button').forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = stepKey(button);
-      const target = document.getElementById(button.dataset.target);
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (button.dataset.step === 'newsletter' && localStorage.getItem('ssaNewsletterSubscribed') !== '1') {
-        checklistPop.textContent = 'Subscribe in the popup to complete this step.';
-        sessionStorage.removeItem('ssaNlDismissed');
-        openNewsletterModal();
-        updateChecklist();
-        return;
-      }
-      const wasDone = completedSteps.includes(id);
-      if (!wasDone) completedSteps.push(id);
-      else completedSteps = completedSteps.filter((step) => step !== id);
-      checklistPop.textContent = button.dataset.note || '';
-      updateChecklist(!wasDone);
-    });
-  });
-  checklistReset.addEventListener('click', () => {
-    completedSteps = [];
-    checklistPop.textContent = 'Checklist reset. Pick a step to learn what it does.';
-    updateChecklist(true);
-  });
-  setProgressMessage();
-  if (localStorage.getItem('ssaNewsletterSubscribed') === '1') markChecklistStep('newsletter');
-  updateChecklist();
-}
-
-// Connect with SSA modal — reason picker then tailored form
+// Connect with SSA — shared reason picker + form (modal + inline contact section)
 const connectModal = document.getElementById('connectModal');
-const connectStepReason = document.getElementById('connectStepReason');
-const connectStepForm = document.getElementById('connectStepForm');
-const connectForm = document.getElementById('connectForm');
-const connectBack = document.getElementById('connectBack');
-const connectFormTitle = document.getElementById('connectFormTitle');
-const connectFormLead = document.getElementById('connectFormLead');
-const connectReasonLabel = document.getElementById('connectReasonLabel');
-const connectOrgField = document.getElementById('connectOrgField');
+const connectModalFlow = document.getElementById('connectModalFlow');
+const connectInline = document.getElementById('connectInline');
 
 const CONNECT_VIEWS = {
   sponsorship: {
@@ -730,13 +609,84 @@ const CONNECT_VIEWS = {
   }
 };
 
+function initConnectFlow(root, options = {}) {
+  if (!root) return null;
+  const stepReason = root.querySelector('.connect-step-reason');
+  const stepForm = root.querySelector('.connect-step-form');
+  const form = root.querySelector('.connect-form');
+  const backBtn = root.querySelector('.connect-back');
+  const formTitle = root.querySelector('.connect-form-title');
+  const formLead = root.querySelector('.connect-form-lead');
+  const reasonLabel = root.querySelector('.connect-reason-label');
+  const orgField = root.querySelector('.connect-org-field');
+
+  function reset() {
+    if (!stepReason || !stepForm || !form) return;
+    stepReason.hidden = false;
+    stepForm.hidden = true;
+    form.reset();
+    const out = form.querySelector('output');
+    if (out) out.textContent = '';
+  }
+
+  function showForm(reason) {
+    const view = CONNECT_VIEWS[reason];
+    if (!view || !form) return;
+    form.reason.value = reason;
+    if (reasonLabel) reasonLabel.textContent = view.label;
+    if (formTitle) formTitle.textContent = view.title;
+    if (formLead) formLead.textContent = view.lead;
+    if (orgField) {
+      orgField.placeholder = view.orgPlaceholder;
+      orgField.hidden = !view.showOrg;
+      orgField.required = false;
+    }
+    const details = form.details;
+    if (details) details.placeholder = view.detailsPlaceholder;
+    stepReason.hidden = true;
+    stepForm.hidden = false;
+    window.setTimeout(() => form.name.focus(), 60);
+  }
+
+  root.querySelectorAll('.connect-option').forEach((button) => {
+    button.addEventListener('click', () => showForm(button.dataset.reason));
+  });
+  backBtn && backBtn.addEventListener('click', reset);
+
+  if (form) {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const payload = {
+        reason: form.reason.value,
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        organization: form.organization.value.trim(),
+        details: form.details.value.trim()
+      };
+      submitBtn.disabled = true;
+      try {
+        await postJson('/api/connect', payload);
+        setOutput(form, 'Sent. SSA will follow up soon.');
+        if (options.onSuccess) options.onSuccess();
+      } catch (error) {
+        setOutput(form, 'Run python3 server.py to save your request.', false);
+      } finally {
+        window.setTimeout(() => { submitBtn.disabled = false; }, 1200);
+      }
+    });
+  }
+
+  return { reset, showForm };
+}
+
+const modalConnect = initConnectFlow(connectModalFlow, {
+  onSuccess: () => window.setTimeout(() => closeModal(connectModal), 1200)
+});
+initConnectFlow(connectInline);
+
 function resetConnectModal() {
-  if (!connectStepReason || !connectStepForm || !connectForm) return;
-  connectStepReason.hidden = false;
-  connectStepForm.hidden = true;
-  connectForm.reset();
-  const out = connectForm.querySelector('output');
-  if (out) out.textContent = '';
+  modalConnect && modalConnect.reset();
 }
 
 function openConnectModal() {
@@ -745,53 +695,6 @@ function openConnectModal() {
   openModal(connectModal);
 }
 
-function showConnectForm(reason) {
-  const view = CONNECT_VIEWS[reason];
-  if (!view || !connectForm) return;
-  connectForm.reason.value = reason;
-  if (connectReasonLabel) connectReasonLabel.textContent = view.label;
-  if (connectFormTitle) connectFormTitle.textContent = view.title;
-  if (connectFormLead) connectFormLead.textContent = view.lead;
-  if (connectOrgField) {
-    connectOrgField.placeholder = view.orgPlaceholder;
-    connectOrgField.hidden = !view.showOrg;
-    connectOrgField.required = false;
-  }
-  const details = connectForm.details;
-  if (details) details.placeholder = view.detailsPlaceholder;
-  connectStepReason.hidden = true;
-  connectStepForm.hidden = false;
-  window.setTimeout(() => connectForm.name.focus(), 60);
-}
-
-document.querySelectorAll('.connect-option').forEach((button) => {
-  button.addEventListener('click', () => showConnectForm(button.dataset.reason));
-});
-connectBack && connectBack.addEventListener('click', resetConnectModal);
-
-if (connectForm) {
-  connectForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const submitBtn = connectForm.querySelector('button[type="submit"]');
-    const payload = {
-      reason: connectForm.reason.value,
-      name: connectForm.name.value.trim(),
-      email: connectForm.email.value.trim(),
-      organization: connectForm.organization.value.trim(),
-      details: connectForm.details.value.trim()
-    };
-    submitBtn.disabled = true;
-    try {
-      await postJson('/api/connect', payload);
-      setOutput(connectForm, 'Sent. SSA will follow up soon.');
-      window.setTimeout(() => closeModal(connectModal), 1200);
-    } catch (error) {
-      setOutput(connectForm, 'Run python3 server.py to save your request.', false);
-    } finally {
-      window.setTimeout(() => { submitBtn.disabled = false; }, 1200);
-    }
-  });
-}
 attachModalClose(connectModal, () => closeModal(connectModal));
 
 // Admin panel — password-protected view of all submissions
