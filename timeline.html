@@ -13,7 +13,7 @@
   <script>
     (function () {
       var stored = localStorage.getItem('ssaTheme');
-      var theme = stored || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      var theme = stored || 'light';
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
