@@ -33,11 +33,18 @@ const GROUP_POOL = [
 
 const MAX_MISTAKES = 4;
 
+const POWERUPS = {
+  category: { label: 'Category', icon: '🏷', title: 'Reveal a group name' },
+  link: { label: 'Word link', icon: '🔗', title: 'Highlight two matching words' },
+  shield: { label: 'Shield', icon: '🛡', title: 'Block your next mistake' }
+};
+
 const gridEl = document.getElementById('grid');
 const solvedEl = document.getElementById('solved');
 const statusEl = document.getElementById('status');
 const pipsEl = document.getElementById('pips');
 const boardEl = document.getElementById('board');
+const powerupBarEl = document.getElementById('powerupBar');
 const submitBtn = document.getElementById('submit');
 const shuffleBtn = document.getElementById('shuffle');
 const deselectBtn = document.getElementById('deselect');
@@ -51,11 +58,14 @@ let currentGroups = [];
 let wordGroup = {};
 let tiles = [];
 let selected = new Set();
+let linkedWords = new Set();
 let solvedGroups = [];
 let mistakes = 0;
 let startTime = 0;
 let timerStarted = false;
 let gameOver = false;
+let powerUps = { category: 0, link: 0, shield: 0 };
+let shieldArmed = false;
 
 function shuffle(list) {
   const copy = list.slice();
@@ -83,16 +93,117 @@ function newGame() {
   });
   tiles = shuffle(currentGroups.flatMap((group) => group.words));
   selected = new Set();
+  linkedWords = new Set();
   solvedGroups = [];
   mistakes = 0;
   startTime = 0;
   timerStarted = false;
   gameOver = false;
+  powerUps = { category: 0, link: 0, shield: 0 };
+  shieldArmed = false;
   solvedEl.innerHTML = '';
   nameForm.style.display = 'none';
+  document.querySelector('.game-wrap')?.classList.remove('game-won');
   statusEl.textContent = 'Select four words you think belong together.';
   renderPips();
+  renderHud();
   renderGrid();
+}
+
+function unsolvedGroupIndexes() {
+  return currentGroups.map((_, index) => index).filter((index) => !solvedGroups.includes(index));
+}
+
+function addPowerUp(type, amount = 1) {
+  if (!POWERUPS[type]) return;
+  powerUps[type] += amount;
+  renderHud();
+}
+
+function solveRewardMessage(count) {
+  if (count === 1) return 'Group found! Category peek unlocked.';
+  if (count === 2) return 'Group found! Word link unlocked.';
+  if (count === 3) return 'Group found! Shield unlocked.';
+  if (count === 4) return 'Group found! Bonus power-up earned.';
+  return 'Group found. Keep going.';
+}
+
+function grantSolveRewards() {
+  const count = solvedGroups.length;
+  if (count === 1) addPowerUp('category');
+  else if (count === 2) addPowerUp('link');
+  else if (count === 3) addPowerUp('shield');
+  else if (count === 4) {
+    const types = Object.keys(POWERUPS);
+    addPowerUp(types[Math.floor(Math.random() * types.length)]);
+  }
+  statusEl.textContent = solveRewardMessage(count);
+}
+
+function renderHud() {
+  if (!powerupBarEl) return;
+  const entries = Object.keys(POWERUPS);
+  const visible = entries.filter((key) => powerUps[key] > 0 || (key === 'shield' && shieldArmed));
+  if (!visible.length) {
+    powerupBarEl.innerHTML = '<span class="powerup-empty">Solve a group to earn power-ups</span>';
+    return;
+  }
+  powerupBarEl.innerHTML = visible.map((key) => {
+    const meta = POWERUPS[key];
+    const count = powerUps[key];
+    const armed = key === 'shield' && shieldArmed;
+    const disabled = gameOver || (count <= 0 && !armed);
+    return `<button class="powerup-btn ${armed ? 'is-armed' : ''}" type="button" data-powerup="${key}" title="${meta.title}" ${disabled ? 'disabled' : ''}>
+      <span aria-hidden="true">${meta.icon}</span>
+      <span>${meta.label}</span>
+      <span class="powerup-count">${armed ? 'ON' : count}</span>
+    </button>`;
+  }).join('');
+  powerupBarEl.querySelectorAll('.powerup-btn').forEach((btn) => {
+    btn.addEventListener('click', () => usePowerUp(btn.dataset.powerup));
+  });
+}
+
+function usePowerUp(type) {
+  if (gameOver) return;
+  if (type === 'shield') {
+    if (shieldArmed) {
+      shieldArmed = false;
+      powerUps.shield += 1;
+      statusEl.textContent = 'Shield disarmed.';
+      renderHud();
+      return;
+    }
+    if (powerUps.shield <= 0) return;
+    powerUps.shield -= 1;
+    shieldArmed = true;
+    statusEl.textContent = 'Shield armed — your next mistake is blocked.';
+    renderHud();
+    return;
+  }
+  if (powerUps[type] <= 0) return;
+  const remaining = unsolvedGroupIndexes();
+  if (!remaining.length) return;
+
+  if (type === 'category') {
+    const groupIndex = remaining[Math.floor(Math.random() * remaining.length)];
+    powerUps.category -= 1;
+    statusEl.textContent = `Category peek: one group is “${currentGroups[groupIndex].name}”.`;
+    renderHud();
+    return;
+  }
+
+  if (type === 'link') {
+    const groupIndex = remaining[Math.floor(Math.random() * remaining.length)];
+    const words = currentGroups[groupIndex].words.filter((word) => tiles.includes(word));
+    if (words.length < 2) return;
+    const shuffled = shuffle(words);
+    linkedWords = new Set(shuffled.slice(0, 2));
+    powerUps.link -= 1;
+    statusEl.textContent = 'Word link: two tiles belong together.';
+    renderGrid();
+    renderHud();
+  }
 }
 
 function renderPips() {
@@ -104,9 +215,12 @@ function renderPips() {
 }
 
 function renderGrid() {
-  gridEl.innerHTML = tiles.map((word) =>
-    `<button class="tile ${selected.has(word) ? 'selected' : ''}" type="button" data-word="${word}">${word}</button>`
-  ).join('');
+  gridEl.innerHTML = tiles.map((word) => {
+    const classes = ['tile'];
+    if (selected.has(word)) classes.push('selected');
+    if (linkedWords.has(word)) classes.push('tile-linked');
+    return `<button class="${classes.join(' ')}" type="button" data-word="${word}">${word}</button>`;
+  }).join('');
   gridEl.querySelectorAll('.tile').forEach((tile) => {
     tile.addEventListener('click', () => onTileClick(tile.dataset.word));
   });
@@ -122,12 +236,22 @@ function onTileClick(word) {
 
 function solveGroup(groupIndex) {
   solvedGroups.push(groupIndex);
+  linkedWords = new Set();
+  gridEl.querySelectorAll('.tile.selected').forEach((tile) => {
+    tile.classList.add('correct-flash');
+  });
   tiles = tiles.filter((word) => wordGroup[word] !== groupIndex);
   selected.clear();
   renderGrid();
   renderSolved();
+  grantSolveRewards();
+  if (statusEl) {
+    statusEl.classList.remove('status-bump');
+    void statusEl.offsetWidth;
+    statusEl.classList.add('status-bump');
+  }
+  renderHud();
   if (solvedGroups.length === currentGroups.length) endGame(true);
-  else statusEl.textContent = 'Group found. Keep going.';
 }
 
 function renderSolved() {
@@ -151,8 +275,24 @@ function onSubmit() {
   const counts = {};
   groupsOfPicked.forEach((g) => { counts[g] = (counts[g] || 0) + 1; });
   const closest = Math.max(...Object.values(counts));
+
+  if (shieldArmed) {
+    shieldArmed = false;
+    linkedWords = new Set();
+    renderGrid();
+    gridEl.querySelectorAll('.tile.selected').forEach((tile) => {
+      tile.classList.add('shake');
+      window.setTimeout(() => tile.classList.remove('shake'), 450);
+    });
+    statusEl.textContent = closest === 3 ? 'One away — shield blocked the mistake!' : 'Shield blocked that mistake!';
+    renderHud();
+    return;
+  }
+
+  linkedWords = new Set();
   mistakes += 1;
   renderPips();
+  renderHud();
   gridEl.querySelectorAll('.tile.selected').forEach((tile) => {
     tile.classList.add('shake');
     window.setTimeout(() => tile.classList.remove('shake'), 450);
@@ -175,6 +315,11 @@ function endGame(won) {
     renderSolved();
   }
   statusEl.textContent = won ? 'Solved it!' : 'Out of tries — here were the groups.';
+  renderHud();
+  if (won) {
+    document.querySelector('.game-wrap')?.classList.add('game-won');
+    window.ssaPulse?.(statusEl, 'status-win');
+  }
   showResult(won, seconds);
 }
 
@@ -257,7 +402,15 @@ async function saveScore(name, seconds) {
 }
 
 submitBtn.addEventListener('click', onSubmit);
-shuffleBtn.addEventListener('click', () => { if (!gameOver) { tiles = shuffle(tiles); renderGrid(); } });
+shuffleBtn.addEventListener('click', () => {
+  if (!gameOver) {
+    gridEl.classList.add('shuffling');
+    tiles = shuffle(tiles);
+    linkedWords = new Set();
+    renderGrid();
+    window.setTimeout(() => gridEl.classList.remove('shuffling'), 400);
+  }
+});
 deselectBtn.addEventListener('click', () => { selected.clear(); renderGrid(); });
 playAgainBtn.addEventListener('click', () => { newGame(); loadLeaderboard(); });
 nameForm.addEventListener('submit', (event) => {

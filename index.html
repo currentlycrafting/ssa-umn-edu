@@ -45,7 +45,7 @@
       <div class="signup-menu">
         <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu">Options <span aria-hidden="true">↪</span></button>
         <div class="signup-dropdown" id="signupMenu" aria-label="Site options">
-          <a href="#contact" data-open-newsletter>Sign up to newsletter</a>
+          <a href="#contact" data-open-newsletter id="newsletterOption">Sign up to newsletter</a>
           <a href="#donate">Donation</a>
         </div>
       </div>
@@ -54,10 +54,10 @@
 
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
+    <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Events</span></a>
     <a href="#stories" data-section="stories"><span class="dot" aria-hidden="true"></span><span class="side-label">Stories</span></a>
     <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">Highlights</span></a>
     <a href="#about" data-section="about"><span class="dot" aria-hidden="true"></span><span class="side-label">About</span></a>
-    <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Events</span></a>
     <a href="#programs" data-section="programs"><span class="dot" aria-hidden="true"></span><span class="side-label">Programs</span></a>
     <a href="#donate" data-section="donate"><span class="dot" aria-hidden="true"></span><span class="side-label">Donate</span></a>
     <a href="#contact" data-section="contact"><span class="dot" aria-hidden="true"></span><span class="side-label">Connect</span></a>
@@ -94,6 +94,39 @@
         <span class="has-tip" data-tip="Events, mixers, service">Community</span>
         <span class="has-tip" data-tip="Committees and board roles">Leadership</span>
         <span class="has-tip" data-tip="Mentorship and belonging">Student Support</span>
+      </div>
+    </section>
+
+    <section class="section" id="events">
+      <div class="section-head">
+        <span class="eyebrow">Calendar</span>
+        <h2>Upcoming SSA moments</h2>
+      </div>
+      <div class="event-grid">
+        <article class="event-card">
+          <span class="event-date">Sep 15</span>
+          <h3>Freshman Mixer</h3>
+          <p>Meet our incoming class of 2030, helping them learn the campus, and find your first SSA connections.</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15">RSVP Interest</button>
+        </article>
+        <article class="event-card">
+          <span class="event-date">Sep 24</span>
+          <h3>Fall Kickoff</h3>
+          <p>Kickoff SSA for the school year with food, music, and community</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24">RSVP Interest</button>
+        </article>
+        <article class="event-card">
+          <span class="event-date">Oct TBD</span>
+          <h3>Family Feud</h3>
+          <p>A community game night built for teams, laughter, and friendly competition.</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD">RSVP Interest</button>
+        </article>
+        <article class="event-card">
+          <span class="event-date">Oct TBD</span>
+          <h3>Field Day</h3>
+          <p>A community day with games, bonding, and space to meet more SSA members.</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD">RSVP Interest</button>
+        </article>
       </div>
     </section>
 
@@ -209,39 +242,6 @@
             <p>Roles in a board that promotes leadership development and opportunities for students to grow and lead</p>
           </article>
         </div>
-      </div>
-    </section>
-
-    <section class="section" id="events">
-      <div class="section-head">
-        <span class="eyebrow">Calendar</span>
-        <h2>Upcoming SSA moments</h2>
-      </div>
-      <div class="event-grid">
-        <article class="event-card">
-          <span class="event-date">Sep 15</span>
-          <h3>Freshman Mixer</h3>
-          <p>Meet our incoming class of 2030, helping them learn the campus, and find your first SSA connections.</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15">RSVP Interest</button>
-        </article>
-        <article class="event-card">
-          <span class="event-date">Sep 24</span>
-          <h3>Fall Kickoff</h3>
-          <p>Kickoff SSA for the school year with food, music, and community</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24">RSVP Interest</button>
-        </article>
-        <article class="event-card">
-          <span class="event-date">Oct TBD</span>
-          <h3>Family Feud</h3>
-          <p>A community game night built for teams, laughter, and friendly competition.</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD">RSVP Interest</button>
-        </article>
-        <article class="event-card">
-          <span class="event-date">Oct TBD</span>
-          <h3>Field Day</h3>
-          <p>A community day with games, bonding, and space to meet more SSA members.</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD">RSVP Interest</button>
-        </article>
       </div>
     </section>
 
@@ -469,6 +469,7 @@
     </div>
   </div>
 
+  <script src="micro.js"></script>
   <script src="checklist.js"></script>
   <script src="index.js"></script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>

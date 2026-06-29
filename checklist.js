@@ -61,6 +61,7 @@
   const checklistRing = document.getElementById('checklistRing');
   const checklistRingText = document.getElementById('checklistRingText');
   let completedSteps = JSON.parse(localStorage.getItem('ssaChecklist') || '[]');
+  let lastMarkedStep = '';
 
   function pageFile() {
     const path = window.location.pathname;
@@ -96,10 +97,18 @@
     checklistLabel.textContent = count ? (count === total ? 'Done' : `${count} of ${total}`) : 'Start';
     checklistTrigger.style.setProperty('--progress', `${pct}%`);
     checklistPanel.classList.toggle('complete', count === total);
-    checklistSteps.querySelectorAll('button').forEach((button) => {
-      button.classList.toggle('done', completedSteps.includes(stepKey(button)));
-    });
-    if (animate) pulseRing();
+  checklistSteps.querySelectorAll('button').forEach((button) => {
+    button.classList.toggle('done', completedSteps.includes(stepKey(button)));
+  });
+  if (animate) {
+    pulseRing();
+    window.ssaPulse?.(checklistRing);
+    const justDone = checklistSteps.querySelector(`[data-step="${lastMarkedStep}"]`);
+    if (justDone) {
+      justDone.classList.add('just-done');
+      window.setTimeout(() => justDone.classList.remove('just-done'), 500);
+    }
+  }
     localStorage.setItem('ssaChecklist', JSON.stringify(completedSteps));
   }
 
@@ -115,7 +124,10 @@
     if (!button) return;
     const key = stepKey(button);
     const wasDone = completedSteps.includes(key);
-    if (!wasDone) completedSteps.push(key);
+    if (!wasDone) {
+      completedSteps.push(key);
+      lastMarkedStep = step;
+    }
     if (checklistPop && note) checklistPop.textContent = note;
     updateChecklist(!wasDone);
     setProgressMessage();
@@ -266,4 +278,63 @@
   setProgressMessage();
   syncFromFlags();
   updateChecklist();
+
+  function initChecklistIntro() {
+    if (!document.getElementById('hero')) return;
+    if (localStorage.getItem('ssaChecklistIntroSeen') === '1') return;
+
+    const intro = document.createElement('div');
+    intro.className = 'checklist-intro';
+    intro.id = 'checklistIntro';
+    intro.setAttribute('aria-hidden', 'true');
+    intro.innerHTML =
+      '<div class="checklist-intro-backdrop" data-intro-dismiss></div>' +
+      '<div class="checklist-intro-card" role="dialog" aria-modal="true" aria-labelledby="checklistIntroTitle">' +
+        '<div class="checklist-intro-art" aria-hidden="true">' +
+          '<img src="assets/brand/ssa-logo.png" alt="" class="checklist-intro-logo" />' +
+          '<svg class="checklist-intro-mock" viewBox="0 0 280 200" aria-hidden="true">' +
+            '<rect x="8" y="8" width="264" height="184" rx="16" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="2"/>' +
+            '<circle cx="42" cy="42" r="22" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="80 140"/>' +
+            '<text x="42" y="48" text-anchor="middle" font-size="14" font-weight="800" fill="var(--accent)">3</text>' +
+            '<text x="78" y="36" font-size="13" font-weight="800" fill="var(--muted)">CHECKLIST</text>' +
+            '<text x="78" y="54" font-size="11" font-weight="700" fill="var(--muted)">Explore SSA</text>' +
+            '<rect x="24" y="78" width="232" height="22" rx="8" fill="var(--blue-2)"/>' +
+            '<rect x="24" y="108" width="232" height="22" rx="8" fill="var(--surface-2)" stroke="var(--line)"/>' +
+            '<rect x="24" y="138" width="232" height="22" rx="8" fill="var(--surface-2)" stroke="var(--line)"/>' +
+            '<circle cx="36" cy="89" r="6" fill="var(--green)"/>' +
+            '<circle cx="36" cy="119" r="6" fill="var(--green)"/>' +
+            '<circle cx="36" cy="149" r="6" fill="var(--line-strong)"/>' +
+          '</svg>' +
+        '</div>' +
+        '<span class="eyebrow">New here?</span>' +
+        '<h2 id="checklistIntroTitle">Take the SSA checklist tour</h2>' +
+        '<p>Work through seven quick steps — events, gallery, game, timeline, and more. Your progress saves as you go.</p>' +
+        '<div class="checklist-intro-actions">' +
+          '<button type="button" class="button button-dark" id="checklistIntroStart">Open checklist</button>' +
+          '<button type="button" class="button button-line" id="checklistIntroLater">Maybe later</button>' +
+        '</div>' +
+        '<span class="checklist-intro-pointer" aria-hidden="true"></span>' +
+      '</div>';
+    document.body.appendChild(intro);
+
+    function dismiss(openPanel) {
+      localStorage.setItem('ssaChecklistIntroSeen', '1');
+      intro.classList.remove('open');
+      intro.setAttribute('aria-hidden', 'true');
+      if (openPanel) openChecklist(true);
+      window.setTimeout(() => intro.remove(), 320);
+    }
+
+    intro.querySelector('#checklistIntroStart').addEventListener('click', () => dismiss(true));
+    intro.querySelector('#checklistIntroLater').addEventListener('click', () => dismiss(false));
+    intro.querySelector('[data-intro-dismiss]').addEventListener('click', () => dismiss(false));
+
+    window.setTimeout(() => {
+      intro.classList.add('open');
+      intro.setAttribute('aria-hidden', 'false');
+      intro.querySelector('#checklistIntroStart').focus();
+    }, 1000);
+  }
+
+  initChecklistIntro();
 })();

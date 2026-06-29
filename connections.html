@@ -49,9 +49,12 @@
     <div class="game-wrap">
       <span class="eyebrow">SSA Connections</span>
       <h1>Soo Xidh</h1>
-      <p>Find four groups of four. You get four mistakes. Come back to climb the leaderboard.</p>
+      <p>Find four groups of four. You get four mistakes — solve groups to earn power-ups along the way.</p>
 
       <div class="game-status" id="status">Select four words you think belong together.</div>
+
+      <div class="powerup-bar" id="powerupBar" aria-label="Power-ups"></div>
+
       <div id="solved"></div>
       <div class="game-grid" id="grid" aria-label="Connections board"></div>
 
@@ -94,6 +97,7 @@
     </div>
   </footer>
 
+  <script src="micro.js"></script>
   <script src="checklist.js"></script>
   <script>
     var t = document.getElementById('themeToggle');

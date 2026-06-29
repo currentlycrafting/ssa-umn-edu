@@ -1,23 +1,4 @@
-const fadeEls = document.querySelectorAll('.section, .stat-card, .event-card, .program-card, .focus-card, .board-card, .president-card, .form-card, .mission-item, .donation-card, .carousel-section');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08 });
-fadeEls.forEach((el) => {
-  el.classList.add('fade-up');
-  observer.observe(el);
-});
-
-// Stagger children inside grids so cards cascade in instead of all at once
-document.querySelectorAll('.stat-grid, .event-grid, .focus-grid, .board-grid, .mission-list, .donation-grid').forEach((grid) => {
-  Array.from(grid.children).forEach((child, i) => {
-    child.style.setProperty('--stagger', `${Math.min(i * 70, 420)}ms`);
-  });
-});
+// Scroll reveals + stagger handled by micro.js
 
 // Hero year montage: flip up 1998 -> 2026, then rewind fast back to 1998
 const ymYear = document.getElementById('ymYear');
@@ -174,6 +155,14 @@ if (signupMenu && signupToggle) {
   });
 }
 
+function updateOptionsMenu() {
+  const newsletterOption = document.getElementById('newsletterOption');
+  if (newsletterOption) {
+    newsletterOption.hidden = localStorage.getItem('ssaNewsletterSubscribed') === '1';
+  }
+}
+updateOptionsMenu();
+
 document.querySelectorAll('.micro-button:not(.rsvp-button)').forEach((button) => {
   button.addEventListener('click', () => {
     button.classList.toggle('done');
@@ -194,7 +183,9 @@ if (carousel) {
   const dots = Array.from(dotsRoot.querySelectorAll('.carousel-dot'));
 
   function showSlide(next, userInitiated = false) {
+    const prev = index;
     index = (next + slides.length) % slides.length;
+    carousel.classList.toggle('slide-back', index < prev);
     slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
     dots.forEach((dot, i) => {
       dot.classList.remove('active');
@@ -262,16 +253,28 @@ async function getJson(url) {
   return data;
 }
 
+function setButtonLoading(button, loading) {
+  if (!button) return;
+  button.classList.toggle('is-loading', loading);
+  button.disabled = !!loading;
+}
+
+function modalExitSvg() {
+  return (
+    '<svg viewBox="0 0 44 44" aria-hidden="true">' +
+    '<path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/>' +
+    '<path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/>' +
+    '</svg>'
+  );
+}
+
 function attachModalClose(backdrop, closeFn, canClose = () => true) {
   if (!backdrop || backdrop.querySelector('.modal-exit')) return;
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'modal-exit';
   btn.setAttribute('aria-label', 'Close');
-  btn.innerHTML =
-    '<svg viewBox="0 0 44 44" aria-hidden="true">' +
-    '<path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/>' +
-    '</svg>';
+  btn.innerHTML = modalExitSvg();
   btn.addEventListener('click', () => {
     if (canClose()) closeFn();
   });
@@ -325,6 +328,7 @@ if (newsletterForm) {
     try {
       await postJson('/api/newsletter', { email });
       localStorage.setItem('ssaNewsletterSubscribed', '1');
+      updateOptionsMenu();
       window.markChecklistStep?.('newsletter', 'Newsletter saved. That checklist step is now complete.');
       newsletterForm.reset();
       setOutput(newsletterForm, 'Subscribed and saved.');
@@ -375,8 +379,9 @@ function addRsvpedEvent(name) {
 function updateRsvpCard(eventName, count) {
   document.querySelectorAll('.rsvp-button').forEach((btn) => {
     if (btn.dataset.event === eventName) {
-      btn.classList.add('going');
+      btn.classList.add('going', 'saved-pop');
       btn.textContent = count ? `Going · ${count} coming` : 'Going · see who';
+      window.setTimeout(() => btn.classList.remove('saved-pop'), 600);
     }
   });
 }
@@ -466,7 +471,7 @@ if (rsvpForm) {
       email: rsvpForm.email.value.trim()
     };
     const button = rsvpForm.querySelector('button');
-    button.disabled = true;
+    setButtonLoading(button, true);
     try {
       const data = await postJson('/api/rsvp', payload);
       window.markChecklistStep?.('events', 'RSVP interest saved. Events step complete.');
@@ -476,7 +481,7 @@ if (rsvpForm) {
       rsvpForm.reset();
     } catch (error) {
       setOutput(rsvpForm, 'Run python3 server.py to save RSVP interest.', false);
-      button.disabled = false;
+      setButtonLoading(button, false);
     }
   });
 }
@@ -521,6 +526,7 @@ if (newsletterModalForm) {
     try {
       await postJson('/api/newsletter', { email });
       localStorage.setItem('ssaNewsletterSubscribed', '1');
+      updateOptionsMenu();
       window.markChecklistStep?.('newsletter', 'Newsletter saved. Checklist complete.');
       if (out) out.textContent = 'You are in. Welcome to SSA.';
       window.setTimeout(() => closeNewsletterModal(false), 1100);
@@ -611,6 +617,7 @@ const CONNECT_VIEWS = {
 
 function initConnectFlow(root, options = {}) {
   if (!root) return null;
+  root.dataset.step = 'reason';
   const stepReason = root.querySelector('.connect-step-reason');
   const stepForm = root.querySelector('.connect-step-form');
   const form = root.querySelector('.connect-form');
@@ -622,6 +629,7 @@ function initConnectFlow(root, options = {}) {
 
   function reset() {
     if (!stepReason || !stepForm || !form) return;
+    root.dataset.step = 'reason';
     stepReason.hidden = false;
     stepForm.hidden = true;
     form.reset();
@@ -643,6 +651,7 @@ function initConnectFlow(root, options = {}) {
     }
     const details = form.details;
     if (details) details.placeholder = view.detailsPlaceholder;
+    root.dataset.step = 'form';
     stepReason.hidden = true;
     stepForm.hidden = false;
     window.setTimeout(() => form.name.focus(), 60);
@@ -665,6 +674,7 @@ function initConnectFlow(root, options = {}) {
         details: form.details.value.trim()
       };
       submitBtn.disabled = true;
+      submitBtn.classList.add('is-loading');
       try {
         await postJson('/api/connect', payload);
         setOutput(form, 'Sent. SSA will follow up soon.');
@@ -672,7 +682,10 @@ function initConnectFlow(root, options = {}) {
       } catch (error) {
         setOutput(form, 'Run python3 server.py to save your request.', false);
       } finally {
-        window.setTimeout(() => { submitBtn.disabled = false; }, 1200);
+        window.setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('is-loading');
+        }, 1200);
       }
     });
   }
@@ -721,7 +734,7 @@ function renderAdminTab(tab) {
     adminBody.innerHTML = '<p class="admin-empty">No submissions yet.</p>';
     return;
   }
-  adminBody.innerHTML = rows.map((row) => {
+  adminBody.innerHTML = '<div class="admin-body-fade">' + rows.map((row) => {
     if (tab === 'newsletters') {
       return adminRow(`<strong>${escapeHtml(row.email)}</strong>`, row.created_at);
     }
@@ -748,7 +761,7 @@ function renderAdminTab(tab) {
       `<span class="admin-row-detail">${escapeHtml(row.details)}</span>`,
       row.created_at
     );
-  }).join('');
+  }).join('') + '</div>';
 }
 
 async function loadAdminData() {
