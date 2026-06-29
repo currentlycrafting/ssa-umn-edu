@@ -41,10 +41,11 @@
     </div>
     <div class="nav-tools">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+      <button class="nav-admin" id="adminToggle" type="button">Admin</button>
       <div class="signup-menu">
         <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu">Connect <span aria-hidden="true">↪</span></button>
         <div class="signup-dropdown" id="signupMenu" aria-label="Connect options">
-          <a href="#newsletterForm">Sign up to newsletter</a>
+          <a href="#contact" data-open-newsletter>Sign up to newsletter</a>
           <a href="#messageForm">Contact us</a>
           <a href="#donate">Donation</a>
         </div>
@@ -79,7 +80,7 @@
         <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
         <div class="hero-actions">
-          <button class="button button-dark handdrawn shimmer hero-connect has-tip" type="button" data-open-signup data-tip="Newsletter, contact, or donate">Connect with SSA <span aria-hidden="true">↪</span></button>
+          <button class="button button-dark handdrawn shimmer hero-connect has-tip" type="button" data-open-connect data-tip="Sponsorship, partnerships, board interest, and more">Connect with SSA <span aria-hidden="true">↪</span></button>
           <a class="button button-line handdrawn has-tip" href="connections.html" data-tip="Play SSA Connections">Play the Game</a>
           <svg class="hero-arrow" viewBox="0 0 70 50" aria-hidden="true"><path d="M6 40 C20 10 44 6 60 14 M60 14 L48 12 M60 14 L56 26" /></svg>
         </div>
@@ -343,8 +344,7 @@
   </footer>
 
   <div class="modal-backdrop" id="rsvpModal" aria-hidden="true">
-    <div class="rsvp-modal" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
-      <button class="modal-close" id="rsvpClose" type="button" aria-label="Close RSVP form">×</button>
+    <div class="rsvp-modal modal-sheet" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
       <span class="eyebrow">RSVP Interest</span>
       <h2 id="rsvpTitle">Event interest</h2>
       <p id="rsvpMeta"></p>
@@ -361,15 +361,13 @@
   </div>
 
   <div class="modal-backdrop kofi-modal-backdrop" id="kofiModal" aria-hidden="true">
-    <div class="kofi-modal" role="dialog" aria-modal="true" aria-label="Donate to Somali Student Association">
-      <button class="modal-close" id="kofiClose" type="button" aria-label="Close donation window">×</button>
+    <div class="kofi-modal modal-sheet" role="dialog" aria-modal="true" aria-label="Donate to Somali Student Association">
       <iframe id="kofiframe" title="Donate to Somali Student Association" loading="lazy"></iframe>
     </div>
   </div>
 
   <div class="modal-backdrop newsletter-takeover" id="newsletterModal" aria-hidden="true">
-    <div class="newsletter-sheet" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
-      <button class="modal-close" id="newsletterClose" type="button" aria-label="Close">×</button>
+    <div class="newsletter-sheet modal-sheet" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
       <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
       <svg class="doodle nl-doodle-2" viewBox="0 0 60 60" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
       <span class="eyebrow">Last step</span>
@@ -381,6 +379,77 @@
         <output></output>
       </form>
       <button class="nl-skip" id="newsletterSkip" type="button">Maybe later</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop newsletter-takeover" id="connectModal" aria-hidden="true">
+    <div class="newsletter-sheet modal-sheet connect-sheet" role="dialog" aria-modal="true" aria-labelledby="connectTitle">
+      <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
+      <svg class="doodle nl-doodle-2" viewBox="0 0 60 60" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
+      <div id="connectStepReason">
+        <span class="eyebrow">Connect with SSA</span>
+        <h2 id="connectTitle">Why do you want to connect?</h2>
+        <p class="connect-lead">Pick the option that fits best. We will ask a few quick follow-up questions.</p>
+        <div class="connect-options">
+          <button type="button" class="connect-option" data-reason="sponsorship">Sponsorship</button>
+          <button type="button" class="connect-option" data-reason="collaborations">Collaborations</button>
+          <button type="button" class="connect-option" data-reason="partnerships">Partnerships</button>
+          <button type="button" class="connect-option" data-reason="board">Want to join the board</button>
+          <button type="button" class="connect-option" data-reason="ideas">Pitching ideas</button>
+        </div>
+      </div>
+      <div id="connectStepForm" hidden>
+        <button type="button" class="connect-back" id="connectBack">← Back</button>
+        <span class="eyebrow" id="connectReasonLabel">Connect</span>
+        <h2 id="connectFormTitle">Tell us more</h2>
+        <p id="connectFormLead"></p>
+        <form id="connectForm" class="connect-form">
+          <input type="hidden" name="reason" />
+          <input type="text" name="name" placeholder="Your name" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <input type="text" name="organization" id="connectOrgField" placeholder="Organization (optional)" />
+          <textarea name="details" rows="4" placeholder="Tell us more" required></textarea>
+          <button class="button button-dark handdrawn shimmer" type="submit">Send to SSA</button>
+          <output></output>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="adminModal" aria-hidden="true">
+    <div class="admin-sheet modal-sheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+      <div id="adminLogin">
+        <span class="eyebrow">Admin</span>
+        <h2 id="adminTitle">SSA submissions</h2>
+        <p>Enter the admin password to view newsletter signups, RSVP interest, connect requests, and messages.</p>
+        <form id="adminLoginForm" class="admin-login-form">
+          <div class="password-field">
+            <input type="password" id="adminPassword" placeholder="Password" autocomplete="current-password" required />
+            <button type="button" class="password-toggle" id="adminPasswordToggle" aria-label="Show password" aria-pressed="false">
+              <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12 C6 6 10 4 12 4 C14 4 18 6 22 12 C18 18 14 20 12 20 C10 20 6 18 2 12 Z"/>
+                <circle cx="12" cy="12" r="2.8"/>
+              </svg>
+            </button>
+          </div>
+          <button class="button button-dark" type="submit">View submissions</button>
+          <output></output>
+        </form>
+      </div>
+      <div id="adminPanel" hidden>
+        <div class="admin-head">
+          <span class="eyebrow">Admin</span>
+          <h2>All submissions</h2>
+          <button type="button" class="admin-refresh" id="adminRefresh">Refresh</button>
+        </div>
+        <div class="admin-tabs">
+          <button type="button" class="admin-tab active" data-tab="newsletters">Newsletter</button>
+          <button type="button" class="admin-tab" data-tab="rsvp">RSVP</button>
+          <button type="button" class="admin-tab" data-tab="connect">Connect</button>
+          <button type="button" class="admin-tab" data-tab="messages">Messages</button>
+        </div>
+        <div class="admin-body" id="adminBody"></div>
+      </div>
     </div>
   </div>
 

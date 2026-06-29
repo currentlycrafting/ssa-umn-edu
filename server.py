@@ -7,6 +7,7 @@ from urllib.parse import urlparse, parse_qs
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = ROOT / "ssa_site.sqlite"
+ADMIN_PASSWORD = "Ilovesomalia393@"
 
 
 def init_db():
@@ -58,6 +59,19 @@ def init_db():
             )
             """
         )
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS connect_interest (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                reason TEXT NOT NULL,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                organization TEXT,
+                details TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
 
 
 class SSAHandler(SimpleHTTPRequestHandler):
@@ -98,6 +112,48 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 (event_name,),
             ).fetchall()
         return [{"name": r[0], "email": r[1]} for r in rows]
+
+    def _admin_payload(self):
+        with sqlite3.connect(DB_PATH) as db:
+            newsletters = db.execute(
+                "SELECT email, created_at FROM newsletter_subscribers ORDER BY created_at DESC"
+            ).fetchall()
+            messages = db.execute(
+                "SELECT name, email, message, created_at FROM messages ORDER BY created_at DESC"
+            ).fetchall()
+            rsvps = db.execute(
+                "SELECT event_name, event_date, name, email, created_at FROM rsvp_interest ORDER BY created_at DESC"
+            ).fetchall()
+            connects = db.execute(
+                "SELECT reason, name, email, organization, details, created_at FROM connect_interest ORDER BY created_at DESC"
+            ).fetchall()
+        return {
+            "newsletters": [{"email": r[0], "created_at": r[1]} for r in newsletters],
+            "messages": [
+                {"name": r[0], "email": r[1], "message": r[2], "created_at": r[3]} for r in messages
+            ],
+            "rsvp": [
+                {
+                    "event_name": r[0],
+                    "event_date": r[1],
+                    "name": r[2],
+                    "email": r[3],
+                    "created_at": r[4],
+                }
+                for r in rsvps
+            ],
+            "connect": [
+                {
+                    "reason": r[0],
+                    "name": r[1],
+                    "email": r[2],
+                    "organization": r[3] or "",
+                    "details": r[4],
+                    "created_at": r[5],
+                }
+                for r in connects
+            ],
+        }
 
     def do_GET(self):
         path = self.path.split("?")[0]
@@ -199,6 +255,38 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     (name, mistakes, seconds, solved, now),
                 )
             self._send_json(200, {"ok": True, "scores": self._leaderboard()})
+            return
+
+        if self.path == "/api/connect":
+            reason = str(payload.get("reason", "")).strip().lower()
+            name = str(payload.get("name", "")).strip()
+            email = str(payload.get("email", "")).strip().lower()
+            organization = str(payload.get("organization", "")).strip()
+            details = str(payload.get("details", "")).strip()
+            allowed = {"sponsorship", "collaborations", "partnerships", "board", "ideas"}
+            if reason not in allowed:
+                self._send_json(400, {"error": "A valid connection reason is required."})
+                return
+            if not name or "@" not in email or not details:
+                self._send_json(400, {"error": "Name, valid email, and details are required."})
+                return
+            with sqlite3.connect(DB_PATH) as db:
+                db.execute(
+                    """
+                    INSERT INTO connect_interest (reason, name, email, organization, details, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    (reason, name, email, organization, details, now),
+                )
+            self._send_json(200, {"ok": True})
+            return
+
+        if self.path == "/api/admin":
+            password = str(payload.get("password", ""))
+            if password != ADMIN_PASSWORD:
+                self._send_json(401, {"error": "Invalid password."})
+                return
+            self._send_json(200, {"ok": True, **self._admin_payload()})
             return
 
         self._send_json(404, {"error": "Endpoint not found."})
