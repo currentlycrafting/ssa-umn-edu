@@ -1,0 +1,5 @@
+ssa_site.sqlite
+ssa_site.sqlite-wal
+ssa_site.sqlite-shm
+.env
+.DS_Store

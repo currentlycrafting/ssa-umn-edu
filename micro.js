@@ -15,7 +15,6 @@
     initScrollReveals();
     initStaggerGrids();
     initTimelineMotion();
-    initScrollProgress();
     initNavRipple();
     initLinkHovers();
     initPageHeroMotion();
@@ -28,6 +27,7 @@
     initFormOutputWatch();
     initAnchorFlash();
     initConnectOptionRipple();
+    initMobileNav();
   });
 
   function pulse(el, className = 'ui-pulse') {
@@ -106,28 +106,6 @@
     window.addEventListener('scroll', updateLine, { passive: true });
     window.addEventListener('resize', updateLine, { passive: true });
     updateLine();
-  }
-
-  function initScrollProgress() {
-    const bar = document.createElement('div');
-    bar.className = 'scroll-progress';
-    bar.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(bar);
-
-    let lastY = window.scrollY;
-    function update() {
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - doc.clientHeight;
-      const pct = max > 0 ? (window.scrollY / max) * 100 : 0;
-      bar.style.width = `${pct}%`;
-      const velocity = Math.abs(window.scrollY - lastY);
-      bar.style.opacity = velocity > 8 ? '1' : '0.85';
-      bar.classList.toggle('is-scrolling', velocity > 4);
-      lastY = window.scrollY;
-    }
-
-    window.addEventListener('scroll', update, { passive: true });
-    update();
   }
 
   function initNavRipple() {
@@ -305,6 +283,43 @@
   function initConnectOptionRipple() {
     document.querySelectorAll('.connect-option').forEach((btn) => {
       btn.addEventListener('click', () => pulse(btn, 'option-pop'));
+    });
+  }
+
+  function initMobileNav() {
+    const nav = document.querySelector('.nav');
+    const toggle = document.getElementById('navMenuToggle');
+    const links = document.getElementById('navLinks');
+    if (!nav || !toggle || !links) return;
+
+    const close = () => {
+      nav.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open menu');
+    };
+
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const open = nav.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+
+    links.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', close);
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!nav.classList.contains('is-open')) return;
+      if (!nav.contains(event.target)) close();
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') close();
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900) close();
     });
   }
 

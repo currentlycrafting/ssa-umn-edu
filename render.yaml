@@ -1,0 +1,19 @@
+# Render Blueprint — optional. You can also configure everything in the dashboard.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Free plan: SQLite lives on ephemeral disk (data can reset on redeploy).
+# For persistent data, upgrade to Starter+ and add a disk (see deploy notes below).
+
+services:
+  - type: web
+    name: ssa-website
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    healthCheckPath: /api/health
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: ADMIN_PASSWORD
+        sync: false

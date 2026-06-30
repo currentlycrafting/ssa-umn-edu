@@ -348,13 +348,6 @@ function showResult(won, seconds) {
   }
 }
 
-function localBoard() {
-  return JSON.parse(localStorage.getItem('ssaGameBoard') || '[]')
-    .filter((entry) => entry.solved)
-    .sort((a, b) => a.mistakes - b.mistakes || a.seconds - b.seconds)
-    .slice(0, 10);
-}
-
 function renderLeaderboard(scores) {
   if (!scores || !scores.length) {
     boardEl.innerHTML = '<li class="empty">No solves yet. Be the first.</li>';
@@ -374,31 +367,24 @@ function escapeHtml(text) {
 async function loadLeaderboard() {
   try {
     const res = await fetch('/api/leaderboard');
-    if (!res.ok) throw new Error('no server');
+    if (!res.ok) throw new Error('Server unavailable');
     const data = await res.json();
     renderLeaderboard(data.scores || []);
   } catch (error) {
-    renderLeaderboard(localBoard());
+    boardEl.innerHTML = '<li class="empty">Could not load leaderboard. Run <code>python3 server.py</code> and refresh.</li>';
   }
 }
 
 async function saveScore(name, seconds) {
   const entry = { name, mistakes, seconds, solved: true };
-  try {
-    const res = await fetch('/api/score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry)
-    });
-    if (!res.ok) throw new Error('no server');
-    const data = await res.json();
-    renderLeaderboard(data.scores || []);
-  } catch (error) {
-    const stored = JSON.parse(localStorage.getItem('ssaGameBoard') || '[]');
-    stored.push(entry);
-    localStorage.setItem('ssaGameBoard', JSON.stringify(stored));
-    renderLeaderboard(localBoard());
-  }
+  const res = await fetch('/api/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Could not save score');
+  renderLeaderboard(data.scores || []);
 }
 
 submitBtn.addEventListener('click', onSubmit);
@@ -413,12 +399,17 @@ shuffleBtn.addEventListener('click', () => {
 });
 deselectBtn.addEventListener('click', () => { selected.clear(); renderGrid(); });
 playAgainBtn.addEventListener('click', () => { newGame(); loadLeaderboard(); });
-nameForm.addEventListener('submit', (event) => {
+nameForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (nameForm.dataset.won !== '1') return;
   const name = (nameInput.value || 'Anonymous').trim() || 'Anonymous';
   const seconds = parseInt(nameForm.dataset.seconds, 10) || 0;
-  saveScore(name, seconds);
+  try {
+    await saveScore(name, seconds);
+  } catch (error) {
+    resultMeta.textContent = 'Could not save score. Run python3 server.py and try again.';
+    return;
+  }
   if (localStorage.getItem('ssaGameSubmitted') !== '1') {
     localStorage.setItem('ssaGameSubmitted', '1');
     window.markChecklistStep?.('game', 'Score saved — game step complete.');

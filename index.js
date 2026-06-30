@@ -723,6 +723,12 @@ let adminPasswordMem = '';
 let adminData = null;
 let adminTab = 'newsletters';
 
+function formatGameTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 function renderAdminTab(tab) {
   if (!adminBody || !adminData) return;
   adminTab = tab;
@@ -751,6 +757,14 @@ function renderAdminTab(tab) {
         `<strong>${escapeHtml(row.name)}</strong>` +
         `<span class="admin-row-meta">${escapeHtml(row.event_name)} · ${escapeHtml(row.event_date)}</span>` +
         `<span class="admin-row-detail">${escapeHtml(row.email)}</span>`,
+        row.created_at
+      );
+    }
+    if (tab === 'scores') {
+      const status = row.solved ? 'Solved' : 'Not solved';
+      return adminRow(
+        `<strong>${escapeHtml(row.name)}</strong>` +
+        `<span class="admin-row-meta">${formatGameTime(row.seconds)} · ${row.mistakes} mistake${row.mistakes === 1 ? '' : 's'} · ${status}</span>`,
         row.created_at
       );
     }

@@ -33,13 +33,14 @@
       <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
       <span>SSA</span>
     </a>
-    <div class="nav-links">
+    <div class="nav-links" id="navLinks">
       <a href="index.html" class="active">Home</a>
       <a href="timeline.html">Timeline</a>
       <a href="gallery.html">Gallery</a>
       <a href="connections.html">Game</a>
     </div>
     <div class="nav-tools">
+      <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
       <button class="nav-admin" id="adminToggle" type="button">Admin</button>
       <div class="signup-menu">
@@ -437,7 +438,7 @@
       <div id="adminLogin">
         <span class="eyebrow">Admin</span>
         <h2 id="adminTitle">SSA submissions</h2>
-        <p>Enter the admin password to view newsletter signups, RSVP interest, connect requests, and messages.</p>
+        <p>Enter the admin password to view newsletter signups, RSVP interest, connect requests, game scores, and messages.</p>
         <form id="adminLoginForm" class="admin-login-form">
           <div class="password-field">
             <input type="password" id="adminPassword" placeholder="Password" autocomplete="current-password" required />
@@ -463,6 +464,7 @@
           <button type="button" class="admin-tab" data-tab="rsvp">RSVP</button>
           <button type="button" class="admin-tab" data-tab="connect">Connect</button>
           <button type="button" class="admin-tab" data-tab="messages">Messages</button>
+          <button type="button" class="admin-tab" data-tab="scores">Game</button>
         </div>
         <div class="admin-body" id="adminBody"></div>
       </div>

@@ -1,17 +1,27 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
 ROOT = Path(__file__).resolve().parent
-DB_PATH = ROOT / "ssa_site.sqlite"
-ADMIN_PASSWORD = "Ilovesomalia393@"
+DB_PATH = Path(os.environ.get("DB_PATH", ROOT / "ssa_site.sqlite"))
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Ilovesomalia393@")
+HOST = os.environ.get("HOST", "0.0.0.0")
+PORT = int(os.environ.get("PORT", "5600"))
+
+
+def db_connect():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def init_db():
-    with sqlite3.connect(DB_PATH) as db:
+    with db_connect() as db:
         db.execute(
             """
             CREATE TABLE IF NOT EXISTS newsletter_subscribers (
@@ -89,32 +99,32 @@ class SSAHandler(SimpleHTTPRequestHandler):
         return json.loads(raw or "{}")
 
     def _leaderboard(self, limit=10):
-        with sqlite3.connect(DB_PATH) as db:
+        with db_connect() as db:
             rows = db.execute(
                 """
                 SELECT name, mistakes, seconds, solved
                 FROM game_scores
                 WHERE solved = 1
-                ORDER BY mistakes ASC, seconds ASC
+                ORDER BY mistakes ASC, seconds ASC, created_at ASC
                 LIMIT ?
                 """,
                 (limit,),
             ).fetchall()
         return [
-            {"name": r[0], "mistakes": r[1], "seconds": r[2], "solved": bool(r[3])}
+            {"name": r["name"], "mistakes": r["mistakes"], "seconds": r["seconds"], "solved": bool(r["solved"])}
             for r in rows
         ]
 
     def _attendees(self, event_name):
-        with sqlite3.connect(DB_PATH) as db:
+        with db_connect() as db:
             rows = db.execute(
                 "SELECT name, email FROM rsvp_interest WHERE event_name = ? ORDER BY created_at ASC",
                 (event_name,),
             ).fetchall()
-        return [{"name": r[0], "email": r[1]} for r in rows]
+        return [{"name": r["name"], "email": r["email"]} for r in rows]
 
     def _admin_payload(self):
-        with sqlite3.connect(DB_PATH) as db:
+        with db_connect() as db:
             newsletters = db.execute(
                 "SELECT email, created_at FROM newsletter_subscribers ORDER BY created_at DESC"
             ).fetchall()
@@ -127,36 +137,58 @@ class SSAHandler(SimpleHTTPRequestHandler):
             connects = db.execute(
                 "SELECT reason, name, email, organization, details, created_at FROM connect_interest ORDER BY created_at DESC"
             ).fetchall()
+            scores = db.execute(
+                """
+                SELECT name, mistakes, seconds, solved, created_at
+                FROM game_scores
+                ORDER BY created_at DESC
+                LIMIT 200
+                """
+            ).fetchall()
         return {
-            "newsletters": [{"email": r[0], "created_at": r[1]} for r in newsletters],
+            "newsletters": [{"email": r["email"], "created_at": r["created_at"]} for r in newsletters],
             "messages": [
-                {"name": r[0], "email": r[1], "message": r[2], "created_at": r[3]} for r in messages
+                {"name": r["name"], "email": r["email"], "message": r["message"], "created_at": r["created_at"]}
+                for r in messages
             ],
             "rsvp": [
                 {
-                    "event_name": r[0],
-                    "event_date": r[1],
-                    "name": r[2],
-                    "email": r[3],
-                    "created_at": r[4],
+                    "event_name": r["event_name"],
+                    "event_date": r["event_date"],
+                    "name": r["name"],
+                    "email": r["email"],
+                    "created_at": r["created_at"],
                 }
                 for r in rsvps
             ],
             "connect": [
                 {
-                    "reason": r[0],
-                    "name": r[1],
-                    "email": r[2],
-                    "organization": r[3] or "",
-                    "details": r[4],
-                    "created_at": r[5],
+                    "reason": r["reason"],
+                    "name": r["name"],
+                    "email": r["email"],
+                    "organization": r["organization"] or "",
+                    "details": r["details"],
+                    "created_at": r["created_at"],
                 }
                 for r in connects
+            ],
+            "scores": [
+                {
+                    "name": r["name"],
+                    "mistakes": r["mistakes"],
+                    "seconds": r["seconds"],
+                    "solved": bool(r["solved"]),
+                    "created_at": r["created_at"],
+                }
+                for r in scores
             ],
         }
 
     def do_GET(self):
         path = self.path.split("?")[0]
+        if path == "/api/health":
+            self._send_json(200, {"ok": True, "database": str(DB_PATH.resolve())})
+            return
         if path == "/api/leaderboard":
             self._send_json(200, {"scores": self._leaderboard()})
             return
@@ -185,7 +217,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             if "@" not in email:
                 self._send_json(400, {"error": "A valid email is required."})
                 return
-            with sqlite3.connect(DB_PATH) as db:
+            with db_connect() as db:
                 db.execute(
                     "INSERT OR IGNORE INTO newsletter_subscribers (email, created_at) VALUES (?, ?)",
                     (email, now),
@@ -200,7 +232,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             if not name or "@" not in email or not message:
                 self._send_json(400, {"error": "Name, valid email, and message are required."})
                 return
-            with sqlite3.connect(DB_PATH) as db:
+            with db_connect() as db:
                 db.execute(
                     "INSERT INTO messages (name, email, message, created_at) VALUES (?, ?, ?, ?)",
                     (name, email, message, now),
@@ -216,7 +248,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             if not event_name or not event_date or not name or "@" not in email:
                 self._send_json(400, {"error": "Event, date, name, and valid email are required."})
                 return
-            with sqlite3.connect(DB_PATH) as db:
+            with db_connect() as db:
                 cursor = db.execute(
                     """
                     INSERT OR IGNORE INTO rsvp_interest (event_name, event_date, name, email, created_at)
@@ -229,7 +261,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     "SELECT name, email FROM rsvp_interest WHERE event_name = ? ORDER BY created_at ASC",
                     (event_name,),
                 ).fetchall()
-            attendees = [{"name": r[0], "email": r[1]} for r in rows]
+            attendees = [{"name": r["name"], "email": r["email"]} for r in rows]
             self._send_json(200, {
                 "ok": True,
                 "already": already,
@@ -249,7 +281,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             solved = 1 if payload.get("solved") else 0
             mistakes = max(0, min(mistakes, 4))
             seconds = max(0, min(seconds, 86400))
-            with sqlite3.connect(DB_PATH) as db:
+            with db_connect() as db:
                 db.execute(
                     "INSERT INTO game_scores (name, mistakes, seconds, solved, created_at) VALUES (?, ?, ?, ?, ?)",
                     (name, mistakes, seconds, solved, now),
@@ -270,7 +302,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             if not name or "@" not in email or not details:
                 self._send_json(400, {"error": "Name, valid email, and details are required."})
                 return
-            with sqlite3.connect(DB_PATH) as db:
+            with db_connect() as db:
                 db.execute(
                     """
                     INSERT INTO connect_interest (reason, name, email, organization, details, created_at)
@@ -294,7 +326,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     init_db()
-    server = ThreadingHTTPServer(("localhost", 5600), SSAHandler)
-    print("SSA site running at http://localhost:5600")
-    print(f"SQLite database: {DB_PATH}")
+    server = ThreadingHTTPServer((HOST, PORT), SSAHandler)
+    print(f"SSA site running at http://localhost:{PORT}")
+    print(f"Persistent SQLite database: {DB_PATH.resolve()}")
+    print("All submissions (newsletter, RSVP, connect, game scores) are saved to this file.")
     server.serve_forever()

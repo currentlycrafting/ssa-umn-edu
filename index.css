@@ -257,6 +257,43 @@ button, input, textarea { font: inherit; }
 }
 .signup-dropdown a:hover { background: var(--blue-2); padding-left: 18px; }
 
+.nav-menu-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  place-items: center;
+  padding: 0;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.nav-menu-icon,
+.nav-menu-icon::before,
+.nav-menu-icon::after {
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  position: relative;
+  transition: transform .25s ease, opacity .25s ease, background .25s ease;
+}
+.nav-menu-icon::before,
+.nav-menu-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+.nav-menu-icon::before { top: -5px; }
+.nav-menu-icon::after { top: 5px; }
+.nav.is-open .nav-menu-icon { background: transparent; }
+.nav.is-open .nav-menu-icon::before { top: 0; transform: rotate(45deg); }
+.nav.is-open .nav-menu-icon::after { top: 0; transform: rotate(-45deg); }
+
 /* ---------- Sticky side navigation (within page) ---------- */
 .side-nav {
   position: fixed;
@@ -1739,9 +1776,44 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   .side-nav { display: none; }
 }
 @media (max-width: 900px) {
-  .nav { grid-template-columns: 1fr auto; }
-  .nav-links { display: none; }
-  .nav-tools { justify-self: end; }
+  .nav {
+    position: sticky;
+    top: 0;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand tools"
+      "links links";
+    height: auto;
+    min-height: 78px;
+    padding-bottom: 0;
+    background: color-mix(in oklch, var(--paper) 92%, transparent);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid transparent;
+  }
+  .nav.is-open { border-bottom-color: var(--line); padding-bottom: 8px; }
+  .brand { grid-area: brand; }
+  .nav-tools { grid-area: tools; justify-self: end; }
+  .nav-menu-toggle { display: inline-grid; }
+  .nav-links {
+    grid-area: links;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    background: var(--glass-strong);
+  }
+  .nav.is-open .nav-links { display: flex; }
+  .nav-links a {
+    text-align: left;
+    padding: 14px 16px;
+    font-size: 15px;
+  }
+  .nav-links a::before { border-radius: 14px; }
   .stat-grid, .mission-list, .event-grid, .program-grid, .form-grid, .split, .president-card, .donation-grid, .board-grid { grid-template-columns: 1fr; }
   .trust-row { position: static; transform: none; margin-top: 34px; flex-wrap: wrap; justify-content: center; }
   .carousel { grid-template-columns: 1fr; }
@@ -2554,17 +2626,6 @@ body.gallery-lightbox-open { overflow: hidden; }
 }
 
 /* Site-wide microinteractions (micro.js) */
-.scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 400;
-  height: 3px;
-  width: 0;
-  background: linear-gradient(90deg, var(--accent), var(--blue));
-  pointer-events: none;
-  transition: width .12s linear;
-}
 body.page-ready main { animation: pageIn .55s cubic-bezier(.2, .84, .26, 1) both; }
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -2746,7 +2807,6 @@ body.page-ready main { animation: pageIn .55s cubic-bezier(.2, .84, .26, 1) both
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-html.reduce-motion .scroll-progress,
 html.reduce-motion .doodle,
 html.reduce-motion .hero-logo,
 html.reduce-motion .gallery-arrow,
@@ -2821,10 +2881,6 @@ html.reduce-motion .ui-ripple { display: none; }
   0% { transform: scale(1); }
   50% { transform: scale(1.45); box-shadow: 0 0 0 8px color-mix(in oklch, var(--accent) 20%, transparent); }
   100% { transform: scale(1); }
-}
-.scroll-progress.is-scrolling {
-  height: 4px;
-  box-shadow: 0 0 14px color-mix(in oklch, var(--accent) 60%, transparent);
 }
 .theme-toggle.theme-spin .theme-icon { animation: themeSpin .55s cubic-bezier(.2, .84, .26, 1); }
 @keyframes themeSpin {
