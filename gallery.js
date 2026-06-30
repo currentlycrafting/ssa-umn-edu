@@ -2,15 +2,11 @@
   const figures = Array.from(document.querySelectorAll('.gallery-book .polaroid'));
   if (!figures.length) return;
 
-  const ARROW_LEFT =
-    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<path d="M10 3L5 8l5 5"/></svg>';
-  const ARROW_RIGHT =
-    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-    '<path d="M6 3l5 5-5 5"/></svg>';
   const CLOSE_ICON =
     '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
     '<path d="M4 4l8 8M12 4l-8 8"/></svg>';
+
+  const mobileMq = window.matchMedia('(max-width: 720px)');
 
   const items = figures.map((fig) => {
     const img = fig.querySelector('img');
@@ -28,37 +24,51 @@
   lightbox.innerHTML =
     '<div class="gallery-lightbox-bg" data-close aria-label="Close gallery"></div>' +
     '<div class="gallery-lightbox-panel" role="dialog" aria-modal="true" aria-labelledby="galleryLightboxCaption">' +
-      '<button type="button" class="gallery-lightbox-nav gallery-lightbox-prev" aria-label="Previous photo">' + ARROW_LEFT + '</button>' +
-      '<button type="button" class="gallery-lightbox-nav gallery-lightbox-next" aria-label="Next photo">' + ARROW_RIGHT + '</button>' +
       '<div class="gallery-lightbox-card" tabindex="0" aria-label="Photo viewer">' +
         '<button type="button" class="gallery-lightbox-close" aria-label="Close">' + CLOSE_ICON + '</button>' +
         '<div class="gallery-lightbox-viewport" id="galleryLightboxViewport">' +
+          '<button type="button" class="gallery-lightbox-zone gallery-lightbox-zone-prev" aria-label="Previous photo"></button>' +
           '<img id="galleryLightboxImg" alt="" />' +
+          '<button type="button" class="gallery-lightbox-zone gallery-lightbox-zone-next" aria-label="Next photo"></button>' +
         '</div>' +
-        '<p class="gallery-lightbox-hint gallery-lightbox-hint-desktop">Click image to zoom · click outside photo to close</p>' +
-        '<p class="gallery-lightbox-hint gallery-lightbox-hint-mobile">Tap image to zoom · use arrows to browse</p>' +
+        '<p class="gallery-lightbox-hint gallery-lightbox-hint-desktop">Click center to zoom · click left or right side for prev/next</p>' +
+        '<p class="gallery-lightbox-hint gallery-lightbox-hint-mobile">Tap left or right side of the photo to browse</p>' +
         '<figcaption id="galleryLightboxCaption" class="gallery-lightbox-caption"></figcaption>' +
       '</div>' +
     '</div>';
   document.body.appendChild(lightbox);
 
-  const card = lightbox.querySelector('.gallery-lightbox-card');
   const viewport = document.getElementById('galleryLightboxViewport');
   const img = document.getElementById('galleryLightboxImg');
   const caption = document.getElementById('galleryLightboxCaption');
-  const prevBtn = lightbox.querySelector('.gallery-lightbox-prev');
-  const nextBtn = lightbox.querySelector('.gallery-lightbox-next');
+  const prevZone = lightbox.querySelector('.gallery-lightbox-zone-prev');
+  const nextZone = lightbox.querySelector('.gallery-lightbox-zone-next');
   const closeBtn = lightbox.querySelector('.gallery-lightbox-close');
 
   let index = 0;
   let zoomed = false;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  function isMobile() {
+    return mobileMq.matches;
+  }
+
   function setZoom(on) {
+    if (isMobile()) {
+      zoomed = false;
+      img.classList.remove('zoomed');
+      viewport.classList.remove('zoomed');
+      return;
+    }
     zoomed = on;
     img.classList.toggle('zoomed', zoomed);
     viewport.classList.toggle('zoomed', zoomed);
     if (!zoomed) viewport.scrollTo(0, 0);
+  }
+
+  function updateZones() {
+    prevZone.disabled = index <= 0;
+    nextZone.disabled = index >= items.length - 1;
   }
 
   function render() {
@@ -71,8 +81,7 @@
       img.classList.remove('is-changing');
     }, reduced ? 0 : 160);
     setZoom(false);
-    prevBtn.disabled = index <= 0;
-    nextBtn.disabled = index >= items.length - 1;
+    updateZones();
   }
 
   function open(at) {
@@ -114,11 +123,19 @@
     });
   });
 
-  viewport.addEventListener('click', (event) => {
-    if (event.target === img) {
-      event.stopPropagation();
-      setZoom(!zoomed);
-    }
+  img.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (isMobile()) return;
+    setZoom(!zoomed);
+  });
+
+  prevZone.addEventListener('click', (event) => {
+    event.stopPropagation();
+    step(-1);
+  });
+  nextZone.addEventListener('click', (event) => {
+    event.stopPropagation();
+    step(1);
   });
 
   closeBtn.addEventListener('click', (event) => {
@@ -127,8 +144,8 @@
   });
 
   lightbox.querySelector('[data-close].gallery-lightbox-bg').addEventListener('click', close);
-  prevBtn.addEventListener('click', (event) => { event.stopPropagation(); step(-1); });
-  nextBtn.addEventListener('click', (event) => { event.stopPropagation(); step(1); });
+
+  mobileMq.addEventListener('change', () => setZoom(false));
 
   window.addEventListener('keydown', (event) => {
     if (!lightbox.classList.contains('open')) return;

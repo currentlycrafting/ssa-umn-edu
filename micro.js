@@ -110,7 +110,7 @@
 
   function initNavRipple() {
     const rippleTargets = '.nav-links a, .button, .micro-button, .connect-option, .checklist-steps button, ' +
-      '.carousel-dot, .carousel-arrow, .gallery-lightbox-nav, .tile, .donation-grid-mini a, .admin-tab';
+      '.carousel-dot, .carousel-arrow, .gallery-lightbox-zone, .tile, .donation-grid-mini a, .admin-tab';
     document.querySelectorAll(rippleTargets).forEach((el) => {
       el.addEventListener('pointerdown', (event) => {
         if (reduced || event.button !== 0) return;
