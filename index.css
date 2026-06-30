@@ -1156,9 +1156,7 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 }
 [data-theme="dark"] .nav-newsletter-badge { background: var(--accent); color: oklch(22% 0.06 264); }
 .nav-newsletter-count.is-loading { opacity: .5; }
-.nav-newsletter-text { display: flex; flex-direction: column; line-height: 1.15; }
 .nav-newsletter-label { font-size: 13px; font-weight: 850; letter-spacing: -.02em; }
-.nav-newsletter-sub { font-size: 10px; font-weight: 750; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
 
 /* Events — live RSVP counts */
 .event-going {
@@ -1272,16 +1270,6 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   margin: 0 auto 18px;
   padding: 16px 20px 12px;
 }
-.nl-count-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  border: 2px dashed color-mix(in oklch, var(--accent) 45%, var(--line));
-  animation: nlRingSpin 12s linear infinite;
-}
-@keyframes nlRingSpin {
-  to { transform: rotate(360deg); }
-}
 .nl-count-number {
   font-size: clamp(42px, 8vw, 64px);
   font-weight: 900;
@@ -1310,7 +1298,6 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 }
 
 @media (max-width: 720px) {
-  .nav-newsletter-sub { display: none; }
   .nav-newsletter { padding-right: 10px; }
   .newsletter-promo-inner { grid-template-columns: 1fr; text-align: center; }
   .newsletter-promo-stat { margin: 0 auto; }
@@ -1384,7 +1371,16 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   color: var(--ink);
 }
 .rsvp-result { margin-top: 16px; }
-.rsvp-count { font-size: 24px; font-weight: 900; color: var(--ink); margin: 0; letter-spacing: -.02em; }
+.rsvp-whos-coming {
+  margin: 14px 0 4px;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+}
+.rsvp-email-hint { margin-top: 0; font-size: 13px; }
+.rsvp-attendee-empty { cursor: default; color: var(--muted); font-style: italic; }
+.rsvp-attendee-empty:hover { transform: none; border-color: var(--line); }
+.rsvp-count { font-size: 14px; font-weight: 800; color: var(--accent); margin: 0 0 10px; letter-spacing: -.01em; }
 .rsvp-note { color: var(--muted); margin: 4px 0 14px; font-size: 13px; }
 .rsvp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 220px; overflow: auto; }
 .rsvp-list li {

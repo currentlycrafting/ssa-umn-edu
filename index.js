@@ -429,22 +429,30 @@ function renderRsvpResult(data, already) {
     typeof a === 'string' ? { name: a, email: '' } : a
   );
   const headline = already ? 'You\u2019re already on this list.' : 'You\u2019re on the list.';
-  const items = attendees
-    .map(
-      (a) =>
-        `<li class="rsvp-attendee" tabindex="0">` +
-        `<span class="rsvp-name">${escapeHtml(a.name)}</span>` +
-        (a.email
-          ? `<span class="rsvp-email">${escapeHtml(a.email)}</span>`
-          : '') +
-        `</li>`
-    )
-    .join('');
+  const emailHint = attendees.some((a) => a.email)
+    ? '<p class="rsvp-note rsvp-email-hint">Tap a name to see their email.</p>'
+    : '';
+  const items = attendees.length
+    ? attendees
+        .map(
+          (a) =>
+            `<li class="rsvp-attendee" tabindex="0">` +
+            `<span class="rsvp-name">${escapeHtml(a.name)}</span>` +
+            (a.email
+              ? `<span class="rsvp-email">${escapeHtml(a.email)}</span>`
+              : '') +
+            `</li>`
+        )
+        .join('')
+    : '<li class="rsvp-attendee rsvp-attendee-empty">No names yet — you might be the first.</li>';
   rsvpResult.innerHTML =
-    `<p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} coming</p>` +
-    `<p class="rsvp-note">${headline} Tap a name to see their email.</p>` +
+    `<p class="rsvp-note">${headline}</p>` +
+    `<h3 class="rsvp-whos-coming">Who&apos;s coming</h3>` +
+    `<p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} total</p>` +
+    emailHint +
     `<ul class="rsvp-list">${items}</ul>`;
-  rsvpResult.querySelectorAll('.rsvp-attendee').forEach((li) => {
+  rsvpResult.querySelectorAll('.rsvp-attendee:not(.rsvp-attendee-empty)').forEach((li) => {
+    if (!li.querySelector('.rsvp-email')) return;
     li.addEventListener('click', () => li.classList.toggle('show-email'));
     li.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -453,8 +461,21 @@ function renderRsvpResult(data, already) {
       }
     });
   });
+  if (rsvpModalCount) {
+    rsvpModalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
+  }
   rsvpForm.hidden = true;
   rsvpResult.hidden = false;
+}
+
+async function showRsvpAttendees(eventName, data, already) {
+  let payload = data;
+  if (!payload?.attendees?.length) {
+    try {
+      payload = await getJson('/api/rsvp?event=' + encodeURIComponent(eventName));
+    } catch (_) {}
+  }
+  renderRsvpResult(payload, already ?? payload?.already ?? false);
 }
 
 function openRsvpModal(eventName, eventDate) {
@@ -524,7 +545,12 @@ if (rsvpForm) {
           window.setTimeout(() => btn.classList.remove('saved-pop'), 600);
         }
       });
-      renderRsvpResult(data, data.already);
+      if (rsvpResult) {
+        rsvpForm.hidden = true;
+        rsvpResult.hidden = false;
+        rsvpResult.innerHTML = '<p class="rsvp-note">Loading who&apos;s coming…</p>';
+      }
+      await showRsvpAttendees(eventName, data, data.already);
       rsvpForm.reset();
     } catch (error) {
       setOutput(rsvpForm, 'Could not save RSVP yet — try again in a moment.', false);
