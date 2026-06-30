@@ -42,6 +42,13 @@
     </div>
     <div class="nav-tools">
       <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+      <button type="button" class="nav-newsletter" aria-label="Newsletter signup">
+        <span class="nav-newsletter-badge"><span data-newsletter-count class="nav-newsletter-count">—</span></span>
+        <span class="nav-newsletter-text">
+          <span class="nav-newsletter-label">Newsletter</span>
+          <span class="nav-newsletter-sub">Join · see count</span>
+        </span>
+      </button>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
       <button class="nav-admin" id="adminToggle" type="button">Admin</button>
       <div class="signup-menu">
@@ -104,30 +111,51 @@
         <span class="eyebrow">Calendar</span>
         <h2>Upcoming SSA moments</h2>
       </div>
+
+      <aside class="newsletter-promo" id="newsletterPromo" aria-label="Newsletter signup">
+        <div class="newsletter-promo-glow" aria-hidden="true"></div>
+        <div class="newsletter-promo-inner">
+          <div class="newsletter-promo-stat">
+            <span class="newsletter-promo-count" data-newsletter-count>—</span>
+            <span class="newsletter-promo-stat-label">students on the list</span>
+          </div>
+          <div class="newsletter-promo-copy">
+            <p class="newsletter-promo-eyebrow">Don&apos;t miss Somali Night</p>
+            <h3>Get events, drops, and board news first.</h3>
+            <p>Join the SSA newsletter — one email, zero spam, all the moments that matter on campus.</p>
+            <button type="button" class="button button-dark handdrawn shimmer" data-open-newsletter>Sign up free</button>
+          </div>
+        </div>
+      </aside>
+
       <div class="event-grid">
         <article class="event-card">
           <span class="event-date">Sep 15</span>
           <h3>Freshman Mixer</h3>
           <p>Meet our incoming class of 2030, helping them learn the campus, and find your first SSA connections.</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15">RSVP Interest</button>
+          <p class="event-going"><span class="event-going-num" data-event-count="Freshman Mixer">—</span> coming</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15"><span class="rsvp-btn-label">RSVP</span></button>
         </article>
         <article class="event-card">
           <span class="event-date">Sep 24</span>
           <h3>Fall Kickoff</h3>
           <p>Kickoff SSA for the school year with food, music, and community</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24">RSVP Interest</button>
+          <p class="event-going"><span class="event-going-num" data-event-count="Fall Kickoff">—</span> coming</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24"><span class="rsvp-btn-label">RSVP</span></button>
         </article>
         <article class="event-card">
           <span class="event-date">Oct TBD</span>
           <h3>Family Feud</h3>
           <p>A community game night built for teams, laughter, and friendly competition.</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD">RSVP Interest</button>
+          <p class="event-going"><span class="event-going-num" data-event-count="Family Feud">—</span> coming</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button>
         </article>
         <article class="event-card">
           <span class="event-date">Oct TBD</span>
           <h3>Field Day</h3>
           <p>A community day with games, bonding, and space to meet more SSA members.</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD">RSVP Interest</button>
+          <p class="event-going"><span class="event-going-num" data-event-count="Field Day">—</span> coming</p>
+          <button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button>
         </article>
       </div>
     </section>
@@ -361,15 +389,16 @@
 
   <div class="modal-backdrop" id="rsvpModal" aria-hidden="true">
     <div class="rsvp-modal modal-sheet" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
-      <span class="eyebrow">RSVP Interest</span>
-      <h2 id="rsvpTitle">Event interest</h2>
+      <span class="eyebrow">RSVP</span>
+      <h2 id="rsvpTitle">Event</h2>
       <p id="rsvpMeta"></p>
+      <p class="rsvp-modal-count" id="rsvpModalCount"></p>
       <form id="rsvpForm">
         <input type="hidden" name="event" />
         <input type="hidden" name="date" />
         <input type="text" name="name" placeholder="Name" required />
         <input type="email" name="email" placeholder="Email" required />
-        <button class="button button-dark" type="submit">Send Interest</button>
+        <button class="button button-dark" type="submit">RSVP</button>
         <output></output>
       </form>
       <div class="rsvp-result" id="rsvpResult" hidden></div>
@@ -386,9 +415,15 @@
     <div class="newsletter-sheet modal-sheet" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
       <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
       <svg class="doodle nl-doodle-2" viewBox="0 0 60 60" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
-      <span class="eyebrow">Last step</span>
+      <div class="newsletter-modal-count" aria-live="polite">
+        <span class="nl-count-ring" aria-hidden="true"></span>
+        <span class="nl-count-number" data-newsletter-count>—</span>
+        <span class="nl-count-label">students subscribed</span>
+      </div>
+      <span class="eyebrow">Stay in the loop</span>
       <h2 id="nlTitle">Join the SSA newsletter</h2>
-      <p>Drop your email to get events, announcements, and Somali Night updates. This finishes your checklist.</p>
+      <p id="nlLead">Drop your email for events, announcements, and Somali Night updates.</p>
+      <p class="newsletter-subscribed-msg" id="newsletterSubscribedMsg" hidden>You&apos;re already on the list. Thanks for being part of SSA.</p>
       <form id="newsletterModalForm">
         <input type="email" name="email" placeholder="your@email.com" required />
         <button class="button button-dark handdrawn shimmer" type="submit">Subscribe</button>
@@ -474,6 +509,7 @@
 
   <script src="micro.js"></script>
   <script src="checklist.js"></script>
+  <script src="newsletter.js"></script>
   <script src="index.js"></script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
   <script>

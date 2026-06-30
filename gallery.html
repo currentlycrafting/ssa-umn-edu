@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="index.css" />
+  <script src="api.js"></script>
   <script>
     (function () {
       var stored = localStorage.getItem('ssaTheme');
@@ -41,6 +42,13 @@
     </div>
     <div class="nav-tools">
       <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+      <button type="button" class="nav-newsletter" aria-label="Newsletter signup">
+        <span class="nav-newsletter-badge"><span data-newsletter-count class="nav-newsletter-count">—</span></span>
+        <span class="nav-newsletter-text">
+          <span class="nav-newsletter-label">Newsletter</span>
+          <span class="nav-newsletter-sub">Join · see count</span>
+        </span>
+      </button>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
       <a class="nav-action connect" href="index.html">Options <span aria-hidden="true">↪</span></a>
     </div>
@@ -102,6 +110,7 @@
 
   <script src="micro.js"></script>
   <script src="checklist.js"></script>
+  <script src="newsletter.js"></script>
   <script src="gallery.js"></script>
   <script>
     var t = document.getElementById('themeToggle');

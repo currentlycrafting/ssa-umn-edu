@@ -327,6 +327,7 @@ if (newsletterForm) {
       await postJson('/api/newsletter', { email });
       localStorage.setItem('ssaNewsletterSubscribed', '1');
       updateOptionsMenu();
+      window.ssaNewsletter?.refreshCounts?.();
       window.markChecklistStep?.('newsletter', 'Newsletter saved. That checklist step is now complete.');
       newsletterForm.reset();
       setOutput(newsletterForm, 'Subscribed and saved.');
@@ -349,14 +350,10 @@ const rsvpModal = document.getElementById('rsvpModal');
 const rsvpForm = document.getElementById('rsvpForm');
 const rsvpTitle = document.getElementById('rsvpTitle');
 const rsvpMeta = document.getElementById('rsvpMeta');
+const rsvpModalCount = document.getElementById('rsvpModalCount');
 const rsvpResult = document.getElementById('rsvpResult');
-let rsvpLocked = false;
-let rsvpExitBtn = null;
-
-function syncRsvpExitButton() {
-  if (!rsvpExitBtn) return;
-  rsvpExitBtn.disabled = rsvpLocked;
-}
+const rsvpCounts = {};
+let rsvpShowGoing = false;
 
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -367,6 +364,7 @@ function escapeHtml(text) {
 function getRsvpedEvents() {
   return JSON.parse(localStorage.getItem('ssaRsvpedEvents') || '[]');
 }
+
 function addRsvpedEvent(name) {
   const list = getRsvpedEvents();
   if (!list.includes(name)) {
@@ -374,15 +372,55 @@ function addRsvpedEvent(name) {
     localStorage.setItem('ssaRsvpedEvents', JSON.stringify(list));
   }
 }
-function updateRsvpCard(eventName, count) {
+
+function goingLabel(count) {
+  const n = count || 0;
+  const word = n === 1 ? 'person' : 'people';
+  return `Going · ${n} ${word}`;
+}
+
+function syncRsvpButtonLabel(btn) {
+  const label = btn.querySelector('.rsvp-btn-label');
+  if (!label) return;
+  const count = parseInt(btn.dataset.count || '0', 10);
+  label.textContent = rsvpShowGoing ? goingLabel(count) : 'RSVP';
+  btn.classList.toggle('rsvp-show-going', rsvpShowGoing);
+}
+
+function setRsvpCount(eventName, count) {
+  rsvpCounts[eventName] = count;
+  document.querySelectorAll(`[data-event-count="${eventName}"]`).forEach((el) => {
+    el.textContent = String(count);
+  });
   document.querySelectorAll('.rsvp-button').forEach((btn) => {
-    if (btn.dataset.event === eventName) {
-      btn.classList.add('going', 'saved-pop');
-      btn.textContent = count ? `Going · ${count} coming` : 'Going · see who';
-      window.setTimeout(() => btn.classList.remove('saved-pop'), 600);
-    }
+    if (btn.dataset.event !== eventName) return;
+    btn.dataset.count = String(count);
+    if (getRsvpedEvents().includes(eventName)) btn.classList.add('going');
+    syncRsvpButtonLabel(btn);
   });
 }
+
+async function loadRsvpSummary() {
+  try {
+    const data = await getJson('/api/rsvp/summary');
+    const events = data.events || {};
+    document.querySelectorAll('.rsvp-button').forEach((btn) => {
+      setRsvpCount(btn.dataset.event, events[btn.dataset.event] || 0);
+    });
+  } catch (error) {
+    document.querySelectorAll('.rsvp-button').forEach((btn) => {
+      if (btn.dataset.count == null) setRsvpCount(btn.dataset.event, 0);
+    });
+  }
+}
+
+window.setInterval(() => {
+  rsvpShowGoing = !rsvpShowGoing;
+  document.querySelectorAll('.rsvp-button').forEach(syncRsvpButtonLabel);
+}, 2800);
+
+window.setInterval(loadRsvpSummary, 60000);
+loadRsvpSummary();
 
 function renderRsvpResult(data, already) {
   if (!rsvpResult) return;
@@ -417,8 +455,6 @@ function renderRsvpResult(data, already) {
   });
   rsvpForm.hidden = true;
   rsvpResult.hidden = false;
-  rsvpLocked = true;
-  syncRsvpExitButton();
 }
 
 function openRsvpModal(eventName, eventDate) {
@@ -429,9 +465,11 @@ function openRsvpModal(eventName, eventDate) {
   rsvpForm.date.value = eventDate;
   rsvpForm.querySelector('output').textContent = '';
   rsvpForm.hidden = false;
-  rsvpLocked = false;
-  syncRsvpExitButton();
   if (rsvpResult) { rsvpResult.hidden = true; rsvpResult.innerHTML = ''; }
+  const count = rsvpCounts[eventName] ?? 0;
+  if (rsvpModalCount) {
+    rsvpModalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
+  }
   openModal(rsvpModal);
   if (getRsvpedEvents().includes(eventName)) {
     rsvpForm.hidden = true;
@@ -455,8 +493,6 @@ function openRsvpModal(eventName, eventDate) {
 function closeRsvpModal() {
   if (!rsvpModal) return;
   closeModal(rsvpModal);
-  rsvpLocked = false;
-  syncRsvpExitButton();
 }
 
 document.querySelectorAll('.rsvp-button').forEach((button) => {
@@ -464,7 +500,7 @@ document.querySelectorAll('.rsvp-button').forEach((button) => {
     openRsvpModal(button.dataset.event || 'SSA Event', button.dataset.date || 'Date TBD');
   });
 });
-rsvpExitBtn = attachModalClose(rsvpModal, closeRsvpModal, () => !rsvpLocked);
+attachModalClose(rsvpModal, closeRsvpModal);
 if (rsvpForm) {
   rsvpForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -479,9 +515,15 @@ if (rsvpForm) {
     setButtonLoading(button, true);
     try {
       const data = await postJson('/api/rsvp', payload);
-      window.markChecklistStep?.('events', 'RSVP interest saved. Events step complete.');
+      window.markChecklistStep?.('events', 'RSVP saved. Events step complete.');
       addRsvpedEvent(eventName);
-      updateRsvpCard(eventName, data.count || 0);
+      setRsvpCount(eventName, data.count || 0);
+      document.querySelectorAll('.rsvp-button').forEach((btn) => {
+        if (btn.dataset.event === eventName) {
+          btn.classList.add('going', 'saved-pop');
+          window.setTimeout(() => btn.classList.remove('saved-pop'), 600);
+        }
+      });
       renderRsvpResult(data, data.already);
       rsvpForm.reset();
     } catch (error) {
@@ -491,28 +533,42 @@ if (rsvpForm) {
   });
 }
 
-// On load, mark events the user already RSVP'd to and refresh their counts
-getRsvpedEvents().forEach((name) => {
-  getJson('/api/rsvp?event=' + encodeURIComponent(name))
-    .then((data) => updateRsvpCard(name, data.count || 0))
-    .catch(() => updateRsvpCard(name, 0));
-});
-
-// Full-screen newsletter takeover — opened from Options menu or checklist
+// Full-screen newsletter takeover — opened from Options menu, nav, or checklist
 const newsletterModal = document.getElementById('newsletterModal');
 const newsletterModalForm = document.getElementById('newsletterModalForm');
 const newsletterSkip = document.getElementById('newsletterSkip');
+const newsletterSubscribedMsg = document.getElementById('newsletterSubscribedMsg');
+const nlLead = document.getElementById('nlLead');
 
 function newsletterSubscribed() {
   return localStorage.getItem('ssaNewsletterSubscribed') === '1';
 }
-function openNewsletterModal() {
-  if (!newsletterModal || newsletterSubscribed()) return;
-  if (sessionStorage.getItem('ssaNlDismissed') === '1') return;
+
+function syncNewsletterModalState() {
+  const subscribed = newsletterSubscribed();
+  if (newsletterModalForm) newsletterModalForm.hidden = subscribed;
+  if (newsletterSubscribedMsg) newsletterSubscribedMsg.hidden = !subscribed;
+  if (newsletterSkip) newsletterSkip.hidden = subscribed;
+  if (nlLead) nlLead.hidden = subscribed;
+}
+
+function openNewsletterModal(force) {
+  if (!newsletterModal) {
+    sessionStorage.setItem('ssaOpenNewsletter', '1');
+    window.location.href = 'index.html';
+    return;
+  }
+  window.ssaNewsletter?.refreshCounts?.();
+  syncNewsletterModalState();
+  if (!force && newsletterSubscribed()) return;
+  if (!force && sessionStorage.getItem('ssaNlDismissed') === '1') return;
   if (newsletterModal.classList.contains('open')) return;
   openModal(newsletterModal);
-  window.setTimeout(() => newsletterModalForm && newsletterModalForm.email.focus(), 80);
+  if (!newsletterSubscribed()) {
+    window.setTimeout(() => newsletterModalForm && newsletterModalForm.email.focus(), 80);
+  }
 }
+window.openNewsletterModal = openNewsletterModal;
 function closeNewsletterModal(dismiss) {
   if (!newsletterModal) return;
   closeModal(newsletterModal);
@@ -532,6 +588,8 @@ if (newsletterModalForm) {
       await postJson('/api/newsletter', { email });
       localStorage.setItem('ssaNewsletterSubscribed', '1');
       updateOptionsMenu();
+      syncNewsletterModalState();
+      window.ssaNewsletter?.refreshCounts?.();
       window.markChecklistStep?.('newsletter', 'Newsletter saved. Checklist complete.');
       if (out) out.textContent = 'You are in. Welcome to SSA.';
       window.setTimeout(() => closeNewsletterModal(false), 1100);
@@ -563,13 +621,13 @@ attachModalClose(kofiModal, closeKofiModal);
 document.querySelectorAll('[data-open-newsletter]').forEach((link) => {
   link.addEventListener('click', (event) => {
     event.preventDefault();
-    openNewsletterModal();
+    openNewsletterModal(true);
   });
 });
 
 if (sessionStorage.getItem('ssaOpenNewsletter') === '1') {
   sessionStorage.removeItem('ssaOpenNewsletter');
-  window.setTimeout(() => openNewsletterModal(), 300);
+  window.setTimeout(() => openNewsletterModal(true), 300);
 }
 
 // Connect with SSA — shared reason picker + form (modal + inline contact section)

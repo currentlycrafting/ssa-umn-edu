@@ -15,6 +15,10 @@ PORT = int(os.environ.get("PORT", "5600"))
 LEADERBOARD_TTL = int(os.environ.get("LEADERBOARD_TTL", "30"))
 
 _leaderboard_cache = {"at": 0.0, "scores": []}
+_newsletter_count_cache = {"at": 0.0, "count": None}
+NEWSLETTER_COUNT_TTL = int(os.environ.get("NEWSLETTER_COUNT_TTL", "30"))
+RSVP_SUMMARY_TTL = int(os.environ.get("RSVP_SUMMARY_TTL", "20"))
+_rsvp_summary_cache = {"at": 0.0, "events": {}}
 
 
 def utcnow():
@@ -24,6 +28,48 @@ def utcnow():
 def invalidate_leaderboard_cache():
     _leaderboard_cache["at"] = 0.0
     _leaderboard_cache["scores"] = []
+
+
+def invalidate_newsletter_count_cache():
+    _newsletter_count_cache["at"] = 0.0
+    _newsletter_count_cache["count"] = None
+
+
+def invalidate_rsvp_summary_cache():
+    _rsvp_summary_cache["at"] = 0.0
+    _rsvp_summary_cache["events"] = {}
+
+
+def fetch_newsletter_count():
+    now = time.monotonic()
+    cached = _newsletter_count_cache["count"]
+    if cached is not None and now - _newsletter_count_cache["at"] < NEWSLETTER_COUNT_TTL:
+        return cached
+    with db() as cur:
+        cur.execute("SELECT COUNT(*) AS c FROM newsletter_subscribers")
+        count = int(cur.fetchone()["c"])
+    _newsletter_count_cache["at"] = now
+    _newsletter_count_cache["count"] = count
+    return count
+
+
+def fetch_rsvp_summary():
+    now = time.monotonic()
+    if _rsvp_summary_cache["events"] and now - _rsvp_summary_cache["at"] < RSVP_SUMMARY_TTL:
+        return dict(_rsvp_summary_cache["events"])
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT event_name, COUNT(*) AS count
+            FROM rsvp_interest
+            GROUP BY event_name
+            """
+        )
+        rows = cur.fetchall()
+    events = {r["event_name"]: int(r["count"]) for r in rows}
+    _rsvp_summary_cache["at"] = now
+    _rsvp_summary_cache["events"] = events
+    return events
 
 
 def fetch_leaderboard(limit=10):
@@ -195,6 +241,20 @@ class SSAHandler(SimpleHTTPRequestHandler):
             except Exception as exc:
                 self._send_json(503, {"ok": False, "error": str(exc)})
             return
+        if path == "/api/newsletter/count":
+            try:
+                count = fetch_newsletter_count()
+                self._send_json(200, {"count": count}, cache_seconds=NEWSLETTER_COUNT_TTL)
+            except Exception as exc:
+                self._send_json(503, {"ok": False, "error": str(exc)})
+            return
+        if path == "/api/rsvp/summary":
+            try:
+                events = fetch_rsvp_summary()
+                self._send_json(200, {"events": events}, cache_seconds=RSVP_SUMMARY_TTL)
+            except Exception as exc:
+                self._send_json(503, {"ok": False, "error": str(exc)})
+            return
         if path == "/api/rsvp":
             qs = parse_qs(urlparse(self.path).query)
             event_name = (qs.get("event", [""])[0]).strip()
@@ -237,7 +297,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
                         """,
                         (email, now),
                     )
-                self._send_json(200, {"ok": True})
+                invalidate_newsletter_count_cache()
+                self._send_json(200, {"ok": True, "count": fetch_newsletter_count()})
             except Exception as exc:
                 self._send_json(503, {"ok": False, "error": str(exc)})
             return
@@ -293,6 +354,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     )
                     rows = cur.fetchall()
                 attendees = [{"name": r["name"], "email": r["email"]} for r in rows]
+                invalidate_rsvp_summary_cache()
                 self._send_json(200, {
                     "ok": True,
                     "already": already,
