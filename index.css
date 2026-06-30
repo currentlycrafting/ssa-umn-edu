@@ -2369,6 +2369,18 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 .leaderboard li .who { color: var(--ink); }
 .leaderboard li .score { color: var(--muted); font-size: 13px; }
 .leaderboard .empty { color: var(--muted); }
+.leaderboard-aside { margin-top: 40px; }
+.leaderboard-loading {
+  animation: leaderboardPulse 1.2s ease-in-out infinite;
+}
+.leaderboard-retry {
+  margin-top: 10px;
+  width: 100%;
+}
+@keyframes leaderboardPulse {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
 @media (max-width: 520px) {
   .tile { min-height: 64px; }
   .game-grid { gap: 6px; }

@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="index.css" />
+  <script src="api.js"></script>
   <script>
     (function () {
       var stored = localStorage.getItem('ssaTheme');
@@ -77,10 +78,14 @@
         </div>
       </form>
 
-      <div class="leaderboard" id="leaderboard">
+      <div class="leaderboard leaderboard-aside" id="leaderboard">
         <h2>Leaderboard</h2>
-        <ol id="board"><li class="empty">Loading…</li></ol>
+        <ol id="board" class="leaderboard-list" aria-live="polite">
+          <li class="empty leaderboard-loading">Loading scores…</li>
+        </ol>
+        <button type="button" class="micro-button leaderboard-retry" id="retryLeaderboard" hidden>Retry scores</button>
       </div>
+
     </div>
   </main>
 

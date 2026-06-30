@@ -1,8 +1,11 @@
-# Render Blueprint — optional. You can also configure everything in the dashboard.
+# Render Blueprint — web service + PostgreSQL
 # Docs: https://render.com/docs/blueprint-spec
-#
-# Free plan: SQLite lives on ephemeral disk (data can reset on redeploy).
-# For persistent data, upgrade to Starter+ and add a disk (see deploy notes below).
+
+databases:
+  - name: ssa-db
+    plan: free
+    databaseName: ssa
+    user: ssa
 
 services:
   - type: web
@@ -17,3 +20,7 @@ services:
         value: 0.0.0.0
       - key: ADMIN_PASSWORD
         sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ssa-db
+          property: connectionString

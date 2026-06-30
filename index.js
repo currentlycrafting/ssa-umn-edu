@@ -236,21 +236,19 @@ if (carousel) {
 }
 
 async function postJson(url, payload) {
-  const response = await fetch(url, {
+  return window.ssaFetch.json(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: payload,
+    timeout: 20000,
+    retries: 2
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Request failed');
-  return data;
 }
 
 async function getJson(url) {
-  const response = await fetch(url);
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Request failed');
-  return data;
+  return window.ssaFetch.json(url, {
+    timeout: 20000,
+    retries: 3
+  });
 }
 
 function setButtonLoading(button, loading) {
@@ -335,7 +333,7 @@ if (newsletterForm) {
       button.textContent = 'Subscribed';
       button.classList.add('micro-button', 'done');
     } catch (error) {
-      setOutput(newsletterForm, 'Run python3 server.py to save subscriptions.', false);
+      setOutput(newsletterForm, 'Could not save yet — the server may still be waking up. Try again.', false);
     } finally {
       window.setTimeout(() => {
         button.disabled = false;
@@ -423,7 +421,7 @@ function renderRsvpResult(data, already) {
   syncRsvpExitButton();
 }
 
-async function openRsvpModal(eventName, eventDate) {
+function openRsvpModal(eventName, eventDate) {
   if (!rsvpModal || !rsvpForm) return;
   rsvpTitle.textContent = eventName;
   rsvpMeta.textContent = eventDate;
@@ -436,13 +434,20 @@ async function openRsvpModal(eventName, eventDate) {
   if (rsvpResult) { rsvpResult.hidden = true; rsvpResult.innerHTML = ''; }
   openModal(rsvpModal);
   if (getRsvpedEvents().includes(eventName)) {
-    try {
-      const data = await getJson('/api/rsvp?event=' + encodeURIComponent(eventName));
-      renderRsvpResult(data, true);
-      return;
-    } catch (error) {
-      /* server offline — fall back to the form */
+    rsvpForm.hidden = true;
+    if (rsvpResult) {
+      rsvpResult.hidden = false;
+      rsvpResult.innerHTML = '<p class="rsvp-note">Loading who\'s coming…</p>';
     }
+    getJson('/api/rsvp?event=' + encodeURIComponent(eventName))
+      .then((data) => renderRsvpResult(data, true))
+      .catch(() => {
+        rsvpForm.hidden = false;
+        if (rsvpResult) rsvpResult.hidden = true;
+        setOutput(rsvpForm, 'Could not load RSVP list yet — you can still submit.', false);
+        window.setTimeout(() => rsvpForm.name.focus(), 50);
+      });
+    return;
   }
   window.setTimeout(() => rsvpForm.name.focus(), 50);
 }
@@ -480,7 +485,7 @@ if (rsvpForm) {
       renderRsvpResult(data, data.already);
       rsvpForm.reset();
     } catch (error) {
-      setOutput(rsvpForm, 'Run python3 server.py to save RSVP interest.', false);
+      setOutput(rsvpForm, 'Could not save RSVP yet — try again in a moment.', false);
       setButtonLoading(button, false);
     }
   });
@@ -531,7 +536,7 @@ if (newsletterModalForm) {
       if (out) out.textContent = 'You are in. Welcome to SSA.';
       window.setTimeout(() => closeNewsletterModal(false), 1100);
     } catch (error) {
-      if (out) out.textContent = 'Run python3 server.py to save your subscription.';
+      if (out) out.textContent = 'Could not save yet — try again in a moment.';
     } finally {
       window.setTimeout(() => { button.disabled = false; }, 1200);
     }
@@ -680,7 +685,7 @@ function initConnectFlow(root, options = {}) {
         setOutput(form, 'Sent. SSA will follow up soon.');
         if (options.onSuccess) options.onSuccess();
       } catch (error) {
-        setOutput(form, 'Run python3 server.py to save your request.', false);
+        setOutput(form, 'Could not send yet — try again in a moment.', false);
       } finally {
         window.setTimeout(() => {
           submitBtn.disabled = false;
@@ -779,6 +784,7 @@ function renderAdminTab(tab) {
 }
 
 async function loadAdminData() {
+  if (adminBody) adminBody.innerHTML = '<p class="admin-empty">Loading submissions…</p>';
   const data = await postJson('/api/admin', { password: adminPasswordMem });
   adminData = data;
   if (adminLogin) adminLogin.hidden = true;
