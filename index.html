@@ -47,9 +47,12 @@
         <span class="nav-newsletter-label">Newsletter</span>
       </button>
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
-      <button class="nav-admin" id="adminToggle" type="button">Admin</button>
+      <button class="nav-admin" id="adminToggle" type="button" aria-label="Admin">
+        <svg class="nav-admin-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 1 1 6 0v2"/></svg>
+        <span class="nav-admin-label">Admin</span>
+      </button>
       <div class="signup-menu">
-        <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu" aria-label="Site options">Options <span aria-hidden="true">↪</span></button>
+        <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu" aria-label="Site options"><span class="nav-options-text">Options</span><span class="icon-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M9 5l3 3-3 3"/></svg></span></button>
         <div class="signup-dropdown" id="signupMenu" aria-label="Site options">
           <a href="#contact" data-open-newsletter id="newsletterOption">Sign up to newsletter</a>
           <a href="#donate">Donation</a>
@@ -85,7 +88,7 @@
         <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
         <div class="hero-actions">
-          <button class="button button-dark handdrawn shimmer hero-connect has-tip" type="button" data-open-connect data-tip="Sponsorship, partnerships, board interest, and more">Connect with SSA <span aria-hidden="true">↪</span></button>
+          <button class="button button-dark handdrawn shimmer hero-connect has-tip" type="button" data-open-connect data-tip="Sponsorship, partnerships, board interest, and more">Connect with SSA <span class="icon-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M9 5l3 3-3 3"/></svg></span></button>
           <a class="button button-line handdrawn has-tip" href="connections.html" data-tip="Play SSA Connections">Play the Game</a>
           <svg class="hero-arrow" viewBox="0 0 70 50" aria-hidden="true"><path d="M6 40 C20 10 44 6 60 14 M60 14 L48 12 M60 14 L56 26" /></svg>
         </div>

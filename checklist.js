@@ -40,7 +40,7 @@
       <span class="spark" aria-hidden="true">✓</span>
       <h3>Ready for SSA.</h3>
       <p>You explored everything SSA has to offer.</p>
-      <button type="button" class="button button-dark" id="checklistConnectBtn">Any questions for us? <span aria-hidden="true">↪</span></button>
+      <button type="button" class="button button-dark" id="checklistConnectBtn">Any questions for us? <span class="icon-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M9 5l3 3-3 3"/></svg></span></button>
     </div>
     <button class="reset" id="checklistReset" type="button">Reset checklist</button>
   </aside>`;

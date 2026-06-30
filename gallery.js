@@ -2,6 +2,16 @@
   const figures = Array.from(document.querySelectorAll('.gallery-book .polaroid'));
   if (!figures.length) return;
 
+  const ARROW_LEFT =
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M10 3L5 8l5 5"/></svg>';
+  const ARROW_RIGHT =
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M6 3l5 5-5 5"/></svg>';
+  const CLOSE_ICON =
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
+    '<path d="M4 4l8 8M12 4l-8 8"/></svg>';
+
   const items = figures.map((fig) => {
     const img = fig.querySelector('img');
     return {
@@ -18,13 +28,15 @@
   lightbox.innerHTML =
     '<div class="gallery-lightbox-bg" data-close aria-label="Close gallery"></div>' +
     '<div class="gallery-lightbox-panel" role="dialog" aria-modal="true" aria-labelledby="galleryLightboxCaption">' +
-      '<button type="button" class="gallery-lightbox-nav gallery-lightbox-prev" aria-label="Previous photo">←</button>' +
-      '<button type="button" class="gallery-lightbox-nav gallery-lightbox-next" aria-label="Next photo">→</button>' +
-      '<div class="gallery-lightbox-card" data-close tabindex="0" aria-label="Click card background to close">' +
+      '<button type="button" class="gallery-lightbox-nav gallery-lightbox-prev" aria-label="Previous photo">' + ARROW_LEFT + '</button>' +
+      '<button type="button" class="gallery-lightbox-nav gallery-lightbox-next" aria-label="Next photo">' + ARROW_RIGHT + '</button>' +
+      '<div class="gallery-lightbox-card" tabindex="0" aria-label="Photo viewer">' +
+        '<button type="button" class="gallery-lightbox-close" aria-label="Close">' + CLOSE_ICON + '</button>' +
         '<div class="gallery-lightbox-viewport" id="galleryLightboxViewport">' +
           '<img id="galleryLightboxImg" alt="" />' +
         '</div>' +
-        '<p class="gallery-lightbox-hint">Click image to zoom · hover card &amp; click outside photo to close</p>' +
+        '<p class="gallery-lightbox-hint gallery-lightbox-hint-desktop">Click image to zoom · click outside photo to close</p>' +
+        '<p class="gallery-lightbox-hint gallery-lightbox-hint-mobile">Tap image to zoom · use arrows to browse</p>' +
         '<figcaption id="galleryLightboxCaption" class="gallery-lightbox-caption"></figcaption>' +
       '</div>' +
     '</div>';
@@ -36,6 +48,7 @@
   const caption = document.getElementById('galleryLightboxCaption');
   const prevBtn = lightbox.querySelector('.gallery-lightbox-prev');
   const nextBtn = lightbox.querySelector('.gallery-lightbox-next');
+  const closeBtn = lightbox.querySelector('.gallery-lightbox-close');
 
   let index = 0;
   let zoomed = false;
@@ -68,7 +81,7 @@
     lightbox.classList.add('open');
     lightbox.setAttribute('aria-hidden', 'false');
     document.body.classList.add('gallery-lightbox-open');
-    card.focus();
+    closeBtn.focus();
   }
 
   function close() {
@@ -108,12 +121,9 @@
     }
   });
 
-  card.addEventListener('click', close);
-  card.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      close();
-    }
+  closeBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    close();
   });
 
   lightbox.querySelector('[data-close].gallery-lightbox-bg').addEventListener('click', close);
