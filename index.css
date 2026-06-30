@@ -73,14 +73,24 @@
 [data-theme="dark"] .social-row a:hover { background: var(--accent); color: oklch(22% 0.06 264); border-color: var(--accent); }
 [data-theme="dark"] .tile.selected { background: var(--accent); color: oklch(22% 0.06 264); }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+  max-width: 100%;
+}
 body {
   margin: 0;
   font-family: var(--font);
   color: var(--ink);
   background: var(--paper);
-  overflow-x: hidden;
+  overflow-x: clip;
+  max-width: 100%;
   transition: background .4s ease, color .4s ease;
+}
+main {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 a { color: inherit; }
 button, input, textarea { font: inherit; }
@@ -154,6 +164,7 @@ button, input, textarea { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 .theme-toggle {
   width: 42px;
@@ -1305,7 +1316,7 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 }
 
 @media (max-width: 900px) {
-  .nav-newsletter-text { display: none; }
+  .nav-newsletter-label { display: none; }
   .nav-newsletter { padding: 4px; min-width: 42px; justify-content: center; }
 }
 
@@ -1979,21 +1990,22 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   .nav {
     position: sticky;
     top: 0;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     grid-template-areas:
-      "brand tools"
+      "toggle brand tools"
       "links links";
     height: auto;
-    min-height: 78px;
-    padding-bottom: 0;
+    min-height: 64px;
+    padding: 8px max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+    gap: 8px;
     background: color-mix(in oklch, var(--paper) 92%, transparent);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid transparent;
   }
   .nav.is-open { border-bottom-color: var(--line); padding-bottom: 8px; }
-  .brand { grid-area: brand; }
-  .nav-tools { grid-area: tools; justify-self: end; }
-  .nav-menu-toggle { display: inline-grid; }
+  .nav-menu-toggle { grid-area: toggle; display: inline-grid; }
+  .brand { grid-area: brand; min-width: 0; }
+  .nav-tools { grid-area: tools; justify-self: end; gap: 6px; max-width: 100%; }
   .nav-links {
     grid-area: links;
     display: none;
@@ -2001,7 +2013,7 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
     align-items: stretch;
     gap: 4px;
     width: 100%;
-    margin-top: 8px;
+    margin-top: 4px;
     padding: 8px;
     border-radius: 18px;
     border: 1px solid var(--line);
@@ -2014,11 +2026,77 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
     font-size: 15px;
   }
   .nav-links a::before { border-radius: 14px; }
+  .hero { padding-top: 96px; }
   .stat-grid, .mission-list, .event-grid, .program-grid, .form-grid, .split, .president-card, .donation-grid, .board-grid { grid-template-columns: 1fr; }
-  .trust-row { position: static; transform: none; margin-top: 34px; flex-wrap: wrap; justify-content: center; }
+  .trust-row {
+    position: static;
+    transform: none;
+    margin-top: 34px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 18px;
+    white-space: normal;
+    max-width: 100%;
+    padding: 0 8px;
+  }
   .carousel { grid-template-columns: 1fr; }
   .carousel-arrow { display: none; }
   .carousel-dots { grid-column: 1; }
+}
+
+@media (max-width: 640px) {
+  .nav-admin { display: none; }
+  .nav-tools { gap: 5px; }
+  .nav-menu-toggle,
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
+  }
+  .nav-newsletter {
+    min-width: 38px;
+    min-height: 38px;
+  }
+  .nav-newsletter-badge {
+    min-width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+  .nav-action.connect {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    font-size: 0;
+    justify-content: center;
+    gap: 0;
+  }
+  .nav-action.connect span {
+    font-size: 17px;
+    display: inline-block;
+  }
+  .hero { padding: 88px 16px 48px; }
+  .hero h1 { font-size: clamp(38px, 10.5vw, 52px); letter-spacing: -.05em; }
+  .hero p { font-size: 16px; padding: 0 4px; }
+  .hero-actions { gap: 10px; }
+  .hero-actions .button { min-height: 44px; padding: 0 18px; font-size: 14px; }
+  .checklist-trigger {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    padding: 6px 12px 6px 6px;
+    font-size: 13px;
+  }
+  .checklist-panel,
+  .checklist-intro-card {
+    right: max(12px, env(safe-area-inset-right));
+    width: min(380px, calc(100% - 24px));
+  }
+  .gallery-hero { padding: 88px 16px 20px; }
+  .timeline-hero { padding: 96px 16px 40px; }
+  .timeline-hero h1 { font-size: clamp(38px, 10.5vw, 52px); }
+}
+
+@media (max-width: 380px) {
+  .brand span { display: none; }
+  .hero-actions .button { width: 100%; max-width: 280px; }
 }
 
 /* ---------- Timeline page ---------- */

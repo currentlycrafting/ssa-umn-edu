@@ -30,6 +30,7 @@
 </head>
 <body>
   <nav class="nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
     <a class="brand" href="index.html" aria-label="SSA home">
       <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
       <span>SSA</span>
@@ -41,7 +42,6 @@
       <a href="connections.html">Game</a>
     </div>
     <div class="nav-tools">
-      <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
       <button type="button" class="nav-newsletter" aria-label="Newsletter signup">
         <span class="nav-newsletter-badge"><span data-newsletter-count class="nav-newsletter-count">—</span></span>
         <span class="nav-newsletter-label">Newsletter</span>
@@ -49,7 +49,7 @@
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
       <button class="nav-admin" id="adminToggle" type="button">Admin</button>
       <div class="signup-menu">
-        <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu">Options <span aria-hidden="true">↪</span></button>
+        <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu" aria-label="Site options">Options <span aria-hidden="true">↪</span></button>
         <div class="signup-dropdown" id="signupMenu" aria-label="Site options">
           <a href="#contact" data-open-newsletter id="newsletterOption">Sign up to newsletter</a>
           <a href="#donate">Donation</a>
