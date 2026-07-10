@@ -1,4 +1,104 @@
-(function () {
+(async function () {
+  const book = document.querySelector('.gallery-book');
+  const communityAnchor = document.getElementById('communityGalleryItems');
+  if (book && communityAnchor && window.ssaFetch) {
+    try {
+      const data = await window.ssaFetch.json('/api/gallery');
+      (data.items || []).forEach((item, index) => {
+        const figure = document.createElement('figure');
+        figure.className = `polaroid ${index % 2 ? 'right' : 'left'}`;
+        figure.style.setProperty('--rot', `${index % 2 ? 2.5 : -2.5}deg`);
+        const image = document.createElement('img');
+        image.src = item.src;
+        image.alt = item.alt;
+        image.loading = 'lazy';
+        const caption = document.createElement('figcaption');
+        caption.textContent = item.caption;
+        figure.append(image, caption);
+        book.insertBefore(figure, communityAnchor);
+      });
+    } catch (_) {
+      // Existing gallery remains usable if community additions cannot load.
+    }
+  }
+
+  const submitModal = document.getElementById('gallerySubmitModal');
+  const submitOpen = document.getElementById('gallerySubmitOpen');
+  const submitClose = document.getElementById('gallerySubmitClose');
+  const submitForm = document.getElementById('gallerySubmitForm');
+  const preview = document.getElementById('galleryPreview');
+  let selectedData = '';
+
+  function closeSubmit() {
+    submitModal?.classList.remove('open');
+    submitModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+  submitOpen?.addEventListener('click', () => {
+    submitModal.classList.add('open');
+    submitModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  });
+  submitClose?.addEventListener('click', closeSubmit);
+  submitModal?.addEventListener('click', (event) => {
+    if (event.target === submitModal) closeSubmit();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && submitModal?.classList.contains('open')) closeSubmit();
+  });
+  submitForm?.photo.addEventListener('change', () => {
+    const file = submitForm.photo.files[0];
+    selectedData = '';
+    preview.classList.remove('visible');
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      submitForm.querySelector('output').textContent = 'Photo must be under 5 MB.';
+      submitForm.photo.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      selectedData = String(reader.result || '');
+      preview.src = selectedData;
+      preview.classList.add('visible');
+    };
+    reader.readAsDataURL(file);
+  });
+  submitForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const out = submitForm.querySelector('output');
+    const button = submitForm.querySelector('button[type="submit"]');
+    const file = submitForm.photo.files[0];
+    if (!file || !selectedData) {
+      out.textContent = 'Choose a photo first.';
+      return;
+    }
+    button.disabled = true;
+    try {
+      await window.ssaFetch.json('/api/gallery', {
+        method: 'POST',
+        body: {
+          submitter: submitForm.submitter.value.trim(),
+          email: submitForm.email.value.trim(),
+          filename: file.name,
+          data: selectedData,
+          caption: submitForm.caption.value.trim(),
+          alt: submitForm.alt.value.trim()
+        },
+        timeout: 30000
+      });
+      out.textContent = 'Submitted. The board will review your photo.';
+      submitForm.reset();
+      selectedData = '';
+      preview.classList.remove('visible');
+      window.setTimeout(closeSubmit, 1800);
+    } catch (error) {
+      out.textContent = error.message || 'Could not submit this photo.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   const figures = Array.from(document.querySelectorAll('.gallery-book .polaroid'));
   if (!figures.length) return;
 

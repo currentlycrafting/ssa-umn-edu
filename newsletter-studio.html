@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Newsletter Studio — SSA</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body class="newsletter-page-shell">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks"><a href="/newsletter">← Back to newsletter</a></div>
+  </nav>
+  <main class="page-main studio-main">
+    <header class="page-hero"><span class="eyebrow">Board CMS</span><h1>Newsletter Studio</h1><p>Fill in the newsletter exactly as readers will see it.</p></header>
+    <form id="studioForm" class="studio-newsletter">
+      <input class="studio-title-input" type="text" id="studioTitle" placeholder="Newsletter title" required />
+      <div class="studio-canvas">
+        <div class="studio-polaroid studio-polaroid-left" data-polaroid="0" style="--rot:-5deg">
+          <input type="file" accept="image/png,image/jpeg,image/webp" data-polaroid-input="0" />
+          <span>Drop photo 1 here</span><img alt="" />
+        </div>
+        <div class="studio-polaroid studio-polaroid-right" data-polaroid="1" style="--rot:5deg">
+          <input type="file" accept="image/png,image/jpeg,image/webp" data-polaroid-input="1" />
+          <span>Drop photo 2 here</span><img alt="" />
+        </div>
+        <div class="studio-polaroid studio-polaroid-left studio-polaroid-low" data-polaroid="2" style="--rot:-3deg">
+          <input type="file" accept="image/png,image/jpeg,image/webp" data-polaroid-input="2" />
+          <span>Drop photo 3 here</span><img alt="" />
+        </div>
+        <article class="studio-paper">
+          <div class="studio-required-note"><span class="eyebrow">Base newsletter</span><p>Heading, story, announcement, and timeline are ready to fill in.</p></div>
+          <div id="studioBlocks"></div>
+          <div class="studio-add-section">
+            <span class="eyebrow">Add another section</span>
+            <div class="studio-toolbar">
+              <button type="button" class="button button-line" data-add-block="heading">Heading</button>
+              <button type="button" class="button button-line" data-add-block="paragraph">Paragraph</button>
+              <button type="button" class="button button-line" data-add-block="announcement">Announcement</button>
+              <button type="button" class="button button-line" data-add-block="image">Image</button>
+              <button type="button" class="button button-line" data-add-block="timeline">Timeline</button>
+              <button type="button" class="button button-line" data-add-block="game">Game</button>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="studio-save-bar">
+        <label><input type="checkbox" id="studioPublished" /> Publish immediately</label>
+        <button class="button button-dark" type="submit">Save newsletter</button>
+        <output id="studioOut"></output>
+      </div>
+    </form>
+  </main>
+  <div class="modal-backdrop" id="studioPasswordModal" aria-hidden="true">
+    <div class="modal-sheet modal-card modal-card-compact studio-password-sheet" role="dialog" aria-modal="true" aria-labelledby="studioPasswordTitle">
+      <span class="eyebrow">Board access</span><h2 id="studioPasswordTitle">Save newsletter</h2>
+      <p>Enter the admin password to upload photos and save this edition.</p>
+      <form id="studioPasswordForm" class="connect-modal-form">
+        <input type="password" id="studioPass" placeholder="Admin password" required />
+        <button class="button button-dark" type="submit">Confirm and save</button>
+        <output></output>
+      </form>
+    </div>
+    <button class="modal-exit" id="studioPasswordClose" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+  </div>
+  <script src="/nav.js"></script>
+  <script src="/newsletter-studio.js?v=3"></script>
+</body>
+</html>

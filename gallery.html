@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="site-pages.css" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -29,7 +30,7 @@
   </script>
 </head>
 <body class="gallery-page">
-  <nav class="nav" aria-label="Primary navigation">
+  <nav class="nav page-nav" aria-label="Primary navigation">
     <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
     <a class="brand" href="index.html" aria-label="SSA home">
       <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
@@ -37,17 +38,13 @@
     </a>
     <div class="nav-links" id="navLinks">
       <a href="index.html">Home</a>
-      <a href="timeline.html">Timeline</a>
-      <a href="gallery.html" class="active">Gallery</a>
-      <a href="connections.html">Game</a>
+      <a href="/events">Events</a>
+      <a href="/games">Games</a>
+      <a href="/aux">Want The Aux</a>
+      <button type="button">Options</button>
     </div>
     <div class="nav-tools">
-      <button type="button" class="nav-newsletter" aria-label="Newsletter signup">
-        <span class="nav-newsletter-badge"><span data-newsletter-count class="nav-newsletter-count">—</span></span>
-        <span class="nav-newsletter-label">Newsletter</span>
-      </button>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
-      <a class="nav-action connect" href="index.html" aria-label="Site options"><span class="nav-options-text">Options</span><span class="icon-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M9 5l3 3-3 3"/></svg></span></a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
     </div>
   </nav>
 
@@ -74,12 +71,14 @@
       <figure class="polaroid right" style="--rot:2deg"><img src="assets/gallery/gallery-12.png" alt="SSA members lined up" loading="lazy" /><figcaption>first dance practice</figcaption></figure>
       <figure class="polaroid left"  style="--rot:-3deg"><img src="assets/gallery/gallery-13.png" alt="SSA water gun night" loading="lazy" /><figcaption>summer water fight</figcaption></figure>
       <figure class="polaroid right" style="--rot:-2deg"><img src="assets/gallery/gallery-14.png" alt="SSA members with water guns" loading="lazy" /><figcaption>squirt gun szn</figcaption></figure>
-      <figure class="polaroid left"  style="--rot:2.5deg"><img src="assets/gallery/gallery-15.png" alt="SSA homecoming parade" loading="lazy" /><figcaption>homecoming parade 💙</figcaption></figure>
+      <figure class="polaroid left"  style="--rot:2.5deg"><img src="assets/gallery/gallery-15.png" alt="SSA homecoming parade" loading="lazy" /><figcaption>homecoming parade</figcaption></figure>
       <figure class="polaroid right" style="--rot:3.5deg"><img src="assets/gallery/gallery-16.png" alt="SSA members in cultural attire" loading="lazy" /><figcaption>dressed up for Culture Couture</figcaption></figure>
       <figure class="polaroid left"  style="--rot:-2.5deg"><img src="assets/gallery/gallery-17.png" alt="SSA member at SSA Nationals" loading="lazy" /><figcaption>SSA Nationals</figcaption></figure>
       <figure class="polaroid right" style="--rot:2deg"><img src="assets/gallery/gallery-18.png" alt="SSA event staff" loading="lazy" /><figcaption>event staff duty</figcaption></figure>
       <figure class="polaroid left"  style="--rot:-3deg"><img src="assets/gallery/gallery-19.png" alt="SSA members being filmed" loading="lazy" /><figcaption>lights, camera, SSA</figcaption></figure>
-      <p class="gallery-end">more memories loading… 📸 add yours to <code>assets/gallery</code></p>
+      <div id="communityGalleryItems"></div>
+      <p class="gallery-end handwritten">More memories loading…</p>
+      <p class="gallery-end"><button class="button button-dark handdrawn" type="button" id="gallerySubmitOpen">Gallery</button></p>
     </section>
   </main>
 
@@ -87,13 +86,13 @@
     <div class="footer-card">
       <a class="footer-brand" href="index.html"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
       <nav aria-label="Footer">
-        <a href="index.html#about">About Us</a>
+        <a href="index.html#demo">About Us</a>
         <a href="index.html#events">Events</a>
         <a href="index.html#programs">Programs</a>
         <a href="timeline.html">Timeline</a>
         <a href="gallery.html">Gallery</a>
-        <a href="connections.html">Game</a>
-        <a href="index.html#contact">Connect</a>
+        <a href="/games">Games</a>
+        <a href="/board">Board</a>
       </nav>
       <div class="social-row">
         <a href="mailto:ssa@umn.edu">Email</a>
@@ -105,19 +104,35 @@
     </div>
   </footer>
 
+  <div class="modal-backdrop" id="gallerySubmitModal" aria-hidden="true">
+    <div class="modal-sheet modal-card gallery-submit-sheet" role="dialog" aria-modal="true" aria-labelledby="gallerySubmitTitle">
+      <span class="eyebrow">Community Gallery</span>
+      <h2 id="gallerySubmitTitle">Add a memory</h2>
+      <p>Send a photo to the board. Approved photos will appear in the gallery.</p>
+      <form id="gallerySubmitForm" class="connect-modal-form">
+        <input type="text" name="submitter" placeholder="Your name" required />
+        <input type="email" name="email" placeholder="Your email" required />
+        <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" required />
+        <img class="gallery-preview" id="galleryPreview" alt="Selected photo preview" />
+        <input type="text" name="caption" placeholder="Short caption" maxlength="300" required />
+        <textarea name="alt" rows="2" placeholder="Describe the photo for someone who cannot see it" maxlength="300" required></textarea>
+        <button class="button button-dark" type="submit">Submit for review</button>
+        <output></output>
+      </form>
+    </div>
+    <button class="modal-exit" id="gallerySubmitClose" type="button" aria-label="Close">
+      <svg viewBox="0 0 44 44" aria-hidden="true">
+        <path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/>
+        <path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/>
+      </svg>
+    </button>
+  </div>
+
+  <script src="motion.js"></script>
+  <script src="nav.js"></script>
   <script src="micro.js"></script>
   <script src="checklist.js"></script>
   <script src="newsletter.js"></script>
-  <script src="gallery.js"></script>
-  <script>
-    var t = document.getElementById('themeToggle');
-    if (t) {
-      t.addEventListener('click', function () {
-        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('ssaTheme', next);
-      });
-    }
-  </script>
+  <script src="gallery.js?v=3"></script>
 </body>
 </html>

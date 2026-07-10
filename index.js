@@ -83,64 +83,8 @@ document.addEventListener('click', () => {
   document.querySelectorAll('.stat-card.tip-open').forEach((c) => c.classList.remove('tip-open'));
 });
 
-const themeToggle = document.getElementById('themeToggle');
-if (themeToggle) {
-  themeToggle.addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('ssaTheme', next);
-  });
-}
-
-const sideNav = document.getElementById('sideNav');
-const sideLinks = sideNav ? Array.from(sideNav.querySelectorAll('a[href^="#"]')) : [];
-const sideSections = sideLinks
-  .map((link) => ({ link, section: document.getElementById(link.getAttribute('href').slice(1)) }))
-  .filter((item) => item.section);
-const heroSection = document.getElementById('hero');
-
-function updateActiveNav() {
-  const y = window.scrollY + window.innerHeight * 0.35;
-  let active = sideSections[0];
-  sideSections.forEach((item) => {
-    if (item.section.offsetTop <= y) active = item;
-  });
-  sideLinks.forEach((link) => link.classList.remove('active'));
-  if (active) active.link.classList.add('active');
-
-  if (sideNav && heroSection) {
-    const pastHero = window.scrollY > heroSection.offsetHeight * 0.6;
-    sideNav.classList.toggle('visible', pastHero);
-  }
-}
-window.addEventListener('scroll', updateActiveNav, { passive: true });
-window.addEventListener('resize', updateActiveNav);
-updateActiveNav();
-
-let sideRevealTimer = 0;
-sideLinks.forEach((link) => {
-  link.addEventListener('click', (event) => {
-    const target = document.getElementById(link.getAttribute('href').slice(1));
-    if (target) {
-      event.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    // Progressive disclosure: reveal the section name only after the user clicks.
-    sideLinks.forEach((other) => other.classList.remove('revealed'));
-    link.classList.add('revealed');
-    window.clearTimeout(sideRevealTimer);
-    sideRevealTimer = window.setTimeout(() => link.classList.remove('revealed'), 1600);
-  });
-});
-
 const signupMenu = document.querySelector('.signup-menu');
 const signupToggle = document.getElementById('signupToggle');
-document.querySelectorAll('[data-open-connect]').forEach((button) => {
-  button.addEventListener('click', (event) => {
-    event.stopPropagation();
-    openConnectModal();
-  });
-});
 if (signupMenu && signupToggle) {
   signupToggle.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -170,70 +114,6 @@ document.querySelectorAll('.micro-button:not(.rsvp-button)').forEach((button) =>
   }, { once: false });
   button.dataset.original = button.textContent;
 });
-
-const carousel = document.getElementById('storyCarousel');
-if (carousel) {
-  const slides = Array.from(carousel.querySelectorAll('.carousel-slide'));
-  const dotsRoot = document.getElementById('carouselDots');
-  let index = 0;
-  let timer = 0;
-  const intervalMs = 5000;
-
-  dotsRoot.innerHTML = slides.map((_, i) => `<button class="carousel-dot ${i === 0 ? 'active' : ''}" type="button" aria-label="Go to story ${i + 1}"><span></span></button>`).join('');
-  const dots = Array.from(dotsRoot.querySelectorAll('.carousel-dot'));
-
-  function showSlide(next, userInitiated = false) {
-    const prev = index;
-    index = (next + slides.length) % slides.length;
-    carousel.classList.toggle('slide-back', index < prev);
-    slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
-    dots.forEach((dot, i) => {
-      dot.classList.remove('active');
-      void dot.offsetWidth;
-      dot.classList.toggle('active', i === index);
-    });
-    if (userInitiated) restartCarousel();
-  }
-
-  function restartCarousel() {
-    window.clearInterval(timer);
-    timer = window.setInterval(() => showSlide(index + 1), intervalMs);
-  }
-
-  carousel.querySelector('[data-carousel-prev]').addEventListener('click', () => showSlide(index - 1, true));
-  carousel.querySelector('[data-carousel-next]').addEventListener('click', () => showSlide(index + 1, true));
-  dots.forEach((dot, i) => dot.addEventListener('click', () => showSlide(i, true)));
-
-  // Card swipe: drag/swipe the track to move between slides
-  const track = carousel.querySelector('.carousel-track');
-  let dragStartX = null;
-  if (track) {
-    track.addEventListener('pointerdown', (event) => {
-      dragStartX = event.clientX;
-      track.classList.add('dragging');
-      track.setPointerCapture(event.pointerId);
-    });
-    track.addEventListener('pointermove', (event) => {
-      if (dragStartX === null) return;
-      const dx = event.clientX - dragStartX;
-      const active = slides[index];
-      if (active) active.style.transform = `translateX(${dx * 0.4}px) scale(1)`;
-    });
-    const endDrag = (event) => {
-      if (dragStartX === null) return;
-      const dx = event.clientX - dragStartX;
-      const active = slides[index];
-      if (active) active.style.transform = '';
-      track.classList.remove('dragging');
-      dragStartX = null;
-      if (Math.abs(dx) > 60) showSlide(index + (dx < 0 ? 1 : -1), true);
-    };
-    track.addEventListener('pointerup', endDrag);
-    track.addEventListener('pointercancel', endDrag);
-  }
-
-  restartCarousel();
-}
 
 async function postJson(url, payload) {
   return window.ssaFetch.json(url, {
@@ -267,16 +147,26 @@ function modalExitSvg() {
 }
 
 function attachModalClose(backdrop, closeFn, canClose = () => true) {
-  if (!backdrop || backdrop.querySelector('.modal-exit')) return;
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'modal-exit';
-  btn.setAttribute('aria-label', 'Close');
-  btn.innerHTML = modalExitSvg();
+  if (!backdrop || backdrop.dataset.modalBound === 'true') return;
+  backdrop.dataset.modalBound = 'true';
+  let btn = backdrop.querySelector('.modal-exit');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'modal-exit';
+    btn.setAttribute('aria-label', 'Close');
+    btn.innerHTML = modalExitSvg();
+    backdrop.appendChild(btn);
+  }
   btn.addEventListener('click', () => {
     if (canClose()) closeFn();
   });
-  backdrop.appendChild(btn);
+  backdrop.addEventListener('click', (event) => {
+    if (event.target === backdrop && canClose()) closeFn();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && backdrop.classList.contains('open') && canClose()) closeFn();
+  });
   return btn;
 }
 
@@ -284,11 +174,15 @@ function openModal(backdrop) {
   if (!backdrop) return;
   backdrop.classList.add('open');
   backdrop.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
 }
 function closeModal(backdrop) {
   if (!backdrop) return;
   backdrop.classList.remove('open');
   backdrop.setAttribute('aria-hidden', 'true');
+  if (!document.querySelector('.modal-backdrop.open')) {
+    document.body.classList.remove('modal-open');
+  }
 }
 
 function formatAdminDate(iso) {
@@ -656,148 +550,155 @@ if (sessionStorage.getItem('ssaOpenNewsletter') === '1') {
   window.setTimeout(() => openNewsletterModal(true), 300);
 }
 
-// Connect with SSA — shared reason picker + form (modal + inline contact section)
-const connectModal = document.getElementById('connectModal');
-const connectModalFlow = document.getElementById('connectModalFlow');
-const connectInline = document.getElementById('connectInline');
+// Event suggestion modal
+const suggestModal = document.getElementById('suggestModal');
+const suggestForm = document.getElementById('suggestForm');
+const suggestTitle = document.getElementById('suggestTitle');
+const suggestLead = document.getElementById('suggestLead');
+const suggestTypeInput = document.getElementById('suggestType');
 
-const CONNECT_VIEWS = {
-  sponsorship: {
-    label: 'Sponsorship',
-    title: 'Sponsor SSA',
-    lead: 'Tell us about your organization and what kind of sponsorship you have in mind.',
-    orgPlaceholder: 'Company or organization',
-    showOrg: true,
-    detailsPlaceholder: 'What would sponsorship look like? Goals, timeline, or budget range…'
+const SUGGEST_COPY = {
+  campus: {
+    title: 'Suggest a campus event',
+    lead: 'Large, social, attendance-driven ideas that grow SSA on campus.'
   },
-  collaborations: {
-    label: 'Collaborations',
-    title: 'Collaborate with SSA',
-    lead: 'Share what you are building and how SSA could collaborate.',
-    orgPlaceholder: 'Team, org, or project name',
-    showOrg: true,
-    detailsPlaceholder: 'Describe the collaboration you have in mind…'
-  },
-  partnerships: {
-    label: 'Partnerships',
-    title: 'Partnership inquiry',
-    lead: 'Let us know what partnership would look like for your org and SSA.',
-    orgPlaceholder: 'Organization name',
-    showOrg: true,
-    detailsPlaceholder: 'What kind of partnership are you proposing?'
-  },
-  board: {
-    label: 'Board interest',
-    title: 'Join the board',
-    lead: 'Share why you want to serve and what you would bring to SSA leadership.',
-    orgPlaceholder: 'Year at UMN (optional)',
-    showOrg: true,
-    detailsPlaceholder: 'Why do you want to join the board? Relevant experience and goals…'
-  },
-  ideas: {
-    label: 'Idea pitch',
-    title: 'Pitch your idea',
-    lead: 'Have something SSA should do? We want to hear it.',
-    orgPlaceholder: 'Idea title (optional)',
-    showOrg: true,
-    detailsPlaceholder: 'Describe your idea and how SSA could help make it happen.'
+  community: {
+    title: 'Suggest a community event',
+    lead: 'Intentional programming focused on depth, service, and connection.'
   }
 };
 
-function initConnectFlow(root, options = {}) {
-  if (!root) return null;
-  root.dataset.step = 'reason';
-  const stepReason = root.querySelector('.connect-step-reason');
-  const stepForm = root.querySelector('.connect-step-form');
-  const form = root.querySelector('.connect-form');
-  const backBtn = root.querySelector('.connect-back');
-  const formTitle = root.querySelector('.connect-form-title');
-  const formLead = root.querySelector('.connect-form-lead');
-  const reasonLabel = root.querySelector('.connect-reason-label');
-  const orgField = root.querySelector('.connect-org-field');
+function openSuggestModal(type = 'campus') {
+  if (!suggestModal || !suggestForm) return;
+  const copy = SUGGEST_COPY[type] || SUGGEST_COPY.campus;
+  if (suggestTypeInput) suggestTypeInput.value = type;
+  if (suggestTitle) suggestTitle.textContent = copy.title;
+  if (suggestLead) suggestLead.textContent = copy.lead;
+  suggestForm.reset();
+  if (suggestTypeInput) suggestTypeInput.value = type;
+  const out = suggestForm.querySelector('output');
+  if (out) out.textContent = '';
+  openModal(suggestModal);
+}
+window.openSuggestModal = openSuggestModal;
 
-  function reset() {
-    if (!stepReason || !stepForm || !form) return;
-    root.dataset.step = 'reason';
-    stepReason.hidden = false;
-    stepForm.hidden = true;
-    form.reset();
-    const out = form.querySelector('output');
-    if (out) out.textContent = '';
-  }
-
-  function showForm(reason) {
-    const view = CONNECT_VIEWS[reason];
-    if (!view || !form) return;
-    form.reason.value = reason;
-    if (reasonLabel) reasonLabel.textContent = view.label;
-    if (formTitle) formTitle.textContent = view.title;
-    if (formLead) formLead.textContent = view.lead;
-    if (orgField) {
-      orgField.placeholder = view.orgPlaceholder;
-      orgField.hidden = !view.showOrg;
-      orgField.required = false;
-    }
-    const details = form.details;
-    if (details) details.placeholder = view.detailsPlaceholder;
-    root.dataset.step = 'form';
-    stepReason.hidden = true;
-    stepForm.hidden = false;
-    window.setTimeout(() => form.name.focus(), 60);
-  }
-
-  root.querySelectorAll('.connect-option').forEach((button) => {
-    button.addEventListener('click', () => showForm(button.dataset.reason));
-  });
-  backBtn && backBtn.addEventListener('click', reset);
-
-  if (form) {
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const payload = {
-        reason: form.reason.value,
-        name: form.name.value.trim(),
-        email: form.email.value.trim(),
-        organization: form.organization.value.trim(),
-        details: form.details.value.trim()
-      };
-      submitBtn.disabled = true;
-      submitBtn.classList.add('is-loading');
-      try {
-        await postJson('/api/connect', payload);
-        setOutput(form, 'Sent. SSA will follow up soon.');
-        if (options.onSuccess) options.onSuccess();
-      } catch (error) {
-        setOutput(form, 'Could not send yet — try again in a moment.', false);
-      } finally {
-        window.setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.classList.remove('is-loading');
-        }, 1200);
+document.querySelectorAll('[data-suggest-event]').forEach((el) => {
+  // Keyboard support for focusable program cards (click handled by nav.js)
+  if (el.tagName === 'ARTICLE') {
+    el.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openSuggestModal(el.dataset.suggestType || 'campus');
       }
     });
   }
-
-  return { reset, showForm };
-}
-
-const modalConnect = initConnectFlow(connectModalFlow, {
-  onSuccess: () => window.setTimeout(() => closeModal(connectModal), 1200)
 });
-initConnectFlow(connectInline);
 
-function resetConnectModal() {
-  modalConnect && modalConnect.reset();
+if (suggestForm) {
+  suggestForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitBtn = suggestForm.querySelector('button[type="submit"]');
+    const payload = {
+      type: suggestForm.type.value,
+      name: suggestForm.name.value.trim(),
+      description: suggestForm.description.value.trim(),
+      audience: suggestForm.audience.value.trim(),
+      budget: suggestForm.budget.value.trim(),
+      preferredDate: suggestForm.preferredDate.value.trim(),
+      notes: suggestForm.notes.value.trim()
+    };
+    submitBtn.disabled = true;
+    submitBtn.classList.add('is-loading');
+    try {
+      await postJson('/api/event-suggestions', payload);
+      setOutput(suggestForm, 'Thanks — the board will review your idea.');
+      window.setTimeout(() => closeModal(suggestModal), 1400);
+    } catch (error) {
+      setOutput(suggestForm, error.message || 'Could not submit — try again.', false);
+    } finally {
+      window.setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('is-loading');
+      }, 1200);
+    }
+  });
 }
 
-function openConnectModal() {
-  if (!connectModal) return;
-  resetConnectModal();
-  openModal(connectModal);
+attachModalClose(suggestModal, () => closeModal(suggestModal));
+
+const suggestParam = new URLSearchParams(window.location.search).get('suggest');
+if (suggestParam) {
+  window.setTimeout(() => openSuggestModal(suggestParam === 'community' ? 'community' : 'campus'), 400);
 }
 
-attachModalClose(connectModal, () => closeModal(connectModal));
+// Featured hiking countdown
+const HIKING_EVENT_AT = new Date('2026-07-18T14:00:00-05:00');
+const featuredCountdown = document.getElementById('featuredCountdown');
+
+function tickFeaturedCountdown() {
+  if (!featuredCountdown) return;
+  const diff = HIKING_EVENT_AT.getTime() - Date.now();
+  const cells = featuredCountdown.querySelectorAll('[data-fc]');
+  if (diff <= 0) {
+    cells.forEach((cell) => { cell.textContent = '0'; });
+    return;
+  }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  const map = { days, hours, mins, secs };
+  cells.forEach((cell) => {
+    const key = cell.dataset.fc;
+    if (key && map[key] !== undefined) cell.textContent = String(map[key]);
+  });
+}
+
+if (featuredCountdown) {
+  tickFeaturedCountdown();
+  window.setInterval(tickFeaturedCountdown, 1000);
+}
+
+// Side nav scroll spy + connect button
+const sideNav = document.getElementById('sideNav');
+const sideLinks = sideNav ? Array.from(sideNav.querySelectorAll('a[href^="#"]')) : [];
+const sideSections = sideLinks
+  .map((link) => ({ link, section: document.getElementById(link.getAttribute('href').slice(1)) }))
+  .filter((item) => item.section);
+const heroSection = document.getElementById('hero');
+
+function updateActiveNav() {
+  const y = window.scrollY + window.innerHeight * 0.35;
+  let active = sideSections[0];
+  sideSections.forEach((item) => {
+    if (item.section.offsetTop <= y) active = item;
+  });
+  sideLinks.forEach((link) => link.classList.remove('active'));
+  if (active) active.link.classList.add('active');
+
+  if (sideNav && heroSection) {
+    const pastHero = window.scrollY > heroSection.offsetHeight * 0.6;
+    sideNav.classList.toggle('visible', pastHero);
+  }
+}
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+window.addEventListener('resize', updateActiveNav);
+updateActiveNav();
+
+let sideRevealTimer = 0;
+sideLinks.forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const target = document.getElementById(link.getAttribute('href').slice(1));
+    if (target) {
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    sideLinks.forEach((other) => other.classList.remove('revealed'));
+    link.classList.add('revealed');
+    window.clearTimeout(sideRevealTimer);
+    sideRevealTimer = window.setTimeout(() => link.classList.remove('revealed'), 1600);
+  });
+});
 
 // Admin panel — password-protected view of all submissions
 const adminModal = document.getElementById('adminModal');
@@ -818,6 +719,23 @@ function formatGameTime(seconds) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function attachAdminAuxClear() {
+  const button = document.getElementById('adminAuxClear');
+  if (!button) return;
+  button.addEventListener('click', async () => {
+    if (!window.confirm('Clear every song from the request queue?')) return;
+    button.disabled = true;
+    button.textContent = 'Clearing…';
+    try {
+      await postJson('/api/admin/aux/clear', { password: adminPasswordMem });
+      await loadAdminData();
+    } catch (error) {
+      button.textContent = error.message || 'Try again';
+      button.disabled = false;
+    }
+  });
+}
+
 function renderAdminTab(tab) {
   if (!adminBody || !adminData) return;
   adminTab = tab;
@@ -826,10 +744,16 @@ function renderAdminTab(tab) {
   });
   const rows = adminData[tab] || [];
   if (!rows.length) {
-    adminBody.innerHTML = '<p class="admin-empty">No submissions yet.</p>';
+    adminBody.innerHTML = tab === 'aux'
+      ? '<div class="gallery-review-actions"><button class="micro-button" id="adminAuxClear" type="button">Clear request queue</button></div><p class="admin-empty">The request queue is empty.</p>'
+      : '<p class="admin-empty">No submissions yet.</p>';
+    attachAdminAuxClear();
     return;
   }
-  adminBody.innerHTML = '<div class="admin-body-fade">' + rows.map((row) => {
+  const auxToolbar = tab === 'aux'
+    ? '<div class="gallery-review-actions"><button class="micro-button" id="adminAuxClear" type="button">Clear request queue</button></div>'
+    : '';
+  adminBody.innerHTML = auxToolbar + '<div class="admin-body-fade">' + rows.map((row) => {
     if (tab === 'newsletters') {
       return adminRow(`<strong>${escapeHtml(row.email)}</strong>`, row.created_at);
     }
@@ -857,6 +781,34 @@ function renderAdminTab(tab) {
         row.created_at
       );
     }
+    if (tab === 'event_suggestions') {
+      return adminRow(
+        `<strong>${escapeHtml(row.name)} · ${escapeHtml(row.type)}</strong>` +
+        `<span class="admin-row-meta">${escapeHtml(row.audience || '—')}${row.preferred_date ? ` · ${escapeHtml(row.preferred_date)}` : ''}</span>` +
+        `<span class="admin-row-detail">${escapeHtml(row.description)}</span>`,
+        row.created_at
+      );
+    }
+    if (tab === 'aux') {
+      return adminRow(
+        `<span style="display:flex;align-items:center;gap:12px">` +
+        `<img src="${escapeHtml(row.albumImage || '/assets/brand/ssa-logo.png')}" alt="" style="width:52px;height:52px;border-radius:10px;object-fit:cover" />` +
+        `<span style="display:grid;flex:1;min-width:0"><strong>${escapeHtml(row.songName)}</strong>` +
+        `<span class="admin-row-meta">${escapeHtml(row.artist)} · requested by ${escapeHtml(row.requestedBy)}</span></span>` +
+        `<button class="micro-button" type="button" data-aux-play="${row.id}">Play next</button></span>`,
+        row.created_at
+      );
+    }
+    if (tab === 'gallery_review') {
+      return adminRow(
+        `<strong>${escapeHtml(row.caption)} · ${escapeHtml(row.status)}</strong>` +
+        `<span class="admin-row-meta">${escapeHtml(row.submitter)} · ${escapeHtml(row.email)}</span>` +
+        `<span class="admin-row-detail">${escapeHtml(row.alt)}</span>` +
+        `<img src="${escapeHtml(row.src)}" alt="" style="max-width:180px;border-radius:12px;margin-top:8px" />` +
+        (row.status === 'pending' ? `<span class="gallery-review-actions"><button class="micro-button" type="button" data-gallery-action="approved" data-gallery-id="${row.id}">Approve</button><button class="micro-button" type="button" data-gallery-action="rejected" data-gallery-id="${row.id}">Reject</button></span>` : ''),
+        row.created_at
+      );
+    }
     const reason = row.reason.replace(/^\w/, (c) => c.toUpperCase());
     return adminRow(
       `<strong>${escapeHtml(row.name)} · ${escapeHtml(reason)}</strong>` +
@@ -865,6 +817,36 @@ function renderAdminTab(tab) {
       row.created_at
     );
   }).join('') + '</div>';
+  adminBody.querySelectorAll('[data-gallery-action]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        await postJson(`/api/gallery/${button.dataset.galleryId}/moderate`, {
+          password: adminPasswordMem,
+          action: button.dataset.galleryAction
+        });
+        await loadAdminData();
+      } catch (_) {
+        button.disabled = false;
+      }
+    });
+  });
+  adminBody.querySelectorAll('[data-aux-play]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      button.textContent = 'Starting…';
+      try {
+        await postJson(`/api/admin/aux/${button.dataset.auxPlay}/play`, {
+          password: adminPasswordMem
+        });
+        await loadAdminData();
+      } catch (error) {
+        button.textContent = error.message || 'Try again';
+        button.disabled = false;
+      }
+    });
+  });
+  attachAdminAuxClear();
 }
 
 async function loadAdminData() {

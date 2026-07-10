@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Want The Aux — SSA</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css" />
+  <script src="/api.js"></script>
+  <script>
+    (function () {
+      document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');
+    })();
+  </script>
+</head>
+<body class="aux-page">
+  <div class="aux-bg" aria-hidden="true">
+    <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+      <path d="M0 400 Q200 200 400 350 T800 280" stroke="oklch(48% 0.14 145)" stroke-width="3" fill="none" />
+      <path d="M50 500 Q300 300 550 450 T780 380" stroke="oklch(48% 0.18 25)" stroke-width="2" fill="none" />
+      <circle cx="120" cy="180" r="40" fill="none" stroke="oklch(48% 0.14 145)" stroke-width="2" />
+      <circle cx="680" cy="140" r="55" fill="none" stroke="oklch(48% 0.18 25)" stroke-width="2" />
+      <circle cx="400" cy="80" r="28" fill="none" stroke="oklch(70% 0.1 145)" stroke-width="2" />
+      <path d="M100 100 L200 200 M700 500 L600 400" stroke="oklch(48% 0.18 25)" stroke-width="2" />
+    </svg>
+  </div>
+
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/index.html">Home</a>
+      <a href="/events">Events</a>
+      <a href="/games">Games</a>
+      <a href="/aux" class="active">Want The Aux</a>
+      <button type="button">Options</button>
+    </div>
+    <div class="nav-tools">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
+    </div>
+  </nav>
+
+  <main class="aux-main">
+    <header class="aux-header" data-reveal>
+      <span class="eyebrow aux-header-eyebrow">Live music queue</span>
+      <h1>Want the Aux?</h1>
+      <p>Request songs and build the queue.<span class="aux-desktop-tagline"> One person controls playback through Spotify.</span></p>
+    </header>
+
+    <div id="auxConnectWrap" class="aux-dj-bar" data-reveal hidden>
+      <a class="button aux-connect-btn aux-spotify-btn" id="auxConnectSpotify" href="/api/aux/spotify/login">Connect Spotify</a>
+      <span style="color:var(--muted);font-size:13px;font-weight:700">Only one person connects — everyone else can request songs.</span>
+    </div>
+
+    <div id="auxDjBar" hidden data-reveal>
+      <div class="aux-now" id="auxNowPlaying">
+        <img id="auxNpImg" alt="" />
+        <div class="aux-now-copy">
+          <div style="font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.1em;color:var(--green)">Now playing</div>
+          <div class="aux-np-title" id="auxNpSong">Please start playing a song first</div>
+          <div class="aux-np-artist" id="auxNpArtist"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="auxGuestPanel" data-reveal>
+      <section class="aux-choose-card">
+        <span class="eyebrow">Add to the bottom</span>
+        <h2>Choose a song</h2>
+        <div class="aux-search">
+          <input type="search" id="auxSearch" placeholder="Song or artist…" autocomplete="off" aria-label="Search for a song" />
+          <div class="aux-results" id="auxSearchResults"></div>
+        </div>
+      </section>
+      <div class="aux-dashboard">
+        <section class="aux-request-queue">
+          <div class="aux-section-head">
+            <div><span class="eyebrow">Community picks</span><h2>Request queue</h2></div>
+          </div>
+          <div class="aux-queue" id="auxQueue"></div>
+          <p class="aux-empty" id="auxEmpty">Queue is empty — choose the first song.</p>
+        </section>
+        <aside>
+          <details class="aux-spotify-queue" open>
+            <summary><span class="aux-list-icon" aria-hidden="true"><i></i><i></i><i></i></span><span>Upcoming on Spotify</span></summary>
+            <div class="aux-spotify-list" id="auxSpotifyQueue"></div>
+            <p class="aux-empty" id="auxSpotifyEmpty">Start Spotify to see its queue.</p>
+          </details>
+        </aside>
+      </div>
+    </div>
+  </main>
+  <div class="aux-toast" id="auxToast" role="status" aria-live="polite"></div>
+
+  <script src="/motion.js"></script>
+  <script src="/nav.js"></script>
+  <script src="/aux.js?v=10"></script>
+</body>
+</html>

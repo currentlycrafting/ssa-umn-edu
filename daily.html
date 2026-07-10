@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSA Daily — Somali Student Association</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') === 'dark' ? 'dark' : 'light');</script>
+</head>
+<body class="game-page">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks"><a href="/index.html">Home</a><a href="/events">Events</a><a href="/games" class="active">Games</a><a href="/aux">Want The Aux</a><a href="/gallery">Gallery</a></div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+
+  <main>
+    <div class="game-wrap daily-game-wrap">
+      <span class="eyebrow">SSA Arcade</span>
+      <h1>SSA Daily</h1>
+      <p>Guess the five-letter word in six tries. A new SSA puzzle arrives every day.</p>
+      <div class="game-status" id="dailyStatus">Loading today&apos;s puzzle…</div>
+      <div class="daily-board" id="dailyBoard" aria-label="SSA Daily board"></div>
+      <div class="daily-keys" id="dailyKeys" aria-label="On-screen keyboard"></div>
+      <div id="dailyResult" hidden class="daily-result">
+        <h2 id="dailyHeadline"></h2>
+        <form id="dailyScoreForm">
+          <input type="text" id="dailyName" maxlength="24" placeholder="Name for leaderboard" required />
+          <button class="button button-dark" type="submit">Save score</button>
+        </form>
+      </div>
+      <div class="leaderboard leaderboard-aside">
+        <h2>Daily Leaderboard</h2>
+        <table class="daily-table">
+          <thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Date</th></tr></thead>
+          <tbody id="dailyLb"><tr><td colspan="4">Loading scores…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 Somali Student Association — University of Minnesota</small></div></footer>
+  <script src="/motion.js"></script>
+  <script src="/nav.js"></script>
+  <script src="/micro.js"></script>
+  <script src="/daily.js"></script>
+</body>
+</html>

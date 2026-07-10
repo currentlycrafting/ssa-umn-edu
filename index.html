@@ -17,8 +17,9 @@
   <link rel="apple-touch-icon" href="assets/brand/ssa-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="site-pages.css" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -29,7 +30,7 @@
   </script>
 </head>
 <body>
-  <nav class="nav" aria-label="Primary navigation">
+  <nav class="nav page-nav" aria-label="Primary navigation">
     <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
     <a class="brand" href="index.html" aria-label="SSA home">
       <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
@@ -37,39 +38,25 @@
     </a>
     <div class="nav-links" id="navLinks">
       <a href="index.html" class="active">Home</a>
-      <a href="timeline.html">Timeline</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="connections.html">Game</a>
+      <a href="/events">Events</a>
+      <a href="/games">Games</a>
+      <a href="/aux">Want The Aux</a>
+      <button type="button">Options</button>
     </div>
     <div class="nav-tools">
-      <button type="button" class="nav-newsletter" aria-label="Newsletter signup">
-        <span class="nav-newsletter-badge"><span data-newsletter-count class="nav-newsletter-count">—</span></span>
-        <span class="nav-newsletter-label">Newsletter</span>
-      </button>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
       <button class="nav-admin" id="adminToggle" type="button" aria-label="Admin">
         <svg class="nav-admin-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 1 1 6 0v2"/></svg>
         <span class="nav-admin-label">Admin</span>
       </button>
-      <div class="signup-menu">
-        <button class="nav-action connect" id="signupToggle" type="button" aria-expanded="false" aria-controls="signupMenu" aria-label="Site options"><span class="nav-options-text">Options</span><span class="icon-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M9 5l3 3-3 3"/></svg></span></button>
-        <div class="signup-dropdown" id="signupMenu" aria-label="Site options">
-          <a href="#contact" data-open-newsletter id="newsletterOption">Sign up to newsletter</a>
-          <a href="#donate">Donation</a>
-        </div>
-      </div>
     </div>
   </nav>
 
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
     <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Events</span></a>
-    <a href="#stories" data-section="stories"><span class="dot" aria-hidden="true"></span><span class="side-label">Stories</span></a>
     <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">Highlights</span></a>
-    <a href="#about" data-section="about"><span class="dot" aria-hidden="true"></span><span class="side-label">About</span></a>
     <a href="#programs" data-section="programs"><span class="dot" aria-hidden="true"></span><span class="side-label">Programs</span></a>
-    <a href="#donate" data-section="donate"><span class="dot" aria-hidden="true"></span><span class="side-label">Donate</span></a>
-    <a href="#contact" data-section="contact"><span class="dot" aria-hidden="true"></span><span class="side-label">Connect</span></a>
   </nav>
 
   <main id="top">
@@ -88,8 +75,7 @@
         <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
         <div class="hero-actions">
-          <button class="button button-dark handdrawn shimmer hero-connect has-tip" type="button" data-open-connect data-tip="Sponsorship, partnerships, board interest, and more">Connect with SSA <span class="icon-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M9 5l3 3-3 3"/></svg></span></button>
-          <a class="button button-line handdrawn has-tip" href="connections.html" data-tip="Play SSA Connections">Play the Game</a>
+          <a class="button button-line handdrawn has-tip" href="/games" data-tip="SSA Game Console">Play Games</a>
           <svg class="hero-arrow" viewBox="0 0 70 50" aria-hidden="true"><path d="M6 40 C20 10 44 6 60 14 M60 14 L48 12 M60 14 L56 26" /></svg>
         </div>
         <div class="hero-meter year-montage" aria-label="SSA since 1998">
@@ -108,85 +94,72 @@
 
     <section class="section" id="events">
       <div class="section-head">
+        <span class="eyebrow">Featured</span>
+        <h2>Don&apos;t miss this one</h2>
+      </div>
+
+      <aside class="featured-event" id="featuredEvent" aria-label="Featured hiking event" data-reveal>
+        <div class="featured-event-art" aria-hidden="true">
+          <img src="/assets/events/afton-state-park.png" alt="Afton State Park shoreline in autumn" />
+        </div>
+        <div class="featured-event-body">
+          <span class="eyebrow">Featured Event</span>
+          <h3>SSA Hiking Adventure</h3>
+          <p class="featured-location">July 18 · Afton State Park</p>
+          <p class="featured-copy">Join SSA for a community hike exploring Minnesota nature. All experience levels welcome — transportation and snacks organized.</p>
+          <div class="featured-countdown" id="featuredCountdown" aria-label="Countdown">
+            <div class="fc-cell"><b data-fc="days">—</b><span>days</span></div>
+            <div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div>
+            <div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div>
+            <div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div>
+          </div>
+          <p class="event-going"><span class="event-going-num" data-event-count="Hiking Event">—</span> coming</p>
+          <button class="button button-dark handdrawn rsvp-button" type="button" data-event="Hiking Event" data-date="July 18, 2026 — Afton State Park"><span class="rsvp-btn-label">Reserve Your Spot</span></button>
+        </div>
+      </aside>
+
+      <div class="section-head" style="margin-top:8px">
         <span class="eyebrow">Calendar</span>
         <h2>Upcoming SSA moments</h2>
       </div>
 
-      <aside class="newsletter-promo" id="newsletterPromo" aria-label="Newsletter signup">
-        <div class="newsletter-promo-glow" aria-hidden="true"></div>
-        <div class="newsletter-promo-inner">
-          <div class="newsletter-promo-stat">
-            <span class="newsletter-promo-count" data-newsletter-count>—</span>
-            <span class="newsletter-promo-stat-label">students on the list</span>
+      <div class="events-promo-list">
+        <article class="event-promo">
+          <div class="event-promo-stat"><strong data-event-count="Freshman Mixer">—</strong><span>people coming</span></div>
+          <div class="event-promo-copy">
+            <span class="eyebrow handwritten">Sep 15</span>
+            <h3>Freshman Mixer</h3>
+            <p>Meet our incoming class of 2030, help them learn the campus, and find your first SSA connections.</p>
+            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Freshman Mixer">—</b> people</span></div>
           </div>
-          <div class="newsletter-promo-copy">
-            <p class="newsletter-promo-eyebrow">Don&apos;t miss Somali Night</p>
-            <h3>Get events, drops, and board news first.</h3>
-            <p>Join the SSA newsletter — one email, zero spam, all the moments that matter on campus.</p>
-            <button type="button" class="button button-dark handdrawn shimmer" data-open-newsletter>Sign up free</button>
+        </article>
+        <article class="event-promo">
+          <div class="event-promo-stat"><strong data-event-count="Fall Kickoff">—</strong><span>people coming</span></div>
+          <div class="event-promo-copy">
+            <span class="eyebrow handwritten">Sep 24</span>
+            <h3>Fall Kickoff</h3>
+            <p>Kick off SSA for the school year with food, music, and community.</p>
+            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Fall Kickoff">—</b> people</span></div>
           </div>
-        </div>
-      </aside>
-
-      <div class="event-grid">
-        <article class="event-card">
-          <span class="event-date">Sep 15</span>
-          <h3>Freshman Mixer</h3>
-          <p>Meet our incoming class of 2030, helping them learn the campus, and find your first SSA connections.</p>
-          <p class="event-going"><span class="event-going-num" data-event-count="Freshman Mixer">—</span> coming</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15"><span class="rsvp-btn-label">RSVP</span></button>
         </article>
-        <article class="event-card">
-          <span class="event-date">Sep 24</span>
-          <h3>Fall Kickoff</h3>
-          <p>Kickoff SSA for the school year with food, music, and community</p>
-          <p class="event-going"><span class="event-going-num" data-event-count="Fall Kickoff">—</span> coming</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24"><span class="rsvp-btn-label">RSVP</span></button>
+        <article class="event-promo">
+          <div class="event-promo-stat"><strong data-event-count="Family Feud">—</strong><span>people coming</span></div>
+          <div class="event-promo-copy">
+            <span class="eyebrow handwritten">Oct TBD</span>
+            <h3>Family Feud</h3>
+            <p>A community game night built for teams, laughter, and friendly competition.</p>
+            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Family Feud">—</b> people</span></div>
+          </div>
         </article>
-        <article class="event-card">
-          <span class="event-date">Oct TBD</span>
-          <h3>Family Feud</h3>
-          <p>A community game night built for teams, laughter, and friendly competition.</p>
-          <p class="event-going"><span class="event-going-num" data-event-count="Family Feud">—</span> coming</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button>
+        <article class="event-promo">
+          <div class="event-promo-stat"><strong data-event-count="Field Day">—</strong><span>people coming</span></div>
+          <div class="event-promo-copy">
+            <span class="eyebrow handwritten">Oct TBD</span>
+            <h3>Field Day</h3>
+            <p>A community day with games, bonding, and space to meet more SSA members.</p>
+            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Field Day">—</b> people</span></div>
+          </div>
         </article>
-        <article class="event-card">
-          <span class="event-date">Oct TBD</span>
-          <h3>Field Day</h3>
-          <p>A community day with games, bonding, and space to meet more SSA members.</p>
-          <p class="event-going"><span class="event-going-num" data-event-count="Field Day">—</span> coming</p>
-          <button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button>
-        </article>
-      </div>
-    </section>
-
-    <section class="section carousel-section" id="stories">
-      <div class="section-head">
-        <span class="eyebrow">Stories</span>
-        <h2>What SSA looks like in practice.</h2>
-        <p>From your first event to a seat on the board — here's how students grow with SSA.</p>
-      </div>
-      <div class="carousel" id="storyCarousel" aria-label="SSA story carousel">
-        <button class="carousel-arrow" type="button" data-carousel-prev aria-label="Previous story">‹</button>
-        <div class="carousel-track">
-          <article class="carousel-slide active">
-            <span class="eyebrow">Welcome</span>
-            <h3>From first hello to first event.</h3>
-            <p>New students can use SSA as a soft landing place: meet people, learn the campus, and find support early.</p>
-          </article>
-          <article class="carousel-slide">
-            <span class="eyebrow">Community</span>
-            <h3>Events with a reason behind them.</h3>
-            <p>Mixers, cultural nights, field days, and service projects all help students build belonging beyond classes.</p>
-          </article>
-          <article class="carousel-slide">
-            <span class="eyebrow">Leadership</span>
-            <h3>Small roles become real ownership.</h3>
-            <p>Students can move from attending, to volunteering, to committees, to board-level leadership.</p>
-          </article>
-        </div>
-        <button class="carousel-arrow" type="button" data-carousel-next aria-label="Next story">›</button>
-        <div class="carousel-dots" id="carouselDots" aria-label="Carousel progress"></div>
       </div>
     </section>
 
@@ -248,33 +221,6 @@
       </div>
     </section>
 
-    <section class="section split" id="about">
-      <div>
-        <span class="eyebrow">About</span>
-        <h2>A home for Somali students at the University of Minnesota</h2>
-      </div>
-      <div class="copy-stack">
-        <p>SSA is a student-led organization dedicated to promoting Somali culture, supporting Somali students, and building meaningful connections across campus and the broader  Twin Cities community.</p>
-        <div class="mission-list">
-          <article>
-            <span class="line-icon"></span>
-            <h3>Culture</h3>
-            <p>Language, food, history, poetry, fashion, storytelling, and cultural education.</p>
-          </article>
-          <article>
-            <span class="line-icon"></span>
-            <h3>Community</h3>
-            <p>Events and partnerships that connect students, alumni, families, and local leaders.</p>
-          </article>
-          <article>
-            <span class="line-icon"></span>
-            <h3>Leadership</h3>
-            <p>Roles in a board that promotes leadership development and opportunities for students to grow and lead</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <section class="section" id="programs">
       <div class="section-head">
         <span class="eyebrow">Programs</span>
@@ -282,7 +228,7 @@
         <p>Every SSA event falls into one of two buckets. It shapes the size, the goal, and how we plan it.</p>
       </div>
       <div class="focus-grid">
-        <article class="focus-card">
+        <article class="focus-card focus-card-clickable" data-suggest-event data-suggest-type="campus" tabindex="0" role="button" aria-label="Suggest a campus-focused event">
           <span class="eyebrow">Campus-Focused</span>
           <h3>Campus-Focused Events</h3>
           <p>Designed for broad student reach. Typically larger, more social, and attendance-driven — the goal is visibility, engagement, and campus presence.</p>
@@ -294,7 +240,7 @@
             <li>Often tied to seasonal moments or high-traffic windows</li>
           </ul>
         </article>
-        <article class="focus-card">
+        <article class="focus-card focus-card-clickable" data-suggest-event data-suggest-type="community" tabindex="0" role="button" aria-label="Suggest a community-focused event">
           <span class="eyebrow">Community-Focused</span>
           <h3>Community-Focused Events</h3>
           <p>Intentional and specific. They prioritize depth over scale — conversation, reflection, service, and genuine community value. The goal is connection, not just attendance.</p>
@@ -308,74 +254,18 @@
         </article>
       </div>
     </section>
-
-    <section class="section donate-section" id="donate">
-      <div class="section-head">
-        <span class="eyebrow">Support</span>
-        <h2>Donate to SSA.</h2>
-        <p>Every dollar funds events, culture nights, and student programming. The fastest way to give is right here.</p>
-      </div>
-      <div class="donate-hero">
-        <button class="button button-dark donate-main" id="kofiOpen" type="button">
-          <span class="kofi-heart" aria-hidden="true">♥</span> Donate on Ko-fi
-        </button>
-        <span class="donate-sub">Secure checkout — Apple Pay, card, or PayPal. Opens in a window, no clutter on the page.</span>
-      </div>
-      <p class="donate-or">or pick a quick amount</p>
-      <div class="donation-grid donation-grid-mini">
-        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$5</strong><small>Supporter</small></a>
-        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$10</strong><small>Friend</small></a>
-        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$25</strong><small>Advocate</small></a>
-        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$50</strong><small>Patron</small></a>
-        <a href="https://ko-fi.com/somalistudentassociation" target="_blank" rel="noopener noreferrer"><strong>$100</strong><small>Champion</small></a>
-      </div>
-    </section>
-
-    <section class="section contact" id="contact">
-      <div class="section-head">
-        <span class="eyebrow">Connect with SSA</span>
-        <h2>Why do you want to connect?</h2>
-      </div>
-      <div class="connect-flow connect-inline form-card" id="connectInline">
-        <div class="connect-step-reason">
-          <div class="connect-options">
-            <button type="button" class="connect-option" data-reason="sponsorship">Sponsorship</button>
-            <button type="button" class="connect-option" data-reason="collaborations">Collaborations</button>
-            <button type="button" class="connect-option" data-reason="partnerships">Partnerships</button>
-            <button type="button" class="connect-option" data-reason="board">Want to join the board</button>
-            <button type="button" class="connect-option" data-reason="ideas">Pitching ideas</button>
-          </div>
-        </div>
-        <div class="connect-step-form" hidden>
-          <button type="button" class="connect-back">← Back</button>
-          <span class="eyebrow connect-reason-label">Connect</span>
-          <h3 class="connect-form-title">Tell us more</h3>
-          <p class="connect-form-lead"></p>
-          <form class="connect-form">
-            <input type="hidden" name="reason" />
-            <input type="text" name="name" placeholder="Your name" required />
-            <input type="email" name="email" placeholder="Email" required />
-            <input type="text" name="organization" class="connect-org-field" placeholder="Organization (optional)" />
-            <textarea name="details" rows="4" placeholder="Tell us more" required></textarea>
-            <button class="button button-dark handdrawn shimmer" type="submit">Send to SSA</button>
-            <output></output>
-          </form>
-        </div>
-      </div>
-    </section>
   </main>
 
   <footer class="footer">
     <div class="footer-card">
       <a class="footer-brand" href="#top"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
       <nav aria-label="Footer">
-        <a href="#about">About Us</a>
-        <a href="#events">Events</a>
-        <a href="#programs">Programs</a>
-        <a href="timeline.html">Timeline</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="connections.html">Game</a>
-        <a href="#contact">Connect</a>
+        <a href="/events">Events</a>
+        <a href="/games">Games</a>
+        <a href="/newsletter">Newsletter</a>
+        <a href="/donate">Donate</a>
+        <a href="/aux">Want The Aux</a>
+        <a href="/board">Board</a>
       </nav>
       <div class="social-row">
         <a href="mailto:ssa@umn.edu">Email</a>
@@ -388,7 +278,7 @@
   </footer>
 
   <div class="modal-backdrop" id="rsvpModal" aria-hidden="true">
-    <div class="rsvp-modal modal-sheet" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
+    <div class="rsvp-modal modal-sheet modal-card modal-card-compact" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
       <span class="eyebrow">RSVP</span>
       <h2 id="rsvpTitle">Event</h2>
       <p id="rsvpMeta"></p>
@@ -406,13 +296,13 @@
   </div>
 
   <div class="modal-backdrop kofi-modal-backdrop" id="kofiModal" aria-hidden="true">
-    <div class="kofi-modal modal-sheet" role="dialog" aria-modal="true" aria-label="Donate to Somali Student Association">
+    <div class="kofi-modal modal-sheet modal-card modal-card-wide" role="dialog" aria-modal="true" aria-label="Donate to Somali Student Association">
       <iframe id="kofiframe" title="Donate to Somali Student Association" loading="lazy"></iframe>
     </div>
   </div>
 
   <div class="modal-backdrop newsletter-takeover" id="newsletterModal" aria-hidden="true">
-    <div class="newsletter-sheet modal-sheet" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
+    <div class="newsletter-sheet modal-sheet modal-card" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
       <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
       <svg class="doodle nl-doodle-2" viewBox="0 0 60 60" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
       <div class="newsletter-modal-count" aria-live="polite">
@@ -422,6 +312,10 @@
       <span class="eyebrow">Stay in the loop</span>
       <h2 id="nlTitle">Join the SSA newsletter</h2>
       <p id="nlLead">Drop your email for events, announcements, and Somali Night updates.</p>
+      <div class="newsletter-polaroids" aria-hidden="true">
+        <figure class="polaroid" style="--rot:-3deg"><img src="assets/gallery/gallery-1.png" alt="" /><figcaption>SSA moments</figcaption></figure>
+        <figure class="polaroid" style="--rot:3deg"><img src="assets/gallery/gallery-6.png" alt="" /><figcaption>community first</figcaption></figure>
+      </div>
       <p class="newsletter-subscribed-msg" id="newsletterSubscribedMsg" hidden>You&apos;re already on the list. Thanks for being part of SSA.</p>
       <form id="newsletterModalForm">
         <input type="email" name="email" placeholder="your@email.com" required />
@@ -432,48 +326,31 @@
     </div>
   </div>
 
-  <div class="modal-backdrop newsletter-takeover" id="connectModal" aria-hidden="true">
-    <div class="newsletter-sheet modal-sheet connect-sheet" role="dialog" aria-modal="true" aria-labelledby="connectTitle">
-      <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
-      <svg class="doodle nl-doodle-2" viewBox="0 0 60 60" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
-      <div class="connect-flow" id="connectModalFlow">
-        <div class="connect-step-reason">
-          <span class="eyebrow">Connect with SSA</span>
-          <h2 id="connectTitle">Why do you want to connect?</h2>
-          <p class="connect-lead">Pick the option that fits best. We will ask a few quick follow-up questions.</p>
-          <div class="connect-options">
-            <button type="button" class="connect-option" data-reason="sponsorship">Sponsorship</button>
-            <button type="button" class="connect-option" data-reason="collaborations">Collaborations</button>
-            <button type="button" class="connect-option" data-reason="partnerships">Partnerships</button>
-            <button type="button" class="connect-option" data-reason="board">Want to join the board</button>
-            <button type="button" class="connect-option" data-reason="ideas">Pitching ideas</button>
-          </div>
-        </div>
-        <div class="connect-step-form" hidden>
-          <button type="button" class="connect-back">← Back</button>
-          <span class="eyebrow connect-reason-label">Connect</span>
-          <h2 class="connect-form-title">Tell us more</h2>
-          <p class="connect-form-lead"></p>
-          <form class="connect-form">
-            <input type="hidden" name="reason" />
-            <input type="text" name="name" placeholder="Your name" required />
-            <input type="email" name="email" placeholder="Email" required />
-            <input type="text" name="organization" class="connect-org-field" placeholder="Organization (optional)" />
-            <textarea name="details" rows="4" placeholder="Tell us more" required></textarea>
-            <button class="button button-dark handdrawn shimmer" type="submit">Send to SSA</button>
-            <output></output>
-          </form>
-        </div>
-      </div>
+  <div class="modal-backdrop" id="suggestModal" aria-hidden="true">
+    <div class="modal-sheet modal-card" role="dialog" aria-modal="true" aria-labelledby="suggestTitle">
+      <span class="eyebrow">Programs</span>
+      <h2 id="suggestTitle">Suggest an event</h2>
+      <p id="suggestLead">Share an idea for SSA programming.</p>
+      <form id="suggestForm" class="connect-modal-form">
+        <input type="hidden" name="type" id="suggestType" value="campus" />
+        <input type="text" name="name" placeholder="Event name" required />
+        <textarea name="description" rows="3" placeholder="What would this event look like?" required></textarea>
+        <input type="text" name="audience" placeholder="Who is it for?" />
+        <input type="text" name="budget" placeholder="Estimated budget (optional)" />
+        <input type="text" name="preferredDate" placeholder="Preferred date or season" />
+        <textarea name="notes" rows="2" placeholder="Notes for the board (optional)"></textarea>
+        <button class="button button-dark handdrawn" type="submit">Submit idea</button>
+        <output></output>
+      </form>
     </div>
   </div>
 
   <div class="modal-backdrop" id="adminModal" aria-hidden="true">
-    <div class="admin-sheet modal-sheet" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+    <div class="admin-sheet modal-sheet modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
       <div id="adminLogin">
         <span class="eyebrow">Admin</span>
         <h2 id="adminTitle">SSA submissions</h2>
-        <p>Enter the admin password to view newsletter signups, RSVP interest, connect requests, game scores, and messages.</p>
+        <p>Enter the admin password to view newsletter signups, RSVPs, gallery review, game scores, and messages.</p>
         <form id="adminLoginForm" class="admin-login-form">
           <div class="password-field">
             <input type="password" id="adminPassword" placeholder="Password" autocomplete="current-password" required />
@@ -497,7 +374,9 @@
         <div class="admin-tabs">
           <button type="button" class="admin-tab active" data-tab="newsletters">Newsletter</button>
           <button type="button" class="admin-tab" data-tab="rsvp">RSVP</button>
-          <button type="button" class="admin-tab" data-tab="connect">Connect</button>
+          <button type="button" class="admin-tab" data-tab="gallery_review">Gallery review</button>
+          <button type="button" class="admin-tab" data-tab="aux">Aux queue</button>
+          <button type="button" class="admin-tab" data-tab="event_suggestions">Event ideas</button>
           <button type="button" class="admin-tab" data-tab="messages">Messages</button>
           <button type="button" class="admin-tab" data-tab="scores">Game</button>
         </div>
@@ -506,10 +385,12 @@
     </div>
   </div>
 
+  <script src="motion.js"></script>
+  <script src="nav.js"></script>
   <script src="micro.js"></script>
   <script src="checklist.js"></script>
   <script src="newsletter.js"></script>
-  <script src="index.js"></script>
+  <script src="index.js?v=4"></script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
   <script>
     if (window.kofiWidgetOverlay) {

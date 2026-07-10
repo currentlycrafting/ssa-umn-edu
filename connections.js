@@ -1,42 +1,43 @@
-// Large Somali-themed pool. Each game randomly draws 4 groups, so there are
-// thousands of possible puzzles.
+// Accessible word pool — Somali culture, SSA, Minnesota, community (no language required).
 const GROUP_POOL = [
-  { name: 'Somali Foods', words: ['Sambusa', 'Bariis', 'Suqaar', 'Hilib'] },
-  { name: 'Somali Breakfast', words: ['Canjeero', 'Malawax', 'Laxoox', 'Muqmad'] },
-  { name: 'Somali Drinks', words: ['Shaah', 'Qaxwo', 'Vimto', 'Caano'] },
-  { name: 'Somali Sweets', words: ['Halwo', 'Buskud', 'Doolsho', 'Jabaati'] },
-  { name: 'Cultural Clothing', words: ['Dirac', 'Macawiis', 'Guntiino', 'Baati'] },
-  { name: 'Wedding Things', words: ['Aroos', 'Xeedho', 'Henna', 'Shaash'] },
-  { name: 'Immediate Family', words: ['Hooyo', 'Aabo', 'Walaal', 'Ilmo'] },
-  { name: 'Extended Family', words: ['Ayeeyo', 'Awoowe', 'Adeer', 'Eedo'] },
-  { name: 'Somali Dances', words: ['Dhaanto', 'Wiilsaaqo', 'Jandheer', 'Saylici'] },
-  { name: 'More Somali Dances', words: ['Buraanbur', 'Hobeey', 'Batar', 'Shirib'] },
-  { name: 'Somali Cities', words: ['Muqdisho', 'Hargeysa', 'Kismaayo', 'Boorama'] },
-  { name: 'More Somali Cities', words: ['Baidoa', 'Garoowe', 'Berbera', 'Gaalkacyo'] },
-  { name: 'Somali Regions', words: ['Banaadir', 'Awdal', 'Bari', 'Mudug'] },
-  { name: 'Greetings', words: ['Nabad', 'Mahadsanid', 'Salaan', 'Soo dhawoow'] },
-  { name: 'Animals', words: ['Geel', 'Ari', "Lo'", 'Faras'] },
-  { name: 'Nature', words: ['Webi', 'Buur', 'Badweyn', 'Lamadegaan'] },
-  { name: 'Colors', words: ['Cas', 'Buluug', 'Cagaar', 'Caddaan'] },
-  { name: 'Numbers', words: ['Kow', 'Laba', 'Saddex', 'Afar'] },
-  { name: 'Time', words: ['Maalin', 'Habeen', 'Toddobaad', 'Bil'] },
-  { name: 'Poetry & Arts', words: ['Gabay', 'Heeso', 'Sheeko', 'Maahmaah'] },
-  { name: 'SSA Presidents', words: ['Salman', 'Dahir', 'Mowlid', 'Anisa'] },
-  { name: 'SSA Vice Presidents', words: ['Suhaila', 'Ruweyda', 'Aisha', 'Adnan'] },
-  { name: 'Body Parts', words: ['Madax', 'Gacan', 'Lug', 'Indho'] },
-  { name: 'Weather', words: ['Roob', 'Qorrax', 'Dabayl', 'Ceeryaamo'] },
-  { name: 'On Campus', words: ['Jaamacad', 'Fasal', 'Macallin', 'Arday'] },
-  { name: 'Sports', words: ['Kubad', 'Orod', 'Dabaal', 'Boodo'] },
-  { name: 'In the House', words: ['Sariir', 'Miis', 'Kursi', 'Albaab'] },
-  { name: 'At the Market', words: ['Suuq', 'Lacag', 'Dukaan', 'Iibso'] }
+  { name: 'Somali Cities', words: ['Mogadishu', 'Hargeisa', 'Kismayo', 'Baidoa'] },
+  { name: 'Twin Cities', words: ['Minneapolis', 'St. Paul', 'Cedar-Riverside', 'Dinkytown'] },
+  { name: 'Somali Foods', words: ['Canjeero', 'Sambusa', 'Suqaar', 'Bariis'] },
+  { name: 'SSA Events', words: ['Somali Night', 'Field Day', 'Fall Kickoff', 'Freshman Mixer'] },
+  { name: 'SSA Board', words: ['President', 'Treasurer', 'Secretary', 'Director'] },
+  { name: 'Campus Life', words: ['Northrop', 'Coffman', 'Rec Center', 'Wilson Library'] },
+  { name: 'Minnesota Nature', words: ['Mississippi', 'Lake Harriet', 'Afton Park', 'Minnehaha'] },
+  { name: 'Community Values', words: ['Culture', 'Service', 'Leadership', 'Unity'] },
+  { name: 'Somali Drinks', words: ['Shaah', 'Qaxwo', 'Caano', 'Vimto'] },
+  { name: 'SSA Social', words: ['Instagram', 'TikTok', 'Newsletter', 'Gallery'] },
+  { name: 'Sports & Games', words: ['Soccer', 'Connections', 'Family Feud', 'Field Day'] },
+  { name: 'Cultural Arts', words: ['Poetry', 'Dhaanto', 'Fashion', 'Storytelling'] },
+  { name: 'Historical Figures', words: ['Ayeeyo', 'Awoowe', 'Diaspora', 'Heritage'] },
+  { name: 'U of M', words: ['Gopher', 'Coffman', 'Northrop', 'East Bank'] },
+  { name: 'Event Types', words: ['Mixer', 'Kickoff', 'Workshop', 'Game Night'] },
+  { name: 'Community Spaces', words: ['Mosque', 'Community Center', 'Campus', 'Suuq'] },
+  { name: 'Seasons at SSA', words: ['Fall', 'Winter', 'Spring', 'Somali Night'] },
+  { name: 'Board Roles', words: ['Marketing', 'Events', 'Outreach', 'Cultural'] },
+  { name: 'MN Landmarks', words: ['Stone Arch', 'State Fair', 'Chain of Lakes', 'River'] },
+  { name: 'SSA Traditions', words: ['Freshman Mixer', 'Board Bonding', 'Hiking', 'Service'] },
+  { name: 'Food & Coffee', words: ['Coffee', 'Tea', 'Halwo', 'Sambusa'] },
+  { name: 'Music & Aux', words: ['Playlist', 'DJ', 'Spotify', 'Queue'] },
+  { name: 'Student Life', words: ['Study Group', 'Mentorship', 'RSVP', 'Volunteer'] },
+  { name: 'Geography', words: ['Horn of Africa', 'Minnesota', 'Twin Cities', 'Campus'] },
+  { name: 'SSA Leadership', words: ['Salman', 'Suhaila', 'Committee', 'Board'] },
+  { name: 'Culture Night', words: ['Fashion', 'Poetry', 'Music', 'Food'] },
+  { name: 'Outreach', words: ['Alumni', 'Partners', 'Sponsors', 'Community'] },
+  { name: 'Games Hub', words: ['Soo Xidh', 'SSA Daily', 'Leaderboard', 'Console'] },
+  { name: 'Hiking & Outdoors', words: ['Afton', 'Trails', 'Hiking', 'Park'] },
+  { name: 'News & Media', words: ['Newsletter', 'Recap', 'Photos', 'Stories'] }
 ];
 
 const MAX_MISTAKES = 4;
 
 const POWERUPS = {
-  category: { label: 'Category', icon: '🏷', title: 'Reveal a group name' },
-  link: { label: 'Word link', icon: '🔗', title: 'Highlight two matching words' },
-  shield: { label: 'Shield', icon: '🛡', title: 'Block your next mistake' }
+  category: { label: 'Category', icon: 'C', title: 'Reveal a group name' },
+  link: { label: 'Word link', icon: 'L', title: 'Highlight two matching words' },
+  shield: { label: 'Shield', icon: 'S', title: 'Block your next mistake' }
 };
 
 const gridEl = document.getElementById('grid');

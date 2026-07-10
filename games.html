@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSA Game Console</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body>
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/index.html">Home</a>
+      <a href="/events">Events</a>
+      <a href="/games" class="active">Games</a>
+      <a href="/aux">Want The Aux</a>
+      <button type="button">Options</button>
+    </div>
+    <div class="nav-tools">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
+    </div>
+  </nav>
+
+  <main class="page-main">
+    <header class="page-hero" data-reveal>
+      <span class="eyebrow">SSA Arcade</span>
+      <h1>Game Console</h1>
+      <p>Pick a game. Climb the leaderboard.</p>
+    </header>
+    <div class="games-grid" data-reveal-group>
+      <a class="game-tile" href="/connections">
+        <h3>Soo Xidh</h3>
+        <p>Group 16 words into four hidden categories. Somali culture, SSA, Minnesota — no language barrier required.</p>
+        <span class="game-tile-cta">Play →</span>
+      </a>
+      <a class="game-tile" href="/daily">
+        <h3>SSA Daily</h3>
+        <p>Guess the five-letter word in six tries. New puzzle every day.</p>
+        <span class="game-tile-cta">Play →</span>
+      </a>
+    </div>
+
+  </main>
+
+  <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 Somali Student Association — University of Minnesota</small></div></footer>
+
+  <script src="/motion.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>

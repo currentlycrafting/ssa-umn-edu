@@ -19,6 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="site-pages.css" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -29,7 +30,7 @@
   </script>
 </head>
 <body class="timeline-page">
-  <nav class="nav" aria-label="Primary navigation">
+  <nav class="nav page-nav" aria-label="Primary navigation">
     <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
     <a class="brand" href="index.html" aria-label="SSA home">
       <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
@@ -37,17 +38,13 @@
     </a>
     <div class="nav-links" id="navLinks">
       <a href="index.html">Home</a>
-      <a href="timeline.html" class="active">Timeline</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="connections.html">Game</a>
+      <a href="/events">Events</a>
+      <a href="/games">Games</a>
+      <a href="/aux">Want The Aux</a>
+      <button type="button">Options</button>
     </div>
     <div class="nav-tools">
-      <button type="button" class="nav-newsletter" aria-label="Newsletter signup">
-        <span class="nav-newsletter-badge"><span data-newsletter-count class="nav-newsletter-count">—</span></span>
-        <span class="nav-newsletter-label">Newsletter</span>
-      </button>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode"><span class="theme-icon" aria-hidden="true"></span></button>
-      <a class="nav-action connect" href="index.html" aria-label="Site options"><span class="nav-options-text">Options</span><span class="icon-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M9 5l3 3-3 3"/></svg></span></a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
     </div>
   </nav>
 
@@ -100,13 +97,13 @@
     <div class="footer-card">
       <a class="footer-brand" href="index.html"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
       <nav aria-label="Footer">
-        <a href="index.html#about">About Us</a>
+        <a href="index.html#demo">About Us</a>
         <a href="index.html#events">Events</a>
         <a href="index.html#programs">Programs</a>
         <a href="timeline.html">Timeline</a>
         <a href="gallery.html">Gallery</a>
         <a href="connections.html">Game</a>
-        <a href="index.html#contact">Connect</a>
+        <a href="/board">Board</a>
       </nav>
       <div class="social-row">
         <a href="mailto:ssa@umn.edu">Email</a>
@@ -118,18 +115,10 @@
     </div>
   </footer>
 
+  <script src="motion.js"></script>
+  <script src="nav.js"></script>
   <script src="micro.js"></script>
   <script src="checklist.js"></script>
   <script src="newsletter.js"></script>
-  <script>
-    var t = document.getElementById('themeToggle');
-    if (t) {
-      t.addEventListener('click', function () {
-        var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('ssaTheme', next);
-      });
-    }
-  </script>
 </body>
 </html>

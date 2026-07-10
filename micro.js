@@ -27,7 +27,6 @@
     initFormOutputWatch();
     initAnchorFlash();
     initConnectOptionRipple();
-    initMobileNav();
   });
 
   function pulse(el, className = 'ui-pulse') {
@@ -109,7 +108,7 @@
   }
 
   function initNavRipple() {
-    const rippleTargets = '.nav-links a, .button, .micro-button, .connect-option, .checklist-steps button, ' +
+    const rippleTargets = '.button, .micro-button, .connect-option, .checklist-steps button, ' +
       '.carousel-dot, .carousel-arrow, .gallery-lightbox-zone, .tile, .donation-grid-mini a, .admin-tab';
     document.querySelectorAll(rippleTargets).forEach((el) => {
       el.addEventListener('pointerdown', (event) => {
@@ -283,43 +282,6 @@
   function initConnectOptionRipple() {
     document.querySelectorAll('.connect-option').forEach((btn) => {
       btn.addEventListener('click', () => pulse(btn, 'option-pop'));
-    });
-  }
-
-  function initMobileNav() {
-    const nav = document.querySelector('.nav');
-    const toggle = document.getElementById('navMenuToggle');
-    const links = document.getElementById('navLinks');
-    if (!nav || !toggle || !links) return;
-
-    const close = () => {
-      nav.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.setAttribute('aria-label', 'Open menu');
-    };
-
-    toggle.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const open = nav.classList.toggle('is-open');
-      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    });
-
-    links.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', close);
-    });
-
-    document.addEventListener('click', (event) => {
-      if (!nav.classList.contains('is-open')) return;
-      if (!nav.contains(event.target)) close();
-    });
-
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') close();
-    });
-
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 900) close();
     });
   }
 

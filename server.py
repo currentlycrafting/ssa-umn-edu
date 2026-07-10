@@ -1,12 +1,37 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
-from db import database_ready, db, init_db, warm_pool
+
+def _load_env_file():
+    """Load .env into os.environ without overriding already-set variables.
+
+    Must run before importing modules that read env at import time.
+    """
+    env_path = Path(__file__).resolve().parent / ".env"
+    if not env_path.exists():
+        return
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and value and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_env_file()
+
+import aux  # noqa: E402
+import cms  # noqa: E402
+from db import database_ready, db, init_db, warm_pool  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Ilovesomalia393@")
@@ -112,11 +137,35 @@ def warm_leaderboard_cache():
         print(f"Leaderboard warm-up skipped: {exc}")
 
 
+# Pretty routes served as static HTML under ssaumn.com/<route>
+PAGE_ROUTES = {
+    "/events": "events.html",
+    "/games": "games.html",
+    "/daily": "daily.html",
+    "/newsletter": "newsletter-page.html",
+    "/newsletter/studio": "newsletter-studio.html",
+    "/donate": "donate.html",
+    "/aux": "aux.html",
+    "/board": "board.html",
+    "/gallery": "gallery.html",
+    "/connections": "connections.html",
+}
+
+
 class SSAHandler(SimpleHTTPRequestHandler):
     def _send_json(self, status, payload, cache_seconds=0):
         data = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        if cache_seconds > 0:
+            self.send_header("Cache-Control", f"public, max-age={cache_seconds}")
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _send_bytes(self, status, data, content_type, cache_seconds=0):
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
         if cache_seconds > 0:
             self.send_header("Cache-Control", f"public, max-age={cache_seconds}")
@@ -162,7 +211,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
             rsvps = cur.fetchall()
             cur.execute(
                 """
-                SELECT reason, name, email, organization, details, created_at
+                SELECT reason, name, email, organization, details,
+                       year, major, interests, created_at
                 FROM connect_interest
                 ORDER BY created_at DESC
                 """
@@ -177,6 +227,16 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 """
             )
             scores = cur.fetchall()
+            cur.execute(
+                """
+                SELECT id, song_name, artist, album_image, requested_by, queued_to_spotify, created_at
+                FROM aux_requests
+                WHERE played = FALSE
+                ORDER BY created_at ASC
+                LIMIT 100
+                """
+            )
+            aux_queue = cur.fetchall()
 
         def iso(value):
             return value.isoformat() if hasattr(value, "isoformat") else str(value)
@@ -209,9 +269,26 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     "email": r["email"],
                     "organization": r["organization"] or "",
                     "details": r["details"],
+                    "year": r.get("year") or "",
+                    "major": r.get("major") or "",
+                    "interests": r.get("interests") or "",
                     "created_at": iso(r["created_at"]),
                 }
                 for r in connects
+            ],
+            "gallery_review": cms.list_gallery_items(include_pending=True),
+            "event_suggestions": cms.list_event_suggestions(),
+            "aux": [
+                {
+                    "id": r["id"],
+                    "songName": r["song_name"],
+                    "artist": r["artist"],
+                    "albumImage": r["album_image"] or "",
+                    "requestedBy": r["requested_by"],
+                    "queued": bool(r["queued_to_spotify"]),
+                    "created_at": iso(r["created_at"]),
+                }
+                for r in aux_queue
             ],
             "scores": [
                 {
@@ -225,8 +302,105 @@ class SSAHandler(SimpleHTTPRequestHandler):
             ],
         }
 
+    def _send_file(self, filename):
+        target = ROOT / filename
+        if not target.exists():
+            self.send_error(404)
+            return
+        data = target.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _redirect(self, url):
+        self.send_response(302)
+        self.send_header("Location", url)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
     def do_GET(self):
-        path = self.path.split("?")[0]
+        parsed = urlparse(self.path)
+        path = parsed.path.rstrip("/") or "/"
+        qs = parse_qs(parsed.query)
+
+        if path == "/stories":
+            self._redirect("/gallery")
+            return
+
+        if path in PAGE_ROUTES:
+            self._send_file(PAGE_ROUTES[path])
+            return
+
+        # ---- Want The Aux API ----
+        if path == "/api/aux/state":
+            since_raw = (qs.get("since", [""])[0]).strip()
+            since = int(since_raw) if since_raw.isdigit() else None
+            guest_id = (qs.get("guest", [""])[0]).strip()[:80]
+            try:
+                status, payload = aux.get_state(since, guest_id)
+            except Exception as exc:
+                status, payload = 503, {"ok": False, "error": str(exc)}
+            self._send_json(status, payload)
+            return
+        if path == "/api/aux/search":
+            try:
+                status, payload = aux.search((qs.get("q", [""])[0]).strip())
+            except Exception as exc:
+                status, payload = 503, {"ok": False, "error": str(exc)}
+            self._send_json(status, payload)
+            return
+        if path == "/api/aux/spotify/login":
+            url, err = aux.spotify_login_redirect()
+            if err:
+                self._send_json(err[0], err[1])
+            else:
+                self._redirect(url)
+            return
+        if path == "/api/rz/spotify/callback":  # registered redirect URI path
+            code = (qs.get("code", [""])[0]).strip()
+            state = (qs.get("state", [""])[0]).strip()
+            if not code:
+                self._redirect("/aux?spotify=denied")
+                return
+            url, err = aux.spotify_callback(code, state)
+            if err:
+                self._send_json(err[0], err[1])
+            else:
+                self._redirect(url)
+            return
+
+        # ---- newsletter CMS ----
+        if path == "/api/newsletters":
+            status, payload = cms.list_newsletters(include_drafts=False)
+            self._send_json(status, payload, cache_seconds=15)
+            return
+
+        if path == "/api/gallery":
+            self._send_json(200, {"ok": True, "items": cms.list_gallery_items()})
+            return
+        m = re.fullmatch(r"/api/gallery/(\d+)/image", path)
+        if m:
+            image = cms.get_gallery_image(int(m.group(1)))
+            if not image:
+                self.send_error(404)
+            else:
+                self._send_bytes(200, image[0], image[1], cache_seconds=86400)
+            return
+        m = re.fullmatch(r"/api/newsletters/(\d+)", path)
+        if m:
+            status, payload = cms.get_newsletter(int(m.group(1)))
+            self._send_json(status, payload)
+            return
+
+        # ---- arcade ----
+        m = re.fullmatch(r"/api/arcade/([a-z]+)", path)
+        if m:
+            status, payload = cms.arcade_leaderboard(m.group(1))
+            self._send_json(status, payload, cache_seconds=15)
+            return
+
         if path == "/api/health":
             try:
                 warm_pool()
@@ -281,6 +455,100 @@ class SSAHandler(SimpleHTTPRequestHandler):
             return
 
         now = utcnow()
+        post_path = self.path.split("?")[0].rstrip("/")
+
+        # ---- Want The Aux ----
+        try:
+            if post_path == "/api/admin/aux/clear":
+                if str(payload.get("password", "")) != ADMIN_PASSWORD:
+                    self._send_json(401, {"error": "Invalid password."})
+                    return
+                status, resp = aux.clear_requests()
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/admin/aux/(\d+)/play", post_path)
+            if m:
+                if str(payload.get("password", "")) != ADMIN_PASSWORD:
+                    self._send_json(401, {"error": "Invalid password."})
+                    return
+                status, resp = aux.admin_play_now(int(m.group(1)))
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/aux/request":
+                status, resp = aux.add_request(payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/aux/request/(\d+)/queue", post_path)
+            if m:
+                status, resp = aux.queue_on_spotify(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/aux/request/(\d+)/remove-own", post_path)
+            if m:
+                status, resp = aux.remove_own_request(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/aux/request/(\d+)/remove", post_path)
+            if m:
+                status, resp = aux.remove_request(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/aux/playback":
+                status, resp = aux.playback(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/aux/title":
+                status, resp = aux.set_title(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/aux/verify":
+                status, resp = aux.verify_dj(payload)
+                self._send_json(status, resp)
+                return
+
+            # ---- newsletter CMS ----
+            if post_path == "/api/newsletters":
+                status, resp = cms.save_newsletter(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/newsletters/list-all":
+                if not cms.is_admin(payload):
+                    self._send_json(401, {"error": "Invalid password."})
+                    return
+                status, resp = cms.list_newsletters(include_drafts=True)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/newsletters/(\d+)/delete", post_path)
+            if m:
+                status, resp = cms.delete_newsletter(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/uploads":
+                status, resp = cms.upload_image(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/gallery":
+                status, resp = cms.submit_gallery_item(payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/gallery/(\d+)/moderate", post_path)
+            if m:
+                status, resp = cms.moderate_gallery_item(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+
+            # ---- event suggestions + arcade ----
+            if post_path == "/api/event-suggestions":
+                status, resp = cms.add_event_suggestion(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/arcade":
+                status, resp = cms.arcade_submit(payload)
+                self._send_json(status, resp)
+                return
+        except Exception as exc:
+            self._send_json(503, {"ok": False, "error": str(exc)})
+            return
 
         if self.path == "/api/newsletter":
             email = str(payload.get("email", "")).strip().lower()
@@ -393,26 +661,32 @@ class SSAHandler(SimpleHTTPRequestHandler):
             return
 
         if self.path == "/api/connect":
-            reason = str(payload.get("reason", "")).strip().lower()
-            name = str(payload.get("name", "")).strip()
-            email = str(payload.get("email", "")).strip().lower()
-            organization = str(payload.get("organization", "")).strip()
-            details = str(payload.get("details", "")).strip()
-            allowed = {"sponsorship", "collaborations", "partnerships", "board", "ideas"}
-            if reason not in allowed:
-                self._send_json(400, {"error": "A valid connection reason is required."})
+            name = str(payload.get("name", "")).strip()[:80]
+            email = str(payload.get("email", "")).strip().lower()[:160]
+            year = str(payload.get("year", "")).strip()[:40]
+            major = str(payload.get("major", "")).strip()[:120]
+            message = str(payload.get("message", "")).strip()[:1200]
+            raw_interests = payload.get("interests") or []
+            allowed_interests = {
+                "Events", "Volunteering", "Professional Development",
+                "Culture", "Sports", "Media", "Leadership",
+            }
+            interests = [i for i in raw_interests if isinstance(i, str) and i in allowed_interests][:7]
+            if not name or "@" not in email:
+                self._send_json(400, {"error": "Name and a valid email are required."})
                 return
-            if not name or "@" not in email or not details:
-                self._send_json(400, {"error": "Name, valid email, and details are required."})
+            if not interests:
+                self._send_json(400, {"error": "Pick at least one interest area."})
                 return
             try:
                 with db() as cur:
                     cur.execute(
                         """
-                        INSERT INTO connect_interest (reason, name, email, organization, details, created_at)
-                        VALUES (%s, %s, %s, %s, %s, %s)
+                        INSERT INTO connect_interest
+                            (reason, name, email, organization, details, year, major, interests, created_at)
+                        VALUES ('connect', %s, %s, '', %s, %s, %s, %s, %s)
                         """,
-                        (reason, name, email, organization, details, now),
+                        (name, email, message or "—", year, major, ", ".join(interests), now),
                     )
                 self._send_json(200, {"ok": True})
             except Exception as exc:
@@ -437,6 +711,8 @@ if __name__ == "__main__":
     if not database_ready():
         raise SystemExit("DATABASE_URL is required. Add a PostgreSQL database and set DATABASE_URL.")
     init_db()
+    aux.init_tables()
+    cms.init_tables()
     warm_pool()
     warm_leaderboard_cache()
     server = ThreadingHTTPServer((HOST, PORT), SSAHandler)

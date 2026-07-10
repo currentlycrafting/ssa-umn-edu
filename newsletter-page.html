@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Newsletter — SSA</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body class="newsletter-page-shell">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/index.html">Home</a><a href="/events">Events</a><a href="/games">Games</a><a href="/aux">Want The Aux</a>
+      <button type="button">Options</button>
+    </div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+  <main class="page-main">
+    <header class="page-hero" data-reveal>
+      <span class="eyebrow">The SSA Press</span>
+      <h1>Community, in print.</h1>
+      <p>Read the latest edition like an article, then browse every issue from the archive.</p>
+    </header>
+    <section class="newsletter-feature" data-reveal>
+      <div class="newsletter-feature-label"><span class="eyebrow">Latest edition</span><span>Featured</span></div>
+      <article id="nlReader" class="nl-article"><p class="aux-empty">Loading the latest edition…</p></article>
+    </section>
+    <section class="newsletter-subscribe-card" data-reveal>
+      <div><span class="eyebrow">Stay in the loop</span><h2>Get the next edition.</h2><p>Events, announcements, and board news — one email, zero spam.</p></div>
+      <form class="connect-modal-form" id="nlSubscribe">
+        <input type="email" name="email" placeholder="your@email.com" required />
+        <button class="button button-dark handdrawn" type="submit">Subscribe</button>
+        <output></output>
+        <p><b data-newsletter-count>—</b> students on the list</p>
+      </form>
+    </section>
+    <section class="newsletter-editions" data-reveal>
+      <div class="newsletter-editions-head"><div><span class="eyebrow">Archive</span><h2>Past editions</h2></div><a class="button button-line newsletter-studio-link" href="/newsletter/studio">Newsletter Studio</a></div>
+      <div class="nl-archive" id="nlArchive"><p class="aux-empty">Loading editions…</p></div>
+    </section>
+  </main>
+  <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
+  <script src="/newsletter.js"></script>
+  <script src="/motion.js"></script><script src="/nav.js"></script>
+  <script src="/newsletter-page.js"></script>
+</body>
+</html>

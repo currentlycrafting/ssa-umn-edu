@@ -28,7 +28,7 @@
     <div class="checklist-progress"><span id="checklistProgress"></span></div>
     <div class="checklist-pop" id="checklistPop" role="status"></div>
     <div class="checklist-steps" id="checklistSteps">
-      <button type="button" data-step="about" data-href="index.html#about" data-note="SSA is the cultural and community home base.">Learn about SSA</button>
+      <button type="button" data-step="about" data-href="index.html#demo" data-note="SSA is the cultural and community home base.">Learn about SSA</button>
       <button type="button" data-step="events" data-href="index.html#events" data-note="Events are the fastest way to meet people.">Explore events</button>
       <button type="button" data-step="programs" data-href="index.html#programs" data-note="Programs show how SSA supports students year-round.">Discover programs</button>
       <button type="button" data-step="gallery" data-href="gallery.html" data-note="Scroll to the bottom of the gallery to complete this step.">Visit the gallery</button>
@@ -252,7 +252,7 @@
     if (typeof window.openConnectModal === 'function') {
       window.openConnectModal();
     } else {
-      window.location.href = 'index.html#contact';
+      window.location.href = '/board';
     }
   });
 

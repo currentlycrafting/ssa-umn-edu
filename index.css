@@ -2053,7 +2053,12 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
     border: 1px solid var(--line);
     background: var(--glass-strong);
   }
-  .nav.is-open .nav-links { display: flex; }
+  .nav.is-open .nav-links {
+    display: flex;
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
   .nav-links a {
     text-align: left;
     padding: 14px 16px;
