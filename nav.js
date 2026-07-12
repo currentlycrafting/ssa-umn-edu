@@ -17,25 +17,48 @@
   // Normalize the copied page navigation into one compact shared structure.
   const nav = document.querySelector('.nav');
   const links = document.getElementById('navLinks');
+  const path = window.location.pathname.replace(/\/$/, '') || '/index.html';
+  const isStudio = path === '/newsletter/studio' || path.endsWith('/newsletter-studio.html');
   if (nav && links) {
-    links.innerHTML = `
-      <a href="/index.html">Home</a>
-      <a href="/events">Events</a>
-      <a href="/newsletter">Newsletter</a>
-      <a href="/aux">Want The Aux</a>
-      <a href="/gallery">Gallery</a>
-      <div class="nav-options">
-        <button class="nav-options-toggle" type="button" aria-label="Options" aria-expanded="false" aria-controls="navOptionsMenu">
-          <span class="nav-options-icon" aria-hidden="true"></span>
-        </button>
-        <div class="nav-options-menu" id="navOptionsMenu">
-          <a href="/games">Arcade</a>
-          <a href="/donate">Donate</a>
-          <a href="/board">Board</a>
-        </div>
-      </div>`;
+    if (isStudio) {
+      links.innerHTML = `<a class="nav-back" href="/newsletter">← Back to newsletter</a>`;
+    } else {
+      links.innerHTML = `
+        <a href="/index.html">Home</a>
+        <a href="/events">Events</a>
+        <a href="/newsletter">Newsletter</a>
+        <a href="/aux">Want The Aux</a>
+        <a href="/gallery">Gallery</a>
+        <div class="nav-options">
+          <button class="nav-options-toggle" type="button" aria-label="Options" aria-expanded="false" aria-controls="navOptionsMenu">
+            <span class="nav-options-icon" aria-hidden="true"></span>
+          </button>
+          <div class="nav-options-menu" id="navOptionsMenu">
+            <a href="/games">Arcade</a>
+            <a href="/donate">Donate</a>
+            <a href="/board">Board</a>
+          </div>
+        </div>`;
+    }
     nav.querySelectorAll('.nav-newsletter, .signup-menu, .nav-action.connect').forEach((el) => el.remove());
     nav.querySelectorAll('.theme-label').forEach((el) => el.remove());
+
+    let tools = nav.querySelector('.nav-tools');
+    if (!tools) {
+      tools = document.createElement('div');
+      tools.className = 'nav-tools';
+      nav.appendChild(tools);
+    }
+    if (!tools.querySelector('.theme-toggle')) {
+      tools.insertAdjacentHTML('afterbegin', '<button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>');
+    }
+    if (!tools.querySelector('.nav-admin')) {
+      tools.insertAdjacentHTML('beforeend', `
+        <a class="nav-admin" href="/admin" aria-label="Admin">
+          <svg class="nav-admin-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 1 1 6 0v2"/></svg>
+          <span class="nav-admin-label">Admin</span>
+        </a>`);
+    }
   }
 
   const themeToggle = document.getElementById('themeToggle');
@@ -97,7 +120,6 @@
   });
 
   // Mark active nav link
-  const path = window.location.pathname.replace(/\/$/, '') || '/index.html';
   document.querySelectorAll('.nav-links a').forEach((a) => {
     const href = a.getAttribute('href');
     if (!href || href.startsWith('#')) return;

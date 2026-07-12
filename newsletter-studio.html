@@ -11,10 +11,14 @@
   <script src="/api.js"></script>
   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
 </head>
-<body class="newsletter-page-shell">
+<body class="newsletter-page-shell studio-page">
   <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
     <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
-    <div class="nav-links" id="navLinks"><a href="/newsletter">← Back to newsletter</a></div>
+    <div class="nav-links" id="navLinks"><a class="nav-back" href="/newsletter">← Back to newsletter</a></div>
+    <div class="nav-tools">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
+    </div>
   </nav>
   <main class="page-main studio-main">
     <header class="page-hero"><h1>Newsletter Studio</h1><p>Fill in the newsletter exactly as readers will see it.</p></header>
@@ -66,7 +70,8 @@
     </div>
     <button class="modal-exit" id="studioPasswordClose" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
-  <script src="/nav.js"></script>
+  <script src="/nav.js?v=3"></script>
+  <script src="/whats-new.js?v=3"></script>
   <script src="/newsletter-studio.js?v=6"></script>
 </body>
 </html>

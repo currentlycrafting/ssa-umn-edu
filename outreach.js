@@ -36,6 +36,7 @@
   const formTitle = modal.querySelector('#outreachFormTitle');
   const lead = modal.querySelector('#outreachLead');
   let kind = '';
+  let eventType = 'community';
 
   const eventCopy = {
     campus: ['Suggest a campus event', 'Large, social ideas that grow SSA presence and student engagement.'],
@@ -62,19 +63,15 @@
   }
 
   function eventFields(type) {
-    const selected = type === 'campus' ? 'campus' : 'community';
-    const copy = eventCopy[selected];
+    eventType = type === 'campus' ? 'campus' : 'community';
+    const copy = eventCopy[eventType];
     eyebrow.textContent = 'Programs';
     formTitle.textContent = copy[0];
     lead.textContent = copy[1];
     return `
-      <label>Event style<select name="type"><option value="community" ${selected === 'community' ? 'selected' : ''}>Community-focused</option><option value="campus" ${selected === 'campus' ? 'selected' : ''}>Campus-focused</option></select></label>
       <input type="text" name="name" placeholder="Event name" required />
-      <textarea name="description" rows="3" placeholder="What would this event look like?" required></textarea>
-      <input type="text" name="audience" placeholder="Who is it for?" />
-      <input type="text" name="budget" placeholder="Estimated budget (optional)" />
-      <input type="text" name="preferredDate" placeholder="Preferred date or season" />
-      <textarea name="notes" rows="2" placeholder="Notes for the board (optional)"></textarea>
+      <textarea name="description" rows="4" placeholder="What would this event look like?" required></textarea>
+      <input type="text" name="preferredDate" placeholder="Preferred semester" required />
       <button class="button button-dark" type="submit">Submit event idea</button><output></output>`;
   }
 
@@ -84,11 +81,6 @@
     formView.hidden = false;
     if (kind === 'event') {
       form.innerHTML = eventFields(subtype || 'community');
-      form.type.addEventListener('change', () => {
-        const copy = eventCopy[form.type.value];
-        formTitle.textContent = copy[0];
-        lead.textContent = copy[1];
-      });
     } else if (kind === 'community') {
       eyebrow.textContent = 'Community';
       formTitle.textContent = 'Collaborate with SSA';
@@ -96,8 +88,6 @@
       form.innerHTML = `
         <input type="text" name="name" placeholder="Your name" required />
         <input type="email" name="email" placeholder="Email" required />
-        <input type="text" name="organization" placeholder="Organization (optional)" />
-        <select name="reason"><option value="collaborations">Collaboration</option><option value="partnerships">Partnership</option><option value="sponsorship">Sponsorship</option><option value="ideas">Community idea</option></select>
         <textarea name="details" rows="5" placeholder="How would you like to work together?" required></textarea>
         <button class="button button-dark" type="submit">Send collaboration</button><output></output>`;
     } else {
@@ -111,7 +101,7 @@
         <button class="button button-dark" type="submit">Send message</button><output></output>`;
     }
     open();
-    window.setTimeout(() => form.querySelector('input, select, textarea')?.focus(), 60);
+    window.setTimeout(() => form.querySelector('input, textarea')?.focus(), 60);
   }
 
   function value(name) {
@@ -127,14 +117,17 @@
     try {
       if (kind === 'event') {
         await api('/api/event-suggestions', { method: 'POST', body: {
-          type: value('type'), name: value('name'), description: value('description'),
-          audience: value('audience'), budget: value('budget'),
-          preferredDate: value('preferredDate'), notes: value('notes')
+          type: eventType,
+          name: value('name'),
+          description: value('description'),
+          preferredDate: value('preferredDate')
         } });
       } else if (kind === 'community') {
         await api('/api/connect', { method: 'POST', body: {
-          reason: value('reason'), name: value('name'), email: value('email'),
-          organization: value('organization'), details: value('details')
+          reason: 'collaborations',
+          name: value('name'),
+          email: value('email'),
+          details: value('details')
         } });
       } else {
         await api('/api/messages', { method: 'POST', body: {

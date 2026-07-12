@@ -78,11 +78,9 @@
     const featured = events.find((event) => event.featured);
     const regular = events.filter((event) => !event.featured);
     const homeFeatured = document.getElementById('featuredEvent');
-    const homeList = document.getElementById('homeEventsList');
     const eventsFeatured = document.getElementById('eventsFeatured');
     const eventsGrid = document.getElementById('eventsGrid');
     if (featured && homeFeatured) homeFeatured.innerHTML = featuredMarkup(featured, true);
-    if (homeList) homeList.innerHTML = regular.map(homeCard).join('');
     if (featured && eventsFeatured) eventsFeatured.innerHTML = featuredMarkup(featured, false);
     if (eventsGrid) eventsGrid.innerHTML = regular.map(eventCard).join('');
     startCountdown();
