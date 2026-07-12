@@ -87,6 +87,7 @@
       </div>
       <label>Description<textarea name="description" rows="4" required>${esc(event.description || '')}</textarea></label>
       <fieldset class="admin-feature-choice"><legend>Where should this event appear?</legend><div><label><input type="radio" name="featured" value="no" ${event.featured ? '' : 'checked'} /><span>Regular event</span></label><label><input type="radio" name="featured" value="yes" ${event.featured ? 'checked' : ''} /><span>Featured event</span></label></div><small>Choosing Featured replaces the current featured event.</small></fieldset>
+      <fieldset class="admin-feature-choice"><legend>How should guests respond?</legend><div><label><input type="radio" name="attendanceMode" value="rsvp" ${event.attendanceMode === 'quick' ? '' : 'checked'} /><span>Full RSVP form</span></label><label><input type="radio" name="attendanceMode" value="quick" ${event.attendanceMode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label></div><small>Quick mode asks only “Are you coming?”</small></fieldset>
       <div class="admin-event-preview" id="adminEventPreview" data-image="${esc(previewImage)}"></div>
       <div class="admin-editor-actions"><button class="button button-dark" type="submit">${event.id ? 'Save changes' : 'Publish event'}</button><output></output></div>
     </form>`;
@@ -124,13 +125,14 @@
     function updatePreview() {
       if (!preview) return;
       const featured = form.featured.value === 'yes';
+      const responseLabel = form.attendanceMode.value === 'quick' ? 'Are you coming? · Yes / No' : 'Full RSVP form';
       const eventTitle = form.title.value.trim() || 'Event title';
       const date = form.dateLabel.value.trim() || 'Date and location';
       const time = readableTime(form.startTime.value);
       const description = form.description.value.trim() || 'Your event description will appear here.';
       preview.innerHTML = featured
-        ? `<span class="admin-preview-label">Featured preview</span><article class="featured-event"><div class="featured-event-art"><img src="${esc(previewImage)}" alt="" /></div><div class="featured-event-body"><span class="eyebrow">Featured Event</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(date)}${time ? ` · ${esc(time)}` : ''}</p><p class="featured-copy">${esc(description)}</p><button class="button button-dark" type="button">Reserve Your Spot</button></div></article>`
-        : `<span class="admin-preview-label">Regular event preview</span><article class="event-card"><span class="event-date">${esc(date)}${time ? ` · ${esc(time)}` : ''}</span><h3>${esc(eventTitle)}</h3><p>${esc(description)}</p><button class="micro-button" type="button">RSVP</button></article>`;
+        ? `<span class="admin-preview-label">Featured preview · ${esc(responseLabel)}</span><article class="featured-event"><div class="featured-event-art"><img src="${esc(previewImage)}" alt="" /></div><div class="featured-event-body"><span class="eyebrow">Featured Event</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(date)}${time ? ` · ${esc(time)}` : ''}</p><p class="featured-copy">${esc(description)}</p><button class="button button-dark" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</button></div></article>`
+        : `<span class="admin-preview-label">Regular event preview · ${esc(responseLabel)}</span><article class="event-card"><span class="event-date">${esc(date)}${time ? ` · ${esc(time)}` : ''}</span><h3>${esc(eventTitle)}</h3><p>${esc(description)}</p><button class="micro-button" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'RSVP'}</button></article>`;
     }
     form?.querySelectorAll('input, textarea').forEach((field) => {
       if (field.type !== 'file') field.addEventListener('input', updatePreview);
@@ -167,6 +169,7 @@
           description: form.description.value.trim(),
           imageUrl,
           featured: form.featured.value === 'yes',
+          attendanceMode: form.attendanceMode.value,
           published: true
         });
         await loadAll();

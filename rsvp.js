@@ -2,11 +2,12 @@
   const api = window.ssaFetch?.json;
   const modal = document.getElementById('rsvpModal');
   const form = document.getElementById('rsvpForm');
+  const quickForm = document.getElementById('quickRsvpForm');
   const title = document.getElementById('rsvpTitle');
   const meta = document.getElementById('rsvpMeta');
   const modalCount = document.getElementById('rsvpModalCount');
   const result = document.getElementById('rsvpResult');
-  if (!api || !modal || !form || !result) return;
+  if (!api || !modal || !form || !quickForm || !result) return;
   const eyebrow = modal.querySelector('.rsvp-modal > .eyebrow');
 
   const counts = {};
@@ -33,6 +34,15 @@
     }
   }
 
+  function guestToken() {
+    let token = localStorage.getItem('ssaRsvpGuestId') || '';
+    if (token.length < 16) {
+      token = window.crypto?.randomUUID?.() || `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem('ssaRsvpGuestId', token);
+    }
+    return token;
+  }
+
   function updateButtons() {
     const saved = rsvpedEvents();
     document.querySelectorAll('.rsvp-button').forEach((button) => {
@@ -46,7 +56,9 @@
       if (!button.dataset.defaultLabel) button.dataset.defaultLabel = label.textContent;
       const didRsvp = saved.includes(button.dataset.event);
       button.dataset.rsvped = didRsvp ? 'true' : 'false';
-      label.textContent = didRsvp ? "See who RSVP'ed" : button.dataset.defaultLabel;
+      label.textContent = didRsvp
+        ? (button.dataset.attendanceMode === 'quick' ? "You're coming" : "See who RSVP'ed")
+        : button.dataset.defaultLabel;
       button.classList.toggle('going', didRsvp);
     });
   }
@@ -90,16 +102,19 @@
   function renderAttendees(data) {
     const attendees = data?.attendees || [];
     const count = Number(data?.count) || 0;
+    const quick = data?.mode === 'quick';
     const names = attendees.length
       ? attendees.map((attendee) =>
           `<li class="rsvp-attendee"><span class="rsvp-name">${escapeHtml(attendee.name || attendee)}</span></li>`
         ).join('')
       : '<li class="rsvp-attendee rsvp-attendee-empty">No names yet — you might be the first.</li>';
-    result.innerHTML =
-      '<h3 class="rsvp-whos-coming">Who&apos;s coming</h3>' +
-      `<p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} total</p>` +
-      `<ul class="rsvp-list">${names}</ul>`;
+    result.innerHTML = quick
+      ? `<h3 class="rsvp-whos-coming">You&apos;re coming!</h3><p class="rsvp-count">${count} ${count === 1 ? 'person is' : 'people are'} coming</p>`
+      : '<h3 class="rsvp-whos-coming">Who&apos;s coming</h3>' +
+        `<p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} total</p>` +
+        `<ul class="rsvp-list">${names}</ul>`;
     form.hidden = true;
+    quickForm.hidden = true;
     eyebrow.hidden = true;
     title.hidden = true;
     meta.hidden = true;
@@ -111,6 +126,7 @@
     result.hidden = false;
     result.innerHTML = '<p>Loading who&apos;s coming…</p>';
     form.hidden = true;
+    quickForm.hidden = true;
     eyebrow.hidden = true;
     title.hidden = true;
     meta.hidden = true;
@@ -128,10 +144,14 @@
   function openFor(button) {
     const eventName = button.dataset.event || 'SSA Event';
     const eventDate = button.dataset.date || 'Date TBD';
+    const attendanceMode = button.dataset.attendanceMode || 'rsvp';
     form.reset();
+    quickForm.reset();
     syncEligibility();
     form.event.value = eventName;
     form.date.value = eventDate;
+    quickForm.event.value = eventName;
+    quickForm.date.value = eventDate;
     form.querySelector('output').textContent = '';
     title.textContent = eventName;
     meta.textContent = eventDate;
@@ -144,7 +164,18 @@
     const count = counts[eventName] || 0;
     modalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
     form.hidden = false;
+    quickForm.hidden = true;
     openModal();
+    if (attendanceMode === 'quick') {
+      form.hidden = true;
+      quickForm.hidden = false;
+      eyebrow.textContent = 'Quick response';
+      if (button.dataset.rsvped === 'true' || rsvpedEvents().includes(eventName)) {
+        showAttendees(eventName);
+      }
+      return;
+    }
+    eyebrow.textContent = 'RSVP';
     if (button.dataset.rsvped === 'true' || rsvpedEvents().includes(eventName)) {
       showAttendees(eventName);
     } else {
@@ -193,6 +224,38 @@
     } finally {
       submit.disabled = false;
     }
+  });
+
+  quickForm.querySelectorAll('[data-quick-coming]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const coming = button.dataset.quickComing === 'yes';
+      if (!coming) {
+        closeModal();
+        return;
+      }
+      quickForm.querySelectorAll('button').forEach((item) => { item.disabled = true; });
+      try {
+        const eventName = quickForm.event.value;
+        const data = await api('/api/rsvp', {
+          method: 'POST',
+          body: {
+            event: eventName,
+            date: quickForm.date.value,
+            coming: true,
+            guestToken: guestToken()
+          }
+        });
+        saveRsvp(eventName);
+        setCount(eventName, data.count || 0);
+        updateButtons();
+        window.markChecklistStep?.('events', 'Event response saved. Events step complete.');
+        renderAttendees(data);
+      } catch (error) {
+        quickForm.querySelector('output').textContent = error.message || 'Could not save your response.';
+      } finally {
+        quickForm.querySelectorAll('button').forEach((item) => { item.disabled = false; });
+      }
+    });
   });
 
   document.addEventListener('click', (event) => {

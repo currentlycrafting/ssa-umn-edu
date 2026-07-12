@@ -463,6 +463,20 @@ const newsletterSkip = document.getElementById('newsletterSkip');
 const newsletterSubscribedMsg = document.getElementById('newsletterSubscribedMsg');
 const nlLead = document.getElementById('nlLead');
 
+async function loadNewsletterPolaroids() {
+  const host = document.getElementById('newsletterPolaroids');
+  if (!host) return;
+  try {
+    const data = await getJson('/api/gallery');
+    host.innerHTML = (data.items || []).slice(0, 2).map((item, index) =>
+      `<figure class="polaroid visible" style="--rot:${index ? '3deg' : '-3deg'}"><img src="${escapeHtml(item.src)}" alt="" /><figcaption>${escapeHtml(item.caption || 'SSA memory')}</figcaption></figure>`
+    ).join('');
+  } catch (_) {
+    host.replaceChildren();
+  }
+}
+loadNewsletterPolaroids();
+
 function newsletterSubscribed() {
   return localStorage.getItem('ssaNewsletterSubscribed') === '1';
 }

@@ -61,13 +61,17 @@
 
   document.querySelectorAll('[data-polaroid]').forEach((slot) => {
     const index = Number(slot.dataset.polaroid);
-    const input = slot.querySelector('input');
+    const input = slot.querySelector('[data-polaroid-input]');
+    const captionInput = slot.querySelector('[data-polaroid-caption]');
     const setFile = async (file) => {
       if (!file) return;
-      polaroids[index] = { file, data: await readFile(file), caption: `Newsletter photo ${index + 1}` };
+      polaroids[index] = { file, data: await readFile(file), caption: captionInput.value.trim() };
       slot.querySelector('img').src = polaroids[index].data;
       slot.classList.add('filled');
     };
+    captionInput.addEventListener('input', () => {
+      polaroids[index].caption = captionInput.value;
+    });
     input.addEventListener('change', () => setFile(input.files[0]));
     slot.addEventListener('dragover', (event) => { event.preventDefault(); slot.classList.add('dragging'); });
     slot.addEventListener('dragleave', () => slot.classList.remove('dragging'));
@@ -84,6 +88,11 @@
     if (polaroids.some((polaroid) => !polaroid.file)) {
       studioOut.textContent = 'Add both polaroid photos before saving.';
       document.querySelector('[data-polaroid]:not(.filled)')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (polaroids.some((polaroid) => !polaroid.caption.trim())) {
+      studioOut.textContent = 'Write a caption for both newsletter photos.';
+      document.querySelector('[data-polaroid-caption]:invalid')?.focus();
       return;
     }
     const requiredEmpty = blocks.some((block) => block.required && !String(block.text || '').trim());

@@ -199,6 +199,7 @@ def _event_json(row):
         "startTime": row.get("start_time") or "",
         "startsAt": _iso(row["starts_at"]) if row["starts_at"] else "",
         "imageUrl": row["image_url"] or "",
+        "attendanceMode": row.get("attendance_mode") or "rsvp",
         "featured": bool(row["featured"]),
         "sortOrder": int(row["sort_order"]),
         "published": bool(row["published"]),
@@ -231,6 +232,9 @@ def save_event(payload):
     start_time = str(payload.get("startTime", "")).strip()[:20]
     image_url = str(payload.get("imageUrl", "")).strip()[:500]
     featured = bool(payload.get("featured"))
+    attendance_mode = str(payload.get("attendanceMode", "rsvp")).strip().lower()
+    if attendance_mode not in ("rsvp", "quick"):
+        return 400, {"error": "Choose RSVP form or quick Yes/No."}
     published = payload.get("published") is not False
     try:
         sort_order = int(payload.get("sortOrder", 0))
@@ -263,13 +267,13 @@ def save_event(payload):
                 """
                 UPDATE events SET rsvp_key=%s, title=%s, description=%s, location=%s,
                     date_label=%s, short_date=%s, start_time=%s, starts_at=%s, image_url=%s,
-                    featured=%s, sort_order=%s, published=%s, updated_at=%s
+                    attendance_mode=%s, featured=%s, sort_order=%s, published=%s, updated_at=%s
                 WHERE id=%s
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, featured, sort_order, published, utcnow(),
+                    start_time, starts_at, image_url, attendance_mode, featured, sort_order, published, utcnow(),
                     int(event_id),
                 ),
             )
@@ -278,13 +282,13 @@ def save_event(payload):
                 """
                 INSERT INTO events
                     (rsvp_key, title, description, location, date_label, short_date,
-                     start_time, starts_at, image_url, featured, sort_order, published, created_at)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                     start_time, starts_at, image_url, attendance_mode, featured, sort_order, published, created_at)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, featured, sort_order, published, utcnow(),
+                    start_time, starts_at, image_url, attendance_mode, featured, sort_order, published, utcnow(),
                 ),
             )
         row = cur.fetchone()
@@ -537,6 +541,7 @@ def init_tables():
                 start_time TEXT NOT NULL DEFAULT '',
                 starts_at TIMESTAMPTZ,
                 image_url TEXT NOT NULL DEFAULT '',
+                attendance_mode TEXT NOT NULL DEFAULT 'rsvp',
                 featured BOOLEAN NOT NULL DEFAULT FALSE,
                 sort_order INTEGER NOT NULL DEFAULT 0,
                 published BOOLEAN NOT NULL DEFAULT TRUE,
@@ -546,6 +551,7 @@ def init_tables():
             """
         )
         cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS start_time TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS attendance_mode TEXT NOT NULL DEFAULT 'rsvp'")
         seed_events = [
             ("Hiking Event", "SSA Hiking Adventure", "Join SSA for a summer community hike through Minnesota nature. All experience levels are welcome, with transportation and snacks organized.", "Afton State Park", "July 18, 2026 — Afton State Park", "Jul 18", "2026-07-18T14:00:00-05:00", "/assets/events/afton-state-park.png", True, 0),
             ("Freshman Mixer", "Freshman Mixer", "Meet our incoming class of 2030, help them learn the campus, and find your first SSA connections.", "", "September 15", "Sep 15", "2026-09-15T18:00:00-05:00", "", False, 10),
@@ -564,6 +570,10 @@ def init_tables():
                 """,
                 event,
             )
+        cur.execute(
+            "UPDATE events SET attendance_mode = 'quick' "
+            "WHERE rsvp_key = 'Hiking Event' AND updated_at IS NULL"
+        )
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS arcade_scores (

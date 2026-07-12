@@ -32,7 +32,7 @@
         <p class="featured-copy">${esc(event.description)}</p>
         ${includeCountdown && event.startsAt ? `<div class="featured-countdown" id="cmsFeaturedCountdown" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
         <p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>
-        <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-default-label="Reserve Your Spot"><span class="rsvp-btn-label">Reserve Your Spot</span></button>
+        <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${event.attendanceMode === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}"><span class="rsvp-btn-label">${event.attendanceMode === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</span></button>
       </div>`;
   }
 
@@ -43,13 +43,13 @@
         <span class="eyebrow handwritten">${esc(event.shortDate)}</span>
         <h3>${esc(event.title)}</h3>
         <p>${esc(event.description)}</p>
-        <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-default-label="RSVP"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="${esc(event.rsvpKey)}">—</b> people</span></div>
+        <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP'}"><span class="rsvp-btn-label">${event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP'}</span></button><span>Going · <b data-event-count="${esc(event.rsvpKey)}">—</b> people</span></div>
       </div>
     </article>`;
   }
 
   function eventCard(event) {
-    return `<article class="event-card"><span class="event-date">${esc(event.shortDate)}${event.startTime ? ` · ${esc(displayTime(event.startTime))}` : ''}</span><h3>${esc(event.title)}</h3><p>${esc(event.description)}</p><button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-default-label="RSVP"><span class="rsvp-btn-label">RSVP</span></button></article>`;
+    return `<article class="event-card"><span class="event-date">${esc(event.shortDate)}${event.startTime ? ` · ${esc(displayTime(event.startTime))}` : ''}</span><h3>${esc(event.title)}</h3><p>${esc(event.description)}</p><button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP'}"><span class="rsvp-btn-label">${event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP'}</span></button></article>`;
   }
 
   function startCountdown() {

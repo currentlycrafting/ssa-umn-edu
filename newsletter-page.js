@@ -66,7 +66,7 @@
       }
       archive.innerHTML = data.newsletters.map((edition, index) =>
         `<a class="nl-card" href="?edition=${edition.id}" data-id="${edition.id}">
-          <figure class="nl-edition-polaroid" style="--rot:${index % 2 ? 2 : -2}deg"><img src="${escape(edition.cover || `/assets/gallery/gallery-${(index % 19) + 1}.png`)}" alt="" /></figure>
+          <figure class="nl-edition-polaroid" style="--rot:${index % 2 ? 2 : -2}deg">${edition.cover ? `<img src="${escape(edition.cover)}" alt="" />` : '<span class="nl-edition-placeholder" aria-hidden="true">SSA</span>'}</figure>
           <span><small>Edition ${String(index + 1).padStart(2, '0')}</small><strong>${escape(edition.title)}</strong><time>${edition.createdAt.slice(0, 10)}</time></span>
         </a>`
       ).join('');

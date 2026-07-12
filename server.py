@@ -192,6 +192,15 @@ class SSAHandler(SimpleHTTPRequestHandler):
             rows = cur.fetchall()
         return [{"name": r["name"]} for r in rows]
 
+    def _event_attendance_mode(self, event_name):
+        with db() as cur:
+            cur.execute(
+                "SELECT attendance_mode FROM events WHERE rsvp_key = %s AND published = TRUE",
+                (event_name,),
+            )
+            row = cur.fetchone()
+        return row["attendance_mode"] if row else "rsvp"
+
     def _admin_payload(self):
         with db() as cur:
             cur.execute(
@@ -448,10 +457,14 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 self._send_json(400, {"error": "event is required"})
                 return
             try:
-                attendees = self._attendees(event_name)
+                mode = self._event_attendance_mode(event_name)
+                attendees = [] if mode == "quick" else self._attendees(event_name)
+                with db() as cur:
+                    cur.execute("SELECT COUNT(*) AS count FROM rsvp_interest WHERE event_name = %s", (event_name,))
+                    count = int(cur.fetchone()["count"])
                 self._send_json(
                     200,
-                    {"count": len(attendees), "attendees": attendees},
+                    {"count": count, "attendees": attendees, "mode": mode},
                     cache_seconds=10,
                 )
             except Exception as exc:
@@ -627,6 +640,37 @@ class SSAHandler(SimpleHTTPRequestHandler):
         if self.path == "/api/rsvp":
             event_name = str(payload.get("event", "")).strip()
             event_date = str(payload.get("date", "")).strip()
+            mode = self._event_attendance_mode(event_name)
+            if mode == "quick":
+                guest_token = str(payload.get("guestToken", "")).strip()[:80]
+                coming = payload.get("coming") is True
+                if not event_name or not event_date or len(guest_token) < 16:
+                    self._send_json(400, {"error": "Event and guest ID are required."})
+                    return
+                try:
+                    with db() as cur:
+                        if coming:
+                            cur.execute(
+                                """
+                                INSERT INTO rsvp_interest
+                                    (event_name, event_date, name, guest_token, created_at)
+                                VALUES (%s, %s, 'Guest', %s, %s)
+                                ON CONFLICT DO NOTHING
+                                """,
+                                (event_name, event_date, guest_token, now),
+                            )
+                        else:
+                            cur.execute(
+                                "DELETE FROM rsvp_interest WHERE event_name = %s AND guest_token = %s",
+                                (event_name, guest_token),
+                            )
+                        cur.execute("SELECT COUNT(*) AS count FROM rsvp_interest WHERE event_name = %s", (event_name,))
+                        count = int(cur.fetchone()["count"])
+                    invalidate_rsvp_summary_cache()
+                    self._send_json(200, {"ok": True, "coming": coming, "count": count, "attendees": [], "mode": "quick"})
+                except Exception as exc:
+                    self._send_json(503, {"ok": False, "error": str(exc)})
+                return
             name = str(payload.get("name", "")).strip()
             is_student = payload.get("isStudent") is True
             is_over_18 = payload.get("isOver18") is True
@@ -698,6 +742,9 @@ class SSAHandler(SimpleHTTPRequestHandler):
         if self.path == "/api/connect":
             name = str(payload.get("name", "")).strip()[:80]
             email = str(payload.get("email", "")).strip().lower()[:160]
+            reason = str(payload.get("reason", "")).strip().lower()[:40]
+            organization = str(payload.get("organization", "")).strip()[:160]
+            details = str(payload.get("details", "")).strip()[:1200]
             year = str(payload.get("year", "")).strip()[:40]
             major = str(payload.get("major", "")).strip()[:120]
             message = str(payload.get("message", "")).strip()[:1200]
@@ -710,7 +757,12 @@ class SSAHandler(SimpleHTTPRequestHandler):
             if not name or "@" not in email:
                 self._send_json(400, {"error": "Name and a valid email are required."})
                 return
-            if not interests:
+            community_reasons = {"sponsorship", "collaborations", "partnerships", "board", "ideas"}
+            is_community = reason in community_reasons
+            if is_community and not details:
+                self._send_json(400, {"error": "Tell us how you would like to work together."})
+                return
+            if not is_community and not interests:
                 self._send_json(400, {"error": "Pick at least one interest area."})
                 return
             try:
@@ -719,9 +771,14 @@ class SSAHandler(SimpleHTTPRequestHandler):
                         """
                         INSERT INTO connect_interest
                             (reason, name, email, organization, details, year, major, interests, created_at)
-                        VALUES ('connect', %s, %s, '', %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
-                        (name, email, message or "—", year, major, ", ".join(interests), now),
+                        (
+                            reason if is_community else "connect", name, email,
+                            organization if is_community else "",
+                            details if is_community else (message or "—"),
+                            year, major, ", ".join(interests), now,
+                        ),
                     )
                 self._send_json(200, {"ok": True})
             except Exception as exc:

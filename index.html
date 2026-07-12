@@ -55,6 +55,7 @@
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
     <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Events</span></a>
+    <a href="#aux-home" data-section="aux-home"><span class="dot" aria-hidden="true"></span><span class="side-label">Want the Aux</span></a>
     <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">Highlights</span></a>
     <a href="#programs" data-section="programs"><span class="dot" aria-hidden="true"></span><span class="side-label">Programs</span></a>
   </nav>
@@ -75,7 +76,9 @@
         <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
         <div class="hero-actions">
-          <a class="button button-line handdrawn has-tip" href="/games" data-tip="SSA Game Console">Play Games</a>
+          <a class="button button-dark handdrawn has-tip" href="/gallery" data-tip="Explore SSA memories">Photo Album</a>
+          <a class="button button-line handdrawn has-tip" href="/newsletter" data-tip="Read the latest edition">Read our newsletter</a>
+          <a class="button button-line handdrawn has-tip" href="/events" data-tip="See the full calendar">See our events</a>
           <svg class="hero-arrow" viewBox="0 0 70 50" aria-hidden="true"><path d="M6 40 C20 10 44 6 60 14 M60 14 L48 12 M60 14 L56 26" /></svg>
         </div>
         <div class="hero-meter year-montage" aria-label="SSA since 1998">
@@ -114,13 +117,15 @@
             <div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div>
           </div>
           <p class="event-going"><span class="event-going-num" data-event-count="Hiking Event">—</span> coming</p>
-          <button class="button button-dark handdrawn rsvp-button" type="button" data-event="Hiking Event" data-date="July 18, 2026 — Afton State Park"><span class="rsvp-btn-label">Reserve Your Spot</span></button>
+          <button class="button button-dark handdrawn rsvp-button" type="button" data-event="Hiking Event" data-date="July 18, 2026 — Afton State Park" data-attendance-mode="quick"><span class="rsvp-btn-label">Are you coming?</span></button>
         </div>
       </aside>
 
-      <div class="section-head" style="margin-top:8px">
-        <span class="eyebrow">Calendar</span>
-        <h2>Upcoming SSA moments</h2>
+      <div class="section-head section-head-events-cta" style="margin-top:8px">
+        <a class="events-page-link" href="/events">
+          <span><span class="eyebrow">Calendar</span><strong>Upcoming SSA moments</strong></span>
+          <span aria-hidden="true">→</span>
+        </a>
       </div>
 
       <div class="events-promo-list" id="homeEventsList">
@@ -159,6 +164,31 @@
             <p>Field Day in the North Gym with Domino's and relay games, basketball, soccer, pickleball, and more.</p>
             <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Field Day" data-date="October 30 — North Gym"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Field Day">—</b> people</span></div>
           </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section home-aux" id="aux-home">
+      <div class="section-head">
+        <span class="eyebrow">Live music queue</span>
+        <h2>Want the Aux?</h2>
+        <p>At SSA events, everyone can help build the playlist. Search for a song, add it to the community request queue, and the person connected to Spotify keeps the room moving.</p>
+      </div>
+      <div class="home-aux-grid">
+        <article class="home-aux-card">
+          <span class="eyebrow">For everyone</span>
+          <h3>Request songs without connecting an account.</h3>
+          <p>Guests search the Spotify catalog, add a track, follow what is playing, and see what is coming next. Your request joins the bottom of the live queue.</p>
+        </article>
+        <article class="home-aux-card">
+          <span class="eyebrow">For the host</span>
+          <h3>One connected player keeps playback organized.</h3>
+          <p>Only the event host connects Spotify. The SSA queue mirrors Spotify, removes songs after they play, and prevents the same request from playing repeatedly.</p>
+        </article>
+        <article class="home-aux-card home-aux-steps">
+          <span class="eyebrow">How it works</span>
+          <ol><li>Open Want the Aux</li><li>Search and request a song</li><li>Watch the shared queue update live</li></ol>
+          <a class="button button-dark handdrawn" href="/aux">Open Want the Aux</a>
         </article>
       </div>
     </section>
@@ -253,6 +283,7 @@
           </ul>
         </article>
       </div>
+      <p class="programs-share"><button class="button button-dark handdrawn" type="button" data-open-outreach>Send SSA a message, collaboration, or event idea</button></p>
     </section>
   </main>
 
@@ -298,6 +329,13 @@
         <button class="button button-dark" type="submit">RSVP</button>
         <output></output>
       </form>
+      <form id="quickRsvpForm" class="quick-rsvp-form" hidden>
+        <input type="hidden" name="event" />
+        <input type="hidden" name="date" />
+        <h3>Are you coming?</h3>
+        <div class="quick-rsvp-actions"><button class="button button-dark" type="button" data-quick-coming="yes">Yes!</button><button class="button button-line" type="button" data-quick-coming="no">No</button></div>
+        <output></output>
+      </form>
       <div class="rsvp-result" id="rsvpResult" hidden></div>
     </div>
     <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
@@ -320,10 +358,7 @@
       <span class="eyebrow">Stay in the loop</span>
       <h2 id="nlTitle">Join the SSA newsletter</h2>
       <p id="nlLead">Drop your email for events, announcements, and Somali Night updates.</p>
-      <div class="newsletter-polaroids" aria-hidden="true">
-        <figure class="polaroid" style="--rot:-3deg"><img src="assets/gallery/gallery-1.png" alt="" /><figcaption>SSA moments</figcaption></figure>
-        <figure class="polaroid" style="--rot:3deg"><img src="assets/gallery/gallery-6.png" alt="" /><figcaption>community first</figcaption></figure>
-      </div>
+      <div class="newsletter-polaroids" id="newsletterPolaroids" aria-hidden="true"></div>
       <p class="newsletter-subscribed-msg" id="newsletterSubscribedMsg" hidden>You&apos;re already on the list. Thanks for being part of SSA.</p>
       <form id="newsletterModalForm">
         <input type="email" name="email" placeholder="your@email.com" required />
@@ -334,33 +369,16 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="suggestModal" aria-hidden="true">
-    <div class="modal-sheet modal-card" role="dialog" aria-modal="true" aria-labelledby="suggestTitle">
-      <span class="eyebrow">Programs</span>
-      <h2 id="suggestTitle">Suggest an event</h2>
-      <p id="suggestLead">Share an idea for SSA programming.</p>
-      <form id="suggestForm" class="connect-modal-form">
-        <input type="hidden" name="type" id="suggestType" value="campus" />
-        <input type="text" name="name" placeholder="Event name" required />
-        <textarea name="description" rows="3" placeholder="What would this event look like?" required></textarea>
-        <input type="text" name="audience" placeholder="Who is it for?" />
-        <input type="text" name="budget" placeholder="Estimated budget (optional)" />
-        <input type="text" name="preferredDate" placeholder="Preferred date or season" />
-        <textarea name="notes" rows="2" placeholder="Notes for the board (optional)"></textarea>
-        <button class="button button-dark handdrawn" type="submit">Submit idea</button>
-        <output></output>
-      </form>
-    </div>
-  </div>
-
   <script src="motion.js"></script>
   <script src="nav.js"></script>
   <script src="micro.js?v=2"></script>
-  <script src="checklist.js?v=2"></script>
+  <script src="checklist.js?v=3"></script>
   <script src="newsletter.js"></script>
   <script src="/events-render.js?v=2"></script>
   <script src="/rsvp.js?v=2"></script>
-  <script src="index.js?v=7"></script>
+  <script src="index.js?v=8"></script>
+  <script src="/outreach.js?v=1"></script>
+  <script src="/whats-new.js?v=1"></script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
   <script>
     if (window.kofiWidgetOverlay) {

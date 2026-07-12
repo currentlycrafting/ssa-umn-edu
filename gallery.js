@@ -1,8 +1,7 @@
 (async function () {
   const book = document.querySelector('.gallery-book');
   const communityAnchor = document.getElementById('communityGalleryItems');
-  const staticPolaroidCount = book?.querySelectorAll('.polaroid').length || 0;
-  let communityCount = 0;
+  let items = [];
   function createGalleryFigure(item, index) {
     const figure = document.createElement('figure');
     figure.className = `polaroid visible ${index % 2 ? 'right' : 'left'}`;
@@ -20,8 +19,7 @@
     try {
       const data = await window.ssaFetch.json('/api/gallery');
       (data.items || []).forEach((item, index) => {
-        book.insertBefore(createGalleryFigure(item, staticPolaroidCount + index), communityAnchor);
-        communityCount += 1;
+        book.insertBefore(createGalleryFigure(item, index), communityAnchor);
       });
     } catch (_) {
       // Existing gallery remains usable if community additions cannot load.
@@ -130,9 +128,8 @@
         alt: submitForm.caption.value.trim(),
         caption: submitForm.caption.value.trim()
       };
-      const figure = createGalleryFigure(item, staticPolaroidCount + communityCount);
+      const figure = createGalleryFigure(item, items.length);
       book?.insertBefore(figure, communityAnchor);
-      communityCount += 1;
       items.push(item);
       figure.addEventListener('click', () => open(items.length - 1));
       animatePolaroidAdd(figure, selectedData, item.caption);
@@ -151,7 +148,6 @@
   });
 
   const figures = Array.from(document.querySelectorAll('.gallery-book .polaroid'));
-  if (!figures.length) return;
   figures.forEach((figure) => figure.classList.add('visible'));
 
   const CLOSE_ICON =
@@ -160,7 +156,7 @@
 
   const mobileMq = window.matchMedia('(max-width: 720px)');
 
-  const items = figures.map((fig) => {
+  items = figures.map((fig) => {
     const img = fig.querySelector('img');
     return {
       src: img?.currentSrc || img?.src || '',

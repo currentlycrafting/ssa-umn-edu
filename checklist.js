@@ -146,6 +146,10 @@
     checklistPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
     checklistTrigger.setAttribute('aria-expanded', open ? 'true' : 'false');
     document.body.classList.toggle('checklist-modal-open', open);
+    if (!open && window.ssaWhatsNewAfterChecklist) {
+      window.ssaWhatsNewAfterChecklist = false;
+      document.dispatchEvent(new CustomEvent('ssa:checklist-intro-closed'));
+    }
   }
 
   function followHref(href) {
@@ -340,7 +344,12 @@
       localStorage.setItem('ssaChecklistIntroSeen', '1');
       intro.classList.remove('open');
       intro.setAttribute('aria-hidden', 'true');
-      if (openPanel) openChecklist(true);
+      if (openPanel) {
+        window.ssaWhatsNewAfterChecklist = true;
+        openChecklist(true);
+      } else {
+        window.setTimeout(() => document.dispatchEvent(new CustomEvent('ssa:checklist-intro-closed')), 360);
+      }
       window.setTimeout(() => intro.remove(), 320);
     }
 
