@@ -15,16 +15,18 @@
   modal.id = 'whatsNewModal';
   modal.setAttribute('aria-hidden', 'true');
   modal.innerHTML = `
-    <div class="modal-sheet modal-card modal-card-wide whats-new-sheet" role="dialog" aria-modal="true" aria-labelledby="whatsNewTitle">
-      <div class="whats-new-progress"><span id="whatsNewIndex">1</span> / ${slides.length}</div>
-      <div class="whats-new-stage" id="whatsNewStage"></div>
-      <div class="whats-new-nav">
-        <button class="button button-line" type="button" data-whats-prev aria-label="Previous update">←</button>
-        <div class="whats-new-dots" aria-hidden="true"></div>
-        <button class="button button-dark" type="button" data-whats-next>Next →</button>
+    <div class="whats-new-frame">
+      <button class="button button-line whats-new-side whats-new-side-prev" type="button" data-whats-prev aria-label="Previous update">←</button>
+      <div class="modal-sheet modal-card modal-card-wide whats-new-sheet" role="dialog" aria-modal="true" aria-labelledby="whatsNewTitle">
+        <div class="whats-new-progress"><span id="whatsNewIndex">1</span> / ${slides.length}</div>
+        <div class="whats-new-stage" id="whatsNewStage"></div>
+        <div class="whats-new-nav">
+          <div class="whats-new-dots" aria-hidden="true"></div>
+        </div>
       </div>
-    </div>
-    <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>`;
+      <button class="button button-dark whats-new-side whats-new-side-next" type="button" data-whats-next>Next →</button>
+      <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+    </div>`;
   document.body.appendChild(modal);
 
   const stage = modal.querySelector('#whatsNewStage');

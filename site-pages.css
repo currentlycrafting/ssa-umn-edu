@@ -650,16 +650,36 @@
   display: grid; place-items: center; width: 100%; aspect-ratio: 1;
   background: var(--blue-2); color: var(--blue); font: 700 30px "Caveat", cursive;
 }
-.whats-new-sheet { overflow: hidden; }
+.whats-new-frame {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: min(920px, calc(100vw - 24px));
+}
+.whats-new-sheet { width: 100%; overflow: hidden; }
 .whats-new-progress { color: var(--muted); font-size: 13px; font-weight: 800; letter-spacing: .12em; text-align: right; }
 .whats-new-stage { min-height: 320px; display: grid; align-items: center; }
 .whats-new-card { padding: clamp(10px, 3vw, 28px); }
 .whats-new-card h2 { max-width: 640px; margin: 12px 0; font-size: clamp(34px, 6vw, 64px); line-height: .98; }
 .whats-new-card p { max-width: 650px; margin-bottom: 24px; color: var(--muted); font-size: clamp(16px, 2vw, 20px); line-height: 1.65; }
-.whats-new-nav { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; }
+.whats-new-nav { display: flex; justify-content: center; }
 .whats-new-dots { display: flex; justify-content: center; gap: 7px; }
 .whats-new-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
 .whats-new-dots i.active { width: 24px; border-radius: 999px; background: var(--blue); }
+.whats-new-side {
+  min-width: 56px;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+}
+.whats-new-side-prev { justify-self: start; }
+.whats-new-side-next { justify-self: end; }
+.whats-new-frame .modal-exit {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+}
 @media (max-width: 800px) {
   .home-aux-grid { grid-template-columns: 1fr; }
   .home-aux-card { min-height: 0; }
@@ -670,6 +690,15 @@
   .outreach-options button { grid-template-columns: 1fr; }
   .outreach-options span { grid-row: auto; }
   .whats-new-stage { min-height: 360px; }
-  .whats-new-nav { grid-template-columns: auto auto; }
-  .whats-new-dots { grid-column: 1 / -1; grid-row: 1; }
+  .whats-new-frame {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "sheet sheet"
+      "prev next";
+    gap: 12px;
+  }
+  .whats-new-sheet { grid-area: sheet; }
+  .whats-new-side-prev { grid-area: prev; width: 100%; }
+  .whats-new-side-next { grid-area: next; width: 100%; }
+  .whats-new-frame .modal-exit { top: 8px; right: 8px; }
 }
