@@ -132,9 +132,10 @@
   }
 
   function initLinkHovers() {
-    document.querySelectorAll('.footer-card nav a, .social-row a, .nav-links a, .timeline-content .button').forEach((link) => {
+    document.querySelectorAll('.footer-card nav a, .social-row a, .timeline-content .button').forEach((link) => {
       link.classList.add('link-slide');
     });
+    document.querySelectorAll('.nav-links a').forEach((link) => link.classList.remove('link-slide'));
   }
 
   function initPageHeroMotion() {

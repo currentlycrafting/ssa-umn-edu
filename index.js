@@ -240,6 +240,7 @@ if (newsletterForm) {
 }
 
 
+if (false) {
 const rsvpModal = document.getElementById('rsvpModal');
 const rsvpForm = document.getElementById('rsvpForm');
 const rsvpTitle = document.getElementById('rsvpTitle');
@@ -319,23 +320,13 @@ loadRsvpSummary();
 function renderRsvpResult(data, already) {
   if (!rsvpResult) return;
   const count = data.count || 0;
-  const attendees = (data.attendees || []).map((a) =>
-    typeof a === 'string' ? { name: a, email: '' } : a
-  );
+  const attendees = (data.attendees || []).map((a) => typeof a === 'string' ? { name: a } : a);
   const headline = already ? 'You\u2019re already on this list.' : 'You\u2019re on the list.';
-  const emailHint = attendees.some((a) => a.email)
-    ? '<p class="rsvp-note rsvp-email-hint">Tap a name to see their email.</p>'
-    : '';
   const items = attendees.length
     ? attendees
         .map(
           (a) =>
-            `<li class="rsvp-attendee" tabindex="0">` +
-            `<span class="rsvp-name">${escapeHtml(a.name)}</span>` +
-            (a.email
-              ? `<span class="rsvp-email">${escapeHtml(a.email)}</span>`
-              : '') +
-            `</li>`
+            `<li class="rsvp-attendee"><span class="rsvp-name">${escapeHtml(a.name)}</span></li>`
         )
         .join('')
     : '<li class="rsvp-attendee rsvp-attendee-empty">No names yet — you might be the first.</li>';
@@ -343,18 +334,7 @@ function renderRsvpResult(data, already) {
     `<p class="rsvp-note">${headline}</p>` +
     `<h3 class="rsvp-whos-coming">Who&apos;s coming</h3>` +
     `<p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} total</p>` +
-    emailHint +
     `<ul class="rsvp-list">${items}</ul>`;
-  rsvpResult.querySelectorAll('.rsvp-attendee:not(.rsvp-attendee-empty)').forEach((li) => {
-    if (!li.querySelector('.rsvp-email')) return;
-    li.addEventListener('click', () => li.classList.toggle('show-email'));
-    li.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        li.classList.toggle('show-email');
-      }
-    });
-  });
   if (rsvpModalCount) {
     rsvpModalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
   }
@@ -372,13 +352,25 @@ async function showRsvpAttendees(eventName, data, already) {
   renderRsvpResult(payload, already ?? payload?.already ?? false);
 }
 
+function syncRsvpEligibility(form) {
+  const isStudent = form.elements.isStudent?.value;
+  const ageQuestion = form.querySelector('.rsvp-age-question');
+  ageQuestion.hidden = isStudent !== 'no';
+  ageQuestion.querySelectorAll('input').forEach((input) => {
+    input.required = isStudent === 'no' && input.value === 'yes';
+    if (isStudent !== 'no') input.checked = false;
+  });
+}
+
 function openRsvpModal(eventName, eventDate) {
   if (!rsvpModal || !rsvpForm) return;
+  rsvpForm.reset();
   rsvpTitle.textContent = eventName;
   rsvpMeta.textContent = eventDate;
   rsvpForm.event.value = eventName;
   rsvpForm.date.value = eventDate;
   rsvpForm.querySelector('output').textContent = '';
+  syncRsvpEligibility(rsvpForm);
   rsvpForm.hidden = false;
   if (rsvpResult) { rsvpResult.hidden = true; rsvpResult.innerHTML = ''; }
   const count = rsvpCounts[eventName] ?? 0;
@@ -417,14 +409,24 @@ document.querySelectorAll('.rsvp-button').forEach((button) => {
 });
 attachModalClose(rsvpModal, closeRsvpModal);
 if (rsvpForm) {
+  Array.from(rsvpForm.elements.isStudent).forEach((input) => {
+    input.addEventListener('change', () => syncRsvpEligibility(rsvpForm));
+  });
   rsvpForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const eventName = rsvpForm.event.value;
+    const isStudent = rsvpForm.elements.isStudent.value === 'yes';
+    const isOver18 = rsvpForm.elements.isOver18.value === 'yes';
+    if (!isStudent && !isOver18) {
+      setOutput(rsvpForm, 'You must be a U of MN student or at least 18 years old to RSVP.', false);
+      return;
+    }
     const payload = {
       event: eventName,
       date: rsvpForm.date.value,
       name: rsvpForm.name.value.trim(),
-      email: rsvpForm.email.value.trim()
+      isStudent,
+      isOver18
     };
     const button = rsvpForm.querySelector('button');
     setButtonLoading(button, true);
@@ -447,10 +449,11 @@ if (rsvpForm) {
       await showRsvpAttendees(eventName, data, data.already);
       rsvpForm.reset();
     } catch (error) {
-      setOutput(rsvpForm, 'Could not save RSVP yet — try again in a moment.', false);
+      setOutput(rsvpForm, error.message || 'Could not save RSVP yet — try again in a moment.', false);
       setButtonLoading(button, false);
     }
   });
+}
 }
 
 // Full-screen newsletter takeover — opened from Options menu, nav, or checklist
@@ -769,7 +772,7 @@ function renderAdminTab(tab) {
       return adminRow(
         `<strong>${escapeHtml(row.name)}</strong>` +
         `<span class="admin-row-meta">${escapeHtml(row.event_name)} · ${escapeHtml(row.event_date)}</span>` +
-        `<span class="admin-row-detail">${escapeHtml(row.email)}</span>`,
+        `<span class="admin-row-detail">${row.is_student ? 'U of MN student' : 'Community guest · 18+'}</span>`,
         row.created_at
       );
     }
@@ -799,16 +802,6 @@ function renderAdminTab(tab) {
         row.created_at
       );
     }
-    if (tab === 'gallery_review') {
-      return adminRow(
-        `<strong>${escapeHtml(row.caption)} · ${escapeHtml(row.status)}</strong>` +
-        `<span class="admin-row-meta">${escapeHtml(row.submitter)} · ${escapeHtml(row.email)}</span>` +
-        `<span class="admin-row-detail">${escapeHtml(row.alt)}</span>` +
-        `<img src="${escapeHtml(row.src)}" alt="" style="max-width:180px;border-radius:12px;margin-top:8px" />` +
-        (row.status === 'pending' ? `<span class="gallery-review-actions"><button class="micro-button" type="button" data-gallery-action="approved" data-gallery-id="${row.id}">Approve</button><button class="micro-button" type="button" data-gallery-action="rejected" data-gallery-id="${row.id}">Reject</button></span>` : ''),
-        row.created_at
-      );
-    }
     const reason = row.reason.replace(/^\w/, (c) => c.toUpperCase());
     return adminRow(
       `<strong>${escapeHtml(row.name)} · ${escapeHtml(reason)}</strong>` +
@@ -817,20 +810,6 @@ function renderAdminTab(tab) {
       row.created_at
     );
   }).join('') + '</div>';
-  adminBody.querySelectorAll('[data-gallery-action]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      button.disabled = true;
-      try {
-        await postJson(`/api/gallery/${button.dataset.galleryId}/moderate`, {
-          password: adminPasswordMem,
-          action: button.dataset.galleryAction
-        });
-        await loadAdminData();
-      } catch (_) {
-        button.disabled = false;
-      }
-    });
-  });
   adminBody.querySelectorAll('[data-aux-play]').forEach((button) => {
     button.addEventListener('click', async () => {
       button.disabled = true;

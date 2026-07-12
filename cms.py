@@ -2,15 +2,11 @@
 import base64
 import json
 import os
-import re
-import secrets
 from datetime import datetime, timezone
-from pathlib import Path
 
 from db import db
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Ilovesomalia393@")
-UPLOAD_DIR = Path(__file__).resolve().parent / "uploads"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "SSA")
 ALLOWED_IMAGE_TYPES = {"png": "png", "jpg": "jpg", "jpeg": "jpg", "webp": "webp"}
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
@@ -47,7 +43,7 @@ def _clean_blocks(blocks):
             item["text"] = str(block.get("text", ""))[:4000]
         elif btype == "image":
             src = str(block.get("src", ""))[:500]
-            if not (src.startswith("/uploads/") or src.startswith("/assets/")):
+            if not (src.startswith("/api/uploads/") or src.startswith("/uploads/") or src.startswith("/assets/")):
                 continue
             item["src"] = src
             item["caption"] = str(block.get("caption", ""))[:300]
@@ -69,9 +65,9 @@ def _clean_blocks(blocks):
 def list_newsletters(include_drafts=False):
     with db() as cur:
         if include_drafts:
-            cur.execute("SELECT id, title, published, created_at, updated_at FROM newsletters ORDER BY created_at DESC LIMIT 100")
+            cur.execute("SELECT id, title, blocks, published, created_at, updated_at FROM newsletters ORDER BY created_at DESC LIMIT 100")
         else:
-            cur.execute("SELECT id, title, published, created_at, updated_at FROM newsletters WHERE published = TRUE ORDER BY created_at DESC LIMIT 100")
+            cur.execute("SELECT id, title, blocks, published, created_at, updated_at FROM newsletters WHERE published = TRUE ORDER BY created_at DESC LIMIT 100")
         rows = cur.fetchall()
     return 200, {
         "ok": True,
@@ -80,6 +76,10 @@ def list_newsletters(include_drafts=False):
                 "id": r["id"],
                 "title": r["title"],
                 "published": bool(r["published"]),
+                "cover": next(
+                    (b.get("src", "") for b in json.loads(r["blocks"] or "[]") if b.get("type") == "image"),
+                    "",
+                ),
                 "createdAt": _iso(r["created_at"]),
                 "updatedAt": _iso(r["updated_at"]) if r["updated_at"] else "",
             }
@@ -143,7 +143,7 @@ def delete_newsletter(newsletter_id, payload):
 
 
 def upload_image(payload):
-    """Accepts {password, filename, data(base64)} and stores under /uploads."""
+    """Accepts {password, filename, data(base64)} and stores the image in PostgreSQL."""
     if not is_admin(payload):
         return 401, {"error": "Invalid password."}
     filename = str(payload.get("filename", "image.png"))
@@ -159,11 +159,148 @@ def upload_image(payload):
         return 400, {"error": "Invalid image data."}
     if not raw or len(raw) > MAX_UPLOAD_BYTES:
         return 400, {"error": "Image must be under 5 MB."}
-    UPLOAD_DIR.mkdir(exist_ok=True)
-    safe = re.sub(r"[^a-z0-9-]", "", filename.rsplit(".", 1)[0].lower().replace(" ", "-"))[:40] or "image"
-    name = f"{safe}-{secrets.token_hex(5)}.{ALLOWED_IMAGE_TYPES[ext]}"
-    (UPLOAD_DIR / name).write_bytes(raw)
-    return 200, {"ok": True, "url": f"/uploads/{name}"}
+    content_type = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+    with db() as cur:
+        cur.execute(
+            """
+            INSERT INTO newsletter_images (image_data, content_type, created_at)
+            VALUES (%s, %s, %s)
+            RETURNING id
+            """,
+            (raw, content_type, utcnow()),
+        )
+        image_id = cur.fetchone()["id"]
+    return 200, {"ok": True, "url": f"/api/uploads/{image_id}"}
+
+
+def get_newsletter_image(image_id):
+    with db() as cur:
+        cur.execute(
+            "SELECT image_data, content_type FROM newsletter_images WHERE id = %s",
+            (image_id,),
+        )
+        row = cur.fetchone()
+    if not row:
+        return None
+    return bytes(row["image_data"]), row["content_type"]
+
+
+# ---------------- events CMS ----------------
+
+def _event_json(row):
+    return {
+        "id": row["id"],
+        "rsvpKey": row["rsvp_key"],
+        "title": row["title"],
+        "description": row["description"],
+        "location": row["location"] or "",
+        "dateLabel": row["date_label"],
+        "shortDate": row["short_date"],
+        "startTime": row.get("start_time") or "",
+        "startsAt": _iso(row["starts_at"]) if row["starts_at"] else "",
+        "imageUrl": row["image_url"] or "",
+        "featured": bool(row["featured"]),
+        "sortOrder": int(row["sort_order"]),
+        "published": bool(row["published"]),
+    }
+
+
+def list_events(include_unpublished=False):
+    with db() as cur:
+        if include_unpublished:
+            cur.execute("SELECT * FROM events ORDER BY featured DESC, sort_order ASC, starts_at ASC NULLS LAST")
+        else:
+            cur.execute(
+                "SELECT * FROM events WHERE published = TRUE "
+                "ORDER BY featured DESC, sort_order ASC, starts_at ASC NULLS LAST"
+            )
+        rows = cur.fetchall()
+    return [_event_json(row) for row in rows]
+
+
+def save_event(payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    event_id = payload.get("id")
+    rsvp_key = str(payload.get("rsvpKey", "")).strip()[:120]
+    title = str(payload.get("title", "")).strip()[:160]
+    description = str(payload.get("description", "")).strip()[:1200]
+    location = str(payload.get("location", "")).strip()[:200]
+    date_label = str(payload.get("dateLabel", "")).strip()[:240]
+    short_date = str(payload.get("shortDate", "")).strip()[:40]
+    start_time = str(payload.get("startTime", "")).strip()[:20]
+    image_url = str(payload.get("imageUrl", "")).strip()[:500]
+    featured = bool(payload.get("featured"))
+    published = payload.get("published") is not False
+    try:
+        sort_order = int(payload.get("sortOrder", 0))
+    except (TypeError, ValueError):
+        sort_order = 0
+    starts_at = str(payload.get("startsAt", "")).strip() or None
+    if not rsvp_key:
+        rsvp_key = title
+    if not short_date:
+        short_date = date_label.split("—", 1)[0].strip()[:40]
+    if not location and "—" in date_label:
+        location = date_label.split("—", 1)[1].strip()[:200]
+    if not title or not description or not date_label:
+        return 400, {"error": "Public title, full date label, and description are required."}
+    if image_url and not (
+        image_url.startswith("/assets/") or image_url.startswith("/api/uploads/")
+    ):
+        return 400, {"error": "Use an uploaded image or a site asset."}
+    with db() as cur:
+        if event_id:
+            cur.execute("SELECT rsvp_key FROM events WHERE id = %s", (int(event_id),))
+            existing = cur.fetchone()
+            if not existing:
+                return 404, {"error": "Event not found."}
+            rsvp_key = existing["rsvp_key"]
+        if featured:
+            cur.execute("UPDATE events SET featured = FALSE WHERE featured = TRUE")
+        if event_id:
+            cur.execute(
+                """
+                UPDATE events SET rsvp_key=%s, title=%s, description=%s, location=%s,
+                    date_label=%s, short_date=%s, start_time=%s, starts_at=%s, image_url=%s,
+                    featured=%s, sort_order=%s, published=%s, updated_at=%s
+                WHERE id=%s
+                RETURNING *
+                """,
+                (
+                    rsvp_key, title, description, location, date_label, short_date,
+                    start_time, starts_at, image_url, featured, sort_order, published, utcnow(),
+                    int(event_id),
+                ),
+            )
+        else:
+            cur.execute(
+                """
+                INSERT INTO events
+                    (rsvp_key, title, description, location, date_label, short_date,
+                     start_time, starts_at, image_url, featured, sort_order, published, created_at)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                RETURNING *
+                """,
+                (
+                    rsvp_key, title, description, location, date_label, short_date,
+                    start_time, starts_at, image_url, featured, sort_order, published, utcnow(),
+                ),
+            )
+        row = cur.fetchone()
+    if not row:
+        return 404, {"error": "Event not found."}
+    return 200, {"ok": True, "event": _event_json(row)}
+
+
+def delete_event(event_id, payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute("UPDATE events SET published = FALSE, updated_at = %s WHERE id = %s", (utcnow(), event_id))
+        if cur.rowcount == 0:
+            return 404, {"error": "Event not found."}
+    return 200, {"ok": True}
 
 
 # ---------------- event suggestions ----------------
@@ -231,13 +368,12 @@ def _decode_public_image(data, filename):
 
 
 def submit_gallery_item(payload):
-    submitter = str(payload.get("submitter", "")).strip()[:100]
-    email = str(payload.get("email", "")).strip().lower()[:180]
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
     caption = str(payload.get("caption", "")).strip()[:300]
-    alt_text = str(payload.get("alt", "")).strip()[:300]
     raw, mime, error = _decode_public_image(payload.get("data"), payload.get("filename"))
-    if not submitter or "@" not in email or not caption or not alt_text:
-        return 400, {"error": "Name, email, caption, and photo description are required."}
+    if not caption:
+        return 400, {"error": "A caption and photo are required."}
     if error:
         return 400, {"error": error}
     with db() as cur:
@@ -245,13 +381,13 @@ def submit_gallery_item(payload):
             """
             INSERT INTO gallery_items
                 (submitter, email, caption, alt_text, image_data, content_type, status, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, 'pending', %s)
+            VALUES (%s, %s, %s, %s, %s, %s, 'approved', %s)
             RETURNING id
             """,
-            (submitter, email, caption, alt_text, raw, mime, utcnow()),
+            ("SSA", "", caption, caption, raw, mime, utcnow()),
         )
         item_id = cur.fetchone()["id"]
-    return 200, {"ok": True, "id": item_id, "message": "Submitted for board review."}
+    return 200, {"ok": True, "id": item_id, "message": "Added to the gallery."}
 
 
 def list_gallery_items(include_pending=False):
@@ -264,7 +400,7 @@ def list_gallery_items(include_pending=False):
         else:
             cur.execute(
                 "SELECT id, caption, alt_text, status, created_at FROM gallery_items "
-                "WHERE status = 'approved' ORDER BY created_at DESC LIMIT 200"
+                "WHERE status <> 'rejected' ORDER BY created_at ASC LIMIT 200"
             )
         rows = cur.fetchall()
     return [
@@ -294,19 +430,13 @@ def get_gallery_image(item_id):
     return bytes(row["image_data"]), row["content_type"]
 
 
-def moderate_gallery_item(item_id, payload):
+def delete_gallery_item(item_id, payload):
     if not is_admin(payload):
         return 401, {"error": "Invalid password."}
-    action = str(payload.get("action", "")).strip().lower()
-    if action not in ("approved", "rejected"):
-        return 400, {"error": "Choose approve or reject."}
     with db() as cur:
-        cur.execute(
-            "UPDATE gallery_items SET status = %s, reviewed_at = %s WHERE id = %s",
-            (action, utcnow(), item_id),
-        )
+        cur.execute("DELETE FROM gallery_items WHERE id = %s", (item_id,))
         if cur.rowcount == 0:
-            return 404, {"error": "Gallery submission not found."}
+            return 404, {"error": "Gallery photo not found."}
     return 200, {"ok": True}
 
 
@@ -371,6 +501,16 @@ def init_tables():
         )
         cur.execute(
             """
+            CREATE TABLE IF NOT EXISTS newsletter_images (
+                id SERIAL PRIMARY KEY,
+                image_data BYTEA NOT NULL,
+                content_type TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        cur.execute(
+            """
             CREATE TABLE IF NOT EXISTS event_suggestions (
                 id SERIAL PRIMARY KEY,
                 name TEXT NOT NULL,
@@ -384,6 +524,46 @@ def init_tables():
             )
             """
         )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS events (
+                id SERIAL PRIMARY KEY,
+                rsvp_key TEXT NOT NULL UNIQUE,
+                title TEXT NOT NULL,
+                description TEXT NOT NULL,
+                location TEXT,
+                date_label TEXT NOT NULL,
+                short_date TEXT NOT NULL,
+                start_time TEXT NOT NULL DEFAULT '',
+                starts_at TIMESTAMPTZ,
+                image_url TEXT NOT NULL DEFAULT '',
+                featured BOOLEAN NOT NULL DEFAULT FALSE,
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                published BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ
+            )
+            """
+        )
+        cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS start_time TEXT NOT NULL DEFAULT ''")
+        seed_events = [
+            ("Hiking Event", "SSA Hiking Adventure", "Join SSA for a summer community hike through Minnesota nature. All experience levels are welcome, with transportation and snacks organized.", "Afton State Park", "July 18, 2026 — Afton State Park", "Jul 18", "2026-07-18T14:00:00-05:00", "/assets/events/afton-state-park.png", True, 0),
+            ("Freshman Mixer", "Freshman Mixer", "Meet our incoming class of 2030, help them learn the campus, and find your first SSA connections.", "", "September 15", "Sep 15", "2026-09-15T18:00:00-05:00", "", False, 10),
+            ("Fall Kickoff", "Fall Kickoff", "Kick off SSA at SuperBlock with Football Pizza, ice cream, snacks, drinks, music, and community.", "SuperBlock", "September 24 — SuperBlock", "Sep 24", "2026-09-24T18:00:00-05:00", "", False, 20),
+            ("Family Feud", "Family Feud", "Family Feud at The Whole Music Club with teams made before the event and Dave's Hot Chicken served.", "The Whole Music Club", "October 8 — The Whole Music Club", "Oct 08", "2026-10-08T18:00:00-05:00", "", False, 30),
+            ("Field Day", "Field Day", "Field Day in the North Gym with Domino's and relay games, basketball, soccer, pickleball, and more.", "North Gym", "October 30 — North Gym", "Oct 30", "2026-10-30T18:00:00-05:00", "", False, 40),
+        ]
+        for event in seed_events:
+            cur.execute(
+                """
+                INSERT INTO events
+                    (rsvp_key, title, description, location, date_label, short_date,
+                     starts_at, image_url, featured, sort_order, published, created_at)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,TRUE,NOW())
+                ON CONFLICT (rsvp_key) DO NOTHING
+                """,
+                event,
+            )
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS arcade_scores (

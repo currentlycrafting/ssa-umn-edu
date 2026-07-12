@@ -2,10 +2,9 @@
   const blocks = [
     { type: 'heading', text: '', required: true },
     { type: 'paragraph', text: '', required: true },
-    { type: 'announcement', text: '', required: true },
-    { type: 'timeline', month: '', rows: [{ date: '', label: '' }], required: true }
+    { type: 'announcement', text: '', required: true }
   ];
-  const polaroids = Array.from({ length: 3 }, () => ({ file: null, data: '', caption: '' }));
+  const polaroids = Array.from({ length: 2 }, () => ({ file: null, data: '', caption: '' }));
   const form = document.getElementById('studioForm');
   const container = document.getElementById('studioBlocks');
   const passwordModal = document.getElementById('studioPasswordModal');
@@ -21,14 +20,12 @@
     const block = { type };
     if (['heading', 'paragraph', 'announcement'].includes(type)) block.text = '';
     if (type === 'image') { block.src = ''; block.caption = ''; block.pendingFile = null; block.pendingData = ''; }
-    if (type === 'timeline') { block.month = ''; block.rows = [{ date: '', label: '' }]; }
-    if (type === 'game') { block.title = ''; block.text = ''; block.link = '/games'; }
     blocks.push(block);
     render();
   }
 
   function render() {
-    const labels = { heading: 'Heading', paragraph: 'Story paragraph', announcement: 'Announcement', image: 'Article image', timeline: 'Timeline', game: 'Interactive game' };
+    const labels = { heading: 'Heading', paragraph: 'Story paragraph', announcement: 'Announcement', image: 'Article image' };
     container.innerHTML = blocks.map((block, index) => {
       const required = block.required ? '<span class="studio-required">Required</span>' : `<button type="button" data-rm="${index}">Remove</button>`;
       let fields = '';
@@ -36,10 +33,6 @@
         fields = `<textarea rows="${block.type === 'paragraph' ? 6 : 3}" data-i="${index}" data-f="text" placeholder="Write the ${labels[block.type].toLowerCase()} here…">${escapeHtml(block.text || '')}</textarea>`;
       } else if (block.type === 'image') {
         fields = `<label class="studio-inline-drop"><input type="file" accept="image/png,image/jpeg,image/webp" data-upload="${index}" />Drop or choose an image</label><input data-i="${index}" data-f="caption" placeholder="Photo caption" value="${escapeHtml(block.caption || '')}" />${block.pendingData || block.src ? `<img src="${block.pendingData || block.src}" alt="" />` : ''}`;
-      } else if (block.type === 'timeline') {
-        fields = `<input data-i="${index}" data-f="month" value="${escapeHtml(block.month || '')}" placeholder="Month or section title" /><textarea rows="4" data-i="${index}" data-f="rows" placeholder="date|event — one per line">${escapeHtml((block.rows || []).map((row) => `${row.date}|${row.label}`).join('\n'))}</textarea>`;
-      } else if (block.type === 'game') {
-        fields = `<input data-i="${index}" data-f="title" placeholder="Game title" value="${escapeHtml(block.title || '')}" /><textarea data-i="${index}" data-f="text" rows="3" placeholder="Game description">${escapeHtml(block.text || '')}</textarea><input data-i="${index}" data-f="link" placeholder="/games" value="${escapeHtml(block.link || '')}" />`;
       }
       return `<section class="studio-block studio-block-${block.type}"><header><strong>${labels[block.type]}</strong>${required}</header>${fields}</section>`;
     }).join('');
@@ -50,12 +43,7 @@
     container.querySelectorAll('[data-i]').forEach((field) => {
       field.addEventListener('input', () => {
         const block = blocks[Number(field.dataset.i)];
-        if (field.dataset.f === 'rows') {
-          block.rows = field.value.split('\n').filter(Boolean).map((line) => {
-            const [date, ...label] = line.split('|');
-            return { date: date.trim(), label: label.join('|').trim() };
-          });
-        } else block[field.dataset.f] = field.value;
+        block[field.dataset.f] = field.value;
       });
     });
     container.querySelectorAll('[data-upload]').forEach((input) => {
@@ -94,14 +82,11 @@
     event.preventDefault();
     if (!form.reportValidity()) return;
     if (polaroids.some((polaroid) => !polaroid.file)) {
-      studioOut.textContent = 'Add all three polaroid photos before saving.';
+      studioOut.textContent = 'Add both polaroid photos before saving.';
       document.querySelector('[data-polaroid]:not(.filled)')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    const requiredEmpty = blocks.some((block) => block.required && (
-      (block.type === 'timeline' && (!block.month || !block.rows.some((row) => row.date && row.label))) ||
-      (block.type !== 'timeline' && !String(block.text || '').trim())
-    ));
+    const requiredEmpty = blocks.some((block) => block.required && !String(block.text || '').trim());
     if (requiredEmpty) {
       studioOut.textContent = 'Complete each required newsletter section before saving.';
       return;
@@ -137,20 +122,21 @@
           block.src = await upload(block.pendingFile, block.pendingData, password);
         }
       }
-      const cleanBlocks = [...imageBlocks, ...blocks].map(({ required, pendingFile, pendingData, ...block }) => block);
-      await window.ssaFetch.json('/api/newsletters', {
+      const cleanBlocks = [...blocks, ...imageBlocks].map(({ required, pendingFile, pendingData, ...block }) => block);
+      const saved = await window.ssaFetch.json('/api/newsletters', {
         method: 'POST',
         body: {
           password,
           title: document.getElementById('studioTitle').value.trim(),
           blocks: cleanBlocks,
-          published: document.getElementById('studioPublished').checked
+          published: true
         },
         timeout: 30000
       });
-      studioOut.textContent = 'Newsletter saved.';
+      studioOut.textContent = 'Newsletter published.';
       passwordForm.reset();
       closePasswordModal();
+      window.location.href = `/newsletter?edition=${saved.id}`;
     } catch (error) {
       passwordForm.querySelector('output').textContent = error.message || 'Could not save newsletter.';
     } finally {

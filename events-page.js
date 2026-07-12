@@ -24,9 +24,22 @@
     });
   }
 
+  if (false) {
   const rsvpModal = document.getElementById('eventsRsvpModal');
   const rsvpForm = document.getElementById('eventsRsvpForm');
+  function syncEligibility() {
+    const isStudent = rsvpForm.elements.isStudent.value;
+    const ageQuestion = rsvpForm.querySelector('.rsvp-age-question');
+    ageQuestion.hidden = isStudent !== 'no';
+    ageQuestion.querySelectorAll('input').forEach((input) => {
+      input.required = isStudent === 'no' && input.value === 'yes';
+      if (isStudent !== 'no') input.checked = false;
+    });
+  }
   bindModal(rsvpModal);
+  Array.from(rsvpForm?.elements.isStudent || []).forEach((input) => {
+    input.addEventListener('change', syncEligibility);
+  });
   document.querySelectorAll('.rsvp-button').forEach((button) => {
     button.addEventListener('click', () => {
       rsvpForm.reset();
@@ -35,12 +48,19 @@
       document.getElementById('eventsRsvpTitle').textContent = button.dataset.event;
       document.getElementById('eventsRsvpMeta').textContent = button.dataset.date;
       rsvpForm.querySelector('output').textContent = '';
+      syncEligibility();
       openModal(rsvpModal);
       window.setTimeout(() => rsvpForm.name.focus(), 60);
     });
   });
   rsvpForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    const isStudent = rsvpForm.elements.isStudent.value === 'yes';
+    const isOver18 = rsvpForm.elements.isOver18.value === 'yes';
+    if (!isStudent && !isOver18) {
+      rsvpForm.querySelector('output').textContent = 'You must be a U of MN student or at least 18 years old to RSVP.';
+      return;
+    }
     const submit = rsvpForm.querySelector('button[type="submit"]');
     submit.disabled = true;
     try {
@@ -50,7 +70,8 @@
           event: rsvpForm.event.value,
           date: rsvpForm.date.value,
           name: rsvpForm.name.value.trim(),
-          email: rsvpForm.email.value.trim()
+          isStudent,
+          isOver18
         }
       });
       document.querySelectorAll('[data-event-count]').forEach((el) => {
@@ -64,6 +85,7 @@
       submit.disabled = false;
     }
   });
+  }
 
   const suggestModal = document.getElementById('eventsSuggestModal');
   const suggestForm = document.getElementById('eventsSuggestForm');

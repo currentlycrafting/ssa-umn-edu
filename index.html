@@ -13,7 +13,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Somali Student Association — University of Minnesota</title>
-  <link rel="icon" type="image/png" href="assets/brand/ssa-logo.png" />
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
   <link rel="apple-touch-icon" href="assets/brand/ssa-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -45,10 +45,10 @@
     </div>
     <div class="nav-tools">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
-      <button class="nav-admin" id="adminToggle" type="button" aria-label="Admin">
+      <a class="nav-admin" id="adminToggle" href="/admin" aria-label="Admin">
         <svg class="nav-admin-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 1 1 6 0v2"/></svg>
         <span class="nav-admin-label">Admin</span>
-      </button>
+      </a>
     </div>
   </nav>
 
@@ -123,7 +123,7 @@
         <h2>Upcoming SSA moments</h2>
       </div>
 
-      <div class="events-promo-list">
+      <div class="events-promo-list" id="homeEventsList">
         <article class="event-promo">
           <div class="event-promo-stat"><strong data-event-count="Freshman Mixer">—</strong><span>people coming</span></div>
           <div class="event-promo-copy">
@@ -138,26 +138,26 @@
           <div class="event-promo-copy">
             <span class="eyebrow handwritten">Sep 24</span>
             <h3>Fall Kickoff</h3>
-            <p>Kick off SSA for the school year with food, music, and community.</p>
-            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Fall Kickoff">—</b> people</span></div>
+            <p>Kick off SSA at SuperBlock with Football Pizza, ice cream, snacks, drinks, music, and community.</p>
+            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24 — SuperBlock"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Fall Kickoff">—</b> people</span></div>
           </div>
         </article>
         <article class="event-promo">
           <div class="event-promo-stat"><strong data-event-count="Family Feud">—</strong><span>people coming</span></div>
           <div class="event-promo-copy">
-            <span class="eyebrow handwritten">Oct TBD</span>
+            <span class="eyebrow handwritten">Oct 08</span>
             <h3>Family Feud</h3>
-            <p>A community game night built for teams, laughter, and friendly competition.</p>
-            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Family Feud">—</b> people</span></div>
+            <p>Family Feud at The Whole Music Club with teams made before the event and Dave's Hot Chicken served.</p>
+            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Family Feud" data-date="October 8 — The Whole Music Club"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Family Feud">—</b> people</span></div>
           </div>
         </article>
         <article class="event-promo">
           <div class="event-promo-stat"><strong data-event-count="Field Day">—</strong><span>people coming</span></div>
           <div class="event-promo-copy">
-            <span class="eyebrow handwritten">Oct TBD</span>
+            <span class="eyebrow handwritten">Oct 30</span>
             <h3>Field Day</h3>
-            <p>A community day with games, bonding, and space to meet more SSA members.</p>
-            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Field Day" data-date="October, date TBD"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Field Day">—</b> people</span></div>
+            <p>Field Day in the North Gym with Domino's and relay games, basketball, soccer, pickleball, and more.</p>
+            <div class="event-promo-actions"><button class="button button-dark rsvp-button" type="button" data-event="Field Day" data-date="October 30 — North Gym"><span class="rsvp-btn-label">RSVP</span></button><span>Going · <b data-event-count="Field Day">—</b> people</span></div>
           </div>
         </article>
       </div>
@@ -287,12 +287,20 @@
         <input type="hidden" name="event" />
         <input type="hidden" name="date" />
         <input type="text" name="name" placeholder="Name" required />
-        <input type="email" name="email" placeholder="Email" required />
+        <fieldset class="rsvp-choice">
+          <legend>Are you a student at the U of MN?</legend>
+          <div><label><input type="radio" name="isStudent" value="yes" required /><span>Yes</span></label><label><input type="radio" name="isStudent" value="no" /><span>No</span></label></div>
+        </fieldset>
+        <fieldset class="rsvp-choice rsvp-age-question" hidden>
+          <legend>Are you 18 or older?</legend>
+          <div><label><input type="radio" name="isOver18" value="yes" /><span>Yes</span></label><label><input type="radio" name="isOver18" value="no" /><span>No</span></label></div>
+        </fieldset>
         <button class="button button-dark" type="submit">RSVP</button>
         <output></output>
       </form>
       <div class="rsvp-result" id="rsvpResult" hidden></div>
     </div>
+    <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
 
   <div class="modal-backdrop kofi-modal-backdrop" id="kofiModal" aria-hidden="true">
@@ -345,52 +353,14 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="adminModal" aria-hidden="true">
-    <div class="admin-sheet modal-sheet modal-card modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
-      <div id="adminLogin">
-        <span class="eyebrow">Admin</span>
-        <h2 id="adminTitle">SSA submissions</h2>
-        <p>Enter the admin password to view newsletter signups, RSVPs, gallery review, game scores, and messages.</p>
-        <form id="adminLoginForm" class="admin-login-form">
-          <div class="password-field">
-            <input type="password" id="adminPassword" placeholder="Password" autocomplete="current-password" required />
-            <button type="button" class="password-toggle" id="adminPasswordToggle" aria-label="Show password" aria-pressed="false">
-              <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2 12 C6 6 10 4 12 4 C14 4 18 6 22 12 C18 18 14 20 12 20 C10 20 6 18 2 12 Z"/>
-                <circle cx="12" cy="12" r="2.8"/>
-              </svg>
-            </button>
-          </div>
-          <button class="button button-dark" type="submit">View submissions</button>
-          <output></output>
-        </form>
-      </div>
-      <div id="adminPanel" hidden>
-        <div class="admin-head">
-          <span class="eyebrow">Admin</span>
-          <h2>All submissions</h2>
-          <button type="button" class="admin-refresh" id="adminRefresh">Refresh</button>
-        </div>
-        <div class="admin-tabs">
-          <button type="button" class="admin-tab active" data-tab="newsletters">Newsletter</button>
-          <button type="button" class="admin-tab" data-tab="rsvp">RSVP</button>
-          <button type="button" class="admin-tab" data-tab="gallery_review">Gallery review</button>
-          <button type="button" class="admin-tab" data-tab="aux">Aux queue</button>
-          <button type="button" class="admin-tab" data-tab="event_suggestions">Event ideas</button>
-          <button type="button" class="admin-tab" data-tab="messages">Messages</button>
-          <button type="button" class="admin-tab" data-tab="scores">Game</button>
-        </div>
-        <div class="admin-body" id="adminBody"></div>
-      </div>
-    </div>
-  </div>
-
   <script src="motion.js"></script>
   <script src="nav.js"></script>
-  <script src="micro.js"></script>
-  <script src="checklist.js"></script>
+  <script src="micro.js?v=2"></script>
+  <script src="checklist.js?v=2"></script>
   <script src="newsletter.js"></script>
-  <script src="index.js?v=4"></script>
+  <script src="/events-render.js?v=2"></script>
+  <script src="/rsvp.js?v=2"></script>
+  <script src="index.js?v=7"></script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
   <script>
     if (window.kofiWidgetOverlay) {

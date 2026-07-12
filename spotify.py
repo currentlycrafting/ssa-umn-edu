@@ -5,8 +5,10 @@ obfuscated with a keystream cipher derived from SECRET_KEY.
 """
 import base64
 import hashlib
+import hmac
 import json
 import os
+import secrets
 import time
 import urllib.error
 import urllib.parse
@@ -32,6 +34,32 @@ _app_token = {"token": None, "expires": 0.0}
 
 def configured():
     return bool(CLIENT_ID and CLIENT_SECRET)
+
+
+def create_oauth_state():
+    timestamp = str(int(time.time()))
+    nonce = secrets.token_urlsafe(12)
+    payload = f"aux.{timestamp}.{nonce}"
+    signature = hmac.new(SECRET_KEY, payload.encode(), hashlib.sha256).digest()[:18]
+    encoded = base64.urlsafe_b64encode(signature).decode().rstrip("=")
+    return f"{payload}.{encoded}"
+
+
+def valid_oauth_state(state, max_age=600):
+    try:
+        prefix, timestamp, nonce, supplied = str(state or "").split(".", 3)
+        issued_at = int(timestamp)
+    except (TypeError, ValueError):
+        return False
+    if prefix != "aux" or not nonce:
+        return False
+    age = int(time.time()) - issued_at
+    if age < -60 or age > max_age:
+        return False
+    payload = f"{prefix}.{timestamp}.{nonce}"
+    signature = hmac.new(SECRET_KEY, payload.encode(), hashlib.sha256).digest()[:18]
+    expected = base64.urlsafe_b64encode(signature).decode().rstrip("=")
+    return hmac.compare_digest(expected, supplied)
 
 
 # ---------- token obfuscation at rest ----------

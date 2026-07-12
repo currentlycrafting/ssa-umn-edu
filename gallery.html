@@ -77,8 +77,8 @@
       <figure class="polaroid right" style="--rot:2deg"><img src="assets/gallery/gallery-18.png" alt="SSA event staff" loading="lazy" /><figcaption>event staff duty</figcaption></figure>
       <figure class="polaroid left"  style="--rot:-3deg"><img src="assets/gallery/gallery-19.png" alt="SSA members being filmed" loading="lazy" /><figcaption>lights, camera, SSA</figcaption></figure>
       <div id="communityGalleryItems"></div>
-      <p class="gallery-end handwritten">More memories loading…</p>
-      <p class="gallery-end"><button class="button button-dark handdrawn" type="button" id="gallerySubmitOpen">Gallery</button></p>
+      <p class="gallery-end handwritten">More memories loading — add more using the Gallery button below.</p>
+      <p class="gallery-end"><button class="button button-dark handdrawn gallery-submit-open" type="button" id="gallerySubmitOpen">Gallery</button></p>
     </section>
   </main>
 
@@ -108,15 +108,17 @@
     <div class="modal-sheet modal-card gallery-submit-sheet" role="dialog" aria-modal="true" aria-labelledby="gallerySubmitTitle">
       <span class="eyebrow">Community Gallery</span>
       <h2 id="gallerySubmitTitle">Add a memory</h2>
-      <p>Send a photo to the board. Approved photos will appear in the gallery.</p>
+      <p>Share a photo with the community. It will appear in the gallery right away.</p>
       <form id="gallerySubmitForm" class="connect-modal-form">
-        <input type="text" name="submitter" placeholder="Your name" required />
-        <input type="email" name="email" placeholder="Your email" required />
-        <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" required />
+        <input type="password" name="password" placeholder="Admin password" required autocomplete="current-password" />
+        <label class="gallery-drop" id="galleryDrop">
+          <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" />
+          <strong>Drop a photo here</strong>
+          <span>or click to browse · PNG, JPG, or WEBP</span>
+        </label>
         <img class="gallery-preview" id="galleryPreview" alt="Selected photo preview" />
         <input type="text" name="caption" placeholder="Short caption" maxlength="300" required />
-        <textarea name="alt" rows="2" placeholder="Describe the photo for someone who cannot see it" maxlength="300" required></textarea>
-        <button class="button button-dark" type="submit">Submit for review</button>
+        <button class="button button-dark" type="submit">Add to gallery</button>
         <output></output>
       </form>
     </div>
@@ -130,9 +132,9 @@
 
   <script src="motion.js"></script>
   <script src="nav.js"></script>
-  <script src="micro.js"></script>
-  <script src="checklist.js"></script>
+  <script src="micro.js?v=2"></script>
+  <script src="checklist.js?v=2"></script>
   <script src="newsletter.js"></script>
-  <script src="gallery.js?v=3"></script>
+  <script src="gallery.js?v=8"></script>
 </body>
 </html>

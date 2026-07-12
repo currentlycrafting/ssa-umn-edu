@@ -79,12 +79,17 @@ def init_db():
                 event_name TEXT NOT NULL,
                 event_date TEXT NOT NULL,
                 name TEXT NOT NULL,
-                email TEXT NOT NULL,
+                email TEXT,
+                is_student BOOLEAN NOT NULL DEFAULT FALSE,
+                is_over_18 BOOLEAN NOT NULL DEFAULT TRUE,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
                 UNIQUE (event_name, email)
             )
             """
         )
+        cur.execute("ALTER TABLE rsvp_interest ALTER COLUMN email DROP NOT NULL")
+        cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS is_student BOOLEAN NOT NULL DEFAULT FALSE")
+        cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS is_over_18 BOOLEAN NOT NULL DEFAULT TRUE")
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS game_scores (

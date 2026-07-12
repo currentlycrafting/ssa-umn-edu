@@ -34,7 +34,7 @@ import cms  # noqa: E402
 from db import database_ready, db, init_db, warm_pool  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Ilovesomalia393@")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "SSA")
 HOST = os.environ.get("HOST", "0.0.0.0")
 PORT = int(os.environ.get("PORT", "5600"))
 LEADERBOARD_TTL = int(os.environ.get("LEADERBOARD_TTL", "30"))
@@ -149,6 +149,7 @@ PAGE_ROUTES = {
     "/board": "board.html",
     "/gallery": "gallery.html",
     "/connections": "connections.html",
+    "/admin": "admin.html",
 }
 
 
@@ -181,7 +182,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
         with db() as cur:
             cur.execute(
                 """
-                SELECT name, email
+                SELECT name
                 FROM rsvp_interest
                 WHERE event_name = %s
                 ORDER BY created_at ASC
@@ -189,7 +190,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 (event_name,),
             )
             rows = cur.fetchall()
-        return [{"name": r["name"], "email": r["email"]} for r in rows]
+        return [{"name": r["name"]} for r in rows]
 
     def _admin_payload(self):
         with db() as cur:
@@ -203,7 +204,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             messages = cur.fetchall()
             cur.execute(
                 """
-                SELECT event_name, event_date, name, email, created_at
+                SELECT event_name, event_date, name, is_student, is_over_18, created_at
                 FROM rsvp_interest
                 ORDER BY created_at DESC
                 """
@@ -257,7 +258,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     "event_name": r["event_name"],
                     "event_date": r["event_date"],
                     "name": r["name"],
-                    "email": r["email"],
+                    "is_student": bool(r["is_student"]),
+                    "is_over_18": bool(r["is_over_18"]),
                     "created_at": iso(r["created_at"]),
                 }
                 for r in rsvps
@@ -276,7 +278,6 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 }
                 for r in connects
             ],
-            "gallery_review": cms.list_gallery_items(include_pending=True),
             "event_suggestions": cms.list_event_suggestions(),
             "aux": [
                 {
@@ -374,7 +375,10 @@ class SSAHandler(SimpleHTTPRequestHandler):
         # ---- newsletter CMS ----
         if path == "/api/newsletters":
             status, payload = cms.list_newsletters(include_drafts=False)
-            self._send_json(status, payload, cache_seconds=15)
+            self._send_json(status, payload)
+            return
+        if path == "/api/events":
+            self._send_json(200, {"ok": True, "events": cms.list_events()})
             return
 
         if path == "/api/gallery":
@@ -392,6 +396,14 @@ class SSAHandler(SimpleHTTPRequestHandler):
         if m:
             status, payload = cms.get_newsletter(int(m.group(1)))
             self._send_json(status, payload)
+            return
+        m = re.fullmatch(r"/api/uploads/(\d+)", path)
+        if m:
+            image = cms.get_newsletter_image(int(m.group(1)))
+            if not image:
+                self.send_error(404)
+            else:
+                self._send_bytes(200, image[0], image[1], cache_seconds=86400)
             return
 
         # ---- arcade ----
@@ -531,12 +543,32 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 status, resp = cms.submit_gallery_item(payload)
                 self._send_json(status, resp)
                 return
-            m = re.fullmatch(r"/api/gallery/(\d+)/moderate", post_path)
+            if post_path == "/api/gallery/list-all":
+                if not cms.is_admin(payload):
+                    self._send_json(401, {"error": "Invalid password."})
+                else:
+                    self._send_json(200, {"ok": True, "items": cms.list_gallery_items(include_pending=True)})
+                return
+            m = re.fullmatch(r"/api/gallery/(\d+)/delete", post_path)
             if m:
-                status, resp = cms.moderate_gallery_item(int(m.group(1)), payload)
+                status, resp = cms.delete_gallery_item(int(m.group(1)), payload)
                 self._send_json(status, resp)
                 return
-
+            if post_path == "/api/events":
+                status, resp = cms.save_event(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/events/list-all":
+                if not cms.is_admin(payload):
+                    self._send_json(401, {"error": "Invalid password."})
+                else:
+                    self._send_json(200, {"ok": True, "events": cms.list_events(include_unpublished=True)})
+                return
+            m = re.fullmatch(r"/api/events/(\d+)/delete", post_path)
+            if m:
+                status, resp = cms.delete_event(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
             # ---- event suggestions + arcade ----
             if post_path == "/api/event-suggestions":
                 status, resp = cms.add_event_suggestion(payload)
@@ -596,24 +628,27 @@ class SSAHandler(SimpleHTTPRequestHandler):
             event_name = str(payload.get("event", "")).strip()
             event_date = str(payload.get("date", "")).strip()
             name = str(payload.get("name", "")).strip()
-            email = str(payload.get("email", "")).strip().lower()
-            if not event_name or not event_date or not name or "@" not in email:
-                self._send_json(400, {"error": "Event, date, name, and valid email are required."})
+            is_student = payload.get("isStudent") is True
+            is_over_18 = payload.get("isOver18") is True
+            if not event_name or not event_date or not name:
+                self._send_json(400, {"error": "Event, date, and name are required."})
+                return
+            if not is_student and not is_over_18:
+                self._send_json(403, {"error": "You must be a U of MN student or at least 18 years old to RSVP."})
                 return
             try:
                 with db() as cur:
                     cur.execute(
                         """
-                        INSERT INTO rsvp_interest (event_name, event_date, name, email, created_at)
-                        VALUES (%s, %s, %s, %s, %s)
-                        ON CONFLICT (event_name, email) DO NOTHING
+                        INSERT INTO rsvp_interest
+                            (event_name, event_date, name, is_student, is_over_18, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s)
                         """,
-                        (event_name, event_date, name, email, now),
+                        (event_name, event_date, name, is_student, is_over_18, now),
                     )
-                    already = cur.rowcount == 0
                     cur.execute(
                         """
-                        SELECT name, email
+                        SELECT name
                         FROM rsvp_interest
                         WHERE event_name = %s
                         ORDER BY created_at ASC
@@ -621,11 +656,11 @@ class SSAHandler(SimpleHTTPRequestHandler):
                         (event_name,),
                     )
                     rows = cur.fetchall()
-                attendees = [{"name": r["name"], "email": r["email"]} for r in rows]
+                attendees = [{"name": r["name"]} for r in rows]
                 invalidate_rsvp_summary_cache()
                 self._send_json(200, {
                     "ok": True,
-                    "already": already,
+                    "already": False,
                     "count": len(attendees),
                     "attendees": attendees,
                 })

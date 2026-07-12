@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSA Admin</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body class="admin-page">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks"><a href="/index.html">Home</a></div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+
+  <main class="page-main admin-main">
+    <header class="page-hero admin-hero">
+      <span class="eyebrow">Board workspace</span>
+      <h1>SSA Admin</h1>
+      <p>Publish events, manage gallery photos, and handle community activity in one place.</p>
+    </header>
+
+    <section class="admin-gate" id="adminGate">
+      <div class="admin-gate-card">
+        <span class="eyebrow">Secure access</span>
+        <h2>Open the workspace</h2>
+        <form id="adminGateForm" class="connect-modal-form">
+          <input type="password" id="adminPass" placeholder="Admin password" autocomplete="current-password" required />
+          <button class="button button-dark" type="submit">Continue</button>
+          <output></output>
+        </form>
+      </div>
+    </section>
+
+    <div class="admin-workspace" id="adminWorkspace" hidden>
+      <aside class="admin-sidebar">
+        <div><span class="eyebrow">Workspace</span><strong>Manage SSA</strong></div>
+        <nav id="adminSections" aria-label="Admin sections">
+          <button class="active" data-section="overview">Overview</button>
+          <button data-section="events">Events</button>
+          <button data-section="gallery">Gallery</button>
+          <button data-section="rsvp">RSVPs</button>
+          <button data-section="event_suggestions">Event ideas</button>
+          <button data-section="messages">Messages</button>
+          <button data-section="connect">Community</button>
+          <button data-section="newsletters">Newsletter</button>
+          <button data-section="aux">Aux queue</button>
+          <button data-section="scores">Arcade</button>
+        </nav>
+        <button class="button button-line" id="adminSignOut" type="button">Sign out</button>
+      </aside>
+      <section class="admin-content">
+        <div class="admin-content-head">
+          <div><span class="eyebrow">Admin</span><h2 id="adminSectionTitle">Overview</h2></div>
+          <button class="button button-line" id="adminRefresh" type="button">Refresh</button>
+        </div>
+        <div id="adminContent"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=2"></script>
+  <script src="/admin.js?v=2"></script>
+</body>
+</html>

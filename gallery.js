@@ -1,21 +1,27 @@
 (async function () {
   const book = document.querySelector('.gallery-book');
   const communityAnchor = document.getElementById('communityGalleryItems');
+  const staticPolaroidCount = book?.querySelectorAll('.polaroid').length || 0;
+  let communityCount = 0;
+  function createGalleryFigure(item, index) {
+    const figure = document.createElement('figure');
+    figure.className = `polaroid visible ${index % 2 ? 'right' : 'left'}`;
+    figure.style.setProperty('--rot', `${index % 2 ? 2.5 : -2.5}deg`);
+    const image = document.createElement('img');
+    image.src = item.src;
+    image.alt = item.alt || item.caption;
+    image.loading = 'lazy';
+    const caption = document.createElement('figcaption');
+    caption.textContent = item.caption;
+    figure.append(image, caption);
+    return figure;
+  }
   if (book && communityAnchor && window.ssaFetch) {
     try {
       const data = await window.ssaFetch.json('/api/gallery');
       (data.items || []).forEach((item, index) => {
-        const figure = document.createElement('figure');
-        figure.className = `polaroid ${index % 2 ? 'right' : 'left'}`;
-        figure.style.setProperty('--rot', `${index % 2 ? 2.5 : -2.5}deg`);
-        const image = document.createElement('img');
-        image.src = item.src;
-        image.alt = item.alt;
-        image.loading = 'lazy';
-        const caption = document.createElement('figcaption');
-        caption.textContent = item.caption;
-        figure.append(image, caption);
-        book.insertBefore(figure, communityAnchor);
+        book.insertBefore(createGalleryFigure(item, staticPolaroidCount + index), communityAnchor);
+        communityCount += 1;
       });
     } catch (_) {
       // Existing gallery remains usable if community additions cannot load.
@@ -27,12 +33,31 @@
   const submitClose = document.getElementById('gallerySubmitClose');
   const submitForm = document.getElementById('gallerySubmitForm');
   const preview = document.getElementById('galleryPreview');
+  const drop = document.getElementById('galleryDrop');
   let selectedData = '';
+  let selectedFile = null;
 
   function closeSubmit() {
     submitModal?.classList.remove('open');
     submitModal?.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
+  }
+  function animatePolaroidAdd(figure, dataUrl, caption) {
+    const developer = document.createElement('div');
+    developer.className = 'gallery-developing';
+    developer.innerHTML = `<div class="gallery-developing-flash"></div><figure><img src="${dataUrl}" alt="" /><figcaption>${caption.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))}</figcaption><span>developing…</span></figure>`;
+    document.body.appendChild(developer);
+    window.requestAnimationFrame(() => developer.classList.add('active'));
+    window.setTimeout(() => developer.classList.add('developed'), 650);
+    window.setTimeout(() => {
+      developer.classList.add('leaving');
+      figure.classList.add('polaroid-added');
+      figure.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 1450);
+    window.setTimeout(() => {
+      developer.remove();
+      figure.classList.remove('polaroid-added');
+    }, 2050);
   }
   submitOpen?.addEventListener('click', () => {
     submitModal.classList.add('open');
@@ -46,9 +71,9 @@
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && submitModal?.classList.contains('open')) closeSubmit();
   });
-  submitForm?.photo.addEventListener('change', () => {
-    const file = submitForm.photo.files[0];
+  function stagePhoto(file) {
     selectedData = '';
+    selectedFile = null;
     preview.classList.remove('visible');
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -56,6 +81,8 @@
       submitForm.photo.value = '';
       return;
     }
+    selectedFile = file;
+    drop.querySelector('strong').textContent = file.name;
     const reader = new FileReader();
     reader.onload = () => {
       selectedData = String(reader.result || '');
@@ -63,35 +90,59 @@
       preview.classList.add('visible');
     };
     reader.readAsDataURL(file);
+  }
+  submitForm?.photo.addEventListener('change', () => {
+    stagePhoto(submitForm.photo.files[0]);
+  });
+  drop?.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    drop.classList.add('dragging');
+  });
+  drop?.addEventListener('dragleave', () => drop.classList.remove('dragging'));
+  drop?.addEventListener('drop', (event) => {
+    event.preventDefault();
+    drop.classList.remove('dragging');
+    stagePhoto(event.dataTransfer.files[0]);
   });
   submitForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const out = submitForm.querySelector('output');
     const button = submitForm.querySelector('button[type="submit"]');
-    const file = submitForm.photo.files[0];
+    const file = selectedFile;
     if (!file || !selectedData) {
       out.textContent = 'Choose a photo first.';
       return;
     }
     button.disabled = true;
     try {
-      await window.ssaFetch.json('/api/gallery', {
+      const response = await window.ssaFetch.json('/api/gallery', {
         method: 'POST',
         body: {
-          submitter: submitForm.submitter.value.trim(),
-          email: submitForm.email.value.trim(),
+          password: submitForm.password.value,
           filename: file.name,
           data: selectedData,
-          caption: submitForm.caption.value.trim(),
-          alt: submitForm.alt.value.trim()
+          caption: submitForm.caption.value.trim()
         },
         timeout: 30000
       });
-      out.textContent = 'Submitted. The board will review your photo.';
+      const item = {
+        src: `/api/gallery/${response.id}/image`,
+        alt: submitForm.caption.value.trim(),
+        caption: submitForm.caption.value.trim()
+      };
+      const figure = createGalleryFigure(item, staticPolaroidCount + communityCount);
+      book?.insertBefore(figure, communityAnchor);
+      communityCount += 1;
+      items.push(item);
+      figure.addEventListener('click', () => open(items.length - 1));
+      animatePolaroidAdd(figure, selectedData, item.caption);
+      out.textContent = 'Added to the gallery.';
       submitForm.reset();
       selectedData = '';
+      selectedFile = null;
+      drop.querySelector('strong').textContent = 'Drop a photo here';
       preview.classList.remove('visible');
-      window.setTimeout(closeSubmit, 1800);
+      window.setTimeout(closeSubmit, 180);
     } catch (error) {
       out.textContent = error.message || 'Could not submit this photo.';
     } finally {
@@ -101,6 +152,7 @@
 
   const figures = Array.from(document.querySelectorAll('.gallery-book .polaroid'));
   if (!figures.length) return;
+  figures.forEach((figure) => figure.classList.add('visible'));
 
   const CLOSE_ICON =
     '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
@@ -124,17 +176,15 @@
   lightbox.innerHTML =
     '<div class="gallery-lightbox-bg" data-close aria-label="Close gallery"></div>' +
     '<div class="gallery-lightbox-panel" role="dialog" aria-modal="true" aria-labelledby="galleryLightboxCaption">' +
+      '<button type="button" class="gallery-lightbox-close" aria-label="Close">' + CLOSE_ICON + '</button>' +
+      '<button type="button" class="gallery-lightbox-zone gallery-lightbox-zone-prev" aria-label="Previous photo"><span aria-hidden="true">←</span></button>' +
       '<div class="gallery-lightbox-card" tabindex="0" aria-label="Photo viewer">' +
-        '<button type="button" class="gallery-lightbox-close" aria-label="Close">' + CLOSE_ICON + '</button>' +
         '<div class="gallery-lightbox-viewport" id="galleryLightboxViewport">' +
-          '<button type="button" class="gallery-lightbox-zone gallery-lightbox-zone-prev" aria-label="Previous photo"></button>' +
           '<img id="galleryLightboxImg" alt="" />' +
-          '<button type="button" class="gallery-lightbox-zone gallery-lightbox-zone-next" aria-label="Next photo"></button>' +
         '</div>' +
-        '<p class="gallery-lightbox-hint gallery-lightbox-hint-desktop">Click center to zoom · click left or right side for prev/next</p>' +
-        '<p class="gallery-lightbox-hint gallery-lightbox-hint-mobile">Tap left or right side of the photo to browse</p>' +
         '<figcaption id="galleryLightboxCaption" class="gallery-lightbox-caption"></figcaption>' +
       '</div>' +
+      '<button type="button" class="gallery-lightbox-zone gallery-lightbox-zone-next" aria-label="Next photo"><span aria-hidden="true">→</span></button>' +
     '</div>';
   document.body.appendChild(lightbox);
 

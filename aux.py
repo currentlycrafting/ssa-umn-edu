@@ -326,16 +326,12 @@ def add_request(payload):
 def spotify_login_redirect():
     if not spotify.configured():
         return None, (503, {"error": "Spotify credentials are not configured on the server."})
-    state = "aux." + secrets.token_urlsafe(16)
-    with db() as cur:
-        cur.execute("UPDATE aux_dj SET oauth_state = %s WHERE id = 1", (state,))
+    state = spotify.create_oauth_state()
     return spotify.auth_url(state), None
 
 
 def spotify_callback(code, state):
-    with db() as cur:
-        row = _dj(cur)
-    if not row or not state or row["oauth_state"] != state:
+    if not spotify.valid_oauth_state(state):
         return None, (400, {"error": "Invalid or expired authorization state."})
     try:
         tokens = spotify.exchange_code(code)

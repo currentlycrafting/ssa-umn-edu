@@ -11,7 +11,7 @@
   <script src="/api.js"></script>
   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
 </head>
-<body>
+<body class="events-page">
   <nav class="nav page-nav" aria-label="Primary navigation">
     <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
     <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
@@ -26,7 +26,7 @@
   </nav>
   <main class="page-main">
     <header class="page-hero" data-reveal><span class="eyebrow">Calendar</span><h1>SSA Events</h1><p>RSVP, show up, bring friends.</p></header>
-    <aside class="featured-event" aria-label="Featured hiking event" data-reveal>
+    <aside class="featured-event" id="eventsFeatured" aria-label="Featured event" data-reveal>
       <div class="featured-event-art">
         <img src="/assets/events/afton-state-park.png" alt="Afton State Park shoreline in autumn" />
       </div>
@@ -39,26 +39,36 @@
         <button class="button button-dark rsvp-button" type="button" data-event="Hiking Event" data-date="July 18, 2026 — Afton State Park">Reserve Your Spot</button>
       </div>
     </aside>
-    <div class="event-grid" data-reveal-group>
+    <div class="event-grid" id="eventsGrid" data-reveal-group>
       <article class="event-card"><span class="event-date">Sep 15</span><h3>Freshman Mixer</h3><p>Meet the class of 2030 and find your first SSA connections.</p><button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15">RSVP</button></article>
-      <article class="event-card"><span class="event-date">Sep 24</span><h3>Fall Kickoff</h3><p>Food, music, and community to start the year.</p><button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24">RSVP</button></article>
-      <article class="event-card"><span class="event-date">Oct TBD</span><h3>Family Feud</h3><p>Teams, laughter, friendly competition.</p><button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October, date TBD">RSVP</button></article>
+      <article class="event-card"><span class="event-date">Sep 24</span><h3>Fall Kickoff</h3><p>Join us at SuperBlock for Football Pizza, ice cream, snacks, drinks, music, and community.</p><button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24 — SuperBlock">RSVP</button></article>
+      <article class="event-card"><span class="event-date">Oct 08</span><h3>Family Feud</h3><p>Meet at The Whole Music Club for pre-made teams, friendly competition, and Dave's Hot Chicken.</p><button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October 8 — The Whole Music Club">RSVP</button></article>
+      <article class="event-card"><span class="event-date">Oct 30</span><h3>Field Day</h3><p>Relay games, basketball, soccer, pickleball, and more in the North Gym, with Domino's served.</p><button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October 30 — North Gym">RSVP</button></article>
     </div>
     <p style="text-align:center;margin-top:32px" data-reveal><button type="button" class="button button-line" data-suggest-event>Suggest an event</button></p>
   </main>
-  <div class="modal-backdrop" id="eventsRsvpModal" aria-hidden="true">
-    <div class="modal-sheet modal-card modal-card-compact rsvp-modal" role="dialog" aria-modal="true" aria-labelledby="eventsRsvpTitle">
+  <div class="modal-backdrop" id="rsvpModal" aria-hidden="true">
+    <div class="rsvp-modal modal-sheet modal-card modal-card-compact" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
       <span class="eyebrow">RSVP</span>
-      <h2 id="eventsRsvpTitle">Event</h2>
-      <p id="eventsRsvpMeta"></p>
-      <form id="eventsRsvpForm" class="connect-modal-form">
+      <h2 id="rsvpTitle">Event</h2>
+      <p id="rsvpMeta"></p>
+      <p class="rsvp-modal-count" id="rsvpModalCount"></p>
+      <form id="rsvpForm">
         <input type="hidden" name="event" />
         <input type="hidden" name="date" />
         <input type="text" name="name" placeholder="Name" required autocomplete="name" />
-        <input type="email" name="email" placeholder="Email" required autocomplete="email" />
+        <fieldset class="rsvp-choice">
+          <legend>Are you a student at the U of MN?</legend>
+          <div><label><input type="radio" name="isStudent" value="yes" required /><span>Yes</span></label><label><input type="radio" name="isStudent" value="no" /><span>No</span></label></div>
+        </fieldset>
+        <fieldset class="rsvp-choice rsvp-age-question" hidden>
+          <legend>Are you 18 or older?</legend>
+          <div><label><input type="radio" name="isOver18" value="yes" /><span>Yes</span></label><label><input type="radio" name="isOver18" value="no" /><span>No</span></label></div>
+        </fieldset>
         <button class="button button-dark" type="submit">RSVP</button>
         <output></output>
       </form>
+      <div class="rsvp-result" id="rsvpResult" hidden></div>
     </div>
     <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
@@ -83,6 +93,8 @@
   </div>
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
   <script src="/motion.js"></script><script src="/nav.js"></script>
-  <script src="/events-page.js"></script>
+  <script src="/events-render.js?v=2"></script>
+  <script src="/rsvp.js?v=2"></script>
+  <script src="/events-page.js?v=3"></script>
 </body>
 </html>

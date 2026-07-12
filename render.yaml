@@ -18,8 +18,16 @@ services:
     envVars:
       - key: HOST
         value: 0.0.0.0
-      - key: ADMIN_PASSWORD
+      - key: BASE_URL
+        value: https://www.ssaumn.com
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SPOTIFY_CLIENT_ID
+        value: 6e06bc4ac68246ca9c9d3badaa9f1c52
+      - key: SPOTIFY_CLIENT_SECRET
         sync: false
+      - key: ADMIN_PASSWORD
+        value: SSA
       - key: DATABASE_URL
         fromDatabase:
           name: ssa-db

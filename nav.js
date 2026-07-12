@@ -21,7 +21,7 @@
     links.innerHTML = `
       <a href="/index.html">Home</a>
       <a href="/events">Events</a>
-      <a href="/games">Games</a>
+      <a href="/newsletter">Newsletter</a>
       <a href="/aux">Want The Aux</a>
       <a href="/gallery">Gallery</a>
       <div class="nav-options">
@@ -29,7 +29,7 @@
           <span class="nav-options-icon" aria-hidden="true"></span>
         </button>
         <div class="nav-options-menu" id="navOptionsMenu">
-          <a href="/newsletter">Newsletter</a>
+          <a href="/games">Arcade</a>
           <a href="/donate">Donate</a>
           <a href="/board">Board</a>
         </div>
@@ -107,7 +107,32 @@
     }
   });
   if (path === '/daily' || path === '/connections') {
-    document.querySelector('.nav-links a[href="/games"]')?.classList.add('active');
+    document.querySelector('.nav-options-menu a[href="/games"]')?.classList.add('active');
   }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
+
+  const footerHtml = `
+    <footer class="footer">
+      <div class="footer-card">
+        <a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a>
+        <nav aria-label="Footer">
+          <a href="/events">Events</a>
+          <a href="/games">Arcade</a>
+          <a href="/newsletter">Newsletter</a>
+          <a href="/donate">Donate</a>
+          <a href="/aux">Want The Aux</a>
+          <a href="/board">Board</a>
+        </nav>
+        <div class="social-row">
+          <a href="mailto:ssa@umn.edu">Email</a>
+          <a href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <a href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">TikTok</a>
+          <a href="https://www.linkedin.com/in/somali-student-association-at-the-university-of-minnesota-b435362a2" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </div>
+        <small>© 2026 Somali Student Association — University of Minnesota</small>
+      </div>
+    </footer>`;
+  const footer = document.querySelector('.footer');
+  if (footer) footer.outerHTML = footerHtml;
+  else document.body.insertAdjacentHTML('beforeend', footerHtml);
 })();
