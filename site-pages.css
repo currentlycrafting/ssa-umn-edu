@@ -999,7 +999,21 @@
   transition: width .2s ease;
 }
 .schedule-create-sheet:has([data-create-panel="2"]:not([hidden])) {
-  width: min(860px, calc(100vw - 24px));
+  width: min(720px, calc(100vw - 24px));
+}
+.schedule-create-grid-wrap { max-height: min(46dvh, 400px); border-radius: 8px; }
+.schedule-create-grid-wrap .schedule-grid {
+  width: max-content;
+  max-width: none;
+  grid-template-columns: 54px repeat(var(--schedule-days), 44px);
+  min-width: calc(54px + var(--schedule-days) * 44px);
+  gap: 1px;
+  padding: 4px;
+}
+.schedule-create-grid-wrap .schedule-time-label,
+.schedule-create-grid-wrap .schedule-slot {
+  min-height: 22px;
+  height: 22px;
 }
 .schedule-create-sheet > .modal-exit { top: 10px; right: 10px; width: 36px; height: 36px; }
 .schedule-create-hero {
@@ -1082,7 +1096,6 @@
   background: var(--blue); color: var(--paper);
 }
 .schedule-cal-day.is-selected.is-today span { box-shadow: inset 0 0 0 1.5px color-mix(in oklch, white 70%, transparent); }
-.schedule-create-grid-wrap { max-height: min(46dvh, 400px); border-radius: 8px; }
 .schedule-create-actions {
   display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
 }

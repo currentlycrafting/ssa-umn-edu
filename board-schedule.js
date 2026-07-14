@@ -21,6 +21,7 @@
   let saving = false;
   let dragging = false;
   let availabilityDirty = false;
+  let pollingTimer = 0;
   const MEMBER_KEY = 'ssaScheduleMember';
 
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -477,6 +478,8 @@
         : `${dates.length} dates · ${dayLabel(dates[0], true)} – ${dayLabel(dates[dates.length - 1], true)}`;
     workspace.hidden = false;
     updateToolbar(`${poll.title} · ${dateCopy}`);
+    const hasSavedResponse = Boolean(selectedMember) &&
+      (pollState.responses || []).some((item) => item.memberName === selectedMember);
     workspace.innerHTML = `
       <div class="schedule-response-card">
         <div class="schedule-response-intro">
@@ -486,7 +489,7 @@
           ${memberPickerMarkup()}
         </div>
         <div class="schedule-view-tabs">
-          <button type="button" data-schedule-view="availability" class="${viewMode === 'availability' ? 'active' : ''}" ${selectedMember ? '' : 'disabled'}>My times</button>
+          <button type="button" data-schedule-view="availability" class="${viewMode === 'availability' ? 'active' : ''}" ${selectedMember ? '' : 'disabled'}>${hasSavedResponse ? 'Edit time' : 'My times'}</button>
           <button type="button" data-schedule-view="results" class="${viewMode === 'results' ? 'active' : ''}">Results · ${pollState.responseCount}</button>
         </div>
         ${selectedMember || viewMode === 'results' ? `
@@ -632,11 +635,16 @@
       schedules = data.schedules || [];
       boardMembers = data.boardMembers || [];
       renderScheduleList();
-      if (selectNewest && !pollSlug && schedules[0]) {
-        await selectSchedule(schedules[0].slug, false);
-      }
     } catch (error) {
       scheduleList.innerHTML = `<div class="schedule-list-empty"><strong>Could not load schedules</strong><span>${esc(error.message || 'Try again shortly.')}</span></div>`;
+      return;
+    }
+    if (selectNewest && !pollSlug && schedules[0]) {
+      try {
+        await selectSchedule(schedules[0].slug, false);
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 
