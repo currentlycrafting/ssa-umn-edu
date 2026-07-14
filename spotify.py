@@ -4,6 +4,7 @@ The client secret and all tokens live on the server. Tokens are stored
 obfuscated with a keystream cipher derived from SECRET_KEY.
 """
 import base64
+import binascii
 import hashlib
 import hmac
 import json
@@ -85,10 +86,13 @@ def seal(text):
 def unseal(blob):
     if not blob:
         return ""
-    raw = base64.b64decode(blob)
-    nonce, data = raw[:8], raw[8:]
-    ks = _keystream(SECRET_KEY + nonce, len(data))
-    return bytes(a ^ b for a, b in zip(data, ks)).decode()
+    try:
+        raw = base64.b64decode(blob)
+        nonce, data = raw[:8], raw[8:]
+        ks = _keystream(SECRET_KEY + nonce, len(data))
+        return bytes(a ^ b for a, b in zip(data, ks)).decode()
+    except (ValueError, UnicodeDecodeError, binascii.Error) as exc:
+        raise SpotifyError(401, f"Stored Spotify token is unreadable — reconnect Spotify ({exc}).")
 
 
 # ---------- HTTP ----------

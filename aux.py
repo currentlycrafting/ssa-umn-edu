@@ -39,6 +39,19 @@ def dj_authorized(cur, key):
     return bool(row and row["dj_key"] and key and secrets.compare_digest(row["dj_key"], key))
 
 
+def _clear_dj_tokens():
+    with db() as cur:
+        cur.execute(
+            """
+            UPDATE aux_dj
+            SET access_token = '', refresh_token = '', expires_at = 0,
+                spotify_user_id = '', display_name = '', dj_key = '', oauth_state = NULL
+            WHERE id = 1
+            """
+        )
+        bump_version(cur)
+
+
 def _dj_access_token():
     """Fresh access token for the connected DJ, refreshing when expired."""
     with db() as cur:
@@ -46,9 +59,13 @@ def _dj_access_token():
     if not row or not row["refresh_token"]:
         return None
     now_ts = time.time()
-    if row["access_token"] and row["expires_at"] and row["expires_at"] > now_ts + 30:
-        return spotify.unseal(row["access_token"])
-    refreshed = spotify.refresh_access_token(spotify.unseal(row["refresh_token"]))
+    try:
+        if row["access_token"] and row["expires_at"] and row["expires_at"] > now_ts + 30:
+            return spotify.unseal(row["access_token"])
+        refreshed = spotify.refresh_access_token(spotify.unseal(row["refresh_token"]))
+    except spotify.SpotifyError:
+        _clear_dj_tokens()
+        return None
     access = refreshed["access_token"]
     new_refresh = refreshed.get("refresh_token")
     with db() as cur:
