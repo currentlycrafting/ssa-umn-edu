@@ -200,7 +200,12 @@
           <div class="schedule-grid-wrap schedule-create-grid-wrap">
             <div class="schedule-grid" id="scheduleCreatorGrid" aria-label="Possible meeting times"></div>
           </div>
-          <p class="schedule-grid-help">Click or drag across hours. Scroll the table if you need more room.</p>
+          <div class="schedule-create-pager" id="scheduleCreatorPager" hidden>
+            <button type="button" id="scheduleCreatorPrev" aria-label="Previous dates">‹</button>
+            <span id="scheduleCreatorPageLabel"></span>
+            <button type="button" id="scheduleCreatorNext" aria-label="Next dates">›</button>
+          </div>
+          <p class="schedule-grid-help" id="scheduleCreatorHelp">Click or drag across hours.</p>
         </section>
         <div class="schedule-create-actions">
           <button class="button button-line" type="button" id="scheduleCreateBack" hidden>Back</button>
@@ -221,9 +226,15 @@
   const createNext = createModal.querySelector('#scheduleCreateNext');
   const createSubmit = createModal.querySelector('button[type="submit"]');
   const dateSummary = createModal.querySelector('#scheduleDateSummary');
+  const creatorPager = createModal.querySelector('#scheduleCreatorPager');
+  const creatorPageLabel = createModal.querySelector('#scheduleCreatorPageLabel');
+  const creatorPrev = createModal.querySelector('#scheduleCreatorPrev');
+  const creatorNextPage = createModal.querySelector('#scheduleCreatorNext');
+  const creatorHelp = createModal.querySelector('#scheduleCreatorHelp');
   const creatorSlots = new Set();
   const selectedDates = new Set();
   let createStep = 1;
+  let creatorPage = 0;
   let calendarCursor = new Date(`${localDateValue()}T12:00:00`);
   calendarCursor.setDate(1);
 
@@ -380,11 +391,49 @@
     applyCreateDate(value, !selectedDates.has(value));
   }
 
+  function creatorPageSize() {
+    const width = window.innerWidth;
+    if (width > 720) return Number.POSITIVE_INFINITY;
+    const labelWidth = 40;
+    const cellWidth = width <= 400 ? 32 : 34;
+    const available = Math.max(200, width - 48);
+    return Math.max(3, Math.floor((available - labelWidth) / cellWidth));
+  }
+
+  function renderCreatorPager(totalDates, pageSize, pageCount) {
+    if (!creatorPager) return;
+    const paginate = Number.isFinite(pageSize) && totalDates > pageSize;
+    creatorPager.hidden = !paginate;
+    if (!paginate) {
+      if (creatorHelp) {
+        creatorHelp.textContent = 'Click or drag across hours.';
+      }
+      return;
+    }
+    const start = creatorPage * pageSize + 1;
+    const end = Math.min(totalDates, (creatorPage + 1) * pageSize);
+    creatorPageLabel.textContent = `Dates ${start}–${end} of ${totalDates}`;
+    creatorPrev.disabled = creatorPage <= 0;
+    creatorNextPage.disabled = creatorPage >= pageCount - 1;
+    if (creatorHelp) {
+      creatorHelp.textContent = 'Swipe pages for more days. Click or drag across hours.';
+    }
+  }
+
   function renderCreatorGrid() {
     const dates = sortedSelectedDates();
     if (!dates.length || !creatorGrid) return;
-    buildGrid(creatorGrid, { dates, selected: creatorSlots, mode: 'creator' });
+    const pageSize = creatorPageSize();
+    const pageCount = Number.isFinite(pageSize)
+      ? Math.max(1, Math.ceil(dates.length / pageSize))
+      : 1;
+    creatorPage = Math.min(Math.max(0, creatorPage), pageCount - 1);
+    const pageDates = Number.isFinite(pageSize) && dates.length > pageSize
+      ? dates.slice(creatorPage * pageSize, creatorPage * pageSize + pageSize)
+      : dates;
+    buildGrid(creatorGrid, { dates: pageDates, selected: creatorSlots, mode: 'creator' });
     bindPaint(creatorGrid, creatorSlots, () => {});
+    renderCreatorPager(dates.length, pageSize, pageCount);
   }
 
   function setCreateStep(step) {
@@ -403,7 +452,10 @@
       ? 'Pick the exact dates you want. Skip days that will not work.'
       : 'Now paint one-hour windows for those dates.';
     createForm.querySelector('output').textContent = '';
-    if (step === 2) renderCreatorGrid();
+    if (step === 2) {
+      creatorPage = 0;
+      renderCreatorGrid();
+    }
   }
 
   function openCreate() {
@@ -412,6 +464,7 @@
     creatorSlots.clear();
     selectedDates.clear();
     selectedDates.add(localDateValue());
+    creatorPage = 0;
     calendarCursor = new Date(`${localDateValue()}T12:00:00`);
     calendarCursor.setDate(1);
     createForm.querySelector('output').textContent = '';
@@ -799,6 +852,17 @@
 
   createModal.querySelector('[data-cal-prev]').addEventListener('click', () => shiftMonth(-1));
   createModal.querySelector('[data-cal-next]').addEventListener('click', () => shiftMonth(1));
+  creatorPrev?.addEventListener('click', () => {
+    creatorPage = Math.max(0, creatorPage - 1);
+    renderCreatorGrid();
+  });
+  creatorNextPage?.addEventListener('click', () => {
+    creatorPage += 1;
+    renderCreatorGrid();
+  });
+  window.addEventListener('resize', () => {
+    if (createStep === 2 && createModal.classList.contains('open')) renderCreatorGrid();
+  });
   createBack.addEventListener('click', () => setCreateStep(1));
   createNext.addEventListener('click', () => {
     if (!selectedDates.size) {
