@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schedule Group Meet — SSA</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body class="schedule-page">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks"><a href="/board">← Board</a></div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+
+  <main class="page-main schedule-main">
+    <header class="page-hero schedule-hero">
+      <span class="eyebrow">Board scheduling</span>
+      <h1>Find the time.</h1>
+      <p>Create polls, share a link, and find the strongest overlap.</p>
+      <button class="button button-dark handdrawn" id="boardScheduleOpen" type="button">Create schedule</button>
+    </header>
+
+    <section class="schedule-browser">
+      <aside class="schedule-library">
+        <div class="schedule-library-head">
+          <div><span class="eyebrow">Saved</span><h2>Schedules</h2></div>
+          <span id="scheduleLibraryCount">0</span>
+        </div>
+        <div class="schedule-list" id="scheduleList">
+          <p class="schedule-list-loading">Loading schedules…</p>
+        </div>
+      </aside>
+      <div class="schedule-pane">
+        <div class="schedule-toolbar" id="scheduleToolbar" hidden>
+          <p class="schedule-toolbar-meta" id="scheduleToolbarMeta"></p>
+          <div class="schedule-share-actions">
+            <button class="button button-line schedule-mini-btn" id="scheduleCopyLink" type="button">Copy link</button>
+            <button class="button button-line schedule-mini-btn" id="scheduleNewPoll" type="button">New</button>
+          </div>
+        </div>
+        <section class="board-schedule-workspace" id="boardScheduleWorkspace" aria-live="polite">
+          <div class="schedule-pick-first">
+            <h2>No schedule yet</h2>
+            <p>Create the first schedule to start finding a meeting time.</p>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=4"></script>
+  <script src="/board-schedule.js?v=9"></script>
+</body>
+</html>

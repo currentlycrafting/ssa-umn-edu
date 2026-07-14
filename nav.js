@@ -29,6 +29,7 @@
         <a href="/newsletter">Newsletter</a>
         <a href="/aux">Want The Aux</a>
         <a href="/gallery">Gallery</a>
+        <a href="/schedule">Schedule a meeting</a>
         <div class="nav-options">
           <button class="nav-options-toggle" type="button" aria-label="Options" aria-expanded="false" aria-controls="navOptionsMenu">
             <span class="nav-options-icon" aria-hidden="true"></span>
@@ -37,6 +38,7 @@
             <a href="/games">Arcade</a>
             <a href="/donate">Donate</a>
             <a href="/board">Board</a>
+            <a href="/schedule">Schedule a meeting</a>
           </div>
         </div>`;
     }
@@ -131,6 +133,9 @@
   if (path === '/daily' || path === '/connections') {
     document.querySelector('.nav-options-menu a[href="/games"]')?.classList.add('active');
   }
+  if (path === '/schedule') {
+    document.querySelector('.nav-options-menu a[href="/schedule"]')?.classList.add('active');
+  }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
 
   const footerHtml = `
@@ -144,6 +149,7 @@
           <a href="/donate">Donate</a>
           <a href="/aux">Want The Aux</a>
           <a href="/board">Board</a>
+          <a href="/schedule">Schedule a meeting</a>
         </nav>
         <div class="social-row">
           <a href="mailto:ssa@umn.edu">Email</a>

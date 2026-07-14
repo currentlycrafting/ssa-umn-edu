@@ -31,6 +31,7 @@ _load_env_file()
 
 import aux  # noqa: E402
 import cms  # noqa: E402
+import schedule  # noqa: E402
 from db import database_ready, db, init_db, warm_pool  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
@@ -147,6 +148,7 @@ PAGE_ROUTES = {
     "/donate": "donate.html",
     "/aux": "aux.html",
     "/board": "board.html",
+    "/schedule": "schedule.html",
     "/gallery": "gallery.html",
     "/connections": "connections.html",
     "/admin": "admin.html",
@@ -343,6 +345,25 @@ class SSAHandler(SimpleHTTPRequestHandler):
             self._send_file(PAGE_ROUTES[path])
             return
 
+        # ---- board scheduling ----
+        if path == "/api/schedules":
+            try:
+                status, payload = schedule.list_polls()
+            except Exception as exc:
+                status, payload = 503, {"ok": False, "error": str(exc)}
+            self._send_json(status, payload)
+            return
+        m = re.fullmatch(r"/api/schedule/([A-Za-z0-9_-]+)", path)
+        if m:
+            since_raw = (qs.get("since", [""])[0]).strip()
+            since = int(since_raw) if since_raw.isdigit() else None
+            try:
+                status, payload = schedule.get_poll(m.group(1), since)
+            except Exception as exc:
+                status, payload = 503, {"ok": False, "error": str(exc)}
+            self._send_json(status, payload)
+            return
+
         # ---- Want The Aux API ----
         if path == "/api/aux/state":
             since_raw = (qs.get("since", [""])[0]).strip()
@@ -484,6 +505,26 @@ class SSAHandler(SimpleHTTPRequestHandler):
 
         # ---- Want The Aux ----
         try:
+            # ---- board scheduling ----
+            if post_path == "/api/schedule":
+                status, resp = schedule.create_poll(payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(
+                r"/api/schedule/([A-Za-z0-9_-]+)/delete", post_path
+            )
+            if m:
+                status, resp = schedule.delete_poll(m.group(1), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(
+                r"/api/schedule/([A-Za-z0-9_-]+)/availability", post_path
+            )
+            if m:
+                status, resp = schedule.save_availability(m.group(1), payload)
+                self._send_json(status, resp)
+                return
+
             if post_path == "/api/admin/aux/clear":
                 if str(payload.get("password", "")) != ADMIN_PASSWORD:
                     self._send_json(401, {"error": "Invalid password."})
@@ -805,6 +846,7 @@ if __name__ == "__main__":
     init_db()
     aux.init_tables()
     cms.init_tables()
+    schedule.init_tables()
     warm_pool()
     warm_leaderboard_cache()
     server = ThreadingHTTPServer((HOST, PORT), SSAHandler)
