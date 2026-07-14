@@ -919,26 +919,31 @@
 }
 .schedule-grid {
   --schedule-days: 1;
+  --schedule-cell: 56px;
+  --schedule-row: 28px;
   display: grid;
-  grid-template-columns: 54px repeat(var(--schedule-days), minmax(44px, 1fr));
-  min-width: calc(54px + var(--schedule-days) * 44px);
-  width: 100%;
-  padding: 4px; gap: 1px; user-select: none; -webkit-user-select: none;
+  grid-template-columns: 58px repeat(var(--schedule-days), var(--schedule-cell));
+  min-width: calc(58px + var(--schedule-days) * var(--schedule-cell));
+  width: max-content;
+  max-width: 100%;
+  padding: 4px; gap: 2px; user-select: none; -webkit-user-select: none;
+  touch-action: pan-x pan-y;
 }
+.schedule-grid.is-painting { touch-action: none; cursor: crosshair; }
 .schedule-grid-corner, .schedule-day-head {
   position: sticky; top: 0; z-index: 3; display: grid; place-items: center;
-  min-height: 28px; padding: 3px 2px; border-bottom: 1px solid var(--ink);
+  min-height: 32px; padding: 3px 2px; border-bottom: 1px solid var(--ink);
   background: var(--surface); font-size: 10px; font-weight: 850; text-align: center; line-height: 1.2;
 }
 .schedule-grid-corner { left: 0; z-index: 4; color: var(--muted); }
 .schedule-time-label {
   position: sticky; left: 0; z-index: 2; display: grid; align-items: center; justify-items: end;
-  min-height: 22px; padding-right: 5px; background: var(--surface);
-  color: var(--muted); font-size: 9px; font-weight: 750; white-space: nowrap;
+  min-height: var(--schedule-row); height: var(--schedule-row); padding-right: 6px; background: var(--surface);
+  color: var(--muted); font-size: 10px; font-weight: 750; white-space: nowrap;
 }
 .schedule-slot {
-  position: relative; min-height: 22px; height: 22px; padding: 0; overflow: hidden;
-  border: 1px solid var(--line-strong); border-radius: 2px;
+  position: relative; min-height: var(--schedule-row); height: var(--schedule-row); padding: 0; overflow: hidden;
+  border: 1px solid var(--line-strong); border-radius: 3px;
   background: var(--paper); color: var(--ink); cursor: pointer;
   transition: background .12s ease, border-color .12s ease;
   touch-action: none;
@@ -999,21 +1004,38 @@
   transition: width .2s ease;
 }
 .schedule-create-sheet:has([data-create-panel="2"]:not([hidden])) {
-  width: min(720px, calc(100vw - 24px));
+  width: min(760px, calc(100vw - 20px));
+  display: flex;
+  flex-direction: column;
+  max-height: min(92dvh, 900px);
 }
-.schedule-create-grid-wrap { max-height: min(46dvh, 400px); border-radius: 8px; }
+.schedule-create-panel[data-create-panel="2"] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  flex: 1;
+}
+.schedule-create-panel[data-create-panel="2"][hidden] { display: none !important; }
+.schedule-create-grid-wrap {
+  flex: 1 1 auto;
+  min-height: 220px;
+  max-height: min(58dvh, 520px);
+  border-radius: 8px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+}
 .schedule-create-grid-wrap .schedule-grid {
+  --schedule-cell: 56px;
+  --schedule-row: 28px;
   width: max-content;
   max-width: none;
-  grid-template-columns: 54px repeat(var(--schedule-days), 44px);
-  min-width: calc(54px + var(--schedule-days) * 44px);
-  gap: 1px;
+  grid-template-columns: 58px repeat(var(--schedule-days), var(--schedule-cell));
+  min-width: calc(58px + var(--schedule-days) * var(--schedule-cell));
+  gap: 2px;
   padding: 4px;
-}
-.schedule-create-grid-wrap .schedule-time-label,
-.schedule-create-grid-wrap .schedule-slot {
-  min-height: 22px;
-  height: 22px;
 }
 .schedule-create-sheet > .modal-exit { top: 10px; right: 10px; width: 36px; height: 36px; }
 .schedule-create-hero {
@@ -1058,6 +1080,7 @@
 .schedule-calendar {
   border: 1px solid var(--line-strong); border-radius: 14px;
   background: var(--paper); padding: 12px;
+  user-select: none; -webkit-user-select: none;
 }
 .schedule-calendar-nav {
   display: grid; grid-template-columns: 34px 1fr 34px; align-items: center; gap: 8px;
@@ -1079,12 +1102,15 @@
   text-align: center; color: var(--muted); font-size: 10px; font-weight: 850;
   padding-bottom: 4px;
 }
+.schedule-calendar-grid { touch-action: none; }
+.schedule-calendar-grid.is-painting { cursor: crosshair; }
 .schedule-cal-empty { min-height: 38px; }
 .schedule-cal-day {
   display: grid; place-items: center; min-height: 38px; padding: 0;
   border: 1px solid transparent; border-radius: 11px;
   background: var(--surface); color: var(--ink); font: inherit; font-size: 13px;
-  font-weight: 750; cursor: pointer; transition: background .12s ease, border-color .12s ease, transform .12s ease;
+  font-weight: 750; cursor: pointer; touch-action: none;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
 }
 .schedule-cal-day:hover { border-color: var(--blue); transform: translateY(-1px); }
 .schedule-cal-day.is-today span {
@@ -1264,10 +1290,32 @@
   .schedule-share-actions { justify-content: start; }
   .schedule-member-picker { width: 100%; }
   .schedule-grid {
-    grid-template-columns: 48px repeat(var(--schedule-days), minmax(40px, 1fr));
-    min-width: calc(48px + var(--schedule-days) * 40px);
+    --schedule-cell: 52px;
+    --schedule-row: 30px;
+    grid-template-columns: 52px repeat(var(--schedule-days), var(--schedule-cell));
+    min-width: calc(52px + var(--schedule-days) * var(--schedule-cell));
   }
-  .schedule-create-sheet { width: calc(100vw - 18px); padding: 16px 12px 14px; }
+  .schedule-create-sheet {
+    width: calc(100vw - 12px);
+    padding: 14px 10px 12px;
+    max-height: 94dvh;
+  }
+  .schedule-create-sheet:has([data-create-panel="2"]:not([hidden])) {
+    width: calc(100vw - 12px);
+    max-height: 94dvh;
+  }
+  .schedule-create-hero { margin-bottom: 8px; }
+  .schedule-create-hero p { font-size: 12px; }
+  .schedule-create-grid-wrap {
+    min-height: 260px;
+    max-height: min(62dvh, 560px);
+  }
+  .schedule-create-grid-wrap .schedule-grid {
+    --schedule-cell: 52px;
+    --schedule-row: 30px;
+    grid-template-columns: 52px repeat(var(--schedule-days), var(--schedule-cell));
+    min-width: calc(52px + var(--schedule-days) * var(--schedule-cell));
+  }
   .schedule-cal-day, .schedule-cal-empty { min-height: 34px; }
   .schedule-calendar { padding: 10px; }
   .schedule-save-bar { display: grid; gap: 8px; }

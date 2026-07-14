@@ -89,9 +89,9 @@
       `<div class="schedule-day-head">${esc(dayLabel(date, true))}</div>`
     ).join('');
     const rowMinutes = Array.from({ length: 16 }, (_, index) => (8 + index) * 60);
-    for (const minutes of rowMinutes) {
+    rowMinutes.forEach((minutes, row) => {
       html += `<div class="schedule-time-label">${timeLabel(minutes)}</div>`;
-      dates.forEach((date) => {
+      dates.forEach((date, col) => {
         const hour = String(Math.floor(minutes / 60)).padStart(2, '0');
         const minute = String(minutes % 60).padStart(2, '0');
         const slot = `${date}:${hour}:${minute}`;
@@ -107,19 +107,19 @@
           result.count ? 'has-people' : ''
         ].filter(Boolean).join(' ');
         const label = `${dayLabel(date)} ${timeLabel(minutes)}`;
-        html += `<button class="${classes}" type="button" data-slot="${slot}" ` +
+        html += `<button class="${classes}" type="button" data-slot="${slot}" data-col="${col}" data-row="${row}" ` +
           `style="--schedule-heat:${heat}" ${isAllowed ? '' : 'disabled'} ` +
           `aria-label="${esc(label)}" aria-pressed="${isSelected}">` +
           `${mode === 'results' && result.count ? `<span>${result.count}</span>` : ''}</button>`;
       });
-    }
+    });
     grid.innerHTML = html;
   }
 
   function bindPaint(grid, selected, onCommit) {
     let paintValue = true;
     const apply = (cell) => {
-      if (!cell || cell.disabled || !cell.dataset.slot) return;
+      if (!cell || cell.disabled || !cell.dataset.slot || !grid.contains(cell)) return;
       if (paintValue) selected.add(cell.dataset.slot);
       else selected.delete(cell.dataset.slot);
       cell.classList.toggle('is-selected', paintValue);
@@ -129,7 +129,9 @@
       const cell = event.target.closest('.schedule-slot');
       if (!cell || cell.disabled) return;
       event.preventDefault();
+      try { grid.setPointerCapture(event.pointerId); } catch (_) {}
       dragging = true;
+      grid.classList.add('is-painting');
       paintValue = !selected.has(cell.dataset.slot);
       apply(cell);
     };
@@ -137,7 +139,8 @@
       if (dragging) apply(event.target.closest('.schedule-slot'));
     };
     grid.onpointermove = (event) => {
-      if (dragging) apply(document.elementFromPoint(event.clientX, event.clientY)?.closest('.schedule-slot'));
+      if (!dragging) return;
+      apply(document.elementFromPoint(event.clientX, event.clientY)?.closest('.schedule-slot'));
     };
     grid.onclick = (event) => {
       const cell = event.target.closest('.schedule-slot');
@@ -146,11 +149,17 @@
       apply(cell);
       onCommit();
     };
-    const finish = () => {
+    const finish = (event) => {
       if (!dragging) return;
       dragging = false;
+      grid.classList.remove('is-painting');
+      try {
+        if (event?.pointerId != null) grid.releasePointerCapture(event.pointerId);
+      } catch (_) {}
       onCommit();
     };
+    grid.onpointerup = finish;
+    grid.onpointercancel = finish;
     document.addEventListener('pointerup', finish);
     document.addEventListener('pointercancel', finish);
   }
@@ -191,7 +200,7 @@
           <div class="schedule-grid-wrap schedule-create-grid-wrap">
             <div class="schedule-grid" id="scheduleCreatorGrid" aria-label="Possible meeting times"></div>
           </div>
-          <p class="schedule-grid-help">Paint the hours that could work. Unselected times stay crossed out.</p>
+          <p class="schedule-grid-help">Click or drag across hours. Scroll the table if you need more room.</p>
         </section>
         <div class="schedule-create-actions">
           <button class="button button-line" type="button" id="scheduleCreateBack" hidden>Back</button>
@@ -280,29 +289,95 @@
       );
     }
     calendarGrid.innerHTML = cells.join('');
-    calendarGrid.querySelectorAll('[data-cal-day]').forEach((button) => {
-      button.addEventListener('click', () => toggleCreateDate(button.dataset.calDay));
-    });
-    const count = selectedDates.size;
-    dateSummary.textContent = count
-      ? `${count} date${count === 1 ? '' : 's'} selected`
-      : 'Tap any date to include it. Selected days do not need to be consecutive.';
+    bindCalendarPaint();
+    updateDateSummary();
   }
 
-  function toggleCreateDate(value) {
-    if (selectedDates.has(value)) {
+  function updateDateSummary() {
+    const count = selectedDates.size;
+    dateSummary.textContent = count
+      ? `${count} date${count === 1 ? '' : 's'} selected · click or drag to paint more`
+      : 'Click or drag across dates. Selected days do not need to be consecutive.';
+  }
+
+  function applyCreateDate(value, shouldSelect) {
+    if (!value) return;
+    if (shouldSelect) {
+      if (selectedDates.has(value)) return;
+      if (selectedDates.size >= 366) {
+        createForm.querySelector('output').textContent = 'You can select up to 366 dates.';
+        return;
+      }
+      selectedDates.add(value);
+    } else if (selectedDates.has(value)) {
       selectedDates.delete(value);
       for (const slot of Array.from(creatorSlots)) {
         if (slot.startsWith(value)) creatorSlots.delete(slot);
       }
-    } else if (selectedDates.size >= 366) {
-      createForm.querySelector('output').textContent = 'You can select up to 366 dates.';
-      return;
     } else {
-      selectedDates.add(value);
+      return;
     }
+    const cell = calendarGrid.querySelector(`[data-cal-day="${value}"]`);
+    cell?.classList.toggle('is-selected', shouldSelect);
     createForm.querySelector('output').textContent = '';
-    renderCalendar();
+    updateDateSummary();
+  }
+
+  function bindCalendarPaint() {
+    let painting = false;
+    let paintValue = true;
+    let moved = false;
+
+    const dayAtPoint = (x, y) =>
+      document.elementFromPoint(x, y)?.closest('[data-cal-day]');
+
+    const applyDay = (button) => {
+      if (!button?.dataset.calDay) return;
+      applyCreateDate(button.dataset.calDay, paintValue);
+    };
+
+    calendarGrid.onpointerdown = (event) => {
+      const button = event.target.closest('[data-cal-day]');
+      if (!button) return;
+      event.preventDefault();
+      try { calendarGrid.setPointerCapture(event.pointerId); } catch (_) {}
+      painting = true;
+      moved = false;
+      calendarGrid.classList.add('is-painting');
+      paintValue = !selectedDates.has(button.dataset.calDay);
+      applyDay(button);
+    };
+    calendarGrid.onpointermove = (event) => {
+      if (!painting) return;
+      moved = true;
+      event.preventDefault();
+      applyDay(dayAtPoint(event.clientX, event.clientY));
+    };
+    calendarGrid.onpointerover = (event) => {
+      if (!painting) return;
+      moved = true;
+      applyDay(event.target.closest('[data-cal-day]'));
+    };
+    const finish = (event) => {
+      if (!painting) return;
+      painting = false;
+      calendarGrid.classList.remove('is-painting');
+      try {
+        if (event?.pointerId != null) calendarGrid.releasePointerCapture(event.pointerId);
+      } catch (_) {}
+    };
+    calendarGrid.onpointerup = finish;
+    calendarGrid.onpointercancel = finish;
+    calendarGrid.onclick = (event) => {
+      if (moved) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+  }
+
+  function toggleCreateDate(value) {
+    applyCreateDate(value, !selectedDates.has(value));
   }
 
   function renderCreatorGrid() {
