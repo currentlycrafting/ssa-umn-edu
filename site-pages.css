@@ -1297,25 +1297,48 @@
   }
   .schedule-create-sheet {
     width: calc(100vw - 12px);
-    padding: 14px 10px 12px;
-    max-height: 94dvh;
+    padding: 12px 8px 10px;
+    max-height: 96dvh;
   }
   .schedule-create-sheet:has([data-create-panel="2"]:not([hidden])) {
     width: calc(100vw - 12px);
-    max-height: 94dvh;
+    max-height: 96dvh;
   }
-  .schedule-create-hero { margin-bottom: 8px; }
-  .schedule-create-hero p { font-size: 12px; }
+  .schedule-create-hero { margin-bottom: 6px; gap: 2px; }
+  .schedule-create-hero h2 { font-size: 22px; }
+  .schedule-create-hero p { font-size: 11px; }
+  .schedule-create-steps { margin-bottom: 8px; }
+  .schedule-create-title { font-size: 10px; }
+  #scheduleCreateForm { gap: 8px; }
+  #scheduleCreateForm input { min-height: 34px; font-size: 12px; }
   .schedule-create-grid-wrap {
-    min-height: 260px;
-    max-height: min(62dvh, 560px);
+    min-height: 0;
+    max-height: min(68dvh, 620px);
+    border-radius: 6px;
   }
   .schedule-create-grid-wrap .schedule-grid {
-    --schedule-cell: 52px;
-    --schedule-row: 30px;
-    grid-template-columns: 52px repeat(var(--schedule-days), var(--schedule-cell));
-    min-width: calc(52px + var(--schedule-days) * var(--schedule-cell));
+    --schedule-cell: 34px;
+    --schedule-row: 18px;
+    grid-template-columns: 40px repeat(var(--schedule-days), var(--schedule-cell));
+    min-width: calc(40px + var(--schedule-days) * var(--schedule-cell));
+    gap: 1px;
+    padding: 3px;
   }
+  .schedule-create-grid-wrap .schedule-grid-corner,
+  .schedule-create-grid-wrap .schedule-day-head {
+    min-height: 24px;
+    font-size: 8px;
+    padding: 2px 1px;
+    line-height: 1.1;
+  }
+  .schedule-create-grid-wrap .schedule-time-label {
+    font-size: 8px;
+    padding-right: 3px;
+  }
+  .schedule-create-grid-wrap .schedule-slot {
+    border-radius: 2px;
+  }
+  .schedule-create-actions .button { min-height: 32px; font-size: 11px; }
   .schedule-cal-day, .schedule-cal-empty { min-height: 34px; }
   .schedule-calendar { padding: 10px; }
   .schedule-save-bar { display: grid; gap: 8px; }
