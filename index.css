@@ -523,6 +523,14 @@ button, input, textarea { font: inherit; }
   font-size: clamp(16px, 2vw, 19px);
   line-height: 1.65;
 }
+.hero-listen {
+  max-width: 520px;
+  margin: 14px auto 0 !important;
+  color: var(--ink-2) !important;
+  font-size: clamp(15px, 1.8vw, 17px) !important;
+  font-weight: 650;
+  line-height: 1.55 !important;
+}
 .hero-actions {
   position: relative;
   display: flex;
