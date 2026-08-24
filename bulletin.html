@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSA Bulletin Board — Somali Student Association</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link rel="apple-touch-icon" href="/assets/brand/ssa-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css?v=7" />
+  <link rel="stylesheet" href="/bulletin.css?v=6" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body class="bulletin-page">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks"></div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+
+  <main>
+    <header class="bulletin-hero">
+      <span class="eyebrow">Campus connections</span>
+      <h1>SSA Bulletin Board</h1>
+      <p>Find roommates, study groups, friends, and things to do around campus.</p>
+      <p class="bulletin-credit">Inspired by Nimo through her suggestions</p>
+      <button class="button button-dark handdrawn" type="button" id="bulletinPostOpen">+ Post on Bulletin Board</button>
+    </header>
+
+    <section class="bulletin-board-area" aria-label="SSA bulletin board">
+      <div class="bulletin-board-deco" aria-hidden="true">
+        <svg class="bb-butterfly bb-b1" viewBox="0 0 40 32"><path d="M20 16 C8 4 2 12 8 18 C14 22 18 18 20 16 Z"/><path d="M20 16 C32 4 38 12 32 18 C26 22 22 18 20 16 Z"/><path d="M20 8 V24"/></svg>
+        <svg class="bb-butterfly bb-b2" viewBox="0 0 40 32"><path d="M20 16 C8 4 2 12 8 18 C14 22 18 18 20 16 Z"/><path d="M20 16 C32 4 38 12 32 18 C26 22 22 18 20 16 Z"/><path d="M20 8 V24"/></svg>
+        <svg class="bb-star bb-s1" viewBox="0 0 24 24"><path d="M12 2 L14 9 L22 10 L16 15 L18 22 L12 18 L6 22 L8 15 L2 10 L10 9 Z"/></svg>
+        <svg class="bb-star bb-s2" viewBox="0 0 24 24"><path d="M12 2 L14 9 L22 10 L16 15 L18 22 L12 18 L6 22 L8 15 L2 10 L10 9 Z"/></svg>
+        <span class="bb-dot bb-d1"></span>
+        <span class="bb-dot bb-d2"></span>
+        <span class="bb-dot bb-d3"></span>
+        <svg class="bb-loop" viewBox="0 0 120 60"><path d="M8 40 C 30 8, 60 52, 88 18 S 112 40, 116 28"/></svg>
+      </div>
+      <div class="bulletin-board-surface" id="bulletinSurface"></div>
+      <p class="bulletin-empty" id="bulletinEmpty" hidden>No posts on the board yet. Be the first to pin one.</p>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="bulletinCreateModal" aria-hidden="true">
+    <div class="modal-sheet modal-card bulletin-modal" role="dialog" aria-modal="true" aria-labelledby="bulletinCreateTitle">
+      <span class="eyebrow">New post</span>
+      <h2 id="bulletinCreateTitle">Post on the bulletin board</h2>
+      <p class="bulletin-modal-lead">Your email is shown publicly so students can contact you directly.</p>
+      <form id="bulletinCreateForm" class="bulletin-create-form">
+        <div class="bulletin-field">
+          <span class="bulletin-field-label">What are you looking for?</span>
+          <div class="bulletin-category-picks" role="radiogroup" aria-label="Category">
+            <label class="bulletin-pick"><input type="radio" name="category" value="roommates" required /><span>Roommates</span></label>
+            <label class="bulletin-pick"><input type="radio" name="category" value="study" /><span>Study Groups</span></label>
+            <label class="bulletin-pick"><input type="radio" name="category" value="friends" /><span>Friends &amp; Activities</span></label>
+          </div>
+        </div>
+        <label class="bulletin-field">Title<input type="text" name="title" maxlength="120" placeholder="Looking for 2 roommates near campus" required /></label>
+        <label class="bulletin-field">Description<textarea name="description" rows="4" maxlength="1200" placeholder="Share what you need, timing, and any preferences…" required></textarea></label>
+        <div class="bulletin-field-row">
+          <label class="bulletin-field">Name<input type="text" name="name" maxlength="80" placeholder="Your name" required /></label>
+          <label class="bulletin-anon"><input type="checkbox" name="anonymous" /><span>Post anonymously</span></label>
+        </div>
+        <label class="bulletin-field">Public email
+          <input type="email" name="email" maxlength="160" placeholder="you@umn.edu" required />
+          <small>Shown on your card as a mailto link.</small>
+        </label>
+        <button class="button button-dark" type="submit" id="bulletinCreateSubmit">Pin to board</button>
+        <output></output>
+      </form>
+    </div>
+    <button class="modal-exit" type="button" data-close-modal="bulletinCreateModal" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+  </div>
+
+  <div class="modal-backdrop" id="bulletinPasswordModal" aria-hidden="true">
+    <div class="modal-sheet modal-card bulletin-modal bulletin-pin-modal" role="dialog" aria-modal="true" aria-labelledby="bulletinPasswordTitle">
+      <span class="eyebrow">Almost done</span>
+      <h2 id="bulletinPasswordTitle">Add a password</h2>
+      <p class="bulletin-modal-lead">Create a 4-digit password so only you can mark this post complete later.</p>
+      <div class="bulletin-pin-display">
+        <div class="bulletin-pin-slots" id="createPinSlots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
+        <button class="bulletin-pin-eye" type="button" id="createPinEye" aria-label="Show password" aria-pressed="false">
+          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="bulletin-keypad" id="createKeypad" data-pin-target="create"></div>
+      <button class="button button-dark" type="button" id="bulletinPinSubmit" disabled>Confirm &amp; pin</button>
+      <output id="bulletinPasswordOutput"></output>
+    </div>
+    <button class="modal-exit" type="button" data-close-modal="bulletinPasswordModal" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+  </div>
+
+  <div class="modal-backdrop" id="bulletinCompleteModal" aria-hidden="true">
+    <div class="modal-sheet modal-card bulletin-modal bulletin-pin-modal" role="dialog" aria-modal="true" aria-labelledby="bulletinCompleteTitle">
+      <span class="eyebrow">Verify</span>
+      <h2 id="bulletinCompleteTitle">Mark as complete</h2>
+      <p class="bulletin-modal-lead">Enter your 4-digit password to mark this post as complete.</p>
+      <div class="bulletin-pin-display">
+        <div class="bulletin-pin-slots" id="completePinSlots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
+        <button class="bulletin-pin-eye" type="button" id="completePinEye" aria-label="Show password" aria-pressed="false">
+          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="bulletin-keypad" id="completeKeypad" data-pin-target="complete"></div>
+      <button class="button button-dark" type="button" id="bulletinCompleteSubmit" disabled>Confirm complete</button>
+      <output id="bulletinCompleteOutput"></output>
+    </div>
+    <button class="modal-exit" type="button" data-close-modal="bulletinCompleteModal" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+  </div>
+
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=8"></script>
+  <script src="/bulletin.js?v=5"></script>
+</body>
+</html>

@@ -10,6 +10,8 @@
       storageKey: 'ssaWhatsNewNever',
       waitForChecklist: true,
       slides: [
+        { eyebrow: 'Bulletin Board', title: 'Ask and you\'ll receive!', copy: 'The new SSA Bulletin Board is where students post for roommates, study groups, friends, and campus plans. It was added through suggestions by Nimo — pin a note, share your email, and connect.', href: '/bulletin', action: 'Open the bulletin' },
+        { eyebrow: 'Timeline', title: 'SSA moments, sticky-note style.', copy: 'The timeline is now a scrapbook of sticky cards you can manage from admin — dates, stories, and links in one place. Scroll the year like a Pinterest board of what SSA has done so far.', href: '/timeline', action: 'Browse the timeline' },
         { eyebrow: 'Live music', title: 'Want the Aux?', copy: 'Anyone at an SSA event can request a song. One host connects Spotify while the shared queue stays in sync and moves forward as songs play.', href: '/aux', action: 'Open the queue' },
         { eyebrow: 'Photo album', title: 'A gallery built by the community.', copy: 'Gallery photos now live in the SSA database. Add a memory, watch its polaroid develop, and browse every photo in the new viewer.', href: '/gallery', action: 'View the gallery' },
         { eyebrow: 'Events', title: 'One calendar for every SSA moment.', copy: 'See featured and upcoming events, respond with a full RSVP or a quick Yes or No, and check who is coming.', href: '/events', action: 'See events' },

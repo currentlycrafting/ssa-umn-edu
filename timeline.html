@@ -1,124 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-26GKQG2GXF"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-26GKQG2GXF');
-  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SSA Timeline — Somali Student Association</title>
-  <link rel="icon" type="image/png" href="assets/brand/ssa-logo.png" />
-  <link rel="apple-touch-icon" href="assets/brand/ssa-logo.png" />
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link rel="apple-touch-icon" href="/assets/brand/ssa-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css" />
-  <link rel="stylesheet" href="site-pages.css" />
-  <script src="api.js"></script>
-  <script>
-    (function () {
-      var stored = localStorage.getItem('ssaTheme');
-      var theme = stored || 'light';
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css?v=11" />
+  <link rel="stylesheet" href="/site-pages.css?v=11" />
+  <link rel="stylesheet" href="/timeline.css?v=7" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
 </head>
 <body class="timeline-page">
+  <div class="timeline-atmosphere" aria-hidden="true">
+    <span class="tl-glow tl-glow-a"></span>
+    <span class="tl-glow tl-glow-b"></span>
+    <span class="tl-glow tl-glow-c"></span>
+  </div>
+
   <nav class="nav page-nav" aria-label="Primary navigation">
     <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
-    <a class="brand" href="index.html" aria-label="SSA home">
-      <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
-      <span>SSA</span>
+    <a class="brand" href="/index.html" aria-label="SSA home">
+      <img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span>
     </a>
-    <div class="nav-links" id="navLinks">
-      <a href="index.html">Home</a>
-      <a href="/events">Events</a>
-      <a href="/games">Games</a>
-      <a href="/aux">Want The Aux</a>
-      <button type="button">Options</button>
-    </div>
+    <div class="nav-links" id="navLinks"></div>
     <div class="nav-tools">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
     </div>
   </nav>
 
   <main>
-    <section class="timeline-hero">
-      <img src="assets/brand/ssa-logo.png" alt="" />
+    <header class="timeline-hero">
+      <svg class="tl-hero-doodle tl-hero-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L14 9 L22 10 L16 15 L18 22 L12 18 L6 22 L8 15 L2 10 L10 9 Z"/></svg>
+      <svg class="tl-hero-doodle tl-hero-spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 V8 M12 16 V22 M2 12 H8 M16 12 H22 M5 5 L9 9 M15 15 L19 19 M19 5 L15 9 M9 15 L5 19"/></svg>
+      <svg class="tl-hero-doodle tl-hero-butterfly" viewBox="0 0 40 32" aria-hidden="true"><path d="M20 16 C8 4 2 12 8 18 C14 22 18 18 20 16 Z"/><path d="M20 16 C32 4 38 12 32 18 C26 22 22 18 20 16 Z"/><path d="M20 8 V24"/></svg>
       <span class="eyebrow">SSA Timeline</span>
       <h1>What has happened so far.</h1>
+      <svg class="tl-hero-underline" viewBox="0 0 220 18" aria-hidden="true"><path d="M4 12 C 40 2, 80 16, 110 8 S 170 4, 216 11"/></svg>
       <p>A running record of events, meetings, and community moments from SSA.</p>
-    </section>
+      <p class="tl-hero-note handwritten">Keep scrolling — the year unfolds below.</p>
+      <svg class="tl-scroll-hint" viewBox="0 0 40 48" aria-hidden="true"><path d="M20 4 V36 M10 26 L20 38 L30 26"/></svg>
+    </header>
 
-    <section class="timeline-section" aria-label="SSA event timeline">
-      <div class="timeline-line"></div>
-
-      <article class="timeline-card">
-        <time>June 11</time>
-        <div class="timeline-content">
-          <span class="pill">Board Bonding</span>
-          <h2>SSA Board Bonding - Field Day</h2>
-          <p class="held-at">Held at Van Cleve Park</p>
-          <p>The full board met each other as a team for the first time through a field day built around connection, games, and setting the tone for the year.</p>
-          <a class="button button-dark" href="https://www.tiktok.com/t/ZTS2dNXa6/" target="_blank" rel="noopener noreferrer">View the fun</a>
-        </div>
-      </article>
-
-      <article class="timeline-card">
-        <time>June 25</time>
-        <div class="timeline-content">
-          <span class="pill">Board Meeting</span>
-          <h2>First Board Meeting</h2>
-          <p class="held-at">Held with the SSA board</p>
-          <p>The first official board meeting set expectations, aligned leadership responsibilities, and started the operational rhythm for the year.</p>
-        </div>
-      </article>
-
-      <article class="timeline-card">
-        <time>July 2</time>
-        <div class="timeline-content">
-          <span class="pill">Community Event</span>
-          <h2>Somali Cinema Week</h2>
-          <p class="held-at">Held during Somali Cinema Week</p>
-          <p>A community-centered film moment that brought students together around Somali storytelling, culture, and shared conversation.</p>
-          <a class="button button-dark" href="https://www.instagram.com/reel/DaEia-nONFR/?igsh=MWpoZ3gydWYybHVtag==" target="_blank" rel="noopener noreferrer">View the fun</a>
-        </div>
-      </article>
+    <section class="timeline-board" aria-label="SSA event timeline">
+      <div class="timeline-board-deco" aria-hidden="true">
+        <svg class="tl-float tl-float-star tl-fs1" viewBox="0 0 24 24"><path d="M12 2 L14 9 L22 10 L16 15 L18 22 L12 18 L6 22 L8 15 L2 10 L10 9 Z"/></svg>
+        <svg class="tl-float tl-float-star tl-fs2" viewBox="0 0 24 24"><path d="M12 2 L14 9 L22 10 L16 15 L18 22 L12 18 L6 22 L8 15 L2 10 L10 9 Z"/></svg>
+        <svg class="tl-float tl-float-star tl-fs3" viewBox="0 0 24 24"><path d="M12 2 L14 9 L22 10 L16 15 L18 22 L12 18 L6 22 L8 15 L2 10 L10 9 Z"/></svg>
+        <svg class="tl-float tl-float-butterfly tl-fb1" viewBox="0 0 40 32"><path d="M20 16 C8 4 2 12 8 18 C14 22 18 18 20 16 Z"/><path d="M20 16 C32 4 38 12 32 18 C26 22 22 18 20 16 Z"/><path d="M20 8 V24"/></svg>
+        <svg class="tl-float tl-float-butterfly tl-fb2" viewBox="0 0 40 32"><path d="M20 16 C8 4 2 12 8 18 C14 22 18 18 20 16 Z"/><path d="M20 16 C32 4 38 12 32 18 C26 22 22 18 20 16 Z"/><path d="M20 8 V24"/></svg>
+        <svg class="tl-float tl-float-loop tl-fl1" viewBox="0 0 120 60"><path d="M8 40 C 30 8, 60 52, 88 18 S 112 40, 116 28"/></svg>
+        <svg class="tl-float tl-float-loop tl-fl2" viewBox="0 0 120 60"><path d="M8 40 C 30 8, 60 52, 88 18 S 112 40, 116 28"/></svg>
+        <span class="tl-float tl-float-dot tl-fd1"></span>
+        <span class="tl-float tl-float-dot tl-fd2"></span>
+        <span class="tl-float tl-float-dot tl-fd3"></span>
+        <span class="tl-float tl-float-dot tl-fd4"></span>
+        <svg class="tl-float tl-float-smile tl-fsm" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none"/><path d="M12 15 V18 M24 15 V18 M12 22 Q18 28 24 22" fill="none"/></svg>
+      </div>
+      <div class="timeline-board-list" id="timelineBoardList">
+        <p class="tl-empty">Loading moments…</p>
+      </div>
     </section>
   </main>
 
-  <footer class="footer">
-    <div class="footer-card">
-      <a class="footer-brand" href="index.html"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
-      <nav aria-label="Footer">
-        <a href="index.html#demo">About Us</a>
-        <a href="index.html#events">Events</a>
-        <a href="index.html#programs">Programs</a>
-        <a href="timeline.html">Timeline</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="connections.html">Game</a>
-        <a href="/board">Board</a>
-      </nav>
-      <div class="social-row">
-        <a href="mailto:ssa@umn.edu">Email</a>
-        <a href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">Instagram</a>
-        <a href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">TikTok</a>
-        <a href="https://www.linkedin.com/in/somali-student-association-at-the-university-of-minnesota-b435362a2" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      </div>
-      <small>© 2026 Somali Student Association — University of Minnesota</small>
-    </div>
-  </footer>
-
-  <script src="motion.js"></script>
-  <script src="nav.js?v=4"></script>
-  <script src="micro.js?v=2"></script>
-  <script src="checklist.js?v=2"></script>
-  <script src="newsletter.js"></script>
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=11"></script>
+  <script src="/timeline.js?v=4"></script>
+  <script src="/checklist.js?v=5"></script>
 </body>
 </html>

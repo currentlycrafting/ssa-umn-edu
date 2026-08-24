@@ -30,8 +30,10 @@ def _load_env_file():
 _load_env_file()
 
 import aux  # noqa: E402
+import bulletin  # noqa: E402
 import cms  # noqa: E402
 import schedule  # noqa: E402
+import timeline  # noqa: E402
 from db import database_ready, db, init_db, warm_pool  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
@@ -148,8 +150,10 @@ PAGE_ROUTES = {
     "/donate": "donate.html",
     "/aux": "aux.html",
     "/board": "board.html",
+    "/bulletin": "bulletin.html",
     "/schedule": "schedule.html",
     "/gallery": "gallery.html",
+    "/timeline": "timeline.html",
     "/connections": "connections.html",
     "/admin": "admin.html",
 }
@@ -357,8 +361,16 @@ class SSAHandler(SimpleHTTPRequestHandler):
         if m:
             since_raw = (qs.get("since", [""])[0]).strip()
             since = int(since_raw) if since_raw.isdigit() else None
+            access_token = (qs.get("access", [""])[0]).strip()
             try:
-                status, payload = schedule.get_poll(m.group(1), since)
+                status, payload = schedule.get_poll(m.group(1), since, access_token)
+            except Exception as exc:
+                status, payload = 503, {"ok": False, "error": str(exc)}
+            self._send_json(status, payload)
+            return
+        if path == "/api/timeline":
+            try:
+                status, payload = timeline.list_public()
             except Exception as exc:
                 status, payload = 503, {"ok": False, "error": str(exc)}
             self._send_json(status, payload)
@@ -409,6 +421,13 @@ class SSAHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/events":
             self._send_json(200, {"ok": True, "events": cms.list_events()})
+            return
+
+        if path == "/api/bulletin":
+            category = (qs.get("category") or [None])[0]
+            post_status = (qs.get("status") or [None])[0]
+            status_code, payload = bulletin.list_posts(category=category, status=post_status)
+            self._send_json(status_code, payload)
             return
 
         if path == "/api/gallery":
@@ -524,6 +543,26 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 status, resp = schedule.save_availability(m.group(1), payload)
                 self._send_json(status, resp)
                 return
+            m = re.fullmatch(
+                r"/api/schedule/([A-Za-z0-9_-]+)/unlock", post_path
+            )
+            if m:
+                status, resp = schedule.unlock_poll(m.group(1), payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/timeline/list-all":
+                status, resp = timeline.list_all(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/timeline":
+                status, resp = timeline.save_event(payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/timeline/(\d+)/delete", post_path)
+            if m:
+                status, resp = timeline.delete_event(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
 
             if post_path == "/api/admin/aux/clear":
                 if str(payload.get("password", "")) != ADMIN_PASSWORD:
@@ -610,6 +649,20 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 return
             if post_path == "/api/events":
                 status, resp = cms.save_event(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/bulletin":
+                status, resp = bulletin.create_post(payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/bulletin/(\d+)/interest", post_path)
+            if m:
+                status, resp = bulletin.record_interest(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/bulletin/(\d+)/complete", post_path)
+            if m:
+                status, resp = bulletin.complete_post(int(m.group(1)), payload)
                 self._send_json(status, resp)
                 return
             if post_path == "/api/events/list-all":
@@ -846,7 +899,9 @@ if __name__ == "__main__":
     init_db()
     aux.init_tables()
     cms.init_tables()
+    bulletin.init_tables()
     schedule.init_tables()
+    timeline.init_tables()
     warm_pool()
     warm_leaderboard_cache()
     server = ThreadingHTTPServer((HOST, PORT), SSAHandler)

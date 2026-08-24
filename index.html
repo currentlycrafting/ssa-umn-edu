@@ -18,8 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css" />
-  <link rel="stylesheet" href="site-pages.css" />
+  <link rel="stylesheet" href="index.css?v=11" />
+  <link rel="stylesheet" href="site-pages.css?v=11" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -55,6 +55,7 @@
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
     <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Events</span></a>
+    <a href="#bulletin-home" data-section="bulletin-home"><span class="dot" aria-hidden="true"></span><span class="side-label">Bulletin</span></a>
     <a href="#aux-home" data-section="aux-home"><span class="dot" aria-hidden="true"></span><span class="side-label">Want the Aux</span></a>
     <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">Highlights</span></a>
     <a href="#programs" data-section="programs"><span class="dot" aria-hidden="true"></span><span class="side-label">Programs</span></a>
@@ -79,7 +80,6 @@
           <a class="button button-dark handdrawn has-tip" href="/gallery" data-tip="Explore SSA memories">Photo Album</a>
           <a class="button button-line handdrawn has-tip" href="/newsletter" data-tip="Read the latest edition">Read our newsletter</a>
           <a class="button button-line handdrawn has-tip" href="/events" data-tip="See the full calendar">See our events</a>
-          <a class="button button-line handdrawn has-tip" href="/schedule" data-tip="Find a time that works">Schedule a meeting</a>
           <svg class="hero-arrow" viewBox="0 0 70 50" aria-hidden="true"><path d="M6 40 C20 10 44 6 60 14 M60 14 L48 12 M60 14 L56 26" /></svg>
         </div>
         <div class="hero-meter year-montage" aria-label="SSA since 1998">
@@ -103,6 +103,31 @@
       </div>
       <aside class="featured-event" id="featuredEvent" aria-label="Featured event" data-reveal hidden></aside>
       <div class="home-events" id="homeEvents" data-reveal-group hidden></div>
+    </section>
+
+    <section class="section home-aux home-bulletin" id="bulletin-home">
+      <div class="section-head">
+        <span class="eyebrow">Campus connections</span>
+        <h2>Ask and you&apos;ll receive.</h2>
+        <p>The SSA Bulletin Board is where students post for roommates, study groups, friends, and things to do. It was inspired by Nimo through her suggestions — pin a note, share a public email, and connect.</p>
+      </div>
+      <div class="home-aux-grid">
+        <article class="home-aux-card">
+          <span class="eyebrow">Post what you need</span>
+          <h3>Roommates, study groups, friends &amp; activities.</h3>
+          <p>Choose a category, write a short note, and put your email on the card so other students can reach you directly.</p>
+        </article>
+        <article class="home-aux-card">
+          <span class="eyebrow">Stay in control</span>
+          <h3>Protect each post with a 4-digit password.</h3>
+          <p>When you pin a note, you set a password so only you can mark it complete later. Interest counts help show what is catching attention.</p>
+        </article>
+        <article class="home-aux-card home-aux-steps">
+          <span class="eyebrow">How it works</span>
+          <ol><li>Open the Bulletin Board</li><li>Post or browse sticky notes</li><li>Email someone or mark interest</li></ol>
+          <a class="button button-dark handdrawn" href="/bulletin">Open the Bulletin Board</a>
+        </article>
+      </div>
     </section>
 
     <section class="section home-aux" id="aux-home">
@@ -307,15 +332,15 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=4"></script>
+  <script src="nav.js?v=11"></script>
   <script src="micro.js?v=2"></script>
-  <script src="checklist.js?v=3"></script>
+  <script src="checklist.js?v=5"></script>
   <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=5"></script>
+  <script src="/events-render.js?v=6"></script>
   <script src="/rsvp.js?v=2"></script>
   <script src="index.js?v=8"></script>
   <script src="/outreach.js?v=2"></script>
-  <script src="/whats-new.js?v=3"></script>
+  <script src="/whats-new.js?v=5"></script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
   <script>
     if (window.kofiWidgetOverlay) {

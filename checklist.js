@@ -1,12 +1,14 @@
 (function () {
-  const CHECKLIST_TOTAL = 10;
+  const CHECKLIST_TOTAL = 12;
   const progressMessages = [
     'Pick a step. Each one explains SSA and where to go next.',
     'Nice start. Keep exploring.',
     'You are getting the full picture of SSA.',
+    'Keep going — events, gallery, and more.',
     'Halfway there — keep going.',
-    'Almost done. A few more stops.',
+    'Try the bulletin board and timeline next.',
     'You have seen most of what SSA offers.',
+    'Almost done. A few more stops.',
     'Keep going — meet the board next.',
     'Almost there. Explore how to support SSA.',
     'One more stop before you finish.',
@@ -25,7 +27,7 @@
       <div>
         <span class="eyebrow">Checklist</span>
         <h2 id="checklistTitle">Explore SSA</h2>
-        <p><span id="checklistCount">0</span> of 10 complete</p>
+        <p><span id="checklistCount">0</span> of 12 complete</p>
       </div>
       <button id="checklistClose" type="button" aria-label="Close">×</button>
     </header>
@@ -37,7 +39,9 @@
       <button type="button" data-step="programs" data-href="index.html#programs" data-note="Programs show how SSA supports students year-round.">Discover programs</button>
       <button type="button" data-step="gallery" data-href="gallery.html" data-note="Scroll to the bottom of the gallery to complete this step.">Visit the gallery</button>
       <button type="button" data-step="game" data-href="connections.html" data-note="Submit your score after playing to complete this step.">Play a game</button>
-      <button type="button" data-step="timeline" data-href="timeline.html" data-note="Scroll to the bottom of the timeline to complete this step.">Browse the timeline</button>
+      <button type="button" data-step="timeline" data-href="/timeline" data-note="Scroll to the bottom of the timeline to complete this step.">Browse the timeline</button>
+      <button type="button" data-step="bulletin" data-href="/bulletin" data-note="Post or browse the community bulletin board.">Visit the bulletin</button>
+      <button type="button" data-step="schedule" data-href="/schedule" data-note="Create or unlock a board meeting schedule.">Try board scheduling</button>
       <button type="button" data-step="board" data-href="/board" data-note="Meet the students leading SSA.">Meet the board</button>
       <button type="button" data-step="aux" data-href="/aux" data-note="See how the community builds the live music queue.">Visit Want the Aux</button>
       <button type="button" data-step="donate" data-href="/donate" data-note="Learn how donations support SSA programming.">Support SSA</button>
@@ -242,7 +246,7 @@
       if (href) {
         checklistPop.textContent = button.dataset.note || '';
         const autoSteps = ['gallery', 'game', 'timeline'];
-        const visitSteps = ['board', 'aux', 'donate'];
+        const visitSteps = ['board', 'aux', 'donate', 'bulletin', 'schedule'];
         if (visitSteps.includes(button.dataset.step)) {
           markChecklistStep(button.dataset.step, button.dataset.note);
         }
@@ -331,7 +335,7 @@
         '</div>' +
         '<span class="eyebrow">New here?</span>' +
         '<h2 id="checklistIntroTitle">Take the SSA checklist tour</h2>' +
-        '<p>Work through ten quick steps — events, gallery, the board, music, and more. Your progress saves as you go.</p>' +
+        '<p>Work through twelve quick steps — events, gallery, timeline, bulletin, board scheduling, music, and more. Your progress saves as you go.</p>' +
         '<div class="checklist-intro-actions">' +
           '<button type="button" class="button button-dark" id="checklistIntroStart">Open checklist</button>' +
           '<button type="button" class="button button-line" id="checklistIntroLater">Maybe later</button>' +

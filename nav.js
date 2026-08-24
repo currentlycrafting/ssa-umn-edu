@@ -1,4 +1,4 @@
-/* Shared SSA navigation — compact links, options menu, theme, modal triggers. */
+/* Shared SSA navigation — compact links, theme, modal triggers. */
 (function () {
   const THEMES = ['light', 'dark'];
 
@@ -14,7 +14,6 @@
   const stored = localStorage.getItem('ssaTheme');
   applyTheme(THEMES.includes(stored) ? stored : 'light');
 
-  // Normalize the copied page navigation into one compact shared structure.
   const nav = document.querySelector('.nav');
   const links = document.getElementById('navLinks');
   const path = window.location.pathname.replace(/\/$/, '') || '/index.html';
@@ -27,11 +26,12 @@
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
         <a href="/newsletter">Newsletter</a>
-        <a href="/aux">Want The Aux</a>
+        <a href="/timeline">Timeline</a>
         <a href="/gallery">Gallery</a>
-        <a href="/schedule">Schedule a meeting</a>
+        <a href="/bulletin">Bulletin</a>
+        <a href="/aux">Want The Aux</a>
         <div class="nav-options">
-          <button class="nav-options-toggle" type="button" aria-label="Options" aria-expanded="false" aria-controls="navOptionsMenu">
+          <button class="nav-options-toggle" type="button" aria-label="More pages" aria-expanded="false" aria-controls="navOptionsMenu">
             <span class="nav-options-icon" aria-hidden="true"></span>
           </button>
           <div class="nav-options-menu" id="navOptionsMenu">
@@ -70,7 +70,6 @@
     applyTheme(THEMES[(idx + 1) % THEMES.length]);
   });
 
-  // Mobile nav
   const toggle = document.getElementById('navMenuToggle');
   if (nav && toggle && links) {
     const close = () => {
@@ -92,7 +91,6 @@
     window.addEventListener('resize', () => { if (window.innerWidth > 900) close(); });
   }
 
-  // Collapsible Options menu.
   const options = document.querySelector('.nav-options');
   const optionsToggle = document.querySelector('.nav-options-toggle');
   const closeOptions = () => {
@@ -103,6 +101,12 @@
     event.stopPropagation();
     const open = options.classList.toggle('open');
     optionsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  options?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closeOptions();
+    });
   });
   document.addEventListener('click', (event) => {
     if (options?.classList.contains('open') && !options.contains(event.target)) closeOptions();
@@ -121,20 +125,18 @@
     });
   });
 
-  // Mark active nav link
   document.querySelectorAll('.nav-links a').forEach((a) => {
     const href = a.getAttribute('href');
     if (!href || href.startsWith('#')) return;
     const normalized = href.replace(/\/$/, '');
-    if (path === normalized || (path.endsWith('index.html') && normalized === '/index.html')) {
+  if (path === normalized
+      || (path.endsWith('index.html') && normalized === '/index.html')
+      || (path === '/timeline' && (normalized === '/timeline' || normalized === '/timeline.html'))) {
       a.classList.add('active');
     }
   });
-  if (path === '/daily' || path === '/connections') {
-    document.querySelector('.nav-options-menu a[href="/games"]')?.classList.add('active');
-  }
-  if (path === '/schedule') {
-    document.querySelector('.nav-options-menu a[href="/schedule"]')?.classList.add('active');
+  if (['/daily', '/connections', '/games', '/donate', '/board', '/schedule'].includes(path)) {
+    optionsToggle?.classList.add('active');
   }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
 
@@ -144,12 +146,13 @@
         <a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a>
         <nav aria-label="Footer">
           <a href="/events">Events</a>
-          <a href="/games">Arcade</a>
           <a href="/newsletter">Newsletter</a>
-          <a href="/donate">Donate</a>
+          <a href="/gallery">Gallery</a>
+          <a href="/bulletin">Bulletin</a>
+          <a href="/timeline">Timeline</a>
           <a href="/aux">Want The Aux</a>
+          <a href="/donate">Donate</a>
           <a href="/board">Board</a>
-          <a href="/schedule">Schedule a meeting</a>
         </nav>
         <div class="social-row">
           <a href="mailto:ssa@umn.edu">Email</a>

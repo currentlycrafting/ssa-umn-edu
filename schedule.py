@@ -1,37 +1,100 @@
 """Persistent SSA board scheduling polls."""
 
+import hashlib
+import hmac
 import json
 import os
+import re
 import secrets
 from datetime import date, datetime, timedelta, timezone
 
 from db import db
 
 
-BOARD_MEMBERS = (
-    "Salman Said",
-    "Suhaila Osman",
-    "Ruweyda Warsame",
-    "Muno Aynab",
-    "Kamila Deef",
-    "Zakaria Samatar",
-    "Suhaib Mohamed",
-    "Zakaria Hussein",
-    "Salma Tawane",
-    "Bashir Mumin",
-    "Khalid Mohamed",
-    "Asma Yusuf",
-)
-
 HOUR_START = 8
 HOUR_END = 24
 SLOT_MINUTES = 60
 MAX_DAYS = 366
+MAX_MEMBERS = 40
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "SSA")
+PIN_RE = re.compile(r"^\d{4}$")
+PBKDF2_ROUNDS = 120_000
 
 
 def utcnow():
     return datetime.now(timezone.utc)
+
+
+def _hash_pin(pin, salt=None):
+    salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        pin.encode("utf-8"),
+        salt.encode("utf-8"),
+        PBKDF2_ROUNDS,
+    ).hex()
+    return salt, digest
+
+
+def _verify_pin(pin, salt, password_hash):
+    if not salt or not password_hash or not PIN_RE.match(pin or ""):
+        return False
+    _, digest = _hash_pin(pin, salt)
+    return hmac.compare_digest(digest, password_hash)
+
+
+def _clean_members(values):
+    members = []
+    seen = set()
+    for value in values if isinstance(values, list) else []:
+        name = str(value or "").strip()[:80]
+        if not name:
+            continue
+        key = name.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        members.append(name)
+        if len(members) >= MAX_MEMBERS:
+            break
+    return members
+
+
+def _poll_members(poll):
+    raw = poll.get("members") if isinstance(poll, dict) else None
+    if raw is None and hasattr(poll, "get"):
+        raw = poll.get("members")
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except json.JSONDecodeError:
+            raw = []
+    members = _clean_members(raw or [])
+    # Legacy polls created before custom name lists.
+    if not members and not _has_pin(poll):
+        return [
+            "Salman Said",
+            "Suhaila Osman",
+            "Ruweyda Warsame",
+            "Muno Aynab",
+            "Kamila Deef",
+            "Zakaria Samatar",
+            "Suhaib Mohamed",
+            "Zakaria Hussein",
+            "Salma Tawane",
+            "Bashir Mumin",
+            "Khalid Mohamed",
+            "Asma Yusuf",
+        ]
+    return members
+
+
+def _has_pin(poll):
+    return bool(poll.get("password_hash") and poll.get("password_salt"))
+
+
+def _token_key(slug):
+    return f"ssaScheduleAccess:{slug}"
 
 
 def init_tables():
@@ -68,6 +131,28 @@ def init_tables():
             CREATE INDEX IF NOT EXISTS idx_schedule_availability_poll
             ON schedule_availability (poll_id)
             """
+        )
+        cur.execute(
+            "ALTER TABLE schedule_polls ADD COLUMN IF NOT EXISTS members JSONB NOT NULL DEFAULT '[]'::jsonb"
+        )
+        cur.execute(
+            "ALTER TABLE schedule_polls ADD COLUMN IF NOT EXISTS password_salt TEXT NOT NULL DEFAULT ''"
+        )
+        cur.execute(
+            "ALTER TABLE schedule_polls ADD COLUMN IF NOT EXISTS password_hash TEXT NOT NULL DEFAULT ''"
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schedule_access_tokens (
+                id SERIAL PRIMARY KEY,
+                poll_id INTEGER NOT NULL REFERENCES schedule_polls(id) ON DELETE CASCADE,
+                token TEXT NOT NULL UNIQUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_schedule_access_poll ON schedule_access_tokens (poll_id)"
         )
 
 
@@ -186,11 +271,60 @@ def _state_payload(poll, responses):
             "allowedSlots": allowed,
             "createdAt": poll["created_at"].isoformat(),
         },
-        "boardMembers": list(BOARD_MEMBERS),
+        "boardMembers": _poll_members(poll),
+        "locked": False,
         "responses": public_responses,
         "takenNames": [response["member_name"] for response in responses],
         "responseCount": len(responses),
         "aggregate": aggregate,
+    }
+
+
+def _issue_access_token(poll_id):
+    token = secrets.token_urlsafe(24)
+    with db() as cur:
+        cur.execute(
+            """
+            INSERT INTO schedule_access_tokens (poll_id, token, created_at)
+            VALUES (%s, %s, %s)
+            """,
+            (poll_id, token, utcnow()),
+        )
+    return token
+
+
+def _valid_access_token(poll_id, token):
+    token = str(token or "").strip()
+    if not token:
+        return False
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT 1 FROM schedule_access_tokens
+            WHERE poll_id = %s AND token = %s
+            """,
+            (poll_id, token),
+        )
+        return bool(cur.fetchone())
+
+
+def _locked_stub(poll):
+    return {
+        "ok": True,
+        "locked": True,
+        "version": int(poll["version"]),
+        "poll": {
+            "slug": poll["slug"],
+            "title": poll["title"],
+            "dateStart": poll["date_start"].isoformat(),
+            "dateEnd": poll["date_end"].isoformat(),
+            "createdAt": poll["created_at"].isoformat(),
+        },
+        "boardMembers": [],
+        "responses": [],
+        "takenNames": [],
+        "responseCount": 0,
+        "aggregate": {},
     }
 
 
@@ -223,13 +357,21 @@ def create_poll(payload):
     allowed_slots = _clean_slots(payload.get("allowedSlots"), valid_slots)
     if not allowed_slots:
         return 400, {"error": "Select at least one time that could work."}
+    members = _clean_members(payload.get("members"))
+    if not members:
+        return 400, {"error": "Add at least one name for people who can respond."}
+    pin = str(payload.get("password", "")).strip()
+    if not PIN_RE.match(pin):
+        return 400, {"error": "Choose a 4-digit schedule password."}
+    salt, password_hash = _hash_pin(pin)
     slug = _new_slug()
     with db() as cur:
         cur.execute(
             """
             INSERT INTO schedule_polls
-                (slug, title, date_start, date_end, allowed_slots, version, created_at)
-            VALUES (%s, %s, %s, %s, %s::jsonb, 1, %s)
+                (slug, title, date_start, date_end, allowed_slots, members,
+                 password_salt, password_hash, version, created_at)
+            VALUES (%s, %s, %s, %s, %s::jsonb, %s::jsonb, %s, %s, 1, %s)
             RETURNING *
             """,
             (
@@ -238,21 +380,45 @@ def create_poll(payload):
                 date_start,
                 date_end,
                 json.dumps(allowed_slots),
+                json.dumps(members),
+                salt,
+                password_hash,
                 utcnow(),
             ),
         )
         poll = cur.fetchone()
-    return 201, {"ok": True, "slug": slug, "state": _state_payload(poll, [])}
+    access_token = _issue_access_token(poll["id"])
+    state = _state_payload(poll, [])
+    state["accessToken"] = access_token
+    return 201, {"ok": True, "slug": slug, "accessToken": access_token, "state": state}
 
 
-def get_poll(slug, since=None):
+def get_poll(slug, since=None, access_token=None):
     poll, responses = _poll_rows(slug)
     if not poll:
         return 404, {"error": "This scheduling link does not exist."}
     version = int(poll["version"])
+    if _has_pin(poll) and not _valid_access_token(poll["id"], access_token):
+        return 200, _locked_stub(poll)
     if since is not None and int(since) == version:
-        return 200, {"ok": True, "changed": False, "version": version}
+        return 200, {"ok": True, "changed": False, "version": version, "locked": False}
     return 200, _state_payload(poll, responses)
+
+
+def unlock_poll(slug, payload):
+    poll, responses = _poll_rows(slug)
+    if not poll:
+        return 404, {"error": "This scheduling link does not exist."}
+    if not _has_pin(poll):
+        state = _state_payload(poll, responses)
+        return 200, {"ok": True, "accessToken": "", "state": state}
+    pin = str(payload.get("password", "")).strip()
+    if not _verify_pin(pin, poll.get("password_salt"), poll.get("password_hash")):
+        return 401, {"error": "Incorrect password. Please try again."}
+    access_token = _issue_access_token(poll["id"])
+    state = _state_payload(poll, responses)
+    state["accessToken"] = access_token
+    return 200, {"ok": True, "accessToken": access_token, "state": state}
 
 
 def list_polls():
@@ -260,7 +426,7 @@ def list_polls():
         cur.execute(
             """
             SELECT p.slug, p.title, p.date_start, p.date_end, p.created_at,
-                   COUNT(a.id)::INTEGER AS response_count
+                   p.password_hash, COUNT(a.id)::INTEGER AS response_count
             FROM schedule_polls p
             LEFT JOIN schedule_availability a ON a.poll_id = p.id
             GROUP BY p.id
@@ -271,7 +437,6 @@ def list_polls():
         rows = cur.fetchall()
     return 200, {
         "ok": True,
-        "boardMembers": list(BOARD_MEMBERS),
         "schedules": [
             {
                 "slug": row["slug"],
@@ -280,6 +445,7 @@ def list_polls():
                 "dateEnd": row["date_end"].isoformat(),
                 "createdAt": row["created_at"].isoformat(),
                 "responseCount": int(row["response_count"]),
+                "locked": bool(row.get("password_hash")),
             }
             for row in rows
         ],
@@ -298,14 +464,27 @@ def delete_poll(slug, payload):
 
 def save_availability(slug, payload):
     member_name = str(payload.get("memberName", "")).strip()
-    if member_name not in BOARD_MEMBERS:
-        return 400, {"error": "Choose a current SSA board member."}
     supplied_token = str(payload.get("responseToken", "")).strip()
+    access_token = str(payload.get("accessToken", "")).strip()
     with db() as cur:
         cur.execute("SELECT * FROM schedule_polls WHERE slug = %s FOR UPDATE", (slug,))
         poll = cur.fetchone()
         if not poll:
             return 404, {"error": "This scheduling link does not exist."}
+        if _has_pin(poll):
+            # Validate access without nesting another DB connection under FOR UPDATE.
+            cur.execute(
+                """
+                SELECT 1 FROM schedule_access_tokens
+                WHERE poll_id = %s AND token = %s
+                """,
+                (poll["id"], access_token),
+            )
+            if not cur.fetchone():
+                return 401, {"error": "Unlock this schedule with its 4-digit password first."}
+        members = _poll_members(poll)
+        if member_name not in members:
+            return 400, {"error": "Choose a name from this schedule's list."}
         allowed = list(poll["allowed_slots"] or [])
         slots = _clean_slots(payload.get("slots"), allowed)
         cur.execute(

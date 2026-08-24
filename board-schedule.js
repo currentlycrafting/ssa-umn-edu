@@ -70,6 +70,11 @@
 
   const tokenKey = (member) => `ssaScheduleToken:${pollSlug}:${member}`;
   const tokenFor = (member) => localStorage.getItem(tokenKey(member)) || '';
+  const accessKey = (slug = pollSlug) => `ssaScheduleAccess:${slug}`;
+  const accessFor = (slug = pollSlug) => sessionStorage.getItem(accessKey(slug)) || '';
+  const rememberAccess = (slug, token) => {
+    if (token) sessionStorage.setItem(accessKey(slug), token);
+  };
   const scheduleUrl = (slug = pollSlug) =>
     `${window.location.origin}/schedule?poll=${encodeURIComponent(slug)}`;
 
@@ -179,6 +184,10 @@
         <span data-create-step-dot="1" class="active">1</span>
         <i></i>
         <span data-create-step-dot="2">2</span>
+        <i></i>
+        <span data-create-step-dot="3">3</span>
+        <i></i>
+        <span data-create-step-dot="4">4</span>
       </div>
       <form id="scheduleCreateForm">
         <label class="schedule-create-title">Meeting name<input name="title" value="SSA Board Meeting" maxlength="120" required /></label>
@@ -207,15 +216,63 @@
           </div>
           <p class="schedule-grid-help" id="scheduleCreatorHelp">Click or drag across hours.</p>
         </section>
+        <section class="schedule-create-panel" data-create-panel="3" hidden>
+          <label class="schedule-names-field">
+            <span>Add names</span>
+            <div class="schedule-names-row">
+              <input id="scheduleNameInput" type="text" maxlength="80" placeholder="Type a name, then Add" autocomplete="off" />
+              <button class="button button-line" type="button" id="scheduleNameAdd">Add</button>
+            </div>
+          </label>
+          <div class="schedule-name-chips" id="scheduleNameChips"></div>
+          <p class="schedule-grid-help">Anyone on this list can pick their name and mark availability. Add your whole group.</p>
+        </section>
+        <section class="schedule-create-panel schedule-pin-panel" data-create-panel="4" hidden>
+          <p class="schedule-pin-lead">Set a 4-digit password. Share it with anyone who should open this schedule.</p>
+          <div class="bulletin-pin-display">
+            <div class="bulletin-pin-slots" id="createPinSlots" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <button class="bulletin-pin-eye" id="createPinEye" type="button" aria-label="Show password" aria-pressed="false">
+              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="bulletin-keypad" data-pin-target="create" id="scheduleCreateKeypad"></div>
+        </section>
         <div class="schedule-create-actions">
           <button class="button button-line" type="button" id="scheduleCreateBack" hidden>Back</button>
           <button class="button button-dark" type="button" id="scheduleCreateNext">Next</button>
-          <button class="button button-dark" type="submit" hidden>Create Schedule</button>
+          <button class="button button-dark" type="submit" id="scheduleCreateSubmit" hidden>Create Schedule</button>
           <output></output>
         </div>
       </form>
     </div>`;
   document.body.appendChild(createModal);
+
+  const unlockModal = document.createElement('div');
+  unlockModal.className = 'modal-backdrop schedule-unlock-modal';
+  unlockModal.setAttribute('aria-hidden', 'true');
+  unlockModal.innerHTML = `
+    <div class="modal-sheet modal-card bulletin-pin-modal schedule-unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="scheduleUnlockTitle">
+      ${exitButton()}
+      <span class="eyebrow">Locked schedule</span>
+      <h2 id="scheduleUnlockTitle">Enter password</h2>
+      <p class="bulletin-modal-lead" id="scheduleUnlockCopy">Enter the 4-digit code to open this schedule.</p>
+      <div class="bulletin-pin-display">
+        <div class="bulletin-pin-slots" id="unlockPinSlots" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <button class="bulletin-pin-eye" id="unlockPinEye" type="button" aria-label="Show password" aria-pressed="false">
+          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="bulletin-keypad" data-pin-target="unlock" id="scheduleUnlockKeypad"></div>
+      <button class="button button-dark" type="button" id="scheduleUnlockSubmit" disabled>Unlock</button>
+      <output id="scheduleUnlockOutput"></output>
+    </div>`;
+  document.body.appendChild(unlockModal);
 
   const createForm = createModal.querySelector('#scheduleCreateForm');
   const creatorGrid = createModal.querySelector('#scheduleCreatorGrid');
@@ -224,15 +281,25 @@
   const createCopy = createModal.querySelector('#scheduleCreateCopy');
   const createBack = createModal.querySelector('#scheduleCreateBack');
   const createNext = createModal.querySelector('#scheduleCreateNext');
-  const createSubmit = createModal.querySelector('button[type="submit"]');
+  const createSubmit = createModal.querySelector('#scheduleCreateSubmit');
   const dateSummary = createModal.querySelector('#scheduleDateSummary');
   const creatorPager = createModal.querySelector('#scheduleCreatorPager');
   const creatorPageLabel = createModal.querySelector('#scheduleCreatorPageLabel');
   const creatorPrev = createModal.querySelector('#scheduleCreatorPrev');
   const creatorNextPage = createModal.querySelector('#scheduleCreatorNext');
   const creatorHelp = createModal.querySelector('#scheduleCreatorHelp');
+  const nameInput = createModal.querySelector('#scheduleNameInput');
+  const nameAdd = createModal.querySelector('#scheduleNameAdd');
+  const nameChips = createModal.querySelector('#scheduleNameChips');
+  const unlockSubmit = unlockModal.querySelector('#scheduleUnlockSubmit');
+  const unlockOutput = unlockModal.querySelector('#scheduleUnlockOutput');
+  const unlockCopy = unlockModal.querySelector('#scheduleUnlockCopy');
   const creatorSlots = new Set();
   const selectedDates = new Set();
+  const createMembers = [];
+  const pins = { create: '', unlock: '' };
+  const reveal = { create: false, unlock: false };
+  let pendingUnlockSlug = '';
   let createStep = 1;
   let creatorPage = 0;
   let calendarCursor = new Date(`${localDateValue()}T12:00:00`);
@@ -436,6 +503,83 @@
     renderCreatorPager(dates.length, pageSize, pageCount);
   }
 
+  function syncPinUI(target) {
+    const value = pins[target] || '';
+    const slots = document.getElementById(`${target}PinSlots`);
+    const show = reveal[target];
+    slots?.querySelectorAll('span').forEach((slot, index) => {
+      const filled = index < value.length;
+      slot.classList.toggle('filled', filled);
+      slot.classList.toggle('active', index === value.length && value.length < 4);
+      slot.textContent = filled ? (show ? value[index] : '*') : '';
+    });
+    if (target === 'create' && createSubmit) createSubmit.disabled = value.length !== 4;
+    if (target === 'unlock' && unlockSubmit) unlockSubmit.disabled = value.length !== 4;
+  }
+
+  function setReveal(target, on) {
+    reveal[target] = on;
+    const eye = document.getElementById(`${target}PinEye`);
+    eye?.classList.toggle('is-revealed', on);
+    eye?.setAttribute('aria-pressed', on ? 'true' : 'false');
+    eye?.setAttribute('aria-label', on ? 'Hide password' : 'Show password');
+    syncPinUI(target);
+  }
+
+  function buildKeypad(container) {
+    if (!container || container.dataset.ready === '1') return;
+    const target = container.dataset.pinTarget;
+    const keys = [['1','2','3'],['4','5','6'],['7','8','9'],['','0','back']];
+    container.innerHTML = keys.flat().map((key) => {
+      if (key === '') return '<span class="bulletin-keypad-spacer" aria-hidden="true"></span>';
+      const label = key === 'back' ? 'Backspace' : key;
+      const textLabel = key === 'back' ? '⌫' : key;
+      return `<button type="button" class="bulletin-key" data-key="${key}" aria-label="${label}">${textLabel}</button>`;
+    }).join('');
+    container.dataset.ready = '1';
+    container.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-key]');
+      if (!button) return;
+      const key = button.dataset.key;
+      let next = pins[target] || '';
+      if (key === 'back') next = next.slice(0, -1);
+      else if (/^\d$/.test(key) && next.length < 4) next += key;
+      pins[target] = next;
+      syncPinUI(target);
+    });
+  }
+
+  function renderNameChips() {
+    if (!nameChips) return;
+    nameChips.innerHTML = createMembers.map((name, index) =>
+      `<button type="button" class="schedule-name-chip" data-remove-name="${index}">${esc(name)} <span aria-hidden="true">×</span></button>`
+    ).join('') || '<span class="schedule-names-empty">No names yet</span>';
+    nameChips.querySelectorAll('[data-remove-name]').forEach((button) => {
+      button.addEventListener('click', () => {
+        createMembers.splice(Number(button.dataset.removeName), 1);
+        renderNameChips();
+      });
+    });
+  }
+
+  function addCreateName() {
+    const name = (nameInput?.value || '').trim();
+    if (!name) return;
+    if (createMembers.some((item) => item.toLowerCase() === name.toLowerCase())) {
+      createForm.querySelector('output').textContent = 'That name is already on the list.';
+      return;
+    }
+    if (createMembers.length >= 40) {
+      createForm.querySelector('output').textContent = 'You can add up to 40 names.';
+      return;
+    }
+    createMembers.push(name);
+    if (nameInput) nameInput.value = '';
+    createForm.querySelector('output').textContent = '';
+    renderNameChips();
+    nameInput?.focus();
+  }
+
   function setCreateStep(step) {
     createStep = step;
     createModal.querySelectorAll('[data-create-panel]').forEach((panel) => {
@@ -446,15 +590,27 @@
       dot.classList.toggle('current', Number(dot.dataset.createStepDot) === step);
     });
     createBack.hidden = step === 1;
-    createNext.hidden = step !== 1;
-    createSubmit.hidden = step !== 2;
-    createCopy.textContent = step === 1
-      ? 'Pick the exact dates you want. Skip days that will not work.'
-      : 'Now paint one-hour windows for those dates.';
+    createNext.hidden = step === 4;
+    createSubmit.hidden = step !== 4;
+    const copy = {
+      1: 'Pick the exact dates you want. Skip days that will not work.',
+      2: 'Now paint one-hour windows for those dates.',
+      3: 'Add every person who should be able to respond.',
+      4: 'Lock the schedule with a 4-digit password.'
+    };
+    createCopy.textContent = copy[step] || '';
     createForm.querySelector('output').textContent = '';
     if (step === 2) {
       creatorPage = 0;
       renderCreatorGrid();
+    }
+    if (step === 3) {
+      renderNameChips();
+      window.setTimeout(() => nameInput?.focus(), 40);
+    }
+    if (step === 4) {
+      buildKeypad(document.getElementById('scheduleCreateKeypad'));
+      syncPinUI('create');
     }
   }
 
@@ -464,10 +620,14 @@
     creatorSlots.clear();
     selectedDates.clear();
     selectedDates.add(localDateValue());
+    createMembers.length = 0;
+    pins.create = '';
+    setReveal('create', false);
     creatorPage = 0;
     calendarCursor = new Date(`${localDateValue()}T12:00:00`);
     calendarCursor.setDate(1);
     createForm.querySelector('output').textContent = '';
+    renderNameChips();
     setCreateStep(1);
     renderCalendar();
     createModal.classList.add('open');
@@ -479,7 +639,29 @@
   function closeCreate() {
     createModal.classList.remove('open');
     createModal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
+    if (!unlockModal.classList.contains('open')) document.body.classList.remove('modal-open');
+  }
+
+  function openUnlock(slug, title) {
+    pendingUnlockSlug = slug;
+    pins.unlock = '';
+    setReveal('unlock', false);
+    syncPinUI('unlock');
+    unlockOutput.textContent = '';
+    unlockCopy.textContent = title
+      ? `Enter the 4-digit code to open “${title}”.`
+      : 'Enter the 4-digit code to open this schedule.';
+    buildKeypad(document.getElementById('scheduleUnlockKeypad'));
+    unlockModal.classList.add('open');
+    unlockModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeUnlock() {
+    unlockModal.classList.remove('open');
+    unlockModal.setAttribute('aria-hidden', 'true');
+    pendingUnlockSlug = '';
+    if (!createModal.classList.contains('open')) document.body.classList.remove('modal-open');
   }
 
   const tooltip = document.createElement('div');
@@ -709,11 +891,13 @@
         body: {
           memberName: selectedMember,
           slots: Array.from(selectedSlots),
-          responseToken: tokenFor(selectedMember)
+          responseToken: tokenFor(selectedMember),
+          accessToken: accessFor(pollSlug)
         }
       });
       localStorage.setItem(tokenKey(selectedMember), data.responseToken);
       pollState = data.state;
+      boardMembers = pollState.boardMembers || boardMembers;
       availabilityDirty = false;
       viewMode = 'results';
       renderWorkspace();
@@ -741,9 +925,11 @@
       const range = item.dateStart === item.dateEnd
         ? dayLabel(item.dateStart, true)
         : `${dayLabel(item.dateStart, true)} – ${dayLabel(item.dateEnd, true)}`;
-      return `<article class="schedule-list-item ${item.slug === pollSlug ? 'active' : ''}">
+      const unlocked = Boolean(accessFor(item.slug));
+      const needsPin = item.locked !== false && !unlocked;
+      return `<article class="schedule-list-item ${item.slug === pollSlug && unlocked ? 'active' : ''} ${needsPin ? 'is-locked' : ''}">
         <button class="schedule-list-select" type="button" data-select-schedule="${esc(item.slug)}">
-          <span class="schedule-list-kicker">${index === 0 ? 'Newest · Featured' : `${item.responseCount} response${item.responseCount === 1 ? '' : 's'}`}</span>
+          <span class="schedule-list-kicker">${needsPin ? 'Locked' : (index === 0 ? 'Newest · Featured' : `${item.responseCount} response${item.responseCount === 1 ? '' : 's'}`)}</span>
           <strong>${esc(item.title)}</strong><small>${esc(range)}</small>
         </button>
         <button class="schedule-list-delete" type="button" data-delete-schedule="${esc(item.slug)}" aria-label="Delete ${esc(item.title)}">×</button>
@@ -761,24 +947,48 @@
     try {
       const data = await api('/api/schedules');
       schedules = data.schedules || [];
-      boardMembers = data.boardMembers || [];
       renderScheduleList();
     } catch (error) {
       scheduleList.innerHTML = `<div class="schedule-list-empty"><strong>Could not load schedules</strong><span>${esc(error.message || 'Try again shortly.')}</span></div>`;
       return;
     }
-    if (selectNewest && !pollSlug && schedules[0]) {
-      try {
-        await selectSchedule(schedules[0].slug, false);
-      } catch (error) {
-        console.error(error);
+    // Only auto-open a schedule that is already unlocked in this session.
+    if (selectNewest && !pollSlug) {
+      const unlocked = schedules.find((item) => accessFor(item.slug));
+      if (unlocked) {
+        try {
+          await selectSchedule(unlocked.slug, false);
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
   }
 
+  function showLockedWorkspace(title) {
+    updateToolbar();
+    workspace.hidden = false;
+    workspace.innerHTML = `<div class="schedule-pick-first">
+      <h2>Schedules are locked</h2>
+      <p>Choose a saved schedule and enter its 4-digit password to open it.</p>
+    </div>`;
+  }
+
   async function selectSchedule(slug, updateUrl = true) {
-    if (!slug || slug === pollSlug && pollState) return;
+    if (!slug) return;
     if (availabilityDirty && !window.confirm('Switch schedules without saving these changes?')) return;
+    const listed = schedules.find((item) => item.slug === slug);
+    const unlocked = Boolean(accessFor(slug));
+
+    // Always ask for PIN first when this schedule is still locked.
+    if (!unlocked && listed?.locked !== false) {
+      if (updateUrl) history.replaceState(null, '', `/schedule?poll=${encodeURIComponent(slug)}`);
+      openUnlock(slug, listed?.title || '');
+      return;
+    }
+
+    if (slug === pollSlug && pollState && !pollState.locked) return;
+
     pollSlug = slug;
     pollState = null;
     selectedSlots = new Set();
@@ -791,6 +1001,12 @@
     updateToolbar('');
     await loadPoll(undefined, { render: false });
     if (!pollState) return;
+    if (pollState.locked) {
+      openUnlock(slug, pollState.poll?.title || listed?.title || '');
+      showLockedWorkspace(pollState.poll?.title);
+      return;
+    }
+    boardMembers = pollState.boardMembers || [];
     viewMode = selectedMember ? 'availability' : 'results';
     renderWorkspace();
     startPolling();
@@ -817,16 +1033,32 @@
   }
 
   async function loadPoll(since, { render = true } = {}) {
-    const suffix = since ? `?since=${encodeURIComponent(since)}` : '';
+    const params = new URLSearchParams();
+    if (since) params.set('since', since);
+    const token = accessFor(pollSlug);
+    if (token) params.set('access', token);
+    const suffix = params.toString() ? `?${params}` : '';
     try {
       const data = await api(`/api/schedule/${encodeURIComponent(pollSlug)}${suffix}`);
       if (data.changed === false) return;
       pollState = data;
+      if (data.accessToken) rememberAccess(pollSlug, data.accessToken);
       const listed = schedules.find((item) => item.slug === pollSlug);
-      if (listed) {
+      if (listed && !data.locked) {
         listed.responseCount = data.responseCount;
+        listed.locked = false;
         renderScheduleList();
       }
+      if (data.locked) {
+        if (render) {
+          workspace.hidden = false;
+          workspace.innerHTML = `<div class="schedule-pick-first"><h2>Password required</h2><p>Enter the 4-digit code to view this schedule.</p><button class="button button-dark" type="button" id="scheduleAskUnlock">Enter password</button></div>`;
+          workspace.querySelector('#scheduleAskUnlock')?.addEventListener('click', () => openUnlock(pollSlug, data.poll?.title || ''));
+          updateToolbar();
+        }
+        return;
+      }
+      boardMembers = data.boardMembers || [];
       if (!since) hydrateMemberSelection();
       if (selectedMember) {
         const response = (data.responses || []).find((item) => item.memberName === selectedMember);
@@ -863,17 +1095,45 @@
   window.addEventListener('resize', () => {
     if (createStep === 2 && createModal.classList.contains('open')) renderCreatorGrid();
   });
-  createBack.addEventListener('click', () => setCreateStep(1));
+  createBack.addEventListener('click', () => setCreateStep(Math.max(1, createStep - 1)));
   createNext.addEventListener('click', () => {
-    if (!selectedDates.size) {
-      createForm.querySelector('output').textContent = 'Pick at least one date first.';
+    if (createStep === 1) {
+      if (!selectedDates.size) {
+        createForm.querySelector('output').textContent = 'Pick at least one date first.';
+        return;
+      }
+      setCreateStep(2);
       return;
     }
-    setCreateStep(2);
+    if (createStep === 2) {
+      if (!creatorSlots.size) {
+        createForm.querySelector('output').textContent = 'Paint at least one hour that could work.';
+        return;
+      }
+      setCreateStep(3);
+      return;
+    }
+    if (createStep === 3) {
+      if (!createMembers.length) {
+        createForm.querySelector('output').textContent = 'Add at least one name.';
+        return;
+      }
+      setCreateStep(4);
+    }
   });
+  nameAdd?.addEventListener('click', addCreateName);
+  nameInput?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addCreateName();
+    }
+  });
+  document.getElementById('createPinEye')?.addEventListener('click', () => setReveal('create', !reveal.create));
+  document.getElementById('unlockPinEye')?.addEventListener('click', () => setReveal('unlock', !reveal.unlock));
+
   createForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (createStep !== 2) {
+    if (createStep < 4) {
       createNext.click();
       return;
     }
@@ -885,6 +1145,16 @@
     }
     if (!creatorSlots.size) {
       createForm.querySelector('output').textContent = 'Paint at least one hour that could work.';
+      setCreateStep(2);
+      return;
+    }
+    if (!createMembers.length) {
+      createForm.querySelector('output').textContent = 'Add at least one name.';
+      setCreateStep(3);
+      return;
+    }
+    if (pins.create.length !== 4) {
+      createForm.querySelector('output').textContent = 'Enter a 4-digit password.';
       return;
     }
     const button = createSubmit;
@@ -900,12 +1170,16 @@
           dates,
           dateStart: dates[0],
           dateEnd: dates[dates.length - 1],
-          allowedSlots: Array.from(creatorSlots)
+          allowedSlots: Array.from(creatorSlots),
+          members: [...createMembers],
+          password: pins.create
         }
       });
       const poll = data.state?.poll || {};
       pollSlug = data.slug;
       pollState = data.state;
+      rememberAccess(data.slug, data.accessToken || data.state?.accessToken || '');
+      boardMembers = pollState.boardMembers || [...createMembers];
       selectedSlots = new Set();
       availabilityDirty = false;
       selectedMember = localStorage.getItem(MEMBER_KEY) || '';
@@ -913,14 +1187,14 @@
       viewMode = selectedMember ? 'availability' : 'results';
       history.replaceState(null, '', `/schedule?poll=${encodeURIComponent(pollSlug)}`);
 
-      // Show in Saved immediately on Create — do not wait for availability Save.
       schedules = [{
         slug: data.slug,
         title: poll.title || createForm.title.value.trim() || 'SSA Board Meeting',
         dateStart: poll.dateStart || dates[0],
         dateEnd: poll.dateEnd || dates[dates.length - 1],
         createdAt: poll.createdAt || new Date().toISOString(),
-        responseCount: 0
+        responseCount: 0,
+        locked: false
       }, ...schedules.filter((item) => item.slug !== data.slug)];
       renderScheduleList();
 
@@ -940,13 +1214,40 @@
     } catch (error) {
       output.textContent = error.message || 'Could not create this schedule.';
     } finally {
-      button.disabled = false;
+      button.disabled = pins.create.length !== 4;
     }
   });
   createSubmit.addEventListener('click', (event) => {
-    if (createStep !== 2) return;
+    if (createStep !== 4) return;
     event.preventDefault();
     createForm.requestSubmit();
+  });
+
+  unlockSubmit?.addEventListener('click', async () => {
+    if (!pendingUnlockSlug || pins.unlock.length !== 4) return;
+    unlockSubmit.disabled = true;
+    unlockOutput.textContent = 'Checking…';
+    try {
+      const data = await api(`/api/schedule/${encodeURIComponent(pendingUnlockSlug)}/unlock`, {
+        method: 'POST',
+        body: { password: pins.unlock }
+      });
+      rememberAccess(pendingUnlockSlug, data.accessToken || '');
+      const unlockedSlug = pendingUnlockSlug;
+      closeUnlock();
+      pins.unlock = '';
+      const listed = schedules.find((item) => item.slug === unlockedSlug);
+      if (listed) listed.locked = false;
+      pollSlug = '';
+      pollState = null;
+      await selectSchedule(unlockedSlug, true);
+    } catch (error) {
+      unlockOutput.textContent = error.message || 'Incorrect password. Please try again.';
+      pins.unlock = '';
+      syncPinUI('unlock');
+    } finally {
+      unlockSubmit.disabled = pins.unlock.length !== 4;
+    }
   });
 
   deleteForm.addEventListener('submit', async (event) => {
@@ -992,6 +1293,10 @@
   createModal.addEventListener('click', (event) => {
     if (event.target === createModal) closeCreate();
   });
+  unlockModal.querySelector('.modal-exit').addEventListener('click', closeUnlock);
+  unlockModal.addEventListener('click', (event) => {
+    if (event.target === unlockModal) closeUnlock();
+  });
   deleteModal.querySelector('.modal-exit').addEventListener('click', closeDelete);
   deleteModal.querySelector('[data-delete-cancel]').addEventListener('click', closeDelete);
   deleteModal.addEventListener('click', (event) => {
@@ -1016,11 +1321,18 @@
         trigger?.setAttribute('aria-expanded', 'false');
       }
       if (createModal.classList.contains('open')) closeCreate();
+      if (unlockModal.classList.contains('open')) closeUnlock();
       if (deleteModal.classList.contains('open')) closeDelete();
     }
   });
 
   listSchedules({ selectNewest: !pollSlug }).then(() => {
-    if (pollSlug) selectSchedule(pollSlug, false);
+    if (pollSlug) {
+      selectSchedule(pollSlug, false);
+      return;
+    }
+    if (!schedules.some((item) => accessFor(item.slug))) {
+      showLockedWorkspace();
+    }
   });
 })();
