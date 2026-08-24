@@ -648,34 +648,6 @@ if (suggestParam) {
   window.setTimeout(() => openSuggestModal(suggestParam === 'community' ? 'community' : 'campus'), 400);
 }
 
-// Featured hiking countdown
-const HIKING_EVENT_AT = new Date('2026-07-18T14:00:00-05:00');
-const featuredCountdown = document.getElementById('featuredCountdown');
-
-function tickFeaturedCountdown() {
-  if (!featuredCountdown) return;
-  const diff = HIKING_EVENT_AT.getTime() - Date.now();
-  const cells = featuredCountdown.querySelectorAll('[data-fc]');
-  if (diff <= 0) {
-    cells.forEach((cell) => { cell.textContent = '0'; });
-    return;
-  }
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
-  const secs = Math.floor((diff % 60000) / 1000);
-  const map = { days, hours, mins, secs };
-  cells.forEach((cell) => {
-    const key = cell.dataset.fc;
-    if (key && map[key] !== undefined) cell.textContent = String(map[key]);
-  });
-}
-
-if (featuredCountdown) {
-  tickFeaturedCountdown();
-  window.setInterval(tickFeaturedCountdown, 1000);
-}
-
 // Side nav scroll spy + connect button
 const sideNav = document.getElementById('sideNav');
 const sideLinks = sideNav ? Array.from(sideNav.querySelectorAll('a[href^="#"]')) : [];

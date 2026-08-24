@@ -39,7 +39,7 @@
 .page-hero h1 { margin: 8px 0 12px; font-size: clamp(36px, 7vw, 68px); letter-spacing: -.055em; }
 .page-hero p { color: var(--muted); max-width: 540px; margin: 0 auto; line-height: 1.65; }
 
-/* ---------- Featured hiking event ---------- */
+/* ---------- Featured event ---------- */
 .featured-event {
   display: grid;
   grid-template-columns: 1fr 1.15fr;
@@ -49,6 +49,19 @@
   margin-bottom: 28px;
   background: linear-gradient(135deg, color-mix(in oklch, var(--green) 14%, var(--surface)), var(--surface));
   box-shadow: var(--shadow-soft);
+}
+.featured-event[hidden],
+#events[hidden],
+#featuredSectionHead[hidden],
+#homeEvents[hidden] {
+  display: none !important;
+}
+.featured-event.featured-event--no-art {
+  grid-template-columns: 1fr;
+}
+.home-events {
+  display: grid;
+  gap: 18px;
 }
 .featured-event-art {
   position: relative;
@@ -624,6 +637,24 @@
 .admin-feature-choice span { display: grid; place-items: center; min-height: 48px; padding: 10px 12px; border: 2px solid var(--line-strong); border-radius: 14px; background: var(--surface); text-align: center; line-height: 1.25; }
 .admin-feature-choice input:checked + span { border-color: var(--blue); background: var(--blue); color: #fff; }
 .admin-feature-choice small { display: block; margin-top: 7px; color: var(--muted); }
+.admin-countdown-choice {
+  display: grid; gap: 10px; margin: 0; padding: 14px; border: 1px solid var(--line-strong);
+  border-radius: 16px; background: var(--surface);
+}
+.admin-countdown-choice legend { padding: 0; font-size: 13px; font-weight: 850; }
+.admin-countdown-toggle {
+  display: flex !important; align-items: center; gap: 10px; margin: 0; cursor: pointer;
+}
+.admin-countdown-toggle input {
+  position: static !important; opacity: 1 !important; pointer-events: auto !important;
+  width: 18px; height: 18px; margin: 0; accent-color: var(--blue);
+}
+.admin-countdown-toggle span {
+  display: block !important; min-height: 0 !important; padding: 0 !important;
+  border: 0 !important; background: transparent !important; color: var(--ink) !important;
+  text-align: left !important; font-weight: 750;
+}
+.admin-countdown-choice small { color: var(--muted); font-size: 12px; }
 .admin-event-preview { display: grid; gap: 10px; padding-top: 18px; border-top: 1px solid color-mix(in oklch, var(--blue) 35%, var(--line)); }
 .admin-preview-label { color: var(--blue); font-size: 11px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
 .admin-event-preview .featured-event { margin: 0; background: var(--surface); }

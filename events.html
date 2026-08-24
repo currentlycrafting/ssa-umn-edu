@@ -26,25 +26,8 @@
   </nav>
   <main class="page-main">
     <header class="page-hero" data-reveal><span class="eyebrow">Calendar</span><h1>SSA Events</h1><p>RSVP, show up, bring friends.</p></header>
-    <aside class="featured-event" id="eventsFeatured" aria-label="Featured event" data-reveal>
-      <div class="featured-event-art">
-        <img src="/assets/events/afton-state-park.png" alt="Afton State Park shoreline in autumn" />
-      </div>
-      <div class="featured-event-body">
-        <span class="eyebrow">Featured Event</span>
-        <h3>SSA Hiking Adventure</h3>
-        <p class="featured-location">July 18 · Afton State Park</p>
-        <p class="featured-copy">Join SSA for a summer community hike through Minnesota nature. All experience levels are welcome, with transportation and snacks organized.</p>
-        <p class="event-going"><span class="event-going-num" data-event-count="Hiking Event">—</span> coming</p>
-        <button class="button button-dark rsvp-button" type="button" data-event="Hiking Event" data-date="July 18, 2026 — Afton State Park" data-attendance-mode="quick">Are you coming?</button>
-      </div>
-    </aside>
-    <div class="event-grid" id="eventsGrid" data-reveal-group>
-      <article class="event-card"><span class="event-date">Sep 15</span><h3>Freshman Mixer</h3><p>Meet the class of 2030 and find your first SSA connections.</p><button class="micro-button rsvp-button" type="button" data-event="Freshman Mixer" data-date="September 15">RSVP</button></article>
-      <article class="event-card"><span class="event-date">Sep 24</span><h3>Fall Kickoff</h3><p>Join us at SuperBlock for Football Pizza, ice cream, snacks, drinks, music, and community.</p><button class="micro-button rsvp-button" type="button" data-event="Fall Kickoff" data-date="September 24 — SuperBlock">RSVP</button></article>
-      <article class="event-card"><span class="event-date">Oct 08</span><h3>Family Feud</h3><p>Meet at The Whole Music Club for pre-made teams, friendly competition, and Dave's Hot Chicken.</p><button class="micro-button rsvp-button" type="button" data-event="Family Feud" data-date="October 8 — The Whole Music Club">RSVP</button></article>
-      <article class="event-card"><span class="event-date">Oct 30</span><h3>Field Day</h3><p>Relay games, basketball, soccer, pickleball, and more in the North Gym, with Domino's served.</p><button class="micro-button rsvp-button" type="button" data-event="Field Day" data-date="October 30 — North Gym">RSVP</button></article>
-    </div>
+    <aside class="featured-event" id="eventsFeatured" aria-label="Featured event" data-reveal hidden></aside>
+    <div class="event-grid" id="eventsGrid" data-reveal-group></div>
     <p style="text-align:center;margin-top:32px" data-reveal><button type="button" class="button button-line" data-suggest-event>Suggest an event</button></p>
   </main>
   <div class="modal-backdrop" id="rsvpModal" aria-hidden="true">
@@ -81,7 +64,7 @@
   </div>
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
   <script src="/motion.js"></script><script src="/nav.js?v=4"></script>
-  <script src="/events-render.js?v=3"></script>
+  <script src="/events-render.js?v=5"></script>
   <script src="/rsvp.js?v=2"></script>
   <script src="/outreach.js?v=2"></script>
 </body>

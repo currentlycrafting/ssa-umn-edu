@@ -96,31 +96,13 @@
       </div>
     </section>
 
-    <section class="section" id="events">
-      <div class="section-head">
+    <section class="section" id="events" hidden>
+      <div class="section-head" id="featuredSectionHead">
         <span class="eyebrow">Featured</span>
         <h2>Don&apos;t miss this one</h2>
       </div>
-
-      <aside class="featured-event" id="featuredEvent" aria-label="Featured hiking event" data-reveal>
-        <div class="featured-event-art" aria-hidden="true">
-          <img src="/assets/events/afton-state-park.png" alt="Afton State Park shoreline in autumn" />
-        </div>
-        <div class="featured-event-body">
-          <span class="eyebrow">Featured Event</span>
-          <h3>SSA Hiking Adventure</h3>
-          <p class="featured-location">July 18 · Afton State Park</p>
-          <p class="featured-copy">Join SSA for a community hike exploring Minnesota nature. All experience levels welcome — transportation and snacks organized.</p>
-          <div class="featured-countdown" id="featuredCountdown" aria-label="Countdown">
-            <div class="fc-cell"><b data-fc="days">—</b><span>days</span></div>
-            <div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div>
-            <div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div>
-            <div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div>
-          </div>
-          <p class="event-going"><span class="event-going-num" data-event-count="Hiking Event">—</span> coming</p>
-          <button class="button button-dark handdrawn rsvp-button" type="button" data-event="Hiking Event" data-date="July 18, 2026 — Afton State Park" data-attendance-mode="quick"><span class="rsvp-btn-label">Are you coming?</span></button>
-        </div>
-      </aside>
+      <aside class="featured-event" id="featuredEvent" aria-label="Featured event" data-reveal hidden></aside>
+      <div class="home-events" id="homeEvents" data-reveal-group hidden></div>
     </section>
 
     <section class="section home-aux" id="aux-home">
@@ -329,7 +311,7 @@
   <script src="micro.js?v=2"></script>
   <script src="checklist.js?v=3"></script>
   <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=3"></script>
+  <script src="/events-render.js?v=5"></script>
   <script src="/rsvp.js?v=2"></script>
   <script src="index.js?v=8"></script>
   <script src="/outreach.js?v=2"></script>

@@ -201,6 +201,7 @@ def _event_json(row):
         "imageUrl": row["image_url"] or "",
         "attendanceMode": row.get("attendance_mode") or "rsvp",
         "featured": bool(row["featured"]),
+        "showCountdown": bool(row.get("show_countdown")),
         "sortOrder": int(row["sort_order"]),
         "published": bool(row["published"]),
     }
@@ -232,6 +233,7 @@ def save_event(payload):
     start_time = str(payload.get("startTime", "")).strip()[:20]
     image_url = str(payload.get("imageUrl", "")).strip()[:500]
     featured = bool(payload.get("featured"))
+    show_countdown = bool(payload.get("showCountdown"))
     attendance_mode = str(payload.get("attendanceMode", "rsvp")).strip().lower()
     if attendance_mode not in ("rsvp", "quick"):
         return 400, {"error": "Choose RSVP form or quick Yes/No."}
@@ -241,6 +243,8 @@ def save_event(payload):
     except (TypeError, ValueError):
         sort_order = 0
     starts_at = str(payload.get("startsAt", "")).strip() or None
+    if show_countdown and not starts_at:
+        return 400, {"error": "Set a countdown end date and time."}
     if not rsvp_key:
         rsvp_key = title
     if not short_date:
@@ -267,13 +271,15 @@ def save_event(payload):
                 """
                 UPDATE events SET rsvp_key=%s, title=%s, description=%s, location=%s,
                     date_label=%s, short_date=%s, start_time=%s, starts_at=%s, image_url=%s,
-                    attendance_mode=%s, featured=%s, sort_order=%s, published=%s, updated_at=%s
+                    attendance_mode=%s, featured=%s, show_countdown=%s, sort_order=%s,
+                    published=%s, updated_at=%s
                 WHERE id=%s
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, attendance_mode, featured, sort_order, published, utcnow(),
+                    start_time, starts_at, image_url, attendance_mode, featured,
+                    show_countdown, sort_order, published, utcnow(),
                     int(event_id),
                 ),
             )
@@ -282,13 +288,15 @@ def save_event(payload):
                 """
                 INSERT INTO events
                     (rsvp_key, title, description, location, date_label, short_date,
-                     start_time, starts_at, image_url, attendance_mode, featured, sort_order, published, created_at)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                     start_time, starts_at, image_url, attendance_mode, featured,
+                     show_countdown, sort_order, published, created_at)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, attendance_mode, featured, sort_order, published, utcnow(),
+                    start_time, starts_at, image_url, attendance_mode, featured,
+                    show_countdown, sort_order, published, utcnow(),
                 ),
             )
         row = cur.fetchone()
@@ -552,28 +560,50 @@ def init_tables():
         )
         cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS start_time TEXT NOT NULL DEFAULT ''")
         cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS attendance_mode TEXT NOT NULL DEFAULT 'rsvp'")
-        seed_events = [
-            ("Hiking Event", "SSA Hiking Adventure", "Join SSA for a summer community hike through Minnesota nature. All experience levels are welcome, with transportation and snacks organized.", "Afton State Park", "July 18, 2026 — Afton State Park", "Jul 18", "2026-07-18T14:00:00-05:00", "/assets/events/afton-state-park.png", True, 0),
-            ("Freshman Mixer", "Freshman Mixer", "Meet our incoming class of 2030, help them learn the campus, and find your first SSA connections.", "", "September 15", "Sep 15", "2026-09-15T18:00:00-05:00", "", False, 10),
-            ("Fall Kickoff", "Fall Kickoff", "Kick off SSA at SuperBlock with Football Pizza, ice cream, snacks, drinks, music, and community.", "SuperBlock", "September 24 — SuperBlock", "Sep 24", "2026-09-24T18:00:00-05:00", "", False, 20),
-            ("Family Feud", "Family Feud", "Family Feud at The Whole Music Club with teams made before the event and Dave's Hot Chicken served.", "The Whole Music Club", "October 8 — The Whole Music Club", "Oct 08", "2026-10-08T18:00:00-05:00", "", False, 30),
-            ("Field Day", "Field Day", "Field Day in the North Gym with Domino's and relay games, basketball, soccer, pickleball, and more.", "North Gym", "October 30 — North Gym", "Oct 30", "2026-10-30T18:00:00-05:00", "", False, 40),
-        ]
-        for event in seed_events:
+        cur.execute(
+            "ALTER TABLE events ADD COLUMN IF NOT EXISTS show_countdown "
+            "BOOLEAN NOT NULL DEFAULT FALSE"
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS schema_flags (
+                key TEXT PRIMARY KEY,
+                applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        cur.execute("SELECT 1 FROM schema_flags WHERE key = 'clear_seed_events_v1'")
+        if not cur.fetchone():
             cur.execute(
                 """
-                INSERT INTO events
-                    (rsvp_key, title, description, location, date_label, short_date,
-                     starts_at, image_url, featured, sort_order, published, created_at)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,TRUE,NOW())
-                ON CONFLICT (rsvp_key) DO NOTHING
-                """,
-                event,
+                DELETE FROM events
+                WHERE rsvp_key IN (
+                    'Hiking Event', 'Freshman Mixer', 'Fall Kickoff',
+                    'Family Feud', 'Field Day'
+                )
+                """
             )
-        cur.execute(
-            "UPDATE events SET attendance_mode = 'quick' "
-            "WHERE rsvp_key = 'Hiking Event' AND updated_at IS NULL"
-        )
+            cur.execute(
+                "INSERT INTO schema_flags (key) VALUES ('clear_seed_events_v1')"
+            )
+        cur.execute("SELECT 1 FROM schema_flags WHERE key = 'clear_seed_events_v2'")
+        if not cur.fetchone():
+            cur.execute(
+                """
+                DELETE FROM events
+                WHERE rsvp_key IN (
+                    'Hiking Event', 'Freshman Mixer', 'Fall Kickoff',
+                    'Family Feud', 'Field Day'
+                )
+                OR title IN (
+                    'SSA Hiking Adventure', 'Freshman Mixer', 'Fall Kickoff',
+                    'Family Feud', 'Field Day'
+                )
+                """
+            )
+            cur.execute(
+                "INSERT INTO schema_flags (key) VALUES ('clear_seed_events_v2')"
+            )
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS arcade_scores (

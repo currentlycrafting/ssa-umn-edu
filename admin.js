@@ -67,15 +67,29 @@
       </div>`;
   }
 
+  function toDatetimeLocal(iso) {
+    if (!iso) return '';
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  function fromDatetimeLocal(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+  }
+
   function eventForm(event = {}) {
     const startTime = event.startTime || (event.startsAt?.includes('T') ? event.startsAt.slice(11, 16) : '');
-    const previewImage = event.imageUrl || '/assets/events/afton-state-park.png';
+    const previewImage = event.imageUrl || '';
+    const countdownAt = toDatetimeLocal(event.startsAt);
     return `<form class="admin-editor" id="adminEventForm">
       <input type="hidden" name="id" value="${esc(event.id || '')}" />
       <input type="hidden" name="rsvpKey" value="${esc(event.rsvpKey || '')}" />
       <input type="hidden" name="shortDate" value="${esc(event.shortDate || '')}" />
       <input type="hidden" name="location" value="${esc(event.location || '')}" />
-      <input type="hidden" name="startsAt" value="${esc(event.startsAt || '')}" />
       <input type="hidden" name="sortOrder" value="${esc(event.sortOrder ?? data.events.length * 10)}" />
       <input type="hidden" name="imageUrl" value="${esc(event.imageUrl || '')}" />
       <div class="admin-editor-head"><div><span class="eyebrow">${event.id ? 'Edit event' : 'New event'}</span><h3>${event.id ? esc(event.title) : 'Add to the calendar'}</h3></div>${event.id ? '<button type="button" class="button button-line" data-new-event>New event</button>' : ''}</div>
@@ -83,11 +97,20 @@
         <label>Public title<input name="title" value="${esc(event.title || '')}" required /></label>
         <label>Full date label<input name="dateLabel" value="${esc(event.dateLabel || '')}" placeholder="October 8 — Location" required /></label>
         <label>Start time<input type="time" name="startTime" value="${esc(startTime)}" /></label>
-        <label>Featured image<input type="file" name="image" accept="image/png,image/jpeg,image/webp" /></label>
+        <label>Event image<input type="file" name="image" accept="image/png,image/jpeg,image/webp" /></label>
       </div>
       <label>Description<textarea name="description" rows="4" required>${esc(event.description || '')}</textarea></label>
       <fieldset class="admin-feature-choice"><legend>Where should this event appear?</legend><div><label><input type="radio" name="featured" value="no" ${event.featured ? '' : 'checked'} /><span>Regular event</span></label><label><input type="radio" name="featured" value="yes" ${event.featured ? 'checked' : ''} /><span>Featured event</span></label></div><small>Choosing Featured replaces the current featured event.</small></fieldset>
       <fieldset class="admin-feature-choice"><legend>How should guests respond?</legend><div><label><input type="radio" name="attendanceMode" value="rsvp" ${event.attendanceMode === 'quick' ? '' : 'checked'} /><span>Full RSVP form</span></label><label><input type="radio" name="attendanceMode" value="quick" ${event.attendanceMode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label></div><small>Quick mode asks only “Are you coming?”</small></fieldset>
+      <fieldset class="admin-countdown-choice">
+        <legend>Countdown timer</legend>
+        <label class="admin-countdown-toggle">
+          <input type="checkbox" name="showCountdown" ${event.showCountdown ? 'checked' : ''} />
+          <span>Show a live countdown on the featured card</span>
+        </label>
+        <label>Countdown ends at<input type="datetime-local" name="countdownAt" value="${esc(countdownAt)}" /></label>
+        <small>Use the event start date and time. The timer only appears when this event is featured.</small>
+      </fieldset>
       <div class="admin-event-preview" id="adminEventPreview" data-image="${esc(previewImage)}"></div>
       <div class="admin-editor-actions"><button class="button button-dark" type="submit">${event.id ? 'Save changes' : 'Publish event'}</button><output></output></div>
     </form>`;
@@ -98,7 +121,7 @@
     content.innerHTML = eventForm(editing) + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => `
       <article class="admin-event-item ${event.published ? '' : 'is-draft'}">
         <div class="admin-event-date">${esc(event.shortDate)}</div>
-        <div><span class="eyebrow">${event.featured ? 'Featured' : event.published ? 'Regular event' : 'Hidden'}</span><h3>${esc(event.title)}</h3><p>${esc(event.dateLabel)}</p></div>
+        <div><span class="eyebrow">${event.featured ? 'Featured' : event.published ? 'Regular event' : 'Hidden'}${event.showCountdown ? ' · Countdown' : ''}</span><h3>${esc(event.title)}</h3><p>${esc(event.dateLabel)}</p></div>
         <div class="admin-item-actions"><button class="button button-line" data-edit-event="${event.id}">Edit</button><button class="button button-line" data-delete-event="${event.id}">Remove</button></div>
       </article>`).join('')}</div>`;
     bindEventForm();
@@ -116,7 +139,7 @@
   function bindEventForm() {
     const form = document.getElementById('adminEventForm');
     const preview = document.getElementById('adminEventPreview');
-    let previewImage = preview?.dataset.image || '/assets/events/afton-state-park.png';
+    let previewImage = preview?.dataset.image || '';
     function readableTime(value) {
       if (!value) return '';
       const [hours, minutes] = value.split(':').map(Number);
@@ -125,17 +148,25 @@
     function updatePreview() {
       if (!preview) return;
       const featured = form.featured.value === 'yes';
+      const showCountdown = form.showCountdown.checked;
       const responseLabel = form.attendanceMode.value === 'quick' ? 'Are you coming? · Yes / No' : 'Full RSVP form';
       const eventTitle = form.title.value.trim() || 'Event title';
       const date = form.dateLabel.value.trim() || 'Date and location';
       const time = readableTime(form.startTime.value);
       const description = form.description.value.trim() || 'Your event description will appear here.';
+      const countdownMarkup = featured && showCountdown
+        ? `<div class="featured-countdown" aria-label="Countdown preview"><div class="fc-cell"><b>00</b><span>days</span></div><div class="fc-cell"><b>00</b><span>hrs</span></div><div class="fc-cell"><b>00</b><span>min</span></div><div class="fc-cell"><b>00</b><span>sec</span></div></div>`
+        : '';
+      const art = previewImage
+        ? `<div class="featured-event-art"><img src="${esc(previewImage)}" alt="" /></div>`
+        : '';
       preview.innerHTML = featured
-        ? `<span class="admin-preview-label">Featured preview · ${esc(responseLabel)}</span><article class="featured-event"><div class="featured-event-art"><img src="${esc(previewImage)}" alt="" /></div><div class="featured-event-body"><span class="eyebrow">Featured Event</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(date)}${time ? ` · ${esc(time)}` : ''}</p><p class="featured-copy">${esc(description)}</p><button class="button button-dark" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</button></div></article>`
+        ? `<span class="admin-preview-label">Featured preview · ${esc(responseLabel)}${showCountdown ? ' · Countdown on' : ''}</span><article class="featured-event${!previewImage ? ' featured-event--no-art' : ''}">${art}<div class="featured-event-body"><span class="eyebrow">Featured Event</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(date)}${time ? ` · ${esc(time)}` : ''}</p><p class="featured-copy">${esc(description)}</p>${countdownMarkup}<button class="button button-dark" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</button></div></article>`
         : `<span class="admin-preview-label">Regular event preview · ${esc(responseLabel)}</span><article class="event-card"><span class="event-date">${esc(date)}${time ? ` · ${esc(time)}` : ''}</span><h3>${esc(eventTitle)}</h3><p>${esc(description)}</p><button class="micro-button" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'RSVP'}</button></article>`;
     }
     form?.querySelectorAll('input, textarea').forEach((field) => {
       if (field.type !== 'file') field.addEventListener('input', updatePreview);
+      if (field.type === 'checkbox' || field.type === 'radio') field.addEventListener('change', updatePreview);
     });
     form?.image.addEventListener('change', async () => {
       if (!form.image.files[0]) return;
@@ -156,6 +187,11 @@
           const upload = await post('/api/uploads', { filename: file.name, data: await readFile(file) });
           imageUrl = upload.url;
         }
+        const showCountdown = form.showCountdown.checked;
+        const startsAt = fromDatetimeLocal(form.countdownAt.value);
+        if (showCountdown && !startsAt) {
+          throw new Error('Set a countdown end date and time.');
+        }
         await post('/api/events', {
           id: form.id.value || undefined,
           rsvpKey: form.rsvpKey.value.trim(),
@@ -163,12 +199,13 @@
           shortDate: form.shortDate.value.trim(),
           dateLabel: form.dateLabel.value.trim(),
           location: form.location.value.trim(),
-          startsAt: form.startsAt.value || '',
+          startsAt,
           startTime: form.startTime.value || '',
           sortOrder: Number(form.sortOrder.value || 0),
           description: form.description.value.trim(),
           imageUrl,
           featured: form.featured.value === 'yes',
+          showCountdown,
           attendanceMode: form.attendanceMode.value,
           published: true
         });
