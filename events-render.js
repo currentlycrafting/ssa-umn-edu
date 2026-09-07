@@ -52,13 +52,16 @@
       .map((event, index) => ({ ...event, featured: index === 0, showCountdown: true }));
   }
 
-  function featuredMarkup(event) {
+  function featuredMarkup(event, options = {}) {
     const image = event.imageUrl || '';
     const art = image
       ? `<div class="featured-event-art"><img src="${esc(image)}" alt="" /></div>`
       : '';
+    const ribbon = options.ribbon
+      ? '<span class="home-event-ribbon" aria-hidden="true">Next up</span>'
+      : '';
     return `
-      <span class="home-event-ribbon" aria-hidden="true">Next up</span>
+      ${ribbon}
       ${art}
       <div class="featured-event-body">
         <span class="eyebrow">Featured Event</span>
@@ -82,14 +85,14 @@
   let countdownTimer = null;
   let sourceEvents = [];
 
-  function renderFeatured(target, event) {
+  function renderFeatured(target, event, options = {}) {
     if (!target) return;
     if (!event) {
       target.innerHTML = '';
       setHidden(target, true);
       return;
     }
-    target.innerHTML = featuredMarkup(event);
+    target.innerHTML = featuredMarkup(event, options);
     target.classList.toggle('featured-event--no-art', !event.imageUrl);
     setHidden(target, false);
   }
@@ -131,7 +134,7 @@
     const condensedHome = Boolean(document.querySelector('.home-upcoming'));
 
     if (featured) {
-      renderFeatured(homeFeatured, featured);
+      renderFeatured(homeFeatured, featured, { ribbon: condensedHome });
     } else if (condensedHome && homeFeatured) {
       homeFeatured.innerHTML = `
         <div class="featured-event-body home-upcoming-empty-event">

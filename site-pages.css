@@ -41,8 +41,9 @@
 
 /* ---------- Featured event ---------- */
 .featured-event {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr 1.15fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.9fr);
   border: 2px solid var(--ink);
   border-radius: var(--radius);
   overflow: hidden;
@@ -66,7 +67,17 @@
 .featured-event-art {
   position: relative;
   min-height: 220px;
+  height: 100%;
   background: linear-gradient(180deg, var(--blue-2), color-mix(in oklch, var(--green) 20%, var(--surface-2)));
+}
+.featured-event-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 .home-upcoming-event .featured-event-art {
   min-height: 180px;
@@ -101,7 +112,44 @@
 }
 .fc-cell b { display: block; font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums; }
 .fc-cell span { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
-@media (max-width: 860px) { .featured-event { grid-template-columns: 1fr; } .featured-event-art { min-height: 160px; } }
+
+/* Events page: Instagram 4:5 poster fills the media column; never show Next up */
+.events-page #eventsFeatured.featured-event {
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 36%);
+  grid-template-areas: "body art";
+  align-items: stretch;
+}
+.events-page #eventsFeatured .featured-event-body { grid-area: body; }
+.events-page #eventsFeatured .featured-event-art {
+  grid-area: art;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  align-self: stretch;
+  max-height: none;
+}
+.events-page #eventsFeatured .home-event-ribbon,
+.events-page .home-event-ribbon {
+  display: none !important;
+}
+
+@media (max-width: 860px) {
+  .featured-event { grid-template-columns: 1fr; }
+  .featured-event-art { min-height: 220px; }
+  .events-page #eventsFeatured.featured-event {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "art"
+      "body";
+  }
+  .events-page #eventsFeatured .featured-event-art {
+    aspect-ratio: 4 / 5;
+    width: min(100%, 420px);
+    margin: 0 auto;
+    min-height: 0;
+  }
+}
 
 /* ---------- Connect modal chips ---------- */
 .interest-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
@@ -776,7 +824,15 @@
   gap: 6px;
   font-weight: 750;
 }
-.featured-event-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.featured-event-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
 .aux-spotify-btn {
   background: var(--green) !important; border-color: var(--green) !important; color: #fff !important;
 }
@@ -2187,10 +2243,11 @@
 }
 .home-event-ribbon {
   display: none;
+  position: absolute;
+  pointer-events: none;
 }
 .home-upcoming-event .home-event-ribbon {
   display: inline-flex;
-  position: absolute;
   top: 14px;
   right: -6px;
   left: auto;
@@ -2202,6 +2259,7 @@
   letter-spacing: .04em;
   transform: rotate(6deg);
   box-shadow: -2px 3px 0 color-mix(in oklch, var(--ink) 25%, transparent);
+  pointer-events: none;
 }
 [data-theme="dark"] .home-upcoming-event .home-event-ribbon {
   background: var(--accent);
