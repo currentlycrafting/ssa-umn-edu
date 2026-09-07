@@ -55,22 +55,28 @@
   function featuredMarkup(event, options = {}) {
     const image = event.imageUrl || '';
     const art = image
-      ? `<div class="featured-event-art"><img src="${esc(image)}" alt="" /></div>`
+      ? `<div class="featured-event-art"><button type="button" class="event-poster-zoom" data-event-poster="${esc(image)}" data-event-caption="${esc(event.title)}" aria-label="View poster larger"><img src="${esc(image)}" alt="${esc(event.title)} poster" /></button></div>`
       : '';
     const ribbon = options.ribbon
       ? '<span class="home-event-ribbon" aria-hidden="true">Next up</span>'
       : '';
+    const rsvpLabel = event.attendanceMode === 'quick' ? 'Are you coming?' : 'Reserve Your Spot';
     return `
       ${ribbon}
       ${art}
       <div class="featured-event-body">
-        <span class="eyebrow">Featured Event</span>
-        <h3>${esc(event.title)}</h3>
-        <p class="featured-location">${esc(displayDate(event))}</p>
-        <p class="featured-copy">${esc(event.description)}</p>
-        ${event.startsAt ? `<div class="featured-countdown" id="cmsFeaturedCountdown" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
-        <p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>
-        <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${event.attendanceMode === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}"><span class="rsvp-btn-label">${event.attendanceMode === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</span></button>
+        <div class="featured-event-copy">
+          <span class="eyebrow">Featured Event</span>
+          <h3>${esc(event.title)}</h3>
+          <p class="featured-location">${esc(displayDate(event))}</p>
+          <p class="featured-copy event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
+          <button class="event-read-more" type="button" hidden>Read more</button>
+          ${event.startsAt ? `<div class="featured-countdown" id="cmsFeaturedCountdown" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
+          <p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>
+        </div>
+        <div class="featured-event-actions">
+          <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
+        </div>
       </div>`;
   }
 
@@ -79,7 +85,22 @@
     const time = event.startsAt
       ? new Date(event.startsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
       : displayTime(event.startTime);
-    return `<article class="event-card"><span class="event-date">${esc(short)}${time ? ` · ${esc(time)}` : ''}</span><h3>${esc(event.title)}</h3><p>${esc(event.description)}</p><button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP'}"><span class="rsvp-btn-label">${event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP'}</span></button></article>`;
+    const rsvpLabel = event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP';
+    const poster = event.imageUrl
+      ? `<button type="button" class="event-card-poster event-poster-zoom" data-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View poster larger"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></button>`
+      : '';
+    return `<article class="event-card">
+      ${poster}
+      <div class="event-card-body">
+        <span class="event-date">${esc(short)}${time ? ` · ${esc(time)}` : ''}</span>
+        <h3>${esc(event.title)}</h3>
+        <p class="event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
+        <button class="event-read-more" type="button" hidden>Read more</button>
+      </div>
+      <div class="event-card-actions">
+        <button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
+      </div>
+    </article>`;
   }
 
   let countdownTimer = null;
@@ -173,8 +194,111 @@
     }
 
     startCountdown(featured);
+    enhanceEventCopy();
     document.dispatchEvent(new CustomEvent('ssa:events-rendered'));
   }
+
+  function enhanceEventCopy() {
+    const apply = () => {
+      document.querySelectorAll('.event-card-copy.is-clamped, .featured-copy.event-card-copy.is-clamped').forEach((copy) => {
+        if (copy.dataset.readMoreBound === '1') return;
+        const button = copy.parentElement?.querySelector(':scope > .event-read-more');
+        if (!button) return;
+        const overflows = copy.scrollHeight > copy.clientHeight + 1;
+        button.hidden = !overflows;
+        if (!overflows) return;
+        copy.dataset.readMoreBound = '1';
+        button.textContent = 'Read more';
+        button.onclick = () => {
+          const expanded = copy.classList.toggle('is-expanded');
+          copy.classList.toggle('is-clamped', !expanded);
+          button.textContent = expanded ? 'Show less' : 'Read more';
+        };
+      });
+    };
+    apply();
+    requestAnimationFrame(apply);
+  }
+
+  function ensurePosterLightbox() {
+    if (document.getElementById('eventPosterLightbox')) return document.getElementById('eventPosterLightbox');
+    const lightbox = document.createElement('div');
+    lightbox.className = 'gallery-lightbox';
+    lightbox.id = 'eventPosterLightbox';
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightbox.innerHTML = `
+      <div class="gallery-lightbox-bg" data-close aria-label="Close poster"></div>
+      <div class="gallery-lightbox-panel" role="dialog" aria-modal="true" aria-labelledby="eventPosterCaption">
+        <button type="button" class="gallery-lightbox-close" aria-label="Close" data-close>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
+        <div class="gallery-lightbox-card" tabindex="0" aria-label="Event poster viewer">
+          <div class="gallery-lightbox-viewport" id="eventPosterViewport">
+            <img id="eventPosterImg" alt="" />
+          </div>
+          <figcaption id="eventPosterCaption" class="gallery-lightbox-caption"></figcaption>
+        </div>
+      </div>`;
+    document.body.appendChild(lightbox);
+
+    const img = lightbox.querySelector('#eventPosterImg');
+    const caption = lightbox.querySelector('#eventPosterCaption');
+    const viewport = lightbox.querySelector('#eventPosterViewport');
+    const mobileMq = window.matchMedia('(max-width: 720px)');
+    let zoomed = false;
+
+    function setZoom(on) {
+      if (mobileMq.matches) {
+        zoomed = false;
+        img.classList.remove('zoomed');
+        viewport.classList.remove('zoomed');
+        return;
+      }
+      zoomed = on;
+      img.classList.toggle('zoomed', zoomed);
+      viewport.classList.toggle('zoomed', zoomed);
+      if (!zoomed) viewport.scrollTo(0, 0);
+    }
+
+    function close() {
+      lightbox.classList.remove('open');
+      lightbox.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('gallery-lightbox-open');
+      setZoom(false);
+    }
+
+    lightbox.querySelectorAll('[data-close]').forEach((el) => el.addEventListener('click', close));
+    lightbox.addEventListener('click', (event) => {
+      if (event.target === lightbox) close();
+    });
+    img.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (mobileMq.matches) return;
+      setZoom(!zoomed);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && lightbox.classList.contains('open')) close();
+    });
+
+    lightbox._openPoster = (src, title) => {
+      img.src = src;
+      img.alt = title || 'Event poster';
+      caption.textContent = title || '';
+      setZoom(false);
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('gallery-lightbox-open');
+    };
+    return lightbox;
+  }
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-event-poster]');
+    if (!trigger) return;
+    event.preventDefault();
+    const lightbox = ensurePosterLightbox();
+    lightbox._openPoster(trigger.dataset.eventPoster, trigger.dataset.eventCaption || '');
+  });
 
   function startCountdown(featured) {
     if (countdownTimer) {
