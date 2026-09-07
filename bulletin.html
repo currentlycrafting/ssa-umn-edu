@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/index.css" />
-  <link rel="stylesheet" href="/site-pages.css?v=7" />
-  <link rel="stylesheet" href="/bulletin.css?v=6" />
+  <link rel="stylesheet" href="/site-pages.css?v=18" />
+  <link rel="stylesheet" href="/bulletin.css?v=7" />
   <script src="/api.js"></script>
   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
 </head>
@@ -48,77 +48,127 @@
     </section>
   </main>
 
-  <div class="modal-backdrop" id="bulletinCreateModal" aria-hidden="true">
-    <div class="modal-sheet modal-card bulletin-modal" role="dialog" aria-modal="true" aria-labelledby="bulletinCreateTitle">
-      <span class="eyebrow">New post</span>
-      <h2 id="bulletinCreateTitle">Post on the bulletin board</h2>
-      <p class="bulletin-modal-lead">Your email is shown publicly so students can contact you directly.</p>
-      <form id="bulletinCreateForm" class="bulletin-create-form">
-        <div class="bulletin-field">
-          <span class="bulletin-field-label">What are you looking for?</span>
-          <div class="bulletin-category-picks" role="radiogroup" aria-label="Category">
-            <label class="bulletin-pick"><input type="radio" name="category" value="roommates" required /><span>Roommates</span></label>
-            <label class="bulletin-pick"><input type="radio" name="category" value="study" /><span>Study Groups</span></label>
-            <label class="bulletin-pick"><input type="radio" name="category" value="friends" /><span>Friends &amp; Activities</span></label>
+  <div class="modal-backdrop whats-new-modal" id="bulletinStepCategory" aria-hidden="true">
+    <div class="whats-new-frame bulletin-flow-frame">
+      <button class="button button-line whats-new-side whats-new-side-prev" type="button" data-bulletin-prev disabled aria-label="Previous">←</button>
+      <div class="modal-sheet modal-card modal-card-wide whats-new-sheet bulletin-flow-sheet" role="dialog" aria-modal="true" aria-labelledby="bulletinCreateTitle">
+        <article class="whats-new-card bulletin-flow-page is-active">
+          <span class="eyebrow">New post · 1 of 4</span>
+          <h2 id="bulletinCreateTitle">Post on the bulletin board</h2>
+          <p>Your email is shown publicly so students can contact you directly.</p>
+          <div class="bulletin-field">
+            <span class="bulletin-field-label">What are you looking for?</span>
+            <div class="bulletin-category-picks" role="radiogroup" aria-label="Category">
+              <label class="bulletin-pick"><input type="radio" name="bulletinCategory" value="roommates" /><span>Roommates</span></label>
+              <label class="bulletin-pick"><input type="radio" name="bulletinCategory" value="study" /><span>Study Groups</span></label>
+              <label class="bulletin-pick"><input type="radio" name="bulletinCategory" value="friends" /><span>Friends &amp; Activities</span></label>
+            </div>
           </div>
-        </div>
-        <label class="bulletin-field">Title<input type="text" name="title" maxlength="120" placeholder="Looking for 2 roommates near campus" required /></label>
-        <label class="bulletin-field">Description<textarea name="description" rows="4" maxlength="1200" placeholder="Share what you need, timing, and any preferences…" required></textarea></label>
-        <div class="bulletin-field-row">
-          <label class="bulletin-field">Name<input type="text" name="name" maxlength="80" placeholder="Your name" required /></label>
-          <label class="bulletin-anon"><input type="checkbox" name="anonymous" /><span>Post anonymously</span></label>
-        </div>
-        <label class="bulletin-field">Public email
-          <input type="email" name="email" maxlength="160" placeholder="you@umn.edu" required />
-          <small>Shown on your card as a mailto link.</small>
-        </label>
-        <button class="button button-dark" type="submit" id="bulletinCreateSubmit">Pin to board</button>
-        <output></output>
-      </form>
+          <p class="bulletin-step-error" id="bulletinCategoryError" hidden>Pick a category to continue.</p>
+          <div class="whats-new-nav"><div class="whats-new-dots" aria-hidden="true"><i class="active"></i><i></i><i></i><i></i></div></div>
+        </article>
+      </div>
+      <button class="button button-dark whats-new-side whats-new-side-next" type="button" data-bulletin-next>Next →</button>
+      <button class="modal-exit" type="button" data-close-bulletin-flow aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
     </div>
-    <button class="modal-exit" type="button" data-close-modal="bulletinCreateModal" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
 
-  <div class="modal-backdrop" id="bulletinPasswordModal" aria-hidden="true">
-    <div class="modal-sheet modal-card bulletin-modal bulletin-pin-modal" role="dialog" aria-modal="true" aria-labelledby="bulletinPasswordTitle">
-      <span class="eyebrow">Almost done</span>
-      <h2 id="bulletinPasswordTitle">Add a password</h2>
-      <p class="bulletin-modal-lead">Create a 4-digit password so only you can mark this post complete later.</p>
-      <div class="bulletin-pin-display">
-        <div class="bulletin-pin-slots" id="createPinSlots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
-        <button class="bulletin-pin-eye" type="button" id="createPinEye" aria-label="Show password" aria-pressed="false">
-          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </button>
+  <div class="modal-backdrop whats-new-modal" id="bulletinStepDetails" aria-hidden="true">
+    <div class="whats-new-frame bulletin-flow-frame">
+      <button class="button button-line whats-new-side whats-new-side-prev" type="button" data-bulletin-prev aria-label="Previous">←</button>
+      <div class="modal-sheet modal-card modal-card-wide whats-new-sheet bulletin-flow-sheet" role="dialog" aria-modal="true" aria-labelledby="bulletinDetailsTitle">
+        <article class="whats-new-card bulletin-flow-page is-active">
+          <span class="eyebrow">New post · 2 of 4</span>
+          <h2 id="bulletinDetailsTitle">Title &amp; description</h2>
+          <p>Keep it clear — this is what people will see on your sticky note.</p>
+          <label class="bulletin-field">Title<input type="text" id="bulletinTitle" maxlength="120" placeholder="Looking for 2 roommates near campus" /></label>
+          <label class="bulletin-field">Description<textarea id="bulletinDescription" rows="4" maxlength="1200" placeholder="Share what you need, timing, and any preferences…"></textarea></label>
+          <p class="bulletin-step-error" id="bulletinDetailsError" hidden>Add a title and description.</p>
+          <div class="whats-new-nav"><div class="whats-new-dots" aria-hidden="true"><i></i><i class="active"></i><i></i><i></i></div></div>
+        </article>
       </div>
-      <div class="bulletin-keypad" id="createKeypad" data-pin-target="create"></div>
-      <button class="button button-dark" type="button" id="bulletinPinSubmit" disabled>Confirm &amp; pin</button>
-      <output id="bulletinPasswordOutput"></output>
+      <button class="button button-dark whats-new-side whats-new-side-next" type="button" data-bulletin-next>Next →</button>
+      <button class="modal-exit" type="button" data-close-bulletin-flow aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
     </div>
-    <button class="modal-exit" type="button" data-close-modal="bulletinPasswordModal" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
 
-  <div class="modal-backdrop" id="bulletinCompleteModal" aria-hidden="true">
-    <div class="modal-sheet modal-card bulletin-modal bulletin-pin-modal" role="dialog" aria-modal="true" aria-labelledby="bulletinCompleteTitle">
-      <span class="eyebrow">Verify</span>
-      <h2 id="bulletinCompleteTitle">Mark as complete</h2>
-      <p class="bulletin-modal-lead">Enter your 4-digit password to mark this post as complete.</p>
-      <div class="bulletin-pin-display">
-        <div class="bulletin-pin-slots" id="completePinSlots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
-        <button class="bulletin-pin-eye" type="button" id="completePinEye" aria-label="Show password" aria-pressed="false">
-          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </button>
+  <div class="modal-backdrop whats-new-modal" id="bulletinStepContact" aria-hidden="true">
+    <div class="whats-new-frame bulletin-flow-frame">
+      <button class="button button-line whats-new-side whats-new-side-prev" type="button" data-bulletin-prev aria-label="Previous">←</button>
+      <div class="modal-sheet modal-card modal-card-wide whats-new-sheet bulletin-flow-sheet" role="dialog" aria-modal="true" aria-labelledby="bulletinContactTitle">
+        <article class="whats-new-card bulletin-flow-page is-active">
+          <span class="eyebrow">New post · 3 of 4</span>
+          <h2 id="bulletinContactTitle">How can people reach you?</h2>
+          <p>Your public email appears on the card as a mailto link.</p>
+          <div class="bulletin-field-row">
+            <label class="bulletin-field">Name<input type="text" id="bulletinName" maxlength="80" placeholder="Your name" /></label>
+            <label class="bulletin-anon"><input type="checkbox" id="bulletinAnonymous" /><span>Post anonymously</span></label>
+          </div>
+          <label class="bulletin-field">Public email
+            <input type="email" id="bulletinEmail" maxlength="160" placeholder="you@umn.edu" />
+            <small>Shown on your card as a mailto link.</small>
+          </label>
+          <p class="bulletin-step-error" id="bulletinContactError" hidden>Add a valid public email.</p>
+          <div class="whats-new-nav"><div class="whats-new-dots" aria-hidden="true"><i></i><i></i><i class="active"></i><i></i></div></div>
+        </article>
       </div>
-      <div class="bulletin-keypad" id="completeKeypad" data-pin-target="complete"></div>
-      <button class="button button-dark" type="button" id="bulletinCompleteSubmit" disabled>Confirm complete</button>
-      <output id="bulletinCompleteOutput"></output>
+      <button class="button button-dark whats-new-side whats-new-side-next" type="button" data-bulletin-next>Add password →</button>
+      <button class="modal-exit" type="button" data-close-bulletin-flow aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
     </div>
-    <button class="modal-exit" type="button" data-close-modal="bulletinCompleteModal" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+  </div>
+
+  <div class="modal-backdrop whats-new-modal" id="bulletinStepPin" aria-hidden="true">
+    <div class="whats-new-frame bulletin-flow-frame">
+      <button class="button button-line whats-new-side whats-new-side-prev" type="button" data-bulletin-prev aria-label="Previous">←</button>
+      <div class="modal-sheet modal-card modal-card-wide whats-new-sheet bulletin-flow-sheet" role="dialog" aria-modal="true" aria-labelledby="bulletinPasswordTitle">
+        <article class="whats-new-card bulletin-flow-page bulletin-flow-pin is-active">
+          <span class="eyebrow">New post · 4 of 4</span>
+          <h2 id="bulletinPasswordTitle">Add a password</h2>
+          <p>Create a 4-digit password so only you can mark this post complete later.</p>
+          <div class="bulletin-pin-display">
+            <div class="bulletin-pin-slots" id="createPinSlots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
+            <button class="bulletin-pin-eye" type="button" id="createPinEye" aria-label="Show password" aria-pressed="false">
+              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="bulletin-keypad" id="createKeypad" data-pin-target="create"></div>
+          <output id="bulletinPasswordOutput"></output>
+          <div class="whats-new-nav"><div class="whats-new-dots" aria-hidden="true"><i></i><i></i><i></i><i class="active"></i></div></div>
+        </article>
+      </div>
+      <button class="button button-dark whats-new-side whats-new-side-next" type="button" id="bulletinPinSubmit" disabled>Confirm &amp; pin</button>
+      <button class="modal-exit" type="button" data-close-bulletin-flow aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop whats-new-modal" id="bulletinCompleteModal" aria-hidden="true">
+    <div class="whats-new-frame bulletin-flow-frame bulletin-flow-frame-solo">
+      <div class="modal-sheet modal-card modal-card-wide whats-new-sheet bulletin-flow-sheet" role="dialog" aria-modal="true" aria-labelledby="bulletinCompleteTitle">
+        <div class="whats-new-stage">
+          <article class="whats-new-card bulletin-flow-page bulletin-flow-pin is-active">
+            <span class="eyebrow">Verify</span>
+            <h2 id="bulletinCompleteTitle">Mark as complete</h2>
+            <p>Enter your 4-digit password to mark this post as complete.</p>
+            <div class="bulletin-pin-display">
+              <div class="bulletin-pin-slots" id="completePinSlots" aria-live="polite"><span></span><span></span><span></span><span></span></div>
+              <button class="bulletin-pin-eye" type="button" id="completePinEye" aria-label="Show password" aria-pressed="false">
+                <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div class="bulletin-keypad" id="completeKeypad" data-pin-target="complete"></div>
+            <button class="button button-dark" type="button" id="bulletinCompleteSubmit" disabled>Confirm complete</button>
+            <output id="bulletinCompleteOutput"></output>
+          </article>
+        </div>
+      </div>
+      <button class="modal-exit" type="button" data-close-modal="bulletinCompleteModal" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+    </div>
   </div>
 
   <script src="/motion.js"></script>
   <script src="/nav.js?v=8"></script>
-  <script src="/bulletin.js?v=5"></script>
+  <script src="/bulletin.js?v=8"></script>
 </body>
 </html>

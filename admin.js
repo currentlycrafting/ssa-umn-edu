@@ -63,16 +63,15 @@
       <div class="admin-stat-grid">
         ${stat('Published events', data.events.filter((event) => event.published).length, 'Public calendar')}
         ${stat('Gallery photos', data.gallery.length, 'Community album')}
-        ${stat('RSVPs', (admin.rsvp || []).length, 'Across all events')}
         ${stat('Subscribers', (admin.newsletters || []).length, 'Newsletter audience')}
-        ${stat('Messages', inboxCount(), 'Community, contact, and ideas')}
+        ${stat('Messages', inboxCount() + (admin.rsvp || []).length, 'Inbox, ideas, and RSVPs')}
       </div>
       <div class="admin-quick-grid">
-        <button data-go="events"><strong>Create an event</strong><span>Add the next event to the calendar.</span></button>
-        <button data-go="gallery"><strong>Manage gallery</strong><span>Add or remove community photos.</span></button>
-        <button data-go="timeline"><strong>Timeline cards</strong><span>Add sticky-note moments to the timeline.</span></button>
-        <a href="/newsletter/studio"><strong>Newsletter Studio</strong><span>Publish the next edition.</span></a>
-        <button data-go="messages"><strong>Open messages</strong><span>Review community inbox.</span></button>
+        <button data-go="events"><strong>Event</strong><span>Add the next event to the calendar.</span></button>
+        <button data-go="gallery"><strong>Gallery</strong><span>Add or remove community photos.</span></button>
+        <button data-go="timeline"><strong>Timeline</strong><span>Add sticky-note moments to the timeline.</span></button>
+        <a href="/newsletter/studio"><strong>Newsletter</strong><span>Publish the next edition.</span></a>
+        <button data-go="messages"><strong>Message</strong><span>Review community inbox and RSVPs.</span></button>
       </div>`;
   }
 
@@ -135,12 +134,16 @@
 
   function renderEvents(editId) {
     const editing = data.events.find((event) => event.id === Number(editId));
-    content.innerHTML = eventForm(editing) + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => `
-      <article class="admin-event-item ${event.published ? '' : 'is-draft'}">
-        <div class="admin-event-date">${esc(event.shortDate || '—')}</div>
-        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${esc(event.dateLabel || fmt(event.startsAt))}</p></div>
+    content.innerHTML = eventForm(editing) + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => {
+      const when = event.location
+        ? `${esc(event.shortDate || fmt(event.startsAt))} - ${esc(event.location)}`
+        : esc(event.dateLabel || fmt(event.startsAt));
+      return `
+      <article class="admin-event-item admin-event-item-clean ${event.published ? '' : 'is-draft'}">
+        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${when}</p></div>
         <div class="admin-item-actions"><button class="button button-line" data-edit-event="${event.id}">Edit</button><button class="button button-line" data-delete-event="${event.id}">Remove</button></div>
-      </article>`).join('') || '<p class="admin-empty">No events yet.</p>'}</div>`;
+      </article>`;
+    }).join('') || '<p class="admin-empty">No events yet.</p>'}</div>`;
     bindEventForm();
   }
 
@@ -325,29 +328,25 @@
         kind: 'Event idea',
         primary: `${item.name} · ${item.type || 'Suggestion'}`,
         meta: item.preferred_date || item.audience || '',
-        detail: item.description,
+        detail: [item.description, item.notes].filter(Boolean).join('\n\n'),
+        date: item.created_at
+      })),
+      ...(admin.rsvp || []).map((item) => ({
+        kind: 'RSVP',
+        primary: item.name,
+        meta: `${item.event_name || ''} · ${item.event_date || ''}`.replace(/^ · | · $/g, ''),
+        detail: item.is_student ? 'U of MN student' : 'Community guest · 18+',
         date: item.created_at
       }))
     ].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
     if (!items.length) {
-      content.innerHTML = '<div class="admin-empty"><h3>No messages yet</h3><p>Contact notes, community connects, and event ideas will show up here.</p></div>';
+      content.innerHTML = '<div class="admin-empty"><h3>No messages yet</h3><p>Contact notes, community connects, event ideas, and RSVPs will show up here.</p></div>';
       return;
     }
 
     content.innerHTML = `<div class="admin-list-head"><h3>Inbox</h3><span>${items.length}</span></div><div class="admin-data-list">${items.map((item) =>
       row(`${esc(item.kind)} · ${esc(item.primary)}`, esc(item.meta), esc(item.detail), item.date)
-    ).join('')}</div>`;
-  }
-
-  function renderRsvps() {
-    const rows = data.admin.rsvp || [];
-    if (!rows.length) {
-      content.innerHTML = '<div class="admin-empty"><h3>Nothing here yet</h3><p>New RSVPs will appear automatically.</p></div>';
-      return;
-    }
-    content.innerHTML = `<div class="admin-data-list">${rows.map((item) =>
-      row(esc(item.name), `${esc(item.event_name)} · ${esc(item.event_date)}`, item.is_student ? 'U of MN student' : 'Community guest · 18+', item.created_at)
     ).join('')}</div>`;
   }
 
@@ -427,9 +426,8 @@
   function renderTimeline(editId) {
     const editing = data.timeline.find((event) => event.id === Number(editId));
     content.innerHTML = timelineForm(editing) + `<div class="admin-list-head"><h3>Timeline cards</h3><span>${data.timeline.length}</span></div><div class="admin-event-list">${data.timeline.map((event) => `
-      <article class="admin-event-item">
-        <div class="admin-event-date">${esc(event.dateLabel || '—')}</div>
-        <div><span class="eyebrow">${esc(event.pill || 'Moment')}</span><h3>${esc(event.title)}</h3><p>${esc(event.heldAt || event.copy || '')}</p></div>
+      <article class="admin-event-item admin-event-item-clean">
+        <div><span class="eyebrow">${esc(event.dateLabel || event.pill || 'Moment')}</span><h3>${esc(event.title)}</h3><p>${esc(event.heldAt || event.copy || '')}</p></div>
         <div class="admin-item-actions"><button class="button button-line" data-edit-timeline="${event.id}">Edit</button><button class="button button-line" data-delete-timeline="${event.id}">Remove</button></div>
       </article>`).join('') || '<p class="admin-empty">No timeline cards yet.</p>'}</div>`;
     bindTimelineForm();
@@ -441,7 +439,6 @@
       events: 'Events',
       gallery: 'Gallery',
       timeline: 'Timeline',
-      rsvp: 'RSVPs',
       messages: 'Messages',
       newsletters: 'Newsletter'
     };
@@ -454,8 +451,7 @@
     else if (section === 'gallery') renderGallery();
     else if (section === 'timeline') renderTimeline();
     else if (section === 'newsletters') renderNewsletter();
-    else if (section === 'messages') renderMessages();
-    else if (section === 'rsvp') renderRsvps();
+    else if (section === 'messages' || section === 'rsvp') renderMessages();
     else renderOverview();
   }
 

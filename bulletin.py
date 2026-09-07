@@ -1,7 +1,6 @@
 """SSA Bulletin Board — roommate / study / friends posts with public email contact."""
 import hashlib
 import hmac
-import os
 import re
 import secrets
 from datetime import datetime, timezone

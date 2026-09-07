@@ -83,7 +83,6 @@ def _poll_members(poll):
             "Zakaria Hussein",
             "Salma Tawane",
             "Bashir Mumin",
-            "Khalid Mohamed",
             "Asma Yusuf",
         ]
     return members
@@ -91,10 +90,6 @@ def _poll_members(poll):
 
 def _has_pin(poll):
     return bool(poll.get("password_hash") and poll.get("password_salt"))
-
-
-def _token_key(slug):
-    return f"ssaScheduleAccess:{slug}"
 
 
 def init_tables():
@@ -161,17 +156,6 @@ def _parse_date(value):
         return date.fromisoformat(str(value or "").strip())
     except ValueError:
         return None
-
-
-def _all_slots(date_start, date_end):
-    slots = []
-    current = date_start
-    while current <= date_end:
-        for minutes in range(HOUR_START * 60, HOUR_END * 60, SLOT_MINUTES):
-            hour, minute = divmod(minutes, 60)
-            slots.append(f"{current.isoformat()}:{hour:02d}:{minute:02d}")
-        current += timedelta(days=1)
-    return slots
 
 
 def _clean_dates(values):

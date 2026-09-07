@@ -443,14 +443,16 @@ button, input, textarea { font: inherit; }
   width: clamp(140px, 24vw, 250px);
   margin: 0 auto 18px;
 }
-/* Clean neutral glow behind the logo so the pattern's red stars don't tint it */
+/* Neutral paper disc behind the logo so pattern reds never tint it */
 .hero-logo-wrap::before {
   content: "";
   position: absolute;
-  inset: -45%;
+  inset: -18%;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 50%, var(--hero-fade) 0%, var(--hero-fade) 46%, transparent 72%);
+  border-radius: 50%;
+  background: var(--hero-base);
+  box-shadow: 0 0 0 24px color-mix(in oklch, var(--hero-base) 88%, transparent);
 }
 .hero-logo {
   width: 100%;
@@ -458,7 +460,7 @@ button, input, textarea { font: inherit; }
   filter: drop-shadow(0 14px 26px rgba(0,0,0,.22));
   animation: heroFloat 7s ease-in-out infinite;
 }
-/* New animation 1: hand-drawn circle that sketches itself around the logo */
+/* Hand-drawn circle around the logo — blue, not accent red/gold bleed */
 .logo-circle {
   position: absolute;
   inset: -14% -10%;
@@ -468,7 +470,7 @@ button, input, textarea { font: inherit; }
 }
 .logo-circle path {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--blue-3);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-dasharray: 620;
@@ -612,12 +614,23 @@ h2 {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  transition: transform .28s cubic-bezier(.2, .84, .26, 1), box-shadow .28s ease, border-color .28s ease;
 }
 .stat-card:hover, .event-card:hover, .program-card:hover, .form-card:hover, .president-card:hover, .mission-list article:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.01);
   box-shadow: var(--shadow);
   border-color: var(--line-strong);
+}
+.event-card {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+.event-card h3,
+.event-card p,
+.event-card .event-date {
+  user-select: none;
+  -webkit-user-select: none;
 }
 .stat-card {
   position: relative;
@@ -2011,7 +2024,7 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 .micro-button:active, .handdrawn:active { transform: scale(.96); }
 
 /* Event-card cover images zoom subtly on hover */
-.event-card { overflow: hidden; }
+.event-card { overflow: visible; }
 .event-card img { transition: transform .5s cubic-bezier(.2,.7,.2,1); }
 .event-card:hover img { transform: scale(1.05); }
 
@@ -2744,7 +2757,7 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   background: #eee;
 }
 .polaroid-clickable {
-  cursor: zoom-in;
+  cursor: pointer;
 }
 .polaroid-clickable:focus-visible {
   outline: 3px solid var(--accent);
@@ -2918,7 +2931,7 @@ body.gallery-lightbox-open { overflow: hidden; }
 }
 .gallery-lightbox-viewport.zoomed {
   overflow: auto;
-  cursor: zoom-out;
+  cursor: pointer;
 }
 .gallery-lightbox-viewport:not(.zoomed) { cursor: default; }
 .gallery-lightbox-viewport img {
@@ -2936,7 +2949,7 @@ body.gallery-lightbox-open { overflow: hidden; }
   transform-origin: center center;
 }
 @media (min-width: 721px) {
-  .gallery-lightbox-viewport:not(.zoomed) img { cursor: zoom-in; }
+  .gallery-lightbox-viewport:not(.zoomed) img { cursor: pointer; }
 }
 .gallery-lightbox-viewport img.zoomed {
   transform: scale(2);
@@ -3226,8 +3239,8 @@ html.reduce-motion .ui-ripple { display: none; }
   transition: background .25s ease, color .25s ease;
 }
 .event-card:hover .event-date {
-  background: var(--accent);
-  color: var(--paper);
+  background: color-mix(in oklch, var(--surface-2, var(--surface)) 70%, var(--blue-2));
+  color: var(--ink);
 }
 .stat-card.visible .stat-bar i {
   box-shadow: 0 0 12px color-mix(in oklch, var(--accent) 55%, transparent);

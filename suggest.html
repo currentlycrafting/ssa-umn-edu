@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suggest an Event — SSA</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css" />
+  <link rel="stylesheet" href="/site-pages.css?v=13" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body class="suggest-page">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/index.html">Home</a>
+      <a href="/events">Events</a>
+      <button type="button">Options</button>
+    </div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+
+  <main class="page-main suggest-main">
+    <header class="page-hero suggest-hero" data-reveal>
+      <span class="eyebrow">Programs</span>
+      <h1>Suggest an event</h1>
+      <p>Build the idea with us — one step at a time. No long form, just your vision.</p>
+    </header>
+
+    <form id="suggestForm" class="suggest-flow" novalidate>
+      <section class="suggest-step is-active" data-step="name" aria-labelledby="suggestNameTitle">
+        <span class="suggest-step-num">01</span>
+        <h2 id="suggestNameTitle">What&apos;s the event called?</h2>
+        <p>Give it a name students would recognize on a poster.</p>
+        <input class="suggest-input" type="text" name="name" id="suggestName" placeholder="Freshman Mixer, Culture Night, Study Jam…" maxlength="120" required autocomplete="off" />
+        <button class="button button-dark handdrawn suggest-continue" type="button" data-continue="idea">Continue</button>
+      </section>
+
+      <section class="suggest-step" data-step="idea" hidden aria-labelledby="suggestIdeaTitle">
+        <span class="suggest-step-num">02</span>
+        <h2 id="suggestIdeaTitle">What&apos;s your idea?</h2>
+        <p>Tell us what you want SSA to do — the vibe, the moment, the why.</p>
+        <textarea class="suggest-input suggest-textarea" name="description" id="suggestIdea" rows="5" placeholder="Imagine the night: who shows up, what happens, why it matters…" maxlength="1200" required></textarea>
+        <button class="button button-dark handdrawn suggest-continue" type="button" data-continue="fun">Continue</button>
+      </section>
+
+      <section class="suggest-step" data-step="fun" hidden aria-labelledby="suggestFunTitle">
+        <span class="suggest-step-num">03</span>
+        <h2 id="suggestFunTitle">Be honest — would you show up tomorrow if we threw this?</h2>
+        <p>One quick yes or no. No wrong answer.</p>
+        <div class="suggest-yesno" role="group" aria-label="Would you show up">
+          <button type="button" class="suggest-choice" data-fun="yes" aria-pressed="false">Yes</button>
+          <button type="button" class="suggest-choice" data-fun="no" aria-pressed="false">No</button>
+        </div>
+        <input type="hidden" name="funAnswer" id="suggestFun" value="" required />
+      </section>
+
+      <section class="suggest-step" data-step="inspire" hidden aria-labelledby="suggestInspireTitle">
+        <span class="suggest-step-num">04</span>
+        <h2 id="suggestInspireTitle">Got inspiration? Totally optional.</h2>
+        <p>Drop TikToks, Instagram posts, poster ideas, screenshots — or skip straight to send.</p>
+        <textarea class="suggest-input suggest-textarea" name="inspirationLinks" id="suggestLinks" rows="3" placeholder="Paste links (TikTok, Instagram, Drive, etc.)"></textarea>
+        <label class="gallery-drop suggest-drop" id="suggestDrop">
+          <input type="file" id="suggestFiles" accept="image/png,image/jpeg,image/webp,video/*" multiple />
+          <strong>Add photos, posters, or screenshots</strong>
+          <span>Optional · up to 3 images · PNG, JPG, or WEBP</span>
+        </label>
+        <ul class="suggest-file-list" id="suggestFileList" hidden></ul>
+        <div class="suggest-submit-row">
+          <button class="button button-dark handdrawn" type="submit" id="suggestSubmit">Send my idea</button>
+          <output id="suggestOut"></output>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=13"></script>
+  <script src="/checklist.js?v=6"></script>
+  <script src="/suggest.js?v=2"></script>
+</body>
+</html>

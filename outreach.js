@@ -7,26 +7,27 @@
   modal.id = 'outreachModal';
   modal.setAttribute('aria-hidden', 'true');
   modal.innerHTML = `
-    <div class="modal-sheet modal-card modal-card-wide outreach-card" role="dialog" aria-modal="true" aria-labelledby="outreachTitle">
-      <div id="outreachChooser">
-        <span class="eyebrow">Connect with SSA</span>
-        <h2 id="outreachTitle">What would you like to share?</h2>
-        <p>Choose a path and we will send it to the right place.</p>
-        <div class="outreach-options">
-          <button type="button" data-outreach-kind="event"><span>Programs</span><strong>Suggest an event</strong><small>Campus and community event ideas.</small></button>
-          <button type="button" data-outreach-kind="community"><span>Community</span><strong>Collaborate with SSA</strong><small>Partnerships, sponsorships, and community work.</small></button>
-          <button type="button" data-outreach-kind="message"><span>Messages</span><strong>Send a message</strong><small>Questions, feedback, and everything else.</small></button>
+    <div class="whats-new-frame outreach-frame">
+      <div class="modal-sheet modal-card modal-card-wide outreach-card" role="dialog" aria-modal="true" aria-labelledby="outreachTitle">
+        <div id="outreachChooser">
+          <span class="eyebrow">Connect with SSA</span>
+          <h2 id="outreachTitle">What would you like to share?</h2>
+          <p>Choose a path and we will send it to the right place.</p>
+          <div class="outreach-options">
+            <button type="button" data-outreach-kind="event"><span>Programs</span><strong>Suggest an event</strong><small>Campus and community event ideas.</small></button>
+            <button type="button" data-outreach-kind="community"><span>Community</span><strong>Collaborate with SSA</strong><small>Partnerships, sponsorships, and community work.</small></button>
+            <button type="button" data-outreach-kind="message"><span>Messages</span><strong>Send a message</strong><small>Questions, feedback, and everything else.</small></button>
+          </div>
+        </div>
+        <div id="outreachFormView" hidden>
+          <button class="outreach-back" type="button" data-outreach-back>← All options</button>
+          <span class="eyebrow" id="outreachEyebrow">Programs</span>
+          <h2 id="outreachFormTitle">Suggest an event</h2>
+          <p id="outreachLead"></p>
+          <form id="outreachForm" class="connect-modal-form"></form>
         </div>
       </div>
-      <div id="outreachFormView" hidden>
-        <button class="outreach-back" type="button" data-outreach-back>← All options</button>
-        <span class="eyebrow" id="outreachEyebrow">Programs</span>
-        <h2 id="outreachFormTitle">Suggest an event</h2>
-        <p id="outreachLead"></p>
-        <form id="outreachForm" class="connect-modal-form"></form>
-      </div>
-    </div>
-    <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>`;
+    </div>`;
   document.body.appendChild(modal);
 
   const chooser = modal.querySelector('#outreachChooser');
@@ -36,12 +37,6 @@
   const formTitle = modal.querySelector('#outreachFormTitle');
   const lead = modal.querySelector('#outreachLead');
   let kind = '';
-  let eventType = 'community';
-
-  const eventCopy = {
-    campus: ['Suggest a campus event', 'Large, social ideas that grow SSA presence and student engagement.'],
-    community: ['Suggest a community event', 'Intentional programming focused on depth, service, and connection.']
-  };
 
   function open() {
     modal.classList.add('open');
@@ -62,26 +57,11 @@
     open();
   }
 
-  function eventFields(type) {
-    eventType = type === 'campus' ? 'campus' : 'community';
-    const copy = eventCopy[eventType];
-    eyebrow.textContent = 'Programs';
-    formTitle.textContent = copy[0];
-    lead.textContent = copy[1];
-    return `
-      <input type="text" name="name" placeholder="Event name" required />
-      <textarea name="description" rows="4" placeholder="What would this event look like?" required></textarea>
-      <input type="text" name="preferredDate" placeholder="Preferred semester" required />
-      <button class="button button-dark" type="submit">Submit event idea</button><output></output>`;
-  }
-
-  function showForm(nextKind, subtype) {
+  function showForm(nextKind) {
     kind = nextKind;
     chooser.hidden = true;
     formView.hidden = false;
-    if (kind === 'event') {
-      form.innerHTML = eventFields(subtype || 'community');
-    } else if (kind === 'community') {
+    if (kind === 'community') {
       eyebrow.textContent = 'Community';
       formTitle.textContent = 'Collaborate with SSA';
       lead.textContent = 'Tell us how your organization or community would like to work with SSA.';
@@ -115,14 +95,7 @@
     const output = form.querySelector('output');
     button.disabled = true;
     try {
-      if (kind === 'event') {
-        await api('/api/event-suggestions', { method: 'POST', body: {
-          type: eventType,
-          name: value('name'),
-          description: value('description'),
-          preferredDate: value('preferredDate')
-        } });
-      } else if (kind === 'community') {
+      if (kind === 'community') {
         await api('/api/connect', { method: 'POST', body: {
           reason: 'collaborations',
           name: value('name'),
@@ -144,11 +117,20 @@
   });
 
   modal.querySelectorAll('[data-outreach-kind]').forEach((button) => {
-    button.addEventListener('click', () => showForm(button.dataset.outreachKind));
+    button.addEventListener('click', () => {
+      const nextKind = button.dataset.outreachKind;
+      if (nextKind === 'event') {
+        close();
+        window.location.href = '/suggest';
+        return;
+      }
+      showForm(nextKind);
+    });
   });
   modal.querySelector('[data-outreach-back]').addEventListener('click', showChooser);
-  modal.querySelector('.modal-exit').addEventListener('click', close);
-  modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal || event.target.classList.contains('outreach-frame')) close();
+  });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && modal.classList.contains('open')) close();
   });
@@ -157,21 +139,29 @@
   document.querySelectorAll('[data-suggest-event]').forEach((button) => {
     button.addEventListener('click', (event) => {
       event.preventDefault();
-      showForm('event', button.dataset.suggestType || 'community');
+      const type = button.dataset.suggestType || 'campus';
+      window.location.href = `/suggest?type=${encodeURIComponent(type)}`;
     });
     button.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        showForm('event', button.dataset.suggestType || 'community');
+        const type = button.dataset.suggestType || 'campus';
+        window.location.href = `/suggest?type=${encodeURIComponent(type)}`;
       }
     });
   });
 
   window.openOutreachModal = showChooser;
-  window.openSuggestModal = (type) => showForm('event', type || 'community');
+  window.openSuggestModal = (type) => {
+    window.location.href = `/suggest?type=${encodeURIComponent(type || 'campus')}`;
+  };
   window.openConnectModal = () => showForm('community');
 
   const params = new URLSearchParams(window.location.search);
   if (params.has('connect')) window.setTimeout(() => showForm('community'), 350);
-  else if (params.has('suggest')) window.setTimeout(() => showForm('event', params.get('suggest')), 350);
+  else if (params.has('suggest')) {
+    window.setTimeout(() => {
+      window.location.href = `/suggest?type=${encodeURIComponent(params.get('suggest') || 'campus')}`;
+    }, 100);
+  }
 })();

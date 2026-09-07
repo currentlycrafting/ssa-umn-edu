@@ -14,7 +14,6 @@
 
     initScrollReveals();
     initStaggerGrids();
-    initTimelineMotion();
     initNavRipple();
     initLinkHovers();
     initPageHeroMotion();
@@ -26,7 +25,6 @@
     initThemeToggleSpin();
     initFormOutputWatch();
     initAnchorFlash();
-    initConnectOptionRipple();
   });
 
   function pulse(el, className = 'ui-pulse') {
@@ -71,41 +69,6 @@
     });
   }
 
-  function initTimelineMotion() {
-    const section = document.querySelector('.timeline-section');
-    const line = document.querySelector('.timeline-line');
-    if (!section || !line) return;
-
-    let fill = line.querySelector('.timeline-line-fill');
-    if (!fill) {
-      fill = document.createElement('span');
-      fill.className = 'timeline-line-fill';
-      fill.setAttribute('aria-hidden', 'true');
-      line.appendChild(fill);
-    }
-
-    const cards = Array.from(section.querySelectorAll('.timeline-card'));
-    cards.forEach((card, i) => {
-      card.style.setProperty('--stagger', `${i * 90}ms`);
-    });
-
-    function updateLine() {
-      if (reduced) {
-        fill.style.height = '100%';
-        return;
-      }
-      const rect = section.getBoundingClientRect();
-      const viewMid = window.innerHeight * 0.55;
-      const sectionTop = rect.top + window.scrollY;
-      const progress = Math.min(1, Math.max(0, (window.scrollY + viewMid - sectionTop) / Math.max(rect.height, 1)));
-      fill.style.height = `${progress * 100}%`;
-      line.style.setProperty('--line-glow', `${0.4 + progress * 0.6}`);
-    }
-
-    window.addEventListener('scroll', updateLine, { passive: true });
-    window.addEventListener('resize', updateLine, { passive: true });
-    updateLine();
-  }
 
   function initNavRipple() {
     const rippleTargets = '.button, .micro-button, .connect-option, .checklist-steps button, ' +
@@ -184,6 +147,7 @@
   function initStatCountUp() {
     if (reduced) return;
     const cards = document.querySelectorAll('.stat-card');
+    if (!cards.length) return;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
@@ -199,8 +163,7 @@
         function tick(now) {
           const t = Math.min(1, (now - start) / duration);
           const eased = 1 - Math.pow(1 - t, 3);
-          const val = from + (spec.end - from) * eased;
-          strong.textContent = spec.format(val);
+          strong.textContent = spec.format(from + (spec.end - from) * eased);
           if (t < 1) requestAnimationFrame(tick);
         }
         requestAnimationFrame(tick);
@@ -280,11 +243,6 @@
     window.setTimeout(() => el.classList.remove('section-flash'), 1200);
   }
 
-  function initConnectOptionRipple() {
-    document.querySelectorAll('.connect-option').forEach((btn) => {
-      btn.addEventListener('click', () => pulse(btn, 'option-pop'));
-    });
-  }
 
   window.ssaReveal = function (el) {
     if (el) el.classList.add('visible');

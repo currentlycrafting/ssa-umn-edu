@@ -215,7 +215,7 @@
   verifyDj().then((ok) => {
     if (ok && djBar) djBar.hidden = false;
     refresh(true);
-    window.setInterval(() => refresh(false), 3500);
+    window.setInterval(() => refresh(false), 8000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(true); });
   });
 })();

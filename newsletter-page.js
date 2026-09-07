@@ -1,15 +1,4 @@
 (function () {
-  const form = document.getElementById('nlSubscribe');
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const out = form.querySelector('output');
-    try {
-      await window.ssaFetch.json('/api/newsletter', { method: 'POST', body: { email: form.email.value.trim() } });
-      out.textContent = "You're on the list.";
-      form.reset();
-    } catch (_) { out.textContent = 'Could not subscribe — try again.'; }
-  });
-
   const archive = document.getElementById('nlArchive');
   const reader = document.getElementById('nlReader');
 

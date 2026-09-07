@@ -3,12 +3,14 @@ import base64
 import json
 import os
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from db import db
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "SSA")
 ALLOWED_IMAGE_TYPES = {"png": "png", "jpg": "jpg", "jpeg": "jpg", "webp": "webp"}
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+DISPLAY_TZ = ZoneInfo("America/Chicago")
 
 BLOCK_TYPES = {"heading", "paragraph", "announcement", "image", "timeline", "game"}
 ARCADE_GAMES = {"daily"}
@@ -207,17 +209,63 @@ def _event_json(row):
     }
 
 
+def _parse_starts_at(value):
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _annotate_events(events, public_only=False):
+    now = utcnow()
+    annotated = []
+    for event in events:
+        starts = _parse_starts_at(event.get("startsAt"))
+        event = dict(event)
+        event["showCountdown"] = True
+        event["_starts"] = starts
+        if public_only and (not starts or starts <= now):
+            continue
+        annotated.append(event)
+    annotated.sort(
+        key=lambda event: (
+            event["_starts"] is None,
+            event["_starts"] or datetime.max.replace(tzinfo=timezone.utc),
+            event.get("sortOrder", 0),
+        )
+    )
+    next_id = None
+    for event in annotated:
+        starts = event.get("_starts")
+        if starts and starts > now:
+            next_id = event.get("id")
+            break
+    for event in annotated:
+        event["featured"] = event.get("id") == next_id and next_id is not None
+        event.pop("_starts", None)
+    return annotated
+
+
 def list_events(include_unpublished=False):
     with db() as cur:
         if include_unpublished:
-            cur.execute("SELECT * FROM events ORDER BY featured DESC, sort_order ASC, starts_at ASC NULLS LAST")
+            cur.execute("SELECT * FROM events ORDER BY starts_at ASC NULLS LAST, sort_order ASC")
         else:
             cur.execute(
                 "SELECT * FROM events WHERE published = TRUE "
-                "ORDER BY featured DESC, sort_order ASC, starts_at ASC NULLS LAST"
+                "ORDER BY starts_at ASC NULLS LAST, sort_order ASC"
             )
         rows = cur.fetchall()
-    return [_event_json(row) for row in rows]
+    events = [_event_json(row) for row in rows]
+    return _annotate_events(events, public_only=not include_unpublished)
 
 
 def save_event(payload):
@@ -228,12 +276,7 @@ def save_event(payload):
     title = str(payload.get("title", "")).strip()[:160]
     description = str(payload.get("description", "")).strip()[:1200]
     location = str(payload.get("location", "")).strip()[:200]
-    date_label = str(payload.get("dateLabel", "")).strip()[:240]
-    short_date = str(payload.get("shortDate", "")).strip()[:40]
-    start_time = str(payload.get("startTime", "")).strip()[:20]
     image_url = str(payload.get("imageUrl", "")).strip()[:500]
-    featured = bool(payload.get("featured"))
-    show_countdown = bool(payload.get("showCountdown"))
     attendance_mode = str(payload.get("attendanceMode", "rsvp")).strip().lower()
     if attendance_mode not in ("rsvp", "quick"):
         return 400, {"error": "Choose RSVP form or quick Yes/No."}
@@ -242,17 +285,23 @@ def save_event(payload):
         sort_order = int(payload.get("sortOrder", 0))
     except (TypeError, ValueError):
         sort_order = 0
-    starts_at = str(payload.get("startsAt", "")).strip() or None
-    if show_countdown and not starts_at:
-        return 400, {"error": "Set a countdown end date and time."}
+    starts = _parse_starts_at(payload.get("startsAt"))
+    if not starts:
+        return 400, {"error": "Set a date and start time."}
+    starts_at = starts.isoformat()
+    local = starts.astimezone(DISPLAY_TZ)
+    start_time = local.strftime("%H:%M")
+    date_label = local.strftime("%B %d, %Y · %I:%M %p").replace(" 0", " ")
+    short_date = local.strftime("%b %d").replace(" 0", " ")
+    if location:
+        date_label = f"{local.strftime('%B %d').replace(' 0', ' ')} - {location}"
+        short_date = local.strftime("%b %d").replace(" 0", " ")
+    show_countdown = True
+    featured = False
     if not rsvp_key:
         rsvp_key = title
-    if not short_date:
-        short_date = date_label.split("—", 1)[0].strip()[:40]
-    if not location and "—" in date_label:
-        location = date_label.split("—", 1)[1].strip()[:200]
-    if not title or not description or not date_label:
-        return 400, {"error": "Public title, full date label, and description are required."}
+    if not title or not description:
+        return 400, {"error": "Title and description are required."}
     if image_url and not (
         image_url.startswith("/assets/") or image_url.startswith("/api/uploads/")
     ):
@@ -264,8 +313,6 @@ def save_event(payload):
             if not existing:
                 return 404, {"error": "Event not found."}
             rsvp_key = existing["rsvp_key"]
-        if featured:
-            cur.execute("UPDATE events SET featured = FALSE WHERE featured = TRUE")
         if event_id:
             cur.execute(
                 """
@@ -302,7 +349,7 @@ def save_event(payload):
         row = cur.fetchone()
     if not row:
         return 404, {"error": "Event not found."}
-    return 200, {"ok": True, "event": _event_json(row)}
+    return 200, {"ok": True, "event": _annotate_events([_event_json(row)])[0]}
 
 
 def delete_event(event_id, payload):
@@ -317,18 +364,54 @@ def delete_event(event_id, payload):
 
 # ---------------- event suggestions ----------------
 
+def _store_suggestion_image(filename, data):
+    raw, mime, error = _decode_public_image(data, filename)
+    if error:
+        return None, error
+    with db() as cur:
+        cur.execute(
+            """
+            INSERT INTO newsletter_images (image_data, content_type, created_at)
+            VALUES (%s, %s, %s)
+            RETURNING id
+            """,
+            (raw, mime, utcnow()),
+        )
+        image_id = cur.fetchone()["id"]
+    return f"/api/uploads/{image_id}", None
+
+
 def add_event_suggestion(payload):
     name = str(payload.get("name", "")).strip()[:120]
-    etype = str(payload.get("type", "")).strip().lower()
+    etype = str(payload.get("type", "")).strip().lower() or "campus"
     description = str(payload.get("description", "")).strip()[:1200]
     audience = str(payload.get("audience", "")).strip()[:200]
     budget = str(payload.get("budget", "")).strip()[:80]
     preferred_date = str(payload.get("preferredDate", "")).strip()[:60]
-    notes = str(payload.get("notes", "")).strip()[:800]
+    fun_answer = str(payload.get("funAnswer", "")).strip().lower()
+    inspiration_links = str(payload.get("inspirationLinks", "")).strip()[:1200]
+    notes = str(payload.get("notes", "")).strip()
     if etype not in ("campus", "community"):
         return 400, {"error": "Pick campus or community."}
     if not name or len(description) < 4:
         return 400, {"error": "Event name and a short description are required."}
+    note_parts = []
+    if notes:
+        note_parts.append(notes)
+    if fun_answer in ("yes", "no"):
+        note_parts.append(f"Would show up tomorrow: {fun_answer}")
+    if inspiration_links:
+        note_parts.append(f"Inspiration links:\n{inspiration_links}")
+    images = payload.get("inspirationImages") or []
+    if isinstance(images, list):
+        for item in images[:3]:
+            if not isinstance(item, dict):
+                continue
+            url, error = _store_suggestion_image(item.get("filename"), item.get("data"))
+            if error:
+                return 400, {"error": error}
+            note_parts.append(f"Inspiration image: {url}")
+    notes = "\n\n".join(note_parts).strip()[:4000]
     with db() as cur:
         cur.execute(
             """
@@ -354,6 +437,31 @@ def list_event_suggestions():
             "budget": r["budget"] or "",
             "preferred_date": r["preferred_date"] or "",
             "notes": r["notes"] or "",
+            "created_at": _iso(r["created_at"]),
+        }
+        for r in rows
+    ]
+
+
+def list_event_suggestions_public():
+    """Public homepage feed — excludes notes (may contain contact/inspiration details)."""
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT name, type, description, audience, preferred_date, created_at
+            FROM event_suggestions
+            ORDER BY created_at DESC
+            LIMIT 200
+            """
+        )
+        rows = cur.fetchall()
+    return [
+        {
+            "name": r["name"],
+            "type": r["type"],
+            "description": r["description"],
+            "audience": r["audience"] or "",
+            "preferred_date": r["preferred_date"] or "",
             "created_at": _iso(r["created_at"]),
         }
         for r in rows
@@ -402,17 +510,25 @@ def submit_gallery_item(payload):
     return 200, {"ok": True, "id": item_id, "message": "Added to the gallery."}
 
 
-def list_gallery_items(include_pending=False):
+def list_gallery_items(include_pending=False, limit=None):
+    try:
+        limit = int(limit) if limit is not None else None
+    except (TypeError, ValueError):
+        limit = None
+    if limit is not None:
+        limit = max(1, min(limit, 300))
     with db() as cur:
         if include_pending:
             cur.execute(
                 "SELECT id, submitter, email, caption, alt_text, status, created_at "
-                "FROM gallery_items ORDER BY created_at DESC LIMIT 300"
+                "FROM gallery_items ORDER BY created_at DESC LIMIT %s",
+                (limit or 300,),
             )
         else:
             cur.execute(
                 "SELECT id, caption, alt_text, status, created_at FROM gallery_items "
-                "WHERE status <> 'rejected' ORDER BY created_at ASC LIMIT 200"
+                "WHERE status <> 'rejected' ORDER BY created_at ASC LIMIT %s",
+                (limit or 200,),
             )
         rows = cur.fetchall()
     return [

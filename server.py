@@ -156,6 +156,7 @@ PAGE_ROUTES = {
     "/timeline": "timeline.html",
     "/connections": "connections.html",
     "/admin": "admin.html",
+    "/suggest": "suggest.html",
 }
 
 
@@ -183,20 +184,6 @@ class SSAHandler(SimpleHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", "0"))
         raw = self.rfile.read(length).decode("utf-8") if length else "{}"
         return json.loads(raw or "{}")
-
-    def _attendees(self, event_name):
-        with db() as cur:
-            cur.execute(
-                """
-                SELECT name
-                FROM rsvp_interest
-                WHERE event_name = %s
-                ORDER BY created_at ASC
-                """,
-                (event_name,),
-            )
-            rows = cur.fetchall()
-        return [{"name": r["name"]} for r in rows]
 
     def _event_attendance_mode(self, event_name):
         with db() as cur:
@@ -327,8 +314,21 @@ class SSAHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(data)
+
+    def end_headers(self):
+        # Cache static assets when a handler did not already set Cache-Control.
+        headers = getattr(self, "_headers_buffer", None) or []
+        already = any(b"cache-control:" in bytes(h).lower() for h in headers)
+        if not already:
+            path = urlparse(self.path).path.lower()
+            if path.startswith("/api/"):
+                self.send_header("Cache-Control", "no-store")
+            elif path.endswith((".css", ".js", ".png", ".jpg", ".jpeg", ".webp", ".svg", ".ico", ".woff2")):
+                self.send_header("Cache-Control", "public, max-age=86400")
+        super().end_headers()
 
     def _redirect(self, url):
         self.send_response(302)
@@ -373,7 +373,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 status, payload = timeline.list_public()
             except Exception as exc:
                 status, payload = 503, {"ok": False, "error": str(exc)}
-            self._send_json(status, payload)
+            self._send_json(status, payload, cache_seconds=30)
             return
 
         # ---- Want The Aux API ----
@@ -417,21 +417,34 @@ class SSAHandler(SimpleHTTPRequestHandler):
         # ---- newsletter CMS ----
         if path == "/api/newsletters":
             status, payload = cms.list_newsletters(include_drafts=False)
-            self._send_json(status, payload)
+            self._send_json(status, payload, cache_seconds=30)
             return
         if path == "/api/events":
-            self._send_json(200, {"ok": True, "events": cms.list_events()})
+            self._send_json(200, {"ok": True, "events": cms.list_events()}, cache_seconds=30)
             return
 
         if path == "/api/bulletin":
             category = (qs.get("category") or [None])[0]
             post_status = (qs.get("status") or [None])[0]
             status_code, payload = bulletin.list_posts(category=category, status=post_status)
-            self._send_json(status_code, payload)
+            self._send_json(status_code, payload, cache_seconds=15)
             return
 
         if path == "/api/gallery":
-            self._send_json(200, {"ok": True, "items": cms.list_gallery_items()})
+            limit_raw = (qs.get("limit") or [""])[0].strip()
+            limit = int(limit_raw) if limit_raw.isdigit() else None
+            self._send_json(
+                200,
+                {"ok": True, "items": cms.list_gallery_items(limit=limit)},
+                cache_seconds=60,
+            )
+            return
+        if path == "/api/event-suggestions":
+            self._send_json(
+                200,
+                {"ok": True, "items": cms.list_event_suggestions_public()},
+                cache_seconds=30,
+            )
             return
         m = re.fullmatch(r"/api/gallery/(\d+)/image", path)
         if m:
@@ -463,11 +476,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             return
 
         if path == "/api/health":
-            try:
-                warm_pool()
-                self._send_json(200, {"ok": True, "database": "postgresql"}, cache_seconds=5)
-            except Exception as exc:
-                self._send_json(503, {"ok": False, "error": str(exc)})
+            self._send_json(200, {"ok": True}, cache_seconds=30)
             return
         if path == "/api/leaderboard":
             try:
@@ -497,11 +506,29 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 self._send_json(400, {"error": "event is required"})
                 return
             try:
-                mode = self._event_attendance_mode(event_name)
-                attendees = [] if mode == "quick" else self._attendees(event_name)
                 with db() as cur:
-                    cur.execute("SELECT COUNT(*) AS count FROM rsvp_interest WHERE event_name = %s", (event_name,))
+                    cur.execute(
+                        "SELECT attendance_mode FROM events WHERE rsvp_key = %s AND published = TRUE",
+                        (event_name,),
+                    )
+                    row = cur.fetchone()
+                    mode = row["attendance_mode"] if row else "rsvp"
+                    cur.execute(
+                        "SELECT COUNT(*) AS count FROM rsvp_interest WHERE event_name = %s",
+                        (event_name,),
+                    )
                     count = int(cur.fetchone()["count"])
+                    attendees = []
+                    if mode != "quick":
+                        cur.execute(
+                            """
+                            SELECT name FROM rsvp_interest
+                            WHERE event_name = %s
+                            ORDER BY created_at ASC
+                            """,
+                            (event_name,),
+                        )
+                        attendees = [{"name": r["name"]} for r in cur.fetchall()]
                 self._send_json(
                     200,
                     {"count": count, "attendees": attendees, "mode": mode},
@@ -564,46 +591,13 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 self._send_json(status, resp)
                 return
 
-            if post_path == "/api/admin/aux/clear":
-                if str(payload.get("password", "")) != ADMIN_PASSWORD:
-                    self._send_json(401, {"error": "Invalid password."})
-                    return
-                status, resp = aux.clear_requests()
-                self._send_json(status, resp)
-                return
-            m = re.fullmatch(r"/api/admin/aux/(\d+)/play", post_path)
-            if m:
-                if str(payload.get("password", "")) != ADMIN_PASSWORD:
-                    self._send_json(401, {"error": "Invalid password."})
-                    return
-                status, resp = aux.admin_play_now(int(m.group(1)))
-                self._send_json(status, resp)
-                return
             if post_path == "/api/aux/request":
                 status, resp = aux.add_request(payload)
-                self._send_json(status, resp)
-                return
-            m = re.fullmatch(r"/api/aux/request/(\d+)/queue", post_path)
-            if m:
-                status, resp = aux.queue_on_spotify(int(m.group(1)), payload)
                 self._send_json(status, resp)
                 return
             m = re.fullmatch(r"/api/aux/request/(\d+)/remove-own", post_path)
             if m:
                 status, resp = aux.remove_own_request(int(m.group(1)), payload)
-                self._send_json(status, resp)
-                return
-            m = re.fullmatch(r"/api/aux/request/(\d+)/remove", post_path)
-            if m:
-                status, resp = aux.remove_request(int(m.group(1)), payload)
-                self._send_json(status, resp)
-                return
-            if post_path == "/api/aux/playback":
-                status, resp = aux.playback(payload)
-                self._send_json(status, resp)
-                return
-            if post_path == "/api/aux/title":
-                status, resp = aux.set_title(payload)
                 self._send_json(status, resp)
                 return
             if post_path == "/api/aux/verify":

@@ -26,15 +26,16 @@
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
         <a href="/newsletter">Newsletter</a>
-        <a href="/timeline">Timeline</a>
+        <a href="/suggest">Suggest an Event</a>
         <a href="/gallery">Gallery</a>
         <a href="/bulletin">Bulletin</a>
-        <a href="/aux">Want The Aux</a>
         <div class="nav-options">
           <button class="nav-options-toggle" type="button" aria-label="More pages" aria-expanded="false" aria-controls="navOptionsMenu">
             <span class="nav-options-icon" aria-hidden="true"></span>
           </button>
           <div class="nav-options-menu" id="navOptionsMenu">
+            <a href="/timeline">Timeline</a>
+            <a href="/aux">Want The Aux</a>
             <a href="/games">Arcade</a>
             <a href="/donate">Donate</a>
             <a href="/board">Board</a>

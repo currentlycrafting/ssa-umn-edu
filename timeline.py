@@ -1,5 +1,4 @@
 """SSA Timeline events — public sticky-note cards managed from admin."""
-import os
 import re
 from datetime import date, datetime, timezone
 

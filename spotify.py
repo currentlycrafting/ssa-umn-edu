@@ -249,26 +249,6 @@ def user_queue(token):
     return result
 
 
-def play(token):
-    return api(token, "PUT", "/me/player/play", {})
-
-
-def play_track(token, track_id):
-    return api(token, "PUT", "/me/player/play", {"uris": [f"spotify:track:{track_id}"]})
-
-
-def pause(token):
-    return api(token, "PUT", "/me/player/pause", {})
-
-
-def next_track(token):
-    return api(token, "POST", "/me/player/next", {})
-
-
-def previous_track(token):
-    return api(token, "POST", "/me/player/previous", {})
-
-
 def queue_track(token, track_id):
     qs = urllib.parse.urlencode({"uri": f"spotify:track:{track_id}"})
     return api(token, "POST", f"/me/player/queue?{qs}", {})

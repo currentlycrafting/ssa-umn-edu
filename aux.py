@@ -1,8 +1,8 @@
-"""Want The Aux — guest song requests with Spotify playback for one host.
+"""Want The Aux — guest song requests with Spotify queue sync for one host.
 
 Guests never touch Spotify auth: search uses the app's client-credentials
 token. Exactly one person (the DJ) connects their Spotify account via OAuth;
-playback endpoints verify the DJ key on every request.
+DJ-key verification gates host-only actions.
 """
 import secrets
 import time
@@ -105,6 +105,8 @@ def get_state(since, guest_id=""):
     with db() as cur:
         meta = _meta(cur)
         version = int(meta["version"])
+        if since is not None and int(since) == version:
+            return 200, {"ok": True, "changed": False, "version": version}
         dj = _dj(cur)
 
     token = None
@@ -386,122 +388,6 @@ def spotify_callback(code, state):
     return f"{spotify.BASE_URL}/aux?dj={dj_key}", None
 
 
-def playback(payload):
-    key = str(payload.get("djKey", "")).strip()
-    action = str(payload.get("action", "")).strip().lower()
-    if action not in {"play", "pause", "skip", "previous"}:
-        return 400, {"error": "Unknown playback action."}
-    with db() as cur:
-        if not dj_authorized(cur, key):
-            return 403, {"error": "Only the connected DJ can control playback."}
-    try:
-        token = _dj_access_token()
-        if not token:
-            return 409, {"error": "Connect Spotify first."}
-        if action == "play":
-            spotify.play(token)
-        elif action == "pause":
-            spotify.pause(token)
-        elif action == "skip":
-            spotify.next_track(token)
-        elif action == "previous":
-            spotify.previous_track(token)
-    except spotify.SpotifyError as exc:
-        if exc.status == 404:
-            return 409, {"error": "No active Spotify device — open Spotify and press play once, then try again."}
-        if exc.status == 403:
-            return 409, {"error": "Spotify says this account can't do that (Premium is required for remote control)."}
-        return 502, {"error": f"Spotify error: {exc.message}"}
-    with db() as cur:
-        bump_version(cur)
-    return 200, {"ok": True}
-
-
-def queue_on_spotify(request_id, payload):
-    """Connected Spotify host overrides the queue and starts a song."""
-    key = str(payload.get("djKey", "")).strip()
-    with db() as cur:
-        if not dj_authorized(cur, key):
-            return 403, {"error": "Only the connected admin can control playback."}
-    return admin_play_now(request_id)
-
-
-def admin_play_now(request_id):
-    """Start one request immediately; caller is responsible for authorization."""
-    played_at = utcnow()
-    with db() as cur:
-        cur.execute(
-            """
-            UPDATE aux_requests
-            SET played = TRUE, played_at = %s
-            WHERE id = %s AND played = FALSE
-            RETURNING *
-            """,
-            (played_at, request_id),
-        )
-        row = cur.fetchone()
-        if not row:
-            return 409, {"error": "That song has already left the queue."}
-        bump_version(cur)
-
-    def restore_request():
-        with db() as cur:
-            cur.execute(
-                "UPDATE aux_requests SET played = FALSE, played_at = NULL WHERE id = %s",
-                (request_id,),
-            )
-            bump_version(cur)
-
-    try:
-        token = _dj_access_token()
-        if not token:
-            restore_request()
-            return 409, {"error": "Connect Spotify first."}
-        if row["queued_to_spotify"]:
-            upcoming = spotify.user_queue(token)
-            position = next(
-                (i for i, song in enumerate(upcoming) if song.get("trackId") == row["track_id"]),
-                None,
-            )
-            current = spotify.currently_playing(token)
-            if current and current.get("trackId") == row["track_id"]:
-                pass
-            elif position is None:
-                restore_request()
-                return 409, {"error": "That song is already moving through Spotify's queue."}
-            else:
-                for _ in range(position + 1):
-                    spotify.next_track(token)
-        else:
-            spotify.play_track(token, row["track_id"])
-    except spotify.SpotifyError as exc:
-        restore_request()
-        if exc.status == 404:
-            return 409, {"error": "No active Spotify device — open Spotify and press play once."}
-        return 502, {"error": f"Spotify error: {exc.message}"}
-    with db() as cur:
-        cur.execute(
-            """
-            UPDATE aux_requests
-            SET queued_to_spotify = TRUE, queued_at = COALESCE(queued_at, %s)
-            WHERE id = %s
-            """,
-            (played_at, request_id),
-        )
-        bump_version(cur)
-    return 200, {"ok": True, "playingNow": True}
-
-
-def clear_requests():
-    """Clear every song that is still waiting in the request queue."""
-    with db() as cur:
-        cur.execute("DELETE FROM aux_requests WHERE played = FALSE")
-        removed = cur.rowcount
-        if removed:
-            bump_version(cur)
-    return 200, {"ok": True, "removed": removed}
-
-
 def remove_own_request(request_id, payload):
     guest_id = str(payload.get("guestId", "")).strip()[:80]
     if len(guest_id) < 16:
@@ -518,29 +404,6 @@ def remove_own_request(request_id, payload):
             return 403, {"error": "You can only remove songs you requested."}
         bump_version(cur)
     return 200, {"ok": True}
-
-
-def remove_request(request_id, payload):
-    key = str(payload.get("djKey", "")).strip()
-    with db() as cur:
-        if not dj_authorized(cur, key):
-            return 403, {"error": "Only the connected DJ can remove songs."}
-        cur.execute("DELETE FROM aux_requests WHERE id = %s", (request_id,))
-        bump_version(cur)
-    return 200, {"ok": True}
-
-
-def set_title(payload):
-    key = str(payload.get("djKey", "")).strip()
-    title = str(payload.get("title", "")).strip()[:80]
-    if not title:
-        return 400, {"error": "Title is required."}
-    with db() as cur:
-        if not dj_authorized(cur, key):
-            return 403, {"error": "Only the connected DJ can rename the queue."}
-        cur.execute("UPDATE aux_meta SET title = %s WHERE id = 1", (title,))
-        bump_version(cur)
-    return 200, {"ok": True, "title": title}
 
 
 def verify_dj(payload):

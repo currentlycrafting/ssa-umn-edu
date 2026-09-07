@@ -18,8 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=11" />
-  <link rel="stylesheet" href="site-pages.css?v=11" />
+  <link rel="stylesheet" href="index.css?v=17" />
+  <link rel="stylesheet" href="site-pages.css?v=18" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -54,11 +54,8 @@
 
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
-    <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Events</span></a>
-    <a href="#bulletin-home" data-section="bulletin-home"><span class="dot" aria-hidden="true"></span><span class="side-label">Bulletin</span></a>
-    <a href="#aux-home" data-section="aux-home"><span class="dot" aria-hidden="true"></span><span class="side-label">Want the Aux</span></a>
-    <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">Highlights</span></a>
-    <a href="#programs" data-section="programs"><span class="dot" aria-hidden="true"></span><span class="side-label">Programs</span></a>
+    <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Upcoming</span></a>
+    <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">By the numbers</span></a>
   </nav>
 
   <main id="top">
@@ -76,14 +73,7 @@
         </div>
         <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
-        <p class="hero-listen">We&apos;re always looking and listening — the Bulletin Board is living proof. Ask, and you&apos;ll receive.</p>
-        <div class="hero-actions">
-          <button class="button button-dark handdrawn has-tip" type="button" data-open-outreach data-tip="Messages, collaborations, and event ideas">Send us a Suggestion</button>
-          <a class="button button-line handdrawn has-tip" href="/gallery" data-tip="Explore SSA memories">Photo Album</a>
-          <a class="button button-line handdrawn has-tip" href="/newsletter" data-tip="Read the latest edition">Read our newsletter</a>
-          <a class="button button-line handdrawn has-tip" href="/events" data-tip="See the full calendar">See our events</a>
-          <svg class="hero-arrow" viewBox="0 0 70 50" aria-hidden="true"><path d="M6 40 C20 10 44 6 60 14 M60 14 L48 12 M60 14 L56 26" /></svg>
-        </div>
+        <p class="hero-listen">We&apos;re always looking and listening — ask, and you&apos;ll receive.</p>
         <div class="hero-meter year-montage" aria-label="SSA since 1998">
           <span class="ym-label">Serving Somali students</span>
           <div class="ym-year" id="ymYear">1998</div>
@@ -98,63 +88,55 @@
       </div>
     </section>
 
-    <section class="section" id="events" hidden>
+    <section class="section home-upcoming" id="events">
       <div class="section-head" id="featuredSectionHead">
-        <span class="eyebrow">Featured</span>
-        <h2>Don&apos;t miss this one</h2>
+        <span class="eyebrow">Upcoming</span>
+        <h2>What&apos;s happening next</h2>
+        <p>Next event, fresh ideas, the hottest bulletin post, and a peek at the album — all in one place.</p>
       </div>
-      <aside class="featured-event" id="featuredEvent" aria-label="Featured event" data-reveal hidden></aside>
-      <div class="home-events" id="homeEvents" data-reveal-group hidden></div>
-    </section>
 
-    <section class="section home-aux home-bulletin" id="bulletin-home">
-      <div class="section-head">
-        <span class="eyebrow">Campus connections</span>
-        <h2>Ask and you&apos;ll receive.</h2>
-        <p>The SSA Bulletin Board is where students post for roommates, study groups, friends, and things to do. It was inspired by Nimo through her suggestions — pin a note, share a public email, and connect.</p>
-      </div>
-      <div class="home-aux-grid">
-        <article class="home-aux-card">
-          <span class="eyebrow">Post what you need</span>
-          <h3>Roommates, study groups, friends &amp; activities.</h3>
-          <p>Choose a category, write a short note, and put your email on the card so other students can reach you directly.</p>
-        </article>
-        <article class="home-aux-card">
-          <span class="eyebrow">Stay in control</span>
-          <h3>Protect each post with a 4-digit password.</h3>
-          <p>When you pin a note, you set a password so only you can mark it complete later. Interest counts help show what is catching attention.</p>
-        </article>
-        <article class="home-aux-card home-aux-steps">
-          <span class="eyebrow">How it works</span>
-          <ol><li>Open the Bulletin Board</li><li>Post or browse sticky notes</li><li>Email someone or mark interest</li></ol>
-          <a class="button button-dark handdrawn" href="/bulletin">Open the Bulletin Board</a>
-        </article>
-      </div>
-    </section>
+      <div class="home-upcoming-grid">
+        <aside class="featured-event home-upcoming-cell home-upcoming-event" id="featuredEvent" aria-label="Featured event" data-reveal hidden></aside>
 
-    <section class="section home-aux" id="aux-home">
-      <div class="section-head">
-        <span class="eyebrow">Live music queue</span>
-        <h2>Want the Aux?</h2>
-        <p>At SSA events, everyone can help build the playlist. Search for a song, add it to the community request queue, and the person connected to Spotify keeps the room moving.</p>
+        <article class="home-upcoming-cell home-upcoming-suggest">
+          <div class="home-upcoming-cell-head">
+            <span class="eyebrow">Suggested ideas</span>
+            <a href="/suggest">Suggest →</a>
+          </div>
+          <div class="home-suggest-feed home-suggest-feed-compact" id="homeSuggestFeed" aria-live="polite">
+            <p class="home-suggest-empty">Loading ideas…</p>
+          </div>
+        </article>
+
+        <article class="home-upcoming-cell home-upcoming-bulletin" id="homeBulletinHot" aria-live="polite">
+          <div class="home-upcoming-cell-head">
+            <span class="eyebrow">Bulletin board</span>
+            <a href="/bulletin">Board →</a>
+          </div>
+          <p class="home-bulletin-empty">Loading posts…</p>
+        </article>
+
+        <article class="home-upcoming-cell home-upcoming-album">
+          <div class="home-upcoming-cell-head">
+            <span class="eyebrow">Photo album</span>
+            <a href="/gallery">Album →</a>
+          </div>
+          <div class="home-album-preview home-album-preview-compact" id="homeAlbumPreview" aria-label="Photo album preview">
+            <p class="home-album-empty">Loading photos…</p>
+          </div>
+        </article>
       </div>
-      <div class="home-aux-grid">
-        <article class="home-aux-card">
-          <span class="eyebrow">For everyone</span>
-          <h3>Request songs without connecting an account.</h3>
-          <p>Guests search the Spotify catalog, add a track, follow what is playing, and see what is coming next. Your request joins the bottom of the live queue.</p>
-        </article>
-        <article class="home-aux-card">
-          <span class="eyebrow">For the host</span>
-          <h3>One connected player keeps playback organized.</h3>
-          <p>Only the event host connects Spotify. The SSA queue mirrors Spotify, removes songs after they play, and prevents the same request from playing repeatedly.</p>
-        </article>
-        <article class="home-aux-card home-aux-steps">
-          <span class="eyebrow">How it works</span>
-          <ol><li>Open Want the Aux</li><li>Search and request a song</li><li>Watch the shared queue update live</li></ol>
-          <a class="button button-dark handdrawn" href="/aux">Open Want the Aux</a>
-        </article>
-      </div>
+
+      <nav class="home-upcoming-actions" aria-label="Explore SSA">
+        <a class="button button-dark handdrawn" href="/events">Events</a>
+        <a class="button button-dark handdrawn" href="/suggest">Suggest an Event</a>
+        <a class="button button-dark handdrawn" href="/gallery">Photo Album</a>
+        <a class="button button-dark handdrawn" href="/bulletin">Bulletin</a>
+        <a class="button button-dark handdrawn" href="/newsletter">Newsletter</a>
+        <a class="button button-dark handdrawn" href="/aux">Want the Aux</a>
+        <button class="button button-line handdrawn" type="button" id="homeNewsletterOpen">Subscribe</button>
+        <button class="button button-line handdrawn" type="button" data-open-outreach>Other ways to reach us</button>
+      </nav>
     </section>
 
     <section class="section stats" id="demo">
@@ -214,41 +196,6 @@
         </article>
       </div>
     </section>
-
-    <section class="section" id="programs">
-      <div class="section-head">
-        <span class="eyebrow">Programs</span>
-        <h2>How SSA programs its events.</h2>
-        <p>Every SSA event falls into one of two buckets. It shapes the size, the goal, and how we plan it.</p>
-      </div>
-      <div class="focus-grid">
-        <article class="focus-card focus-card-clickable" data-suggest-event data-suggest-type="campus" tabindex="0" role="button" aria-label="Suggest a campus-focused event">
-          <span class="eyebrow">Campus-Focused</span>
-          <h3>Campus-Focused Events</h3>
-          <p>Designed for broad student reach. Typically larger, more social, and attendance-driven — the goal is visibility, engagement, and campus presence.</p>
-          <ul>
-            <li>Higher attendance targets</li>
-            <li>More promotional infrastructure required</li>
-            <li>Energy-forward programming</li>
-            <li>Designed to grow SSA's campus footprint</li>
-            <li>Often tied to seasonal moments or high-traffic windows</li>
-          </ul>
-        </article>
-        <article class="focus-card focus-card-clickable" data-suggest-event data-suggest-type="community" tabindex="0" role="button" aria-label="Suggest a community-focused event">
-          <span class="eyebrow">Community-Focused</span>
-          <h3>Community-Focused Events</h3>
-          <p>Intentional and specific. They prioritize depth over scale — conversation, reflection, service, and genuine community value. The goal is connection, not just attendance.</p>
-          <ul>
-            <li>More thoughtful, discussion-driven programming</li>
-            <li>Designed for targeted audiences or specific purposes</li>
-            <li>Impact-oriented over attendance-oriented</li>
-            <li>Often more intimate in format and setting</li>
-            <li>Reflects SSA's responsibility to the broader Somali community</li>
-          </ul>
-        </article>
-      </div>
-      <p class="programs-share"><button class="button button-dark handdrawn" type="button" data-open-outreach>Send SSA a message, collaboration, or event idea</button></p>
-    </section>
   </main>
 
   <footer class="footer">
@@ -256,10 +203,11 @@
       <a class="footer-brand" href="#top"><img src="assets/brand/ssa-logo.png" alt="" />SSA</a>
       <nav aria-label="Footer">
         <a href="/events">Events</a>
-        <a href="/games">Games</a>
+        <a href="index.html#demo">About Us</a>
+        <a href="/gallery">Gallery</a>
+        <a href="/suggest">Suggest</a>
         <a href="/newsletter">Newsletter</a>
-        <a href="/donate">Donate</a>
-        <a href="/aux">Want The Aux</a>
+        <a href="/bulletin">Bulletin</a>
         <a href="/board">Board</a>
       </nav>
       <div class="social-row">
@@ -305,12 +253,6 @@
     <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
 
-  <div class="modal-backdrop kofi-modal-backdrop" id="kofiModal" aria-hidden="true">
-    <div class="kofi-modal modal-sheet modal-card modal-card-wide" role="dialog" aria-modal="true" aria-label="Donate to Somali Student Association">
-      <iframe id="kofiframe" title="Donate to Somali Student Association" loading="lazy"></iframe>
-    </div>
-  </div>
-
   <div class="modal-backdrop newsletter-takeover" id="newsletterModal" aria-hidden="true">
     <div class="newsletter-sheet modal-sheet modal-card" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
       <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
@@ -334,15 +276,20 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=11"></script>
+  <script src="nav.js?v=13"></script>
   <script src="micro.js?v=2"></script>
-  <script src="checklist.js?v=5"></script>
+  <script src="checklist.js?v=6"></script>
   <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=6"></script>
+  <script src="/events-render.js?v=10"></script>
   <script src="/rsvp.js?v=2"></script>
-  <script src="index.js?v=8"></script>
-  <script src="/outreach.js?v=2"></script>
-  <script src="/whats-new.js?v=5"></script>
+  <script src="index.js?v=15"></script>
+  <script src="/outreach.js?v=4"></script>
+  <script src="/whats-new.js?v=6"></script>
+  <script>
+    document.getElementById('homeNewsletterOpen')?.addEventListener('click', () => {
+      window.openNewsletterModal?.(true);
+    });
+  </script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
   <script>
     if (window.kofiWidgetOverlay) {

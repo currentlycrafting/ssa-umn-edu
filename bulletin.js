@@ -8,20 +8,34 @@
     friends: 'Friends & Activities'
   };
 
+  const STEP_IDS = [
+    'bulletinStepCategory',
+    'bulletinStepDetails',
+    'bulletinStepContact',
+    'bulletinStepPin'
+  ];
+
   const surface = document.getElementById('bulletinSurface');
   const empty = document.getElementById('bulletinEmpty');
-  const createModal = document.getElementById('bulletinCreateModal');
-  const passwordModal = document.getElementById('bulletinPasswordModal');
   const completeModal = document.getElementById('bulletinCompleteModal');
-  const createForm = document.getElementById('bulletinCreateForm');
   const pinSubmit = document.getElementById('bulletinPinSubmit');
   const passwordOutput = document.getElementById('bulletinPasswordOutput');
   const completeSubmit = document.getElementById('bulletinCompleteSubmit');
   const completeOutput = document.getElementById('bulletinCompleteOutput');
+  const anonToggle = document.getElementById('bulletinAnonymous');
+  const nameInput = document.getElementById('bulletinName');
 
   let posts = [];
   let completePostId = null;
-  let draft = null;
+  let createStep = 0;
+  const draft = {
+    category: '',
+    title: '',
+    description: '',
+    name: '',
+    anonymous: false,
+    email: ''
+  };
   const pins = { create: '', complete: '' };
   const reveal = { create: false, complete: false };
 
@@ -42,16 +56,38 @@
   }
 
   function openModal(modal) {
+    if (!modal) return;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
   }
 
   function closeModal(modal) {
+    if (!modal) return;
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     if (!document.querySelector('.modal-backdrop.open')) {
       document.body.classList.remove('modal-open');
+    }
+  }
+
+  function closeAllCreateSteps() {
+    STEP_IDS.forEach((id) => closeModal(document.getElementById(id)));
+  }
+
+  function showCreateStep(step) {
+    createStep = step;
+    STEP_IDS.forEach((id, index) => {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      if (index === step) openModal(modal);
+      else closeModal(modal);
+    });
+    if (step === 3) {
+      pins.create = '';
+      setReveal('create', false);
+      if (passwordOutput) passwordOutput.textContent = '';
+      syncPinUI('create');
     }
   }
 
@@ -109,8 +145,8 @@
       slot.classList.toggle('active', index === value.length && value.length < 4);
       slot.textContent = filled ? (show ? value[index] : '*') : '';
     });
-    if (target === 'create') pinSubmit.disabled = value.length !== 4;
-    if (target === 'complete') completeSubmit.disabled = value.length !== 4;
+    if (target === 'create' && pinSubmit) pinSubmit.disabled = value.length !== 4;
+    if (target === 'complete' && completeSubmit) completeSubmit.disabled = value.length !== 4;
   }
 
   function setReveal(target, on) {
@@ -149,14 +185,85 @@
     });
   }
 
-  async function loadPosts() {
-    const data = await api('/api/bulletin');
-    posts = data.posts || [];
-    render();
+  function setStepError(id, message) {
+    const el = document.getElementById(id);
+    if (!el) return false;
+    if (!message) {
+      el.hidden = true;
+      el.textContent = '';
+      return false;
+    }
+    el.hidden = false;
+    el.textContent = message;
+    return false;
+  }
+
+  function readStepIntoDraft(step) {
+    if (step === 0) {
+      const selected = document.querySelector('input[name="bulletinCategory"]:checked');
+      if (!selected) return setStepError('bulletinCategoryError', 'Pick a category to continue.');
+      setStepError('bulletinCategoryError', '');
+      draft.category = selected.value;
+      return true;
+    }
+    if (step === 1) {
+      const title = document.getElementById('bulletinTitle')?.value.trim() || '';
+      const description = document.getElementById('bulletinDescription')?.value.trim() || '';
+      if (!title || !description) return setStepError('bulletinDetailsError', 'Add a title and description.');
+      setStepError('bulletinDetailsError', '');
+      draft.title = title;
+      draft.description = description;
+      return true;
+    }
+    if (step === 2) {
+      const anonymous = Boolean(anonToggle?.checked);
+      const name = nameInput?.value.trim() || '';
+      const emailInput = document.getElementById('bulletinEmail');
+      const email = emailInput?.value.trim() || '';
+      if (!anonymous && !name) return setStepError('bulletinContactError', 'Add your name, or post anonymously.');
+      if (!email || (emailInput && !emailInput.checkValidity())) {
+        return setStepError('bulletinContactError', 'Add a valid public email.');
+      }
+      setStepError('bulletinContactError', '');
+      draft.anonymous = anonymous;
+      draft.name = anonymous ? '' : name;
+      draft.email = email;
+      return true;
+    }
+    return true;
+  }
+
+  function resetCreateFlow() {
+    draft.category = '';
+    draft.title = '';
+    draft.description = '';
+    draft.name = '';
+    draft.anonymous = false;
+    draft.email = '';
+    document.querySelectorAll('input[name="bulletinCategory"]').forEach((input) => { input.checked = false; });
+    const title = document.getElementById('bulletinTitle');
+    const description = document.getElementById('bulletinDescription');
+    const email = document.getElementById('bulletinEmail');
+    if (title) title.value = '';
+    if (description) description.value = '';
+    if (nameInput) {
+      nameInput.value = '';
+      nameInput.disabled = false;
+    }
+    if (anonToggle) anonToggle.checked = false;
+    if (email) email.value = '';
+    pins.create = '';
+    setReveal('create', false);
+    syncPinUI('create');
+    if (passwordOutput) passwordOutput.textContent = '';
+    setStepError('bulletinCategoryError', '');
+    setStepError('bulletinDetailsError', '');
+    setStepError('bulletinContactError', '');
+    createStep = 0;
   }
 
   async function publishDraft() {
-    if (!draft || pins.create.length !== 4) return;
+    if (pins.create.length !== 4) return;
     pinSubmit.disabled = true;
     passwordOutput.textContent = 'Pinning…';
     try {
@@ -166,76 +273,71 @@
       });
       posts.unshift(result.post);
       render();
-      closeModal(passwordModal);
-      draft = null;
-      pins.create = '';
-      setReveal('create', false);
-      syncPinUI('create');
-      passwordOutput.textContent = '';
+      closeAllCreateSteps();
+      resetCreateFlow();
     } catch (error) {
       passwordOutput.textContent = error.message || 'Could not post.';
       pinSubmit.disabled = pins.create.length !== 4;
     }
   }
 
+  async function loadPosts() {
+    const data = await api('/api/bulletin');
+    posts = data.posts || [];
+    render();
+  }
+
   document.getElementById('bulletinPostOpen')?.addEventListener('click', () => {
-    createForm.reset();
-    createForm.name.disabled = false;
-    createForm.name.required = true;
-    createForm.querySelector('output').textContent = '';
-    draft = null;
-    openModal(createModal);
+    resetCreateFlow();
+    showCreateStep(0);
+  });
+
+  document.querySelectorAll('[data-close-bulletin-flow]').forEach((button) => {
+    button.addEventListener('click', () => {
+      closeAllCreateSteps();
+      resetCreateFlow();
+    });
   });
 
   document.querySelectorAll('[data-close-modal]').forEach((button) => {
     button.addEventListener('click', () => {
       const modal = document.getElementById(button.dataset.closeModal);
       closeModal(modal);
-      if (modal === passwordModal) {
-        draft = null;
-        pins.create = '';
-        setReveal('create', false);
-      }
     });
   });
 
-  [createModal, passwordModal, completeModal].forEach((modal) => {
+  STEP_IDS.forEach((id) => {
+    const modal = document.getElementById(id);
     modal?.addEventListener('click', (event) => {
       if (event.target !== modal) return;
-      closeModal(modal);
-      if (modal === passwordModal) {
-        draft = null;
-        pins.create = '';
-        setReveal('create', false);
-      }
+      closeAllCreateSteps();
+      resetCreateFlow();
     });
   });
 
-  createForm?.anonymous.addEventListener('change', () => {
-    const anon = createForm.anonymous.checked;
-    createForm.name.disabled = anon;
-    createForm.name.required = !anon;
-    if (anon) createForm.name.value = '';
+  completeModal?.addEventListener('click', (event) => {
+    if (event.target === completeModal) closeModal(completeModal);
   });
 
-  createForm?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    createForm.querySelector('output').textContent = '';
-    if (!createForm.reportValidity()) return;
-    draft = {
-      category: createForm.category.value,
-      title: createForm.title.value.trim(),
-      description: createForm.description.value.trim(),
-      name: createForm.name.value.trim(),
-      anonymous: createForm.anonymous.checked,
-      email: createForm.email.value.trim()
-    };
-    pins.create = '';
-    setReveal('create', false);
-    syncPinUI('create');
-    passwordOutput.textContent = '';
-    closeModal(createModal);
-    openModal(passwordModal);
+  document.querySelectorAll('[data-bulletin-next]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!readStepIntoDraft(createStep)) return;
+      if (createStep < STEP_IDS.length - 1) showCreateStep(createStep + 1);
+    });
+  });
+
+  document.querySelectorAll('[data-bulletin-prev]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (createStep <= 0) return;
+      showCreateStep(createStep - 1);
+    });
+  });
+
+  anonToggle?.addEventListener('change', () => {
+    const anon = anonToggle.checked;
+    if (!nameInput) return;
+    nameInput.disabled = anon;
+    if (anon) nameInput.value = '';
   });
 
   pinSubmit?.addEventListener('click', publishDraft);

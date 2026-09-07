@@ -34,9 +34,9 @@
     <div class="checklist-progress"><span id="checklistProgress"></span></div>
     <div class="checklist-pop" id="checklistPop" role="status"></div>
     <div class="checklist-steps" id="checklistSteps">
-      <button type="button" data-step="about" data-href="index.html#demo" data-note="SSA is the cultural and community home base.">Learn about SSA</button>
+      <button type="button" data-step="about" data-href="index.html#hero" data-note="SSA is the cultural and community home base.">Learn about SSA</button>
       <button type="button" data-step="events" data-href="index.html#events" data-note="Events are the fastest way to meet people.">Explore events</button>
-      <button type="button" data-step="programs" data-href="index.html#programs" data-note="Programs show how SSA supports students year-round.">Discover programs</button>
+      <button type="button" data-step="programs" data-href="/suggest" data-note="Suggest the next campus or community event.">Suggest an event</button>
       <button type="button" data-step="gallery" data-href="gallery.html" data-note="Scroll to the bottom of the gallery to complete this step.">Visit the gallery</button>
       <button type="button" data-step="game" data-href="connections.html" data-note="Submit your score after playing to complete this step.">Play a game</button>
       <button type="button" data-step="timeline" data-href="/timeline" data-note="Scroll to the bottom of the timeline to complete this step.">Browse the timeline</button>
@@ -189,6 +189,8 @@
     if (localStorage.getItem('ssaTimelineComplete') === '1') markChecklistStep('timeline');
     if (localStorage.getItem('ssaGameSubmitted') === '1') markChecklistStep('game');
     if (localStorage.getItem('ssaNewsletterSubscribed') === '1') markChecklistStep('newsletter');
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    if (path === '/suggest' || path.endsWith('/suggest.html')) markChecklistStep('programs');
   }
 
   function trackScrollComplete(storageKey, step, note) {
@@ -246,7 +248,7 @@
       if (href) {
         checklistPop.textContent = button.dataset.note || '';
         const autoSteps = ['gallery', 'game', 'timeline'];
-        const visitSteps = ['board', 'aux', 'donate', 'bulletin', 'schedule'];
+        const visitSteps = ['board', 'aux', 'donate', 'bulletin', 'schedule', 'programs'];
         if (visitSteps.includes(button.dataset.step)) {
           markChecklistStep(button.dataset.step, button.dataset.note);
         }

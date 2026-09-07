@@ -15,9 +15,10 @@
         { eyebrow: 'Live music', title: 'Want the Aux?', copy: 'Anyone at an SSA event can request a song. One host connects Spotify while the shared queue stays in sync and moves forward as songs play.', href: '/aux', action: 'Open the queue' },
         { eyebrow: 'Photo album', title: 'A gallery built by the community.', copy: 'Gallery photos now live in the SSA database. Add a memory, watch its polaroid develop, and browse every photo in the new viewer.', href: '/gallery', action: 'View the gallery' },
         { eyebrow: 'Events', title: 'One calendar for every SSA moment.', copy: 'See featured and upcoming events, respond with a full RSVP or a quick Yes or No, and check who is coming.', href: '/events', action: 'See events' },
+        { eyebrow: 'Suggest', title: 'Build the next event with us.', copy: 'Have an idea? The new Suggest an Event page walks you through it step by step — name, vision, and optional inspiration.', href: '/suggest', action: 'Suggest an event' },
         { eyebrow: 'Newsletter', title: 'Read SSA news like an edition.', copy: 'The newsletter now features full stories, announcements, and captioned polaroids created in the Newsletter Studio.', href: '/newsletter', action: 'Read the newsletter' },
         { eyebrow: 'Admin workspace', title: 'Publishing is faster for the board.', copy: 'Authorized board members can manage events, gallery memories, newsletters, RSVPs, music, and community submissions in one workspace.', href: '/admin', action: 'Open admin' },
-        { eyebrow: 'Connect', title: 'Ideas have one clear home.', copy: 'Send SSA a message, propose a collaboration, or suggest a campus or community event through one guided form.', action: 'Share something', outreach: true }
+        { eyebrow: 'Connect', title: 'Ideas have one clear home.', copy: 'Send SSA a message, propose a collaboration, or jump into Suggest an Event through one guided path.', action: 'Share something', outreach: true }
       ]
     },
     studio: {
@@ -47,7 +48,6 @@
       <div class="whats-new-frame">
         <button class="button button-line whats-new-side whats-new-side-prev" type="button" data-whats-prev aria-label="Previous">←</button>
         <div class="modal-sheet modal-card modal-card-wide whats-new-sheet" role="dialog" aria-modal="true" aria-labelledby="${id}Title">
-          <div class="whats-new-progress"><span data-whats-index>1</span> / ${slides.length}</div>
           <div class="whats-new-stage" data-whats-stage></div>
           <div class="whats-new-nav">
             <div class="whats-new-dots" aria-hidden="true"></div>
@@ -60,7 +60,6 @@
     document.body.appendChild(modal);
 
     const stage = modal.querySelector('[data-whats-stage]');
-    const indexLabel = modal.querySelector('[data-whats-index]');
     const prev = modal.querySelector('[data-whats-prev]');
     const next = modal.querySelector('[data-whats-next]');
     const dots = modal.querySelector('.whats-new-dots');
@@ -69,7 +68,6 @@
 
     function render() {
       const slide = slides[index];
-      indexLabel.textContent = String(index + 1);
       const action = slide.outreach
         ? '<button class="button button-line" type="button" data-whats-outreach>Share something</button>'
         : slide.href

@@ -41,15 +41,13 @@
     throw lastError;
   }
 
-  function warmServer() {
-    fetch('/api/health', { priority: 'high' }).catch(() => {});
-  }
-
   window.ssaFetch = {
     json: fetchJson,
-    warm: warmServer,
-    sleep
+    sleep,
+    esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+    }
   };
-
-  warmServer();
 })();

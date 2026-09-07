@@ -170,107 +170,116 @@
   }
 
   const createModal = document.createElement('div');
-  createModal.className = 'modal-backdrop schedule-create-modal';
+  createModal.className = 'modal-backdrop schedule-create-modal whats-new-modal';
   createModal.setAttribute('aria-hidden', 'true');
   createModal.innerHTML = `
-    <div class="modal-sheet modal-card schedule-create-sheet" role="dialog" aria-modal="true" aria-labelledby="scheduleCreateTitle">
-      ${exitButton()}
-      <header class="schedule-create-hero">
-        <span class="eyebrow">Board scheduling</span>
-        <h2 id="scheduleCreateTitle">New schedule</h2>
-        <p id="scheduleCreateCopy">Pick the exact dates first, then choose one-hour windows.</p>
-      </header>
-      <div class="schedule-create-steps" aria-hidden="true">
-        <span data-create-step-dot="1" class="active">1</span>
-        <i></i>
-        <span data-create-step-dot="2">2</span>
-        <i></i>
-        <span data-create-step-dot="3">3</span>
-        <i></i>
-        <span data-create-step-dot="4">4</span>
-      </div>
-      <form id="scheduleCreateForm">
-        <label class="schedule-create-title">Meeting name<input name="title" value="SSA Board Meeting" maxlength="120" required /></label>
-        <section class="schedule-create-panel" data-create-panel="1">
-          <div class="schedule-calendar">
-            <div class="schedule-calendar-nav">
-              <button type="button" data-cal-prev aria-label="Previous month">‹</button>
-              <strong id="scheduleCalendarLabel"></strong>
-              <button type="button" data-cal-next aria-label="Next month">›</button>
-            </div>
-            <div class="schedule-calendar-weekdays">
-              <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-            </div>
-            <div class="schedule-calendar-grid" id="scheduleCalendarGrid"></div>
-          </div>
-          <p class="schedule-grid-help" id="scheduleDateSummary">Tap any date to include it. Selected days do not need to be consecutive.</p>
-        </section>
-        <section class="schedule-create-panel" data-create-panel="2" hidden>
-          <div class="schedule-grid-wrap schedule-create-grid-wrap">
-            <div class="schedule-grid" id="scheduleCreatorGrid" aria-label="Possible meeting times"></div>
-          </div>
-          <div class="schedule-create-pager" id="scheduleCreatorPager" hidden>
-            <button type="button" id="scheduleCreatorPrev" aria-label="Previous dates">‹</button>
-            <span id="scheduleCreatorPageLabel"></span>
-            <button type="button" id="scheduleCreatorNext" aria-label="Next dates">›</button>
-          </div>
-          <p class="schedule-grid-help" id="scheduleCreatorHelp">Click or drag across hours.</p>
-        </section>
-        <section class="schedule-create-panel" data-create-panel="3" hidden>
-          <label class="schedule-names-field">
-            <span>Add names</span>
-            <div class="schedule-names-row">
-              <input id="scheduleNameInput" type="text" maxlength="80" placeholder="Type a name, then Add" autocomplete="off" />
-              <button class="button button-line" type="button" id="scheduleNameAdd">Add</button>
-            </div>
-          </label>
-          <div class="schedule-name-chips" id="scheduleNameChips"></div>
-          <p class="schedule-grid-help">Anyone on this list can pick their name and mark availability. Add your whole group.</p>
-        </section>
-        <section class="schedule-create-panel schedule-pin-panel" data-create-panel="4" hidden>
-          <p class="schedule-pin-lead">Set a 4-digit password. Share it with anyone who should open this schedule.</p>
-          <div class="bulletin-pin-display">
-            <div class="bulletin-pin-slots" id="createPinSlots" aria-hidden="true">
-              <span></span><span></span><span></span><span></span>
-            </div>
-            <button class="bulletin-pin-eye" id="createPinEye" type="button" aria-label="Show password" aria-pressed="false">
-              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </button>
-          </div>
-          <div class="bulletin-keypad" data-pin-target="create" id="scheduleCreateKeypad"></div>
-        </section>
-        <div class="schedule-create-actions">
-          <button class="button button-line" type="button" id="scheduleCreateBack" hidden>Back</button>
-          <button class="button button-dark" type="button" id="scheduleCreateNext">Next</button>
-          <button class="button button-dark" type="submit" id="scheduleCreateSubmit" hidden>Create Schedule</button>
-          <output></output>
+    <div class="whats-new-frame schedule-flow-frame">
+      <button class="button button-line whats-new-side whats-new-side-prev" type="button" id="scheduleCreateBack" aria-label="Previous" disabled>←</button>
+      <div class="modal-sheet modal-card modal-card-wide whats-new-sheet schedule-create-sheet" role="dialog" aria-modal="true" aria-labelledby="scheduleCreateTitle">
+        <header class="schedule-create-hero">
+          <span class="eyebrow">Board scheduling</span>
+          <h2 id="scheduleCreateTitle">New schedule</h2>
+          <p id="scheduleCreateCopy">Pick the exact dates first, then choose one-hour windows.</p>
+        </header>
+        <div class="schedule-create-steps" aria-hidden="true">
+          <span data-create-step-dot="1" class="active">1</span>
+          <i></i>
+          <span data-create-step-dot="2">2</span>
+          <i></i>
+          <span data-create-step-dot="3">3</span>
+          <i></i>
+          <span data-create-step-dot="4">4</span>
         </div>
-      </form>
+        <form id="scheduleCreateForm">
+          <label class="schedule-create-title">Meeting name<input name="title" value="SSA Board Meeting" maxlength="120" required /></label>
+          <section class="schedule-create-panel" data-create-panel="1">
+            <div class="schedule-calendar">
+              <div class="schedule-calendar-nav">
+                <button type="button" data-cal-prev aria-label="Previous month">‹</button>
+                <strong id="scheduleCalendarLabel"></strong>
+                <button type="button" data-cal-next aria-label="Next month">›</button>
+              </div>
+              <div class="schedule-calendar-weekdays">
+                <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+              </div>
+              <div class="schedule-calendar-grid" id="scheduleCalendarGrid"></div>
+            </div>
+            <p class="schedule-grid-help" id="scheduleDateSummary">Tap any date to include it. Selected days do not need to be consecutive.</p>
+          </section>
+          <section class="schedule-create-panel" data-create-panel="2" hidden>
+            <div class="schedule-grid-wrap schedule-create-grid-wrap">
+              <div class="schedule-grid" id="scheduleCreatorGrid" aria-label="Possible meeting times"></div>
+            </div>
+            <div class="schedule-create-pager" id="scheduleCreatorPager" hidden>
+              <button type="button" id="scheduleCreatorPrev" aria-label="Previous dates">‹</button>
+              <span id="scheduleCreatorPageLabel"></span>
+              <button type="button" id="scheduleCreatorNext" aria-label="Next dates">›</button>
+            </div>
+            <p class="schedule-grid-help" id="scheduleCreatorHelp">Click or drag across hours.</p>
+          </section>
+          <section class="schedule-create-panel" data-create-panel="3" hidden>
+            <label class="schedule-names-field">
+              <span>Add names</span>
+              <div class="schedule-names-row">
+                <input id="scheduleNameInput" type="text" maxlength="80" placeholder="Type a name, then Add" autocomplete="off" />
+                <button class="button button-line" type="button" id="scheduleNameAdd">Add</button>
+              </div>
+            </label>
+            <div class="schedule-name-chips" id="scheduleNameChips"></div>
+            <p class="schedule-grid-help">Anyone on this list can pick their name and mark availability. Add your whole group.</p>
+          </section>
+          <section class="schedule-create-panel schedule-pin-panel" data-create-panel="4" hidden>
+            <p class="schedule-pin-lead">Set a 4-digit password. Share it with anyone who should open this schedule.</p>
+            <div class="bulletin-pin-display">
+              <div class="bulletin-pin-slots" id="createPinSlots" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <button class="bulletin-pin-eye" id="createPinEye" type="button" aria-label="Show password" aria-pressed="false">
+                <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div class="bulletin-keypad" data-pin-target="create" id="scheduleCreateKeypad"></div>
+          </section>
+          <div class="schedule-create-actions schedule-create-actions-inline">
+            <button class="button button-dark" type="submit" id="scheduleCreateSubmit" hidden>Create Schedule</button>
+            <output></output>
+          </div>
+        </form>
+        <div class="whats-new-nav">
+          <div class="whats-new-dots" id="scheduleCreateDots" aria-hidden="true"></div>
+        </div>
+      </div>
+      <button class="button button-dark whats-new-side whats-new-side-next" type="button" id="scheduleCreateNext">Next →</button>
+      ${exitButton()}
     </div>`;
   document.body.appendChild(createModal);
 
   const unlockModal = document.createElement('div');
-  unlockModal.className = 'modal-backdrop schedule-unlock-modal';
+  unlockModal.className = 'modal-backdrop schedule-unlock-modal whats-new-modal';
   unlockModal.setAttribute('aria-hidden', 'true');
   unlockModal.innerHTML = `
-    <div class="modal-sheet modal-card bulletin-pin-modal schedule-unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="scheduleUnlockTitle">
-      ${exitButton()}
-      <span class="eyebrow">Locked schedule</span>
-      <h2 id="scheduleUnlockTitle">Enter password</h2>
-      <p class="bulletin-modal-lead" id="scheduleUnlockCopy">Enter the 4-digit code to open this schedule.</p>
-      <div class="bulletin-pin-display">
-        <div class="bulletin-pin-slots" id="unlockPinSlots" aria-hidden="true">
-          <span></span><span></span><span></span><span></span>
-        </div>
-        <button class="bulletin-pin-eye" id="unlockPinEye" type="button" aria-label="Show password" aria-pressed="false">
-          <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-          <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </button>
+    <div class="whats-new-frame bulletin-flow-frame-solo">
+      <div class="modal-sheet modal-card whats-new-sheet bulletin-pin-modal schedule-unlock-sheet" role="dialog" aria-modal="true" aria-labelledby="scheduleUnlockTitle">
+        <article class="whats-new-card bulletin-flow-page bulletin-flow-pin is-active">
+          <span class="eyebrow">Locked schedule</span>
+          <h2 id="scheduleUnlockTitle">Enter password</h2>
+          <p class="bulletin-modal-lead" id="scheduleUnlockCopy">Enter the 4-digit code to open this schedule.</p>
+          <div class="bulletin-pin-display">
+            <div class="bulletin-pin-slots" id="unlockPinSlots" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <button class="bulletin-pin-eye" id="unlockPinEye" type="button" aria-label="Show password" aria-pressed="false">
+              <svg class="eye-open" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2M9.9 5.2A11 11 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-4.2 4.6M6.1 6.1A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 3.4-.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="bulletin-keypad" data-pin-target="unlock" id="scheduleUnlockKeypad"></div>
+          <button class="button button-dark" type="button" id="scheduleUnlockSubmit" disabled>Unlock</button>
+          <output id="scheduleUnlockOutput"></output>
+        </article>
       </div>
-      <div class="bulletin-keypad" data-pin-target="unlock" id="scheduleUnlockKeypad"></div>
-      <button class="button button-dark" type="button" id="scheduleUnlockSubmit" disabled>Unlock</button>
-      <output id="scheduleUnlockOutput"></output>
+      ${exitButton()}
     </div>`;
   document.body.appendChild(unlockModal);
 
@@ -306,22 +315,26 @@
   calendarCursor.setDate(1);
 
   const deleteModal = document.createElement('div');
-  deleteModal.className = 'modal-backdrop schedule-delete-modal';
+  deleteModal.className = 'modal-backdrop schedule-delete-modal whats-new-modal';
   deleteModal.setAttribute('aria-hidden', 'true');
   deleteModal.innerHTML = `
-    <div class="modal-sheet modal-card schedule-delete-sheet" role="dialog" aria-modal="true" aria-labelledby="scheduleDeleteTitle">
+    <div class="whats-new-frame bulletin-flow-frame-solo">
+      <div class="modal-sheet modal-card whats-new-sheet schedule-delete-sheet" role="dialog" aria-modal="true" aria-labelledby="scheduleDeleteTitle">
+        <article class="whats-new-card bulletin-flow-page is-active">
+          <span class="eyebrow">Remove schedule</span>
+          <h2 id="scheduleDeleteTitle">Delete this schedule?</h2>
+          <p id="scheduleDeleteCopy">Its responses and group results will be permanently removed.</p>
+          <form id="scheduleDeleteForm">
+            <label>Admin password<input type="password" name="password" autocomplete="current-password" required /></label>
+            <div class="schedule-delete-actions">
+              <button class="button button-line" type="button" data-delete-cancel>Keep it</button>
+              <button class="button button-dark" type="submit">Delete Schedule</button>
+            </div>
+            <output></output>
+          </form>
+        </article>
+      </div>
       ${exitButton()}
-      <span class="eyebrow">Remove schedule</span>
-      <h2 id="scheduleDeleteTitle">Delete this schedule?</h2>
-      <p id="scheduleDeleteCopy">Its responses and group results will be permanently removed.</p>
-      <form id="scheduleDeleteForm">
-        <label>Admin password<input type="password" name="password" autocomplete="current-password" required /></label>
-        <div class="schedule-delete-actions">
-          <button class="button button-line" type="button" data-delete-cancel>Keep it</button>
-          <button class="button button-dark" type="submit">Delete Schedule</button>
-        </div>
-        <output></output>
-      </form>
     </div>`;
   document.body.appendChild(deleteModal);
   const deleteForm = deleteModal.querySelector('#scheduleDeleteForm');
@@ -513,7 +526,9 @@
       slot.classList.toggle('active', index === value.length && value.length < 4);
       slot.textContent = filled ? (show ? value[index] : '*') : '';
     });
-    if (target === 'create' && createSubmit) createSubmit.disabled = value.length !== 4;
+    if (target === 'create' && createNext && createStep === 4) {
+      createNext.disabled = value.length !== 4;
+    }
     if (target === 'unlock' && unlockSubmit) unlockSubmit.disabled = value.length !== 4;
   }
 
@@ -589,9 +604,18 @@
       dot.classList.toggle('active', Number(dot.dataset.createStepDot) <= step);
       dot.classList.toggle('current', Number(dot.dataset.createStepDot) === step);
     });
-    createBack.hidden = step === 1;
-    createNext.hidden = step === 4;
-    createSubmit.hidden = step !== 4;
+    const dots = createModal.querySelector('#scheduleCreateDots');
+    if (dots) {
+      dots.innerHTML = [1, 2, 3, 4].map((i) =>
+        `<i class="${i === step ? 'active' : ''}"></i>`
+      ).join('');
+    }
+    createBack.hidden = false;
+    createBack.disabled = step === 1;
+    createNext.hidden = false;
+    createNext.disabled = step === 4 && pins.create.length !== 4;
+    createNext.textContent = step === 4 ? 'Create Schedule' : step === 3 ? 'Add password →' : 'Next →';
+    if (createSubmit) createSubmit.hidden = true;
     const copy = {
       1: 'Pick the exact dates you want. Skip days that will not work.',
       2: 'Now paint one-hour windows for those dates.',
@@ -1095,7 +1119,10 @@
   window.addEventListener('resize', () => {
     if (createStep === 2 && createModal.classList.contains('open')) renderCreatorGrid();
   });
-  createBack.addEventListener('click', () => setCreateStep(Math.max(1, createStep - 1)));
+  createBack.addEventListener('click', () => {
+    if (createStep <= 1) return;
+    setCreateStep(Math.max(1, createStep - 1));
+  });
   createNext.addEventListener('click', () => {
     if (createStep === 1) {
       if (!selectedDates.size) {
@@ -1119,6 +1146,10 @@
         return;
       }
       setCreateStep(4);
+      return;
+    }
+    if (createStep === 4) {
+      createForm.requestSubmit();
     }
   });
   nameAdd?.addEventListener('click', addCreateName);
@@ -1157,9 +1188,9 @@
       createForm.querySelector('output').textContent = 'Enter a 4-digit password.';
       return;
     }
-    const button = createSubmit;
+    const button = createNext;
     const output = createForm.querySelector('output');
-    if (button.disabled) return;
+    if (button.disabled && pins.create.length !== 4) return;
     button.disabled = true;
     output.textContent = 'Creating…';
     try {
@@ -1217,7 +1248,7 @@
       button.disabled = pins.create.length !== 4;
     }
   });
-  createSubmit.addEventListener('click', (event) => {
+  createSubmit?.addEventListener('click', (event) => {
     if (createStep !== 4) return;
     event.preventDefault();
     createForm.requestSubmit();
