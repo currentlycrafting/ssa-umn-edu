@@ -44,7 +44,7 @@ def _verify_pin(pin, salt, password_hash):
     return hmac.compare_digest(digest, password_hash)
 
 
-def _post_json(row):
+def _post_json(row, *, admin=False):
     anonymous = bool(row["anonymous"])
     return {
         "id": row["id"],
@@ -52,12 +52,13 @@ def _post_json(row):
         "categoryLabel": CATEGORIES.get(row["category"], row["category"]),
         "title": row["title"],
         "description": row["description"],
-        "name": "Anonymous" if anonymous else row["name"],
+        "name": row["name"] if admin else ("Anonymous" if anonymous else row["name"]),
         "anonymous": anonymous,
         "email": row["email"],
         "interactionCount": int(row["interaction_count"] or 0),
         "status": row["status"],
         "createdAt": _iso(row["created_at"]),
+        "completedAt": _iso(row["completed_at"]) if row.get("completed_at") else None,
     }
 
 
@@ -240,3 +241,111 @@ def complete_post(post_id, payload):
         )
         row = cur.fetchone()
     return 200, {"ok": True, "post": _post_json(row)}
+
+
+def admin_list_posts(payload):
+    from cms import is_admin
+
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT * FROM bulletin_posts
+            ORDER BY
+                CASE WHEN status = 'active' THEN 0 ELSE 1 END,
+                created_at DESC
+            LIMIT 500
+            """
+        )
+        rows = cur.fetchall()
+    return 200, {"ok": True, "posts": [_post_json(row, admin=True) for row in rows]}
+
+
+def update_post(post_id, payload):
+    from cms import is_admin
+
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+
+    category = str(payload.get("category", "")).strip().lower()
+    title = str(payload.get("title", "")).strip()[:120]
+    description = str(payload.get("description", "")).strip()[:1200]
+    anonymous = payload.get("anonymous") is True
+    name = "" if anonymous else str(payload.get("name", "")).strip()[:80]
+    email = str(payload.get("email", "")).strip().lower()[:160]
+    status = str(payload.get("status", "active")).strip().lower()
+    new_pin = str(payload.get("newPassword", "") or payload.get("pin", "")).strip()
+
+    if category not in CATEGORIES:
+        return 400, {"error": "Choose a category."}
+    if not title or not description:
+        return 400, {"error": "Title and description are required."}
+    if not anonymous and not name:
+        return 400, {"error": "Enter a name or mark the post anonymous."}
+    if not EMAIL_RE.match(email):
+        return 400, {"error": "A valid public email is required."}
+    if status not in STATUSES:
+        return 400, {"error": "Status must be active or complete."}
+    if new_pin and not PIN_RE.match(new_pin):
+        return 400, {"error": "New PIN must be 4 digits."}
+
+    with db() as cur:
+        cur.execute("SELECT id FROM bulletin_posts WHERE id = %s", (int(post_id),))
+        if not cur.fetchone():
+            return 404, {"error": "Post not found."}
+
+        if new_pin:
+            salt, digest = _hash_pin(new_pin)
+            cur.execute(
+                """
+                UPDATE bulletin_posts
+                SET category = %s, title = %s, description = %s, name = %s,
+                    anonymous = %s, email = %s, status = %s,
+                    completed_at = CASE
+                        WHEN %s = 'complete' AND completed_at IS NULL THEN %s
+                        WHEN %s = 'active' THEN NULL
+                        ELSE completed_at
+                    END,
+                    password_salt = %s, password_hash = %s
+                WHERE id = %s
+                RETURNING *
+                """,
+                (
+                    category, title, description, name, anonymous, email, status,
+                    status, utcnow(), status, salt, digest, int(post_id),
+                ),
+            )
+        else:
+            cur.execute(
+                """
+                UPDATE bulletin_posts
+                SET category = %s, title = %s, description = %s, name = %s,
+                    anonymous = %s, email = %s, status = %s,
+                    completed_at = CASE
+                        WHEN %s = 'complete' AND completed_at IS NULL THEN %s
+                        WHEN %s = 'active' THEN NULL
+                        ELSE completed_at
+                    END
+                WHERE id = %s
+                RETURNING *
+                """,
+                (
+                    category, title, description, name, anonymous, email, status,
+                    status, utcnow(), status, int(post_id),
+                ),
+            )
+        row = cur.fetchone()
+    return 200, {"ok": True, "post": _post_json(row, admin=True)}
+
+
+def delete_post(post_id, payload):
+    from cms import is_admin
+
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute("DELETE FROM bulletin_posts WHERE id = %s", (int(post_id),))
+        if cur.rowcount == 0:
+            return 404, {"error": "Post not found."}
+    return 200, {"ok": True}

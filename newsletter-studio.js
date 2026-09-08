@@ -4,13 +4,18 @@
     { type: 'paragraph', text: '', required: true },
     { type: 'announcement', text: '', required: true }
   ];
-  const polaroids = Array.from({ length: 2 }, () => ({ file: null, data: '', caption: '' }));
+  const polaroids = Array.from({ length: 2 }, () => ({ file: null, data: '', caption: '', src: '' }));
+  let editingId = null;
   const form = document.getElementById('studioForm');
   const container = document.getElementById('studioBlocks');
   const passwordModal = document.getElementById('studioPasswordModal');
   const passwordClose = document.getElementById('studioPasswordClose');
   const passwordForm = document.getElementById('studioPasswordForm');
   const studioOut = document.getElementById('studioOut');
+  const heroTitle = document.querySelector('.studio-main .page-hero h1');
+  const heroCopy = document.querySelector('.studio-main .page-hero p');
+  const saveButton = form?.querySelector('button[type="submit"]');
+  const passwordTitle = document.getElementById('studioPasswordTitle');
 
   document.querySelectorAll('[data-add-block]').forEach((button) => {
     button.addEventListener('click', () => addBlock(button.dataset.addBlock));
@@ -59,13 +64,35 @@
     render();
   }
 
+  function paintPolaroids() {
+    document.querySelectorAll('[data-polaroid]').forEach((slot) => {
+      const index = Number(slot.dataset.polaroid);
+      const polaroid = polaroids[index];
+      const captionInput = slot.querySelector('[data-polaroid-caption]');
+      const img = slot.querySelector('img');
+      captionInput.value = polaroid.caption || '';
+      if (polaroid.data || polaroid.src) {
+        img.src = polaroid.data || polaroid.src;
+        slot.classList.add('filled');
+      } else {
+        img.removeAttribute('src');
+        slot.classList.remove('filled');
+      }
+    });
+  }
+
   document.querySelectorAll('[data-polaroid]').forEach((slot) => {
     const index = Number(slot.dataset.polaroid);
     const input = slot.querySelector('[data-polaroid-input]');
     const captionInput = slot.querySelector('[data-polaroid-caption]');
     const setFile = async (file) => {
       if (!file) return;
-      polaroids[index] = { file, data: await readFile(file), caption: captionInput.value.trim() };
+      polaroids[index] = {
+        file,
+        data: await readFile(file),
+        caption: captionInput.value.trim(),
+        src: polaroids[index].src || ''
+      };
       slot.querySelector('img').src = polaroids[index].data;
       slot.classList.add('filled');
     };
@@ -82,15 +109,99 @@
     });
   });
 
+  function setEditingMode(on) {
+    if (heroTitle) heroTitle.textContent = on ? 'Edit newsletter' : 'Newsletter Studio';
+    if (heroCopy) {
+      heroCopy.textContent = on
+        ? 'Update this edition, then save to republish it.'
+        : 'Fill in the newsletter exactly as readers will see it.';
+    }
+    if (saveButton) saveButton.textContent = on ? 'Save changes' : 'Save newsletter';
+    if (passwordTitle) passwordTitle.textContent = on ? 'Save changes' : 'Save newsletter';
+  }
+
+  function takeBlock(pool, type) {
+    const index = pool.findIndex((block) => block.type === type);
+    if (index >= 0) return pool.splice(index, 1)[0];
+    return { type, text: '' };
+  }
+
+  function applyEdition(newsletter) {
+    editingId = newsletter.id;
+    document.getElementById('studioTitle').value = newsletter.title || '';
+    const allBlocks = Array.isArray(newsletter.blocks) ? newsletter.blocks.slice() : [];
+    let polaroidBlocks = [];
+    let contentBlocks = allBlocks;
+    if (
+      allBlocks.length >= 2
+      && allBlocks[allBlocks.length - 1]?.type === 'image'
+      && allBlocks[allBlocks.length - 2]?.type === 'image'
+    ) {
+      polaroidBlocks = allBlocks.slice(-2);
+      contentBlocks = allBlocks.slice(0, -2);
+    }
+
+    const pool = contentBlocks.map((block) => ({ ...block }));
+    blocks.length = 0;
+    const heading = takeBlock(pool, 'heading');
+    const paragraph = takeBlock(pool, 'paragraph');
+    const announcement = takeBlock(pool, 'announcement');
+    blocks.push({ type: 'heading', text: heading.text || '', required: true });
+    blocks.push({ type: 'paragraph', text: paragraph.text || '', required: true });
+    blocks.push({ type: 'announcement', text: announcement.text || '', required: true });
+    pool.forEach((block) => {
+      if (block.type === 'image') {
+        blocks.push({
+          type: 'image',
+          src: block.src || '',
+          caption: block.caption || '',
+          pendingFile: null,
+          pendingData: ''
+        });
+      } else if (['heading', 'paragraph', 'announcement'].includes(block.type)) {
+        blocks.push({ type: block.type, text: block.text || '' });
+      }
+    });
+
+    polaroidBlocks.forEach((block, index) => {
+      if (index > 1) return;
+      polaroids[index] = {
+        file: null,
+        data: '',
+        caption: block.caption || '',
+        src: block.src || ''
+      };
+    });
+    for (let index = polaroidBlocks.length; index < 2; index += 1) {
+      polaroids[index] = { file: null, data: '', caption: '', src: '' };
+    }
+
+    setEditingMode(true);
+    render();
+    paintPolaroids();
+    studioOut.textContent = 'Editing existing edition. Replace photos only if you want to change them.';
+  }
+
+  async function loadEdition(id) {
+    studioOut.textContent = 'Loading edition…';
+    try {
+      const response = await window.ssaFetch.json(`/api/newsletters/${id}`);
+      applyEdition(response.newsletter || response);
+    } catch (error) {
+      studioOut.textContent = error.message || 'Could not load that edition.';
+      setEditingMode(false);
+    }
+  }
+
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-    if (polaroids.some((polaroid) => !polaroid.file)) {
+    if (polaroids.some((polaroid) => !polaroid.file && !polaroid.src)) {
       studioOut.textContent = 'Add both polaroid photos before saving.';
       document.querySelector('[data-polaroid]:not(.filled)')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    if (polaroids.some((polaroid) => !polaroid.caption.trim())) {
+    if (polaroids.some((polaroid) => !String(polaroid.caption || '').trim())) {
       studioOut.textContent = 'Write a caption for both newsletter photos.';
       document.querySelector('[data-polaroid-caption]:invalid')?.focus();
       return;
@@ -123,8 +234,12 @@
     try {
       const imageBlocks = [];
       for (const polaroid of polaroids) {
-        if (!polaroid.file) continue;
-        imageBlocks.push({ type: 'image', src: await upload(polaroid.file, polaroid.data, password), caption: polaroid.caption });
+        let src = polaroid.src || '';
+        if (polaroid.file) {
+          src = await upload(polaroid.file, polaroid.data, password);
+        }
+        if (!src) continue;
+        imageBlocks.push({ type: 'image', src, caption: String(polaroid.caption || '').trim() });
       }
       for (const block of blocks) {
         if (block.type === 'image' && block.pendingFile) {
@@ -132,17 +247,19 @@
         }
       }
       const cleanBlocks = [...blocks, ...imageBlocks].map(({ required, pendingFile, pendingData, ...block }) => block);
+      const body = {
+        password,
+        title: document.getElementById('studioTitle').value.trim(),
+        blocks: cleanBlocks,
+        published: true
+      };
+      if (editingId) body.id = editingId;
       const saved = await window.ssaFetch.json('/api/newsletters', {
         method: 'POST',
-        body: {
-          password,
-          title: document.getElementById('studioTitle').value.trim(),
-          blocks: cleanBlocks,
-          published: true
-        },
+        body,
         timeout: 30000
       });
-      studioOut.textContent = 'Newsletter published.';
+      studioOut.textContent = editingId ? 'Newsletter updated.' : 'Newsletter published.';
       passwordForm.reset();
       closePasswordModal();
       window.location.href = `/newsletter?edition=${saved.id}`;
@@ -184,4 +301,6 @@
   }
 
   render();
+  const editionId = Number(new URLSearchParams(window.location.search).get('edition') || 0);
+  if (editionId) loadEdition(editionId);
 })();

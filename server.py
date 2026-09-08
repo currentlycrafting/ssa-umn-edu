@@ -649,6 +649,20 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 status, resp = bulletin.create_post(payload)
                 self._send_json(status, resp)
                 return
+            if post_path == "/api/bulletin/list-all":
+                status, resp = bulletin.admin_list_posts(payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/bulletin/(\d+)/update", post_path)
+            if m:
+                status, resp = bulletin.update_post(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/bulletin/(\d+)/delete", post_path)
+            if m:
+                status, resp = bulletin.delete_post(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
             m = re.fullmatch(r"/api/bulletin/(\d+)/interest", post_path)
             if m:
                 status, resp = bulletin.record_interest(int(m.group(1)), payload)

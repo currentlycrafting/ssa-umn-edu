@@ -9,7 +9,7 @@
   const title = document.getElementById('adminSectionTitle');
   let password = sessionStorage.getItem('ssaAdminPassword') || '';
   let section = 'overview';
-  let data = { admin: {}, events: [], gallery: [], editions: [], timeline: [] };
+  let data = { admin: {}, events: [], gallery: [], editions: [], timeline: [], bulletin: [] };
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -33,16 +33,18 @@
     workspace.hidden = false;
     data.admin = admin;
     render();
-    const [eventsResult, galleryResult, editionsResult, timelineResult] = await Promise.allSettled([
+    const [eventsResult, galleryResult, editionsResult, timelineResult, bulletinResult] = await Promise.allSettled([
       post('/api/events/list-all'),
       post('/api/gallery/list-all'),
       post('/api/newsletters/list-all'),
-      post('/api/timeline/list-all')
+      post('/api/timeline/list-all'),
+      post('/api/bulletin/list-all')
     ]);
     if (eventsResult.status === 'fulfilled') data.events = eventsResult.value.events || [];
     if (galleryResult.status === 'fulfilled') data.gallery = galleryResult.value.items || [];
     if (editionsResult.status === 'fulfilled') data.editions = editionsResult.value.newsletters || [];
     if (timelineResult.status === 'fulfilled') data.timeline = timelineResult.value.events || [];
+    if (bulletinResult.status === 'fulfilled') data.bulletin = bulletinResult.value.posts || [];
     render();
   }
 
@@ -64,12 +66,14 @@
         ${stat('Published events', data.events.filter((event) => event.published).length, 'Public calendar')}
         ${stat('Gallery photos', data.gallery.length, 'Community album')}
         ${stat('Subscribers', (admin.newsletters || []).length, 'Newsletter audience')}
+        ${stat('Bulletin posts', data.bulletin.filter((post) => post.status === 'active').length, 'Active board notes')}
         ${stat('Messages', inboxCount() + (admin.rsvp || []).length, 'Inbox, ideas, and RSVPs')}
       </div>
       <div class="admin-quick-grid">
         <button data-go="events"><strong>Event</strong><span>Add the next event to the calendar.</span></button>
         <button data-go="gallery"><strong>Gallery</strong><span>Add or remove community photos.</span></button>
         <button data-go="timeline"><strong>Timeline</strong><span>Add sticky-note moments to the timeline.</span></button>
+        <button data-go="bulletin"><strong>Bulletin</strong><span>Edit or remove board posts.</span></button>
         <a href="/newsletter/studio"><strong>Newsletter</strong><span>Publish the next edition.</span></a>
         <button data-go="messages"><strong>Message</strong><span>Review community inbox and RSVPs.</span></button>
       </div>`;
@@ -359,10 +363,100 @@
       </div>
       <div class="admin-list-head"><h3>Editions</h3><span>${data.editions.length}</span></div>
       <div class="admin-data-list">${data.editions.map((edition) =>
-        `<article class="admin-data-row"><div><strong>${esc(edition.title)}</strong><span>${edition.published ? 'Published' : 'Draft'}</span></div><div><time>${fmt(edition.createdAt)}</time><button class="button button-line" data-delete-edition="${edition.id}">Delete</button></div></article>`
+        `<article class="admin-data-row"><div><strong>${esc(edition.title)}</strong><span>${edition.published ? 'Published' : 'Draft'}</span></div><div><time>${fmt(edition.createdAt)}</time><a class="button button-line" href="/newsletter/studio?edition=${edition.id}">Edit</a><button class="button button-line" data-delete-edition="${edition.id}">Delete</button></div></article>`
       ).join('') || '<p class="admin-empty">No editions yet.</p>'}</div>
       <div class="admin-list-head"><h3>Subscribers</h3><span>${subscribers.length}</span></div>
       <div class="admin-data-list">${subscribers.map((item) => row(esc(item.email), '', '', item.created_at)).join('') || '<p class="admin-empty">No subscribers yet.</p>'}</div>`;
+  }
+
+  function bulletinForm(post = {}) {
+    const anonymous = Boolean(post.anonymous);
+    return `<form class="admin-editor" id="adminBulletinForm">
+      <input type="hidden" name="id" value="${esc(post.id || '')}" />
+      <div class="admin-editor-head"><div><span class="eyebrow">${post.id ? 'Edit post' : 'Select a post'}</span><h3>${post.id ? esc(post.title) : 'Bulletin board'}</h3></div>${post.id ? '<button type="button" class="button button-line" data-new-bulletin>Clear</button>' : ''}</div>
+      ${post.id ? `
+      <div class="admin-form-grid admin-form-grid-simple">
+        <label>Category
+          <select name="category" required>
+            <option value="roommates" ${post.category === 'roommates' ? 'selected' : ''}>Roommates</option>
+            <option value="study" ${post.category === 'study' ? 'selected' : ''}>Study Groups</option>
+            <option value="friends" ${post.category === 'friends' ? 'selected' : ''}>Friends &amp; Activities</option>
+          </select>
+        </label>
+        <label>Status
+          <select name="status" required>
+            <option value="active" ${post.status === 'active' ? 'selected' : ''}>Active</option>
+            <option value="complete" ${post.status === 'complete' ? 'selected' : ''}>Complete</option>
+          </select>
+        </label>
+      </div>
+      <label>Title<input name="title" value="${esc(post.title || '')}" required maxlength="120" /></label>
+      <label>Description<textarea name="description" rows="4" required maxlength="1200">${esc(post.description || '')}</textarea></label>
+      <div class="admin-form-grid admin-form-grid-simple">
+        <label>Name<input name="name" value="${esc(post.name || '')}" maxlength="80" ${anonymous ? 'disabled' : ''} /></label>
+        <label>Email<input type="email" name="email" value="${esc(post.email || '')}" required maxlength="160" /></label>
+      </div>
+      <label class="admin-check"><input type="checkbox" name="anonymous" ${anonymous ? 'checked' : ''} /> Post as anonymous</label>
+      <label>Reset PIN <span class="admin-field-note">(optional)</span><input name="newPassword" inputmode="numeric" pattern="\\d{4}" maxlength="4" placeholder="Leave blank to keep current PIN" /></label>
+      <div class="admin-editor-actions"><button class="button button-dark" type="submit">Save changes</button><output></output></div>
+      ` : '<p class="admin-empty">Choose Edit on a bulletin post below to change or remove it.</p>'}
+    </form>`;
+  }
+
+  function bindBulletinForm() {
+    const form = document.getElementById('adminBulletinForm');
+    if (!form || !form.id.value) return;
+    const anonymous = form.anonymous;
+    const nameInput = form.name;
+    anonymous?.addEventListener('change', () => {
+      nameInput.disabled = anonymous.checked;
+      if (anonymous.checked) nameInput.value = '';
+    });
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = form.querySelector('button[type="submit"]');
+      const output = form.querySelector('output');
+      button.disabled = true;
+      output.textContent = 'Saving…';
+      try {
+        const body = {
+          category: form.category.value,
+          title: form.title.value.trim(),
+          description: form.description.value.trim(),
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          anonymous: form.anonymous.checked,
+          status: form.status.value
+        };
+        const pin = form.newPassword.value.trim();
+        if (pin) body.newPassword = pin;
+        await post(`/api/bulletin/${form.id.value}/update`, body);
+        await loadAll();
+        section = 'bulletin';
+        renderBulletin(form.id.value);
+      } catch (error) {
+        output.textContent = error.message || 'Could not save bulletin post.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  function renderBulletin(editId) {
+    const editing = data.bulletin.find((post) => post.id === Number(editId));
+    content.innerHTML = bulletinForm(editing) + `<div class="admin-list-head"><h3>Bulletin posts</h3><span>${data.bulletin.length}</span></div><div class="admin-event-list">${data.bulletin.map((post) => `
+      <article class="admin-event-item admin-event-item-clean ${post.status === 'active' ? '' : 'is-draft'}">
+        <div>
+          <span class="eyebrow">${esc(post.categoryLabel || post.category)} · ${esc(post.status)}</span>
+          <h3>${esc(post.title)}</h3>
+          <p>${esc(post.anonymous ? 'Anonymous' : post.name)} · ${esc(post.email)} · ${post.interactionCount || 0} interested</p>
+        </div>
+        <div class="admin-item-actions">
+          <button class="button button-line" data-edit-bulletin="${post.id}">Edit</button>
+          <button class="button button-line" data-delete-bulletin="${post.id}">Remove</button>
+        </div>
+      </article>`).join('') || '<p class="admin-empty">No bulletin posts yet.</p>'}</div>`;
+    bindBulletinForm();
   }
 
   function formatTimelineDateLabel(value) {
@@ -440,6 +534,7 @@
       gallery: 'Gallery',
       timeline: 'Timeline',
       messages: 'Messages',
+      bulletin: 'Bulletin',
       newsletters: 'Newsletter'
     };
     title.textContent = labels[section] || 'Admin';
@@ -450,6 +545,7 @@
     else if (section === 'events') renderEvents();
     else if (section === 'gallery') renderGallery();
     else if (section === 'timeline') renderTimeline();
+    else if (section === 'bulletin') renderBulletin();
     else if (section === 'newsletters') renderNewsletter();
     else if (section === 'messages' || section === 'rsvp') renderMessages();
     else renderOverview();
@@ -482,10 +578,19 @@
     const editTl = event.target.closest('[data-edit-timeline]');
     if (editTl) { renderTimeline(editTl.dataset.editTimeline); return; }
     if (event.target.closest('[data-new-timeline]')) { renderTimeline(); return; }
+    const editBulletin = event.target.closest('[data-edit-bulletin]');
+    if (editBulletin) { renderBulletin(editBulletin.dataset.editBulletin); return; }
+    if (event.target.closest('[data-new-bulletin]')) { renderBulletin(); return; }
     const deleteTl = event.target.closest('[data-delete-timeline]');
     if (deleteTl && confirm('Remove this timeline card?')) {
       await post(`/api/timeline/${deleteTl.dataset.deleteTimeline}/delete`);
       await loadAll(); section = 'timeline'; render();
+      return;
+    }
+    const deleteBulletin = event.target.closest('[data-delete-bulletin]');
+    if (deleteBulletin && confirm('Permanently remove this bulletin post?')) {
+      await post(`/api/bulletin/${deleteBulletin.dataset.deleteBulletin}/delete`);
+      await loadAll(); section = 'bulletin'; render();
       return;
     }
     const deleteEvent = event.target.closest('[data-delete-event]');
