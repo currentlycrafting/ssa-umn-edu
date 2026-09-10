@@ -662,7 +662,7 @@ h2 {
   min-height: 0;
 }
 .event-card-body .event-read-more {
-  margin-top: 4px;
+  margin-top: -16px;
   transform: translateY(-2px);
 }
 .event-card h3 {
