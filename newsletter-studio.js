@@ -1,7 +1,7 @@
 (function () {
   const blocks = [
     { type: 'heading', text: '', required: true },
-    { type: 'paragraph', text: '', required: true },
+    emptyParagraph(true),
     { type: 'announcement', text: '', required: true }
   ];
   const polaroids = Array.from({ length: 2 }, () => ({ file: null, data: '', caption: '', src: '' }));
@@ -17,16 +17,92 @@
   const saveButton = form?.querySelector('button[type="submit"]');
   const passwordTitle = document.getElementById('studioPasswordTitle');
 
+  function emptyParagraph(required) {
+    return {
+      type: 'paragraph',
+      text: '',
+      html: '',
+      sideLeft: null,
+      sideRight: null,
+      pendingSide: null,
+      required: Boolean(required)
+    };
+  }
+
+  function emptySide() {
+    return { file: null, data: '', src: '', caption: '' };
+  }
+
   document.querySelectorAll('[data-add-block]').forEach((button) => {
     button.addEventListener('click', () => addBlock(button.dataset.addBlock));
   });
 
   function addBlock(type) {
-    const block = { type };
-    if (['heading', 'paragraph', 'announcement'].includes(type)) block.text = '';
-    if (type === 'image') { block.src = ''; block.caption = ''; block.pendingFile = null; block.pendingData = ''; }
-    blocks.push(block);
+    if (type === 'paragraph') blocks.push(emptyParagraph(false));
+    else if (['heading', 'announcement'].includes(type)) blocks.push({ type, text: '' });
+    else if (type === 'image') blocks.push({ type: 'image', src: '', caption: '', pendingFile: null, pendingData: '' });
     render();
+  }
+
+  function sideSlotMarkup(block, index, side) {
+    const slot = block[side];
+    const filled = Boolean(slot && (slot.data || slot.src));
+    const waiting = Boolean(block.pendingSide);
+    const label = side === 'sideLeft' ? 'Drop left' : 'Drop right';
+    if (filled) {
+      return `
+        <div class="studio-side-drop filled" data-side-drop="${index}" data-side="${side}">
+          <img src="${escapeHtml(slot.data || slot.src)}" alt="" />
+          <button type="button" class="studio-side-clear" data-side-clear="${index}" data-side="${side}">Remove</button>
+        </div>`;
+    }
+    if (waiting) {
+      return `
+        <div class="studio-side-drop is-target" data-side-drop="${index}" data-side="${side}">
+          <span>${label}</span>
+          <small>Drag the photo here</small>
+        </div>`;
+    }
+    if (block.sideLeft || block.sideRight) {
+      return `<div class="studio-side-slot is-spacer" aria-hidden="true"></div>`;
+    }
+    return `<div class="studio-side-slot is-empty" aria-hidden="true"></div>`;
+  }
+
+  function paragraphFields(block, index) {
+    const pending = block.pendingSide;
+    return `
+      <div class="studio-story-tools">
+        <div class="studio-format-bar" data-format-bar="${index}" role="toolbar" aria-label="Text formatting">
+          <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+          <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+          <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
+          <button type="button" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+        </div>
+        <div class="studio-image-stage" data-image-stage="${index}">
+          <label class="studio-add-image-btn">
+            <input type="file" accept="image/png,image/jpeg,image/webp" data-stage-upload="${index}" hidden />
+            <span>+ Add image</span>
+          </label>
+          ${pending ? `
+            <div class="studio-pending-photo" draggable="true" data-pending-drag="${index}" title="Drag to left or right">
+              <img src="${escapeHtml(pending.data)}" alt="" />
+              <span>Drag me left or right</span>
+              <button type="button" data-pending-cancel="${index}" aria-label="Cancel image">×</button>
+            </div>` : '<p class="studio-image-hint">Add a photo, then drag it to the left or right of the story.</p>'}
+        </div>
+      </div>
+      <div class="studio-story-layout ${pending ? 'is-placing' : ''} ${block.sideLeft || block.sideRight ? 'has-sides' : ''}">
+        ${sideSlotMarkup(block, index, 'sideLeft')}
+        <div
+          class="studio-rich-editor"
+          contenteditable="true"
+          role="textbox"
+          data-rich="${index}"
+          data-placeholder="Write the story paragraph here…"
+        >${block.html || escapeHtml(block.text || '').replace(/\n/g, '<br>')}</div>
+        ${sideSlotMarkup(block, index, 'sideRight')}
+      </div>`;
   }
 
   function render() {
@@ -34,8 +110,9 @@
     container.innerHTML = blocks.map((block, index) => {
       const required = block.required ? '<span class="studio-required">Required</span>' : `<button type="button" data-rm="${index}">Remove</button>`;
       let fields = '';
-      if (['heading', 'paragraph', 'announcement'].includes(block.type)) {
-        fields = `<textarea rows="${block.type === 'paragraph' ? 6 : 3}" data-i="${index}" data-f="text" placeholder="Write the ${labels[block.type].toLowerCase()} here…">${escapeHtml(block.text || '')}</textarea>`;
+      if (block.type === 'paragraph') fields = paragraphFields(block, index);
+      else if (['heading', 'announcement'].includes(block.type)) {
+        fields = `<textarea rows="3" data-i="${index}" data-f="text" placeholder="Write the ${labels[block.type].toLowerCase()} here…">${escapeHtml(block.text || '')}</textarea>`;
       } else if (block.type === 'image') {
         fields = `<label class="studio-inline-drop"><input type="file" accept="image/png,image/jpeg,image/webp" data-upload="${index}" />Drop or choose an image</label><input data-i="${index}" data-f="caption" placeholder="Photo caption" value="${escapeHtml(block.caption || '')}" />${block.pendingData || block.src ? `<img src="${block.pendingData || block.src}" alt="" />` : ''}`;
       }
@@ -54,6 +131,78 @@
     container.querySelectorAll('[data-upload]').forEach((input) => {
       input.addEventListener('change', () => stageBlockImage(Number(input.dataset.upload), input.files[0]));
     });
+    container.querySelectorAll('[data-rich]').forEach((editor) => {
+      const index = Number(editor.dataset.rich);
+      const sync = () => {
+        blocks[index].html = editor.innerHTML;
+        blocks[index].text = editor.innerText;
+      };
+      editor.addEventListener('input', sync);
+      editor.addEventListener('blur', sync);
+    });
+    container.querySelectorAll('[data-format-bar]').forEach((bar) => {
+      const index = Number(bar.dataset.formatBar);
+      const editor = container.querySelector(`[data-rich="${index}"]`);
+      bar.querySelectorAll('[data-cmd]').forEach((button) => {
+        button.addEventListener('mousedown', (event) => event.preventDefault());
+        button.addEventListener('click', () => {
+          editor?.focus();
+          document.execCommand(button.dataset.cmd, false, null);
+          button.classList.toggle('is-active', document.queryCommandState(button.dataset.cmd));
+          blocks[index].html = editor.innerHTML;
+          blocks[index].text = editor.innerText;
+        });
+      });
+    });
+    container.querySelectorAll('[data-stage-upload]').forEach((input) => {
+      input.addEventListener('change', () => stagePendingSide(Number(input.dataset.stageUpload), input.files[0]));
+    });
+    container.querySelectorAll('[data-pending-cancel]').forEach((button) => {
+      button.addEventListener('click', () => {
+        blocks[Number(button.dataset.pendingCancel)].pendingSide = null;
+        render();
+      });
+    });
+    container.querySelectorAll('[data-pending-drag]').forEach((chip) => {
+      const index = Number(chip.dataset.pendingDrag);
+      chip.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('text/ssa-side', String(index));
+        event.dataTransfer.effectAllowed = 'move';
+        chip.classList.add('is-dragging');
+        container.querySelector(`.studio-story-layout`)?.classList.add('is-placing');
+      });
+      chip.addEventListener('dragend', () => {
+        chip.classList.remove('is-dragging');
+      });
+    });
+    container.querySelectorAll('[data-side-drop]').forEach((slot) => {
+      slot.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        slot.classList.add('dragging');
+      });
+      slot.addEventListener('dragleave', () => slot.classList.remove('dragging'));
+      slot.addEventListener('drop', (event) => {
+        event.preventDefault();
+        slot.classList.remove('dragging');
+        const index = Number(slot.dataset.sideDrop);
+        const fromChip = event.dataTransfer.getData('text/ssa-side');
+        if (fromChip !== '') {
+          placePendingSide(index, slot.dataset.side);
+          return;
+        }
+        if (event.dataTransfer.files?.[0]) {
+          stageSideImage(index, slot.dataset.side, event.dataTransfer.files[0]);
+        }
+      });
+    });
+    container.querySelectorAll('[data-side-clear]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        blocks[Number(button.dataset.sideClear)][button.dataset.side] = null;
+        render();
+      });
+    });
   }
 
   async function stageBlockImage(index, file) {
@@ -61,6 +210,38 @@
     const data = await readFile(file);
     blocks[index].pendingFile = file;
     blocks[index].pendingData = data;
+    render();
+  }
+
+  async function stagePendingSide(index, file) {
+    if (!file || !blocks[index] || blocks[index].type !== 'paragraph') return;
+    blocks[index].pendingSide = {
+      file,
+      data: await readFile(file),
+      src: '',
+      caption: ''
+    };
+    render();
+  }
+
+  function placePendingSide(index, side) {
+    const block = blocks[index];
+    if (!block?.pendingSide) return;
+    block[side] = block.pendingSide;
+    block.pendingSide = null;
+    render();
+  }
+
+  async function stageSideImage(index, side, file) {
+    if (!file || !blocks[index] || blocks[index].type !== 'paragraph') return;
+    const data = await readFile(file);
+    blocks[index][side] = {
+      file,
+      data,
+      src: blocks[index][side]?.src || '',
+      caption: blocks[index][side]?.caption || ''
+    };
+    blocks[index].pendingSide = null;
     render();
   }
 
@@ -123,7 +304,16 @@
   function takeBlock(pool, type) {
     const index = pool.findIndex((block) => block.type === type);
     if (index >= 0) return pool.splice(index, 1)[0];
-    return { type, text: '' };
+    return type === 'paragraph' ? emptyParagraph(false) : { type, text: '' };
+  }
+
+  function normalizeParagraph(source, required) {
+    const block = emptyParagraph(required);
+    block.text = source.text || '';
+    block.html = source.html || '';
+    if (source.sideLeft?.src) block.sideLeft = { file: null, data: '', src: source.sideLeft.src, caption: source.sideLeft.caption || '' };
+    if (source.sideRight?.src) block.sideRight = { file: null, data: '', src: source.sideRight.src, caption: source.sideRight.caption || '' };
+    return block;
   }
 
   function applyEdition(newsletter) {
@@ -147,7 +337,7 @@
     const paragraph = takeBlock(pool, 'paragraph');
     const announcement = takeBlock(pool, 'announcement');
     blocks.push({ type: 'heading', text: heading.text || '', required: true });
-    blocks.push({ type: 'paragraph', text: paragraph.text || '', required: true });
+    blocks.push(normalizeParagraph(paragraph, true));
     blocks.push({ type: 'announcement', text: announcement.text || '', required: true });
     pool.forEach((block) => {
       if (block.type === 'image') {
@@ -158,7 +348,9 @@
           pendingFile: null,
           pendingData: ''
         });
-      } else if (['heading', 'paragraph', 'announcement'].includes(block.type)) {
+      } else if (block.type === 'paragraph') {
+        blocks.push(normalizeParagraph(block, false));
+      } else if (['heading', 'announcement'].includes(block.type)) {
         blocks.push({ type: block.type, text: block.text || '' });
       }
     });
@@ -193,8 +385,19 @@
     }
   }
 
+  function paragraphIsEmpty(block) {
+    const text = String(block.text || '').replace(/\u00a0/g, ' ').trim();
+    const html = String(block.html || '').replace(/<br\s*\/?>/gi, '').replace(/&nbsp;/gi, '').replace(/<[^>]+>/g, '').trim();
+    return !text && !html;
+  }
+
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    container.querySelectorAll('[data-rich]').forEach((editor) => {
+      const index = Number(editor.dataset.rich);
+      blocks[index].html = editor.innerHTML;
+      blocks[index].text = editor.innerText;
+    });
     if (!form.reportValidity()) return;
     if (polaroids.some((polaroid) => !polaroid.file && !polaroid.src)) {
       studioOut.textContent = 'Add both polaroid photos before saving.';
@@ -206,7 +409,15 @@
       document.querySelector('[data-polaroid-caption]:invalid')?.focus();
       return;
     }
-    const requiredEmpty = blocks.some((block) => block.required && !String(block.text || '').trim());
+    if (blocks.some((block) => block.type === 'paragraph' && block.pendingSide)) {
+      studioOut.textContent = 'Drag each staged story photo to the left or right before saving.';
+      return;
+    }
+    const requiredEmpty = blocks.some((block) => {
+      if (!block.required) return false;
+      if (block.type === 'paragraph') return paragraphIsEmpty(block);
+      return !String(block.text || '').trim();
+    });
     if (requiredEmpty) {
       studioOut.textContent = 'Complete each required newsletter section before saving.';
       return;
@@ -225,6 +436,14 @@
     if (event.key === 'Escape' && passwordModal.classList.contains('open')) closePasswordModal();
   });
 
+  async function resolveSide(side, password) {
+    if (!side) return null;
+    let src = side.src || '';
+    if (side.file) src = await upload(side.file, side.data, password);
+    if (!src) return null;
+    return { src, caption: String(side.caption || '').trim() };
+  }
+
   passwordForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const password = document.getElementById('studioPass').value;
@@ -241,16 +460,30 @@
         if (!src) continue;
         imageBlocks.push({ type: 'image', src, caption: String(polaroid.caption || '').trim() });
       }
+      const prepared = [];
       for (const block of blocks) {
         if (block.type === 'image' && block.pendingFile) {
           block.src = await upload(block.pendingFile, block.pendingData, password);
         }
+        if (block.type === 'paragraph') {
+          const sideLeft = await resolveSide(block.sideLeft, password);
+          const sideRight = await resolveSide(block.sideRight, password);
+          prepared.push({
+            type: 'paragraph',
+            text: String(block.text || '').trim(),
+            html: String(block.html || ''),
+            sideLeft,
+            sideRight
+          });
+          continue;
+        }
+        const { required, pendingFile, pendingData, sideLeft, sideRight, pendingSide, ...clean } = block;
+        prepared.push(clean);
       }
-      const cleanBlocks = [...blocks, ...imageBlocks].map(({ required, pendingFile, pendingData, ...block }) => block);
       const body = {
         password,
         title: document.getElementById('studioTitle').value.trim(),
-        blocks: cleanBlocks,
+        blocks: [...prepared, ...imageBlocks],
         published: true
       };
       if (editingId) body.id = editingId;

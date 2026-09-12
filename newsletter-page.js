@@ -2,13 +2,32 @@
   const archive = document.getElementById('nlArchive');
   const reader = document.getElementById('nlReader');
 
+  function sideFigure(side, rot) {
+    if (!side?.src) return '';
+    return `<figure class="nl-side-photo" style="--rot:${rot}deg"><img src="${escape(side.src)}" alt="${escape(side.caption || 'Story photo')}" /><figcaption>${escape(side.caption || '')}</figcaption></figure>`;
+  }
+
+  function paragraphHtml(block) {
+    const body = block.html
+      ? `<div class="nl-rich-text">${block.html}</div>`
+      : `<p>${escape(block.text)}</p>`;
+    const left = sideFigure(block.sideLeft, -2);
+    const right = sideFigure(block.sideRight, 2);
+    if (!left && !right) return `<section class="nl-block nl-paragraph">${body}</section>`;
+    return `<section class="nl-block nl-paragraph nl-paragraph-with-sides">
+      <div class="nl-side-col">${left || ''}</div>
+      <div class="nl-paragraph-main">${body}</div>
+      <div class="nl-side-col">${right || ''}</div>
+    </section>`;
+  }
+
   function renderBlocks(blocks) {
     const all = blocks || [];
     const hasPhotoPair = all.length >= 2 && all.slice(-2).every((block) => block.type === 'image');
     const content = hasPhotoPair ? all.slice(0, -2) : all;
     const renderBlock = (b) => {
       if (b.type === 'heading') return `<section class="nl-block nl-heading"><h2>${escape(b.text)}</h2></section>`;
-      if (b.type === 'paragraph') return `<section class="nl-block nl-paragraph"><p>${escape(b.text)}</p></section>`;
+      if (b.type === 'paragraph') return paragraphHtml(b);
       if (b.type === 'announcement') return `<aside class="nl-block nl-announcement"><span class="eyebrow">Announcement</span><p>${escape(b.text)}</p></aside>`;
       if (b.type === 'image') return `<figure class="nl-block polaroid visible nl-photo" style="--rot:-1.5deg"><img src="${escape(b.src)}" alt="${escape(b.caption || 'Newsletter photo')}" /><figcaption>${escape(b.caption || '')}</figcaption></figure>`;
       if (b.type === 'timeline') {

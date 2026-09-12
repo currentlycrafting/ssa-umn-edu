@@ -9,6 +9,8 @@
       id: 'whatsNewModal',
       storageKey: 'ssaWhatsNewNever',
       waitForChecklist: true,
+      // First visit is now a single checklist prompt; keep this guide opt-in only.
+      disabled: true,
       slides: [
         { eyebrow: 'Bulletin Board', title: 'Ask and you\'ll receive!', copy: 'The new SSA Bulletin Board is where students post for roommates, study groups, friends, and campus plans. It was added through suggestions by Nimo — pin a note, share your email, and connect.', href: '/bulletin', action: 'Open the bulletin' },
         { eyebrow: 'Timeline', title: 'SSA moments, sticky-note style.', copy: 'The timeline is now a scrapbook of sticky cards you can manage from admin — dates, stories, and links in one place. Scroll the year like a Pinterest board of what SSA has done so far.', href: '/timeline', action: 'Browse the timeline' },
@@ -26,7 +28,7 @@
       storageKey: 'ssaStudioGuideNever',
       waitForChecklist: false,
       slides: [
-        { eyebrow: 'Newsletter Studio', title: 'Build the edition as readers will see it.', copy: 'Start with a title, then fill the required heading, story paragraph, and announcement. What you write here is exactly what publishes to the newsletter page.' },
+        { eyebrow: 'Newsletter Studio', title: 'Build the edition as readers will see it.', copy: 'Start with a title, then fill the required heading, story paragraph, and announcement. Format text, add bullets, and drop side photos beside each story.' },
         { eyebrow: 'Photos', title: 'Add two polaroids with captions.', copy: 'Drop two photos into the slots under announcements. Write a real caption for each — readers see those captions under the polaroids.' },
         { eyebrow: 'Extra sections', title: 'Add more only if you need them.', copy: 'Use Heading, Paragraph, Announcement, or Image to extend the edition. Remove anything you do not want before saving.' },
         { eyebrow: 'Save', title: 'Password is only asked when you save.', copy: 'Click Save newsletter when the edition is ready. Enter the admin password once to upload photos and publish. You will then land on the live edition.' }
@@ -35,7 +37,7 @@
   };
 
   const config = isStudio ? guides.studio : guides.home;
-  if (localStorage.getItem(config.storageKey) === '1') return;
+  if (config.disabled || localStorage.getItem(config.storageKey) === '1') return;
 
   createGuide(config);
 

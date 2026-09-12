@@ -13,6 +13,14 @@ MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 DISPLAY_TZ = ZoneInfo("America/Chicago")
 
 BLOCK_TYPES = {"heading", "paragraph", "announcement", "image", "timeline", "game"}
+ALLOWED_RICH_TAGS = {"b", "strong", "i", "em", "u", "ul", "ol", "li", "br", "p", "span", "div"}
+ALLOWED_FONTS = {
+    "Georgia, serif",
+    '"Plus Jakarta Sans", sans-serif',
+    '"Caveat", cursive',
+    '"Times New Roman", Times, serif',
+    '"Courier New", monospace',
+}
 ARCADE_GAMES = {"daily"}
 
 
@@ -28,7 +36,50 @@ def is_admin(payload):
     return str(payload.get("password", "")) == ADMIN_PASSWORD
 
 
-# ---------------- newsletter CMS ----------------
+def _sanitize_html(value):
+    import re
+    html = str(value or "")[:8000]
+    # Strip scripts/styles and disallowed tags while keeping a small formatting subset.
+    html = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "", html)
+    html = re.sub(r"(?i)\son\w+\s*=\s*([\"']).*?\1", "", html)
+    html = re.sub(r"(?i)\son\w+\s*=\s*[^\s>]+", "", html)
+    html = re.sub(r"(?i)javascript:", "", html)
+
+    def replacer(match):
+        tag = match.group(1).lower()
+        closing = match.group(0).startswith("</")
+        name = tag.lstrip("/")
+        if name not in ALLOWED_RICH_TAGS:
+            return ""
+        if closing:
+            return f"</{name}>"
+        if name == "br":
+            return "<br>"
+        if name == "span":
+            style = ""
+            style_match = re.search(r"(?i)style\s*=\s*[\"']([^\"']*)[\"']", match.group(0))
+            if style_match:
+                safe_bits = []
+                for part in style_match.group(1).split(";"):
+                    bit = part.strip().lower()
+                    if bit.startswith("color:") or bit.startswith("font-family:") or bit.startswith("font-weight:") or bit.startswith("font-style:") or bit.startswith("text-decoration:"):
+                        safe_bits.append(part.strip())
+                if safe_bits:
+                    style = f' style="{"; ".join(safe_bits)}"'
+            return f"<span{style}>"
+        return f"<{name}>"
+
+    return re.sub(r"</?([a-z0-9]+)([^>]*)>", replacer, html)
+
+
+def _clean_side_image(value):
+    if not isinstance(value, dict):
+        return None
+    src = str(value.get("src", ""))[:500]
+    if not (src.startswith("/api/uploads/") or src.startswith("/uploads/") or src.startswith("/assets/")):
+        return None
+    return {"src": src, "caption": str(value.get("caption", ""))[:300]}
+
 
 def _clean_blocks(blocks):
     if not isinstance(blocks, list):
@@ -41,7 +92,21 @@ def _clean_blocks(blocks):
         if btype not in BLOCK_TYPES:
             continue
         item = {"type": btype}
-        if btype in ("heading", "paragraph", "announcement"):
+        if btype == "paragraph":
+            item["text"] = str(block.get("text", ""))[:4000]
+            item["html"] = _sanitize_html(block.get("html", ""))
+            font = str(block.get("font", "Georgia, serif"))[:80]
+            item["font"] = font if font in ALLOWED_FONTS else "Georgia, serif"
+            color = str(block.get("color", "#1f2430"))[:20]
+            item["color"] = color if color.startswith("#") and len(color) <= 9 else "#1f2430"
+            item["indent"] = bool(block.get("indent"))
+            left = _clean_side_image(block.get("sideLeft"))
+            right = _clean_side_image(block.get("sideRight"))
+            if left:
+                item["sideLeft"] = left
+            if right:
+                item["sideRight"] = right
+        elif btype in ("heading", "announcement"):
             item["text"] = str(block.get("text", ""))[:4000]
         elif btype == "image":
             src = str(block.get("src", ""))[:500]
@@ -356,9 +421,12 @@ def delete_event(event_id, payload):
     if not is_admin(payload):
         return 401, {"error": "Invalid password."}
     with db() as cur:
-        cur.execute("UPDATE events SET published = FALSE, updated_at = %s WHERE id = %s", (utcnow(), event_id))
-        if cur.rowcount == 0:
+        cur.execute("SELECT rsvp_key FROM events WHERE id = %s", (event_id,))
+        row = cur.fetchone()
+        if not row:
             return 404, {"error": "Event not found."}
+        cur.execute("DELETE FROM rsvp_interest WHERE event_name = %s", (row["rsvp_key"],))
+        cur.execute("DELETE FROM events WHERE id = %s", (event_id,))
     return 200, {"ok": True}
 
 

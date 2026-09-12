@@ -179,7 +179,7 @@ async function loadHomeSuggestions() {
   if (!host) return;
   try {
     const data = await getJson('/api/event-suggestions');
-    const items = (data.items || []).slice(0, 2);
+    const items = (data.items || []).slice(0, 4);
     if (!items.length) {
       host.innerHTML = '<p class="home-suggest-empty">No ideas yet — be the first to suggest an event.</p>';
       return;
@@ -200,38 +200,105 @@ async function loadHomeSuggestions() {
 }
 loadHomeSuggestions();
 
-async function loadHomeBulletinHot() {
-  const host = document.getElementById('homeBulletinHot');
+async function loadHomeNewsletterSnap() {
+  const host = document.getElementById('homeNewsletterSnap');
   if (!host) return;
   const head = host.querySelector('.home-upcoming-cell-head')?.outerHTML
-    || `<div class="home-upcoming-cell-head"><span class="eyebrow">Bulletin board</span><a href="/bulletin">Board →</a></div>`;
+    || `<div class="home-upcoming-cell-head"><span class="eyebrow">Newsletter</span><a href="/newsletter">Read →</a></div>`;
+  try {
+    const data = await getJson('/api/newsletters');
+    const edition = (data.newsletters || [])[0];
+    if (!edition) {
+      host.innerHTML = `${head}<p class="home-newsletter-empty">The first edition is on the way.</p>`;
+      return;
+    }
+    const cover = edition.cover
+      ? `<img src="${escapeHtml(edition.cover)}" alt="" loading="lazy" />`
+      : '<span class="home-nl-placeholder" aria-hidden="true">SSA</span>';
+    host.innerHTML = `${head}
+      <a class="home-nl-snap" href="/newsletter?edition=${edition.id}">
+        <figure class="home-nl-polaroid" style="--rot:-2deg">${cover}</figure>
+        <div>
+          <span class="eyebrow">Latest edition</span>
+          <h3>${escapeHtml(edition.title)}</h3>
+          <p>${escapeHtml(String(edition.createdAt || '').slice(0, 10))}</p>
+        </div>
+      </a>`;
+  } catch (_) {
+    host.innerHTML = `${head}<p class="home-newsletter-empty">Could not load the newsletter right now.</p>`;
+  }
+}
+loadHomeNewsletterSnap();
+
+async function loadHomeArcadeBoard() {
+  const host = document.getElementById('homeArcadeBoard');
+  if (!host) return;
+  try {
+    const data = await getJson('/api/leaderboard');
+    const scores = (data.scores || []).slice(0, 5);
+    if (!scores.length) {
+      host.innerHTML = '<p class="home-explore-empty">No Soo Xidh scores yet — be first on the board.</p>';
+      return;
+    }
+    host.innerHTML = `<ol class="home-arcade-list">${scores.map((row, index) => {
+      const total = Math.max(0, Math.round(Number(row.seconds) || 0));
+      const time = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+      const mistakes = Number(row.mistakes) || 0;
+      return `<li><span>${index + 1}. ${escapeHtml(row.name || 'Player')}</span><strong>${mistakes} miss · ${time}</strong></li>`;
+    }).join('')}</ol>`;
+  } catch (_) {
+    host.innerHTML = '<p class="home-explore-empty">Leaderboard unavailable right now.</p>';
+  }
+}
+loadHomeArcadeBoard();
+
+async function loadHomeAuxNow() {
+  const host = document.getElementById('homeAuxNow');
+  if (!host) return;
+  try {
+    const data = await getJson('/api/aux/state');
+    const np = data.nowPlaying;
+    if (!data.djConnected || !np) {
+      host.innerHTML = '<p class="home-explore-empty">Nothing playing yet — open Want the Aux when the DJ is live.</p>';
+      return;
+    }
+    host.innerHTML = `<div class="home-aux-now">
+      <img src="${escapeHtml(np.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
+      <div>
+        <span class="eyebrow">Now playing</span>
+        <h4>${escapeHtml(np.songName || 'Unknown track')}</h4>
+        <p>${escapeHtml(np.artist || '')}</p>
+      </div>
+    </div>`;
+  } catch (_) {
+    host.innerHTML = '<p class="home-explore-empty">Could not load the live queue.</p>';
+  }
+}
+loadHomeAuxNow();
+
+async function loadHomeBulletinPreview() {
+  const host = document.getElementById('homeBulletinPreview');
+  if (!host) return;
   try {
     const data = await getJson('/api/bulletin?status=active');
     const posts = (data.posts || [])
       .filter((post) => post.status !== 'complete')
-      .sort((a, b) => (Number(b.interactionCount) || 0) - (Number(a.interactionCount) || 0));
-    const top = posts[0];
-    if (!top) {
-      host.innerHTML = `${head}<p class="home-bulletin-empty">Nothing pinned yet — be the first to post.</p>`;
+      .slice(0, 3);
+    if (!posts.length) {
+      host.innerHTML = '<p class="home-explore-empty">No active posts yet — be the first to pin one.</p>';
       return;
     }
-    const interest = Number(top.interactionCount) || 0;
-    host.innerHTML = `${head}
-      <div class="home-bulletin-hot">
-        <span class="bulletin-badge bulletin-badge--${escapeHtml(top.category)}">${escapeHtml(top.categoryLabel || top.category)}</span>
-        <h3>${escapeHtml(top.title)}</h3>
-        <p>${escapeHtml(top.description)}</p>
-        <div class="home-bulletin-hot-meta">
-          <span>${escapeHtml(top.name || 'Anonymous')}</span>
-          <span>${interest} interested</span>
-        </div>
-        <a class="button button-line handdrawn" href="/bulletin">Open the board</a>
-      </div>`;
+    host.innerHTML = posts.map((post) =>
+      `<article class="home-bulletin-mini">
+        <span class="bulletin-badge bulletin-badge--${escapeHtml(post.category)}">${escapeHtml(post.categoryLabel || post.category)}</span>
+        <h4>${escapeHtml(post.title)}</h4>
+      </article>`
+    ).join('');
   } catch (_) {
-    host.innerHTML = `${head}<p class="home-bulletin-empty">Could not load the bulletin right now.</p>`;
+    host.innerHTML = '<p class="home-explore-empty">Could not load bulletin posts.</p>';
   }
 }
-loadHomeBulletinHot();
+loadHomeBulletinPreview();
 
 function newsletterSubscribed() {
   return localStorage.getItem('ssaNewsletterSubscribed') === '1';

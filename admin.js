@@ -27,6 +27,47 @@
     return api(url, { method: 'POST', body: { password, ...body }, timeout: 30000 });
   }
 
+  function askConfirm({ title, copy, confirmLabel }) {
+    const modal = document.getElementById('adminConfirmModal');
+    const titleEl = document.getElementById('adminConfirmTitle');
+    const copyEl = document.getElementById('adminConfirmCopy');
+    const yesBtn = document.getElementById('adminConfirmYes');
+    const noBtn = document.getElementById('adminConfirmNo');
+    const closeBtn = document.getElementById('adminConfirmClose');
+    if (!modal || !yesBtn || !noBtn) {
+      return Promise.resolve(window.confirm(copy || title || 'Are you sure?'));
+    }
+    titleEl.textContent = title || 'Are you sure?';
+    copyEl.textContent = copy || 'This cannot be undone.';
+    yesBtn.textContent = confirmLabel || 'Yes';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    return new Promise((resolve) => {
+      const finish = (value) => {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+        yesBtn.removeEventListener('click', onYes);
+        noBtn.removeEventListener('click', onNo);
+        closeBtn?.removeEventListener('click', onNo);
+        modal.removeEventListener('click', onBackdrop);
+        document.removeEventListener('keydown', onKey);
+        resolve(value);
+      };
+      const onYes = () => finish(true);
+      const onNo = () => finish(false);
+      const onBackdrop = (event) => { if (event.target === modal) finish(false); };
+      const onKey = (event) => { if (event.key === 'Escape') finish(false); };
+      yesBtn.addEventListener('click', onYes);
+      noBtn.addEventListener('click', onNo);
+      closeBtn?.addEventListener('click', onNo);
+      modal.addEventListener('click', onBackdrop);
+      document.addEventListener('keydown', onKey);
+      yesBtn.focus();
+    });
+  }
+
   async function loadAll() {
     const admin = await post('/api/admin');
     gate.hidden = true;
@@ -582,31 +623,36 @@
     if (editBulletin) { renderBulletin(editBulletin.dataset.editBulletin); return; }
     if (event.target.closest('[data-new-bulletin]')) { renderBulletin(); return; }
     const deleteTl = event.target.closest('[data-delete-timeline]');
-    if (deleteTl && confirm('Remove this timeline card?')) {
+    if (deleteTl) {
+      if (!(await askConfirm({ title: 'Remove this timeline card?', copy: 'This permanently deletes the timeline card.', confirmLabel: 'Yes, remove' }))) return;
       await post(`/api/timeline/${deleteTl.dataset.deleteTimeline}/delete`);
       await loadAll(); section = 'timeline'; render();
       return;
     }
     const deleteBulletin = event.target.closest('[data-delete-bulletin]');
-    if (deleteBulletin && confirm('Permanently remove this bulletin post?')) {
+    if (deleteBulletin) {
+      if (!(await askConfirm({ title: 'Remove this bulletin post?', copy: 'This permanently deletes the post from the board.', confirmLabel: 'Yes, remove' }))) return;
       await post(`/api/bulletin/${deleteBulletin.dataset.deleteBulletin}/delete`);
       await loadAll(); section = 'bulletin'; render();
       return;
     }
     const deleteEvent = event.target.closest('[data-delete-event]');
-    if (deleteEvent && confirm('Remove this event from the public calendar?')) {
+    if (deleteEvent) {
+      if (!(await askConfirm({ title: 'Are you sure?', copy: 'This permanently deletes the event from the calendar and database.', confirmLabel: 'Yes, remove' }))) return;
       await post(`/api/events/${deleteEvent.dataset.deleteEvent}/delete`);
       await loadAll(); section = 'events'; render();
       return;
     }
     const deletePhoto = event.target.closest('[data-delete-photo]');
-    if (deletePhoto && confirm('Permanently remove this photo?')) {
+    if (deletePhoto) {
+      if (!(await askConfirm({ title: 'Remove this photo?', copy: 'This permanently deletes the photo from the gallery.', confirmLabel: 'Yes, remove' }))) return;
       await post(`/api/gallery/${deletePhoto.dataset.deletePhoto}/delete`);
       await loadAll(); section = 'gallery'; render();
       return;
     }
     const deleteEdition = event.target.closest('[data-delete-edition]');
-    if (deleteEdition && confirm('Permanently delete this newsletter edition?')) {
+    if (deleteEdition) {
+      if (!(await askConfirm({ title: 'Delete this newsletter?', copy: 'This permanently deletes the edition.', confirmLabel: 'Yes, delete' }))) return;
       await post(`/api/newsletters/${deleteEdition.dataset.deleteEdition}/delete`);
       await loadAll(); section = 'newsletters'; render();
     }

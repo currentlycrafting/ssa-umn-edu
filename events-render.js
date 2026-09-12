@@ -69,10 +69,12 @@
           <span class="eyebrow">Featured Event</span>
           <h3>${esc(event.title)}</h3>
           <p class="featured-location">${esc(displayDate(event))}</p>
-          <p class="featured-copy event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
-          <button class="event-read-more" type="button" hidden>Read more</button>
           ${event.startsAt ? `<div class="featured-countdown" id="cmsFeaturedCountdown" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
           <p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>
+          <div class="event-copy-stack">
+            <p class="featured-copy event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
+            <button class="event-read-more" type="button" hidden>Read more</button>
+          </div>
         </div>
         <div class="featured-event-actions">
           <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
@@ -94,8 +96,10 @@
       <div class="event-card-body">
         <span class="event-date">${esc(short)}${time ? ` · ${esc(time)}` : ''}</span>
         <h3>${esc(event.title)}</h3>
-        <p class="event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
-        <button class="event-read-more" type="button" hidden>Read more</button>
+        <div class="event-copy-stack">
+          <p class="event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
+          <button class="event-read-more" type="button" hidden>Read more</button>
+        </div>
       </div>
       <div class="event-card-actions">
         <button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
@@ -200,10 +204,10 @@
 
   function enhanceEventCopy() {
     const apply = () => {
-      document.querySelectorAll('.event-card-copy.is-clamped, .featured-copy.event-card-copy.is-clamped').forEach((copy) => {
-        if (copy.dataset.readMoreBound === '1') return;
-        const button = copy.parentElement?.querySelector(':scope > .event-read-more');
-        if (!button) return;
+      document.querySelectorAll('.event-copy-stack').forEach((stack) => {
+        const copy = stack.querySelector('.event-card-copy');
+        const button = stack.querySelector(':scope > .event-read-more');
+        if (!copy || !button || copy.dataset.readMoreBound === '1') return;
         const overflows = copy.scrollHeight > copy.clientHeight + 1;
         button.hidden = !overflows;
         if (!overflows) return;

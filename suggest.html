@@ -31,19 +31,19 @@
     </header>
 
     <form id="suggestForm" class="suggest-flow" novalidate>
-      <section class="suggest-step is-active" data-step="name" aria-labelledby="suggestNameTitle">
+      <section class="suggest-step is-active" data-step="idea" aria-labelledby="suggestIdeaTitle">
         <span class="suggest-step-num">01</span>
+        <h2 id="suggestIdeaTitle">What would this event be about?</h2>
+        <p>Tell us what you want SSA to do — the vibe, the moment, the why.</p>
+        <textarea class="suggest-input suggest-textarea" name="description" id="suggestIdea" rows="5" placeholder="Imagine the night: who shows up, what happens, why it matters…" maxlength="1200" required></textarea>
+        <button class="button button-dark handdrawn suggest-continue" type="button" data-continue="name">Continue</button>
+      </section>
+
+      <section class="suggest-step" data-step="name" hidden aria-labelledby="suggestNameTitle">
+        <span class="suggest-step-num">02</span>
         <h2 id="suggestNameTitle">What&apos;s the event called?</h2>
         <p>Give it a name students would recognize on a poster.</p>
         <input class="suggest-input" type="text" name="name" id="suggestName" placeholder="Freshman Mixer, Culture Night, Study Jam…" maxlength="120" required autocomplete="off" />
-        <button class="button button-dark handdrawn suggest-continue" type="button" data-continue="idea">Continue</button>
-      </section>
-
-      <section class="suggest-step" data-step="idea" hidden aria-labelledby="suggestIdeaTitle">
-        <span class="suggest-step-num">02</span>
-        <h2 id="suggestIdeaTitle">What&apos;s your idea?</h2>
-        <p>Tell us what you want SSA to do — the vibe, the moment, the why.</p>
-        <textarea class="suggest-input suggest-textarea" name="description" id="suggestIdea" rows="5" placeholder="Imagine the night: who shows up, what happens, why it matters…" maxlength="1200" required></textarea>
         <button class="button button-dark handdrawn suggest-continue" type="button" data-continue="fun">Continue</button>
       </section>
 
@@ -80,7 +80,7 @@
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
   <script src="/motion.js"></script>
   <script src="/nav.js?v=13"></script>
-  <script src="/checklist.js?v=6"></script>
+  <script src="/checklist.js?v=8"></script>
   <script src="/suggest.js?v=2"></script>
 </body>
 </html>

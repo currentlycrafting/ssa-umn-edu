@@ -18,8 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=20" />
-  <link rel="stylesheet" href="site-pages.css?v=22" />
+  <link rel="stylesheet" href="index.css?v=21" />
+  <link rel="stylesheet" href="site-pages.css?v=25" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -92,7 +92,7 @@
       <div class="section-head" id="featuredSectionHead">
         <span class="eyebrow">Upcoming</span>
         <h2>What&apos;s happening next</h2>
-        <p>Next event, fresh ideas, the hottest bulletin post, and a peek at the album — all in one place.</p>
+        <p>Next event, fresh ideas, the latest newsletter, and a peek at the album — all in one place.</p>
       </div>
 
       <div class="home-upcoming-grid">
@@ -108,12 +108,12 @@
           </div>
         </article>
 
-        <article class="home-upcoming-cell home-upcoming-bulletin" id="homeBulletinHot" aria-live="polite">
+        <article class="home-upcoming-cell home-upcoming-newsletter" id="homeNewsletterSnap" aria-live="polite">
           <div class="home-upcoming-cell-head">
-            <span class="eyebrow">Bulletin board</span>
-            <a href="/bulletin">Board →</a>
+            <span class="eyebrow">Newsletter</span>
+            <a href="/newsletter">Read →</a>
           </div>
-          <p class="home-bulletin-empty">Loading posts…</p>
+          <p class="home-newsletter-empty">Loading edition…</p>
         </article>
 
         <article class="home-upcoming-cell home-upcoming-album">
@@ -131,12 +131,73 @@
         <a class="button button-dark handdrawn" href="/events">Events</a>
         <a class="button button-dark handdrawn" href="/suggest">Suggest an Event</a>
         <a class="button button-dark handdrawn" href="/gallery">Photo Album</a>
-        <a class="button button-dark handdrawn" href="/bulletin">Bulletin</a>
         <a class="button button-dark handdrawn" href="/newsletter">Newsletter</a>
         <a class="button button-dark handdrawn" href="/aux">Want the Aux</a>
         <button class="button button-line handdrawn" type="button" id="homeNewsletterOpen">Subscribe</button>
         <button class="button button-line handdrawn" type="button" data-open-outreach>Other ways to reach us</button>
       </nav>
+    </section>
+
+    <section class="section home-explore" id="explore">
+      <div class="section-head">
+        <span class="eyebrow">Explore</span>
+        <h2>Everything else SSA offers</h2>
+        <p>Games, music, the bulletin, board, timeline, and ways to get involved — same layout, more of campus life.</p>
+      </div>
+      <div class="home-upcoming-grid home-explore-grid">
+        <article class="home-upcoming-cell home-explore-cell" id="homeExploreArcade">
+          <div class="home-upcoming-cell-head">
+            <span class="eyebrow">Games</span>
+            <a href="/connections">Soo Xidh →</a>
+          </div>
+          <h3>SSA arcade</h3>
+          <div class="home-explore-live" id="homeArcadeBoard">
+            <p class="home-explore-empty">Loading Soo Xidh scores…</p>
+          </div>
+        </article>
+        <article class="home-upcoming-cell home-explore-cell" id="homeExploreAux">
+          <div class="home-upcoming-cell-head">
+            <span class="eyebrow">Want the Aux</span>
+            <a href="/aux">Queue →</a>
+          </div>
+          <h3>Live music queue</h3>
+          <div class="home-explore-live" id="homeAuxNow">
+            <p class="home-explore-empty">Checking what’s playing…</p>
+          </div>
+        </article>
+        <article class="home-upcoming-cell home-explore-cell" id="homeExploreBulletin">
+          <div class="home-upcoming-cell-head">
+            <span class="eyebrow">Bulletin</span>
+            <a href="/bulletin">Board →</a>
+          </div>
+          <h3>Community board</h3>
+          <div class="home-explore-live" id="homeBulletinPreview">
+            <p class="home-explore-empty">Loading posts…</p>
+          </div>
+        </article>
+        <article class="home-upcoming-cell home-explore-cell home-explore-board" id="homeExploreBoard">
+          <div class="home-upcoming-cell-head">
+            <span class="eyebrow">Board</span>
+            <a href="/board">Meet →</a>
+          </div>
+          <h3>Leadership</h3>
+          <div class="home-board-snap" id="homeBoardSnap" aria-label="Leadership snapshot">
+            <article class="board-card home-board-card">
+              <span class="board-role">President</span>
+              <h3>Salman Said</h3>
+            </article>
+            <article class="board-card home-board-card">
+              <span class="board-role">Internal VP</span>
+              <h3>Suhaila Osman</h3>
+            </article>
+            <article class="board-card home-board-card">
+              <span class="board-role">External VP</span>
+              <h3>Ruweyda Warsame</h3>
+            </article>
+          </div>
+          <a class="button button-dark handdrawn home-board-view" href="/board">View entire board</a>
+        </article>
+      </div>
     </section>
 
     <section class="section stats" id="demo">
@@ -278,13 +339,13 @@
   <script src="motion.js"></script>
   <script src="nav.js?v=13"></script>
   <script src="micro.js?v=2"></script>
-  <script src="checklist.js?v=6"></script>
+  <script src="checklist.js?v=8"></script>
   <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=13"></script>
+  <script src="/events-render.js?v=14"></script>
   <script src="/rsvp.js?v=2"></script>
-  <script src="index.js?v=15"></script>
+  <script src="index.js?v=17"></script>
   <script src="/outreach.js?v=4"></script>
-  <script src="/whats-new.js?v=7"></script>
+  <script src="/whats-new.js?v=8"></script>
   <script>
     document.getElementById('homeNewsletterOpen')?.addEventListener('click', () => {
       window.openNewsletterModal?.(true);

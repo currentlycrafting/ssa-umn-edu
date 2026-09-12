@@ -62,17 +62,17 @@
   form.querySelectorAll('[data-continue]').forEach((button) => {
     button.addEventListener('click', () => {
       const next = button.dataset.continue;
-      if (next === 'idea') {
-        if (nameInput.value.trim().length < 2) {
-          nameInput.focus();
+      if (next === 'name') {
+        if (ideaInput.value.trim().length < 4) {
+          ideaInput.focus();
           return;
         }
-        reveal('idea');
+        reveal('name');
         return;
       }
       if (next === 'fun') {
-        if (ideaInput.value.trim().length < 4) {
-          ideaInput.focus();
+        if (nameInput.value.trim().length < 2) {
+          nameInput.focus();
           return;
         }
         reveal('fun');
@@ -80,10 +80,17 @@
     });
   });
 
+  ideaInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      form.querySelector('[data-continue="name"]')?.click();
+    }
+  });
+
   nameInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      form.querySelector('[data-continue="idea"]')?.click();
+      form.querySelector('[data-continue="fun"]')?.click();
     }
   });
 
@@ -166,5 +173,5 @@
     }
   });
 
-  window.setTimeout(() => nameInput.focus(), 200);
+  window.setTimeout(() => ideaInput.focus(), 200);
 })();
