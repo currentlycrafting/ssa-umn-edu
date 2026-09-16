@@ -485,7 +485,7 @@ class SSAHandler(SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "text/calendar; charset=utf-8")
             self.send_header(
                 "Content-Disposition",
-                f'attachment; filename="ssa-event-{event["id"]}.ics"',
+                f'inline; filename="ssa-event-{event["id"]}.ics"',
             )
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()

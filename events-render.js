@@ -68,12 +68,13 @@
 
   function calendarButton(event, options = {}) {
     if (!event.id || isPast(event)) return '';
-    const ics = `/api/events/${event.id}/ics`;
+    const icsUrl = new URL(`/api/events/${event.id}/ics`, window.location.origin);
+    const appleCal = icsUrl.href.replace(/^https?:/i, 'webcal:');
     const featured = options.featured;
     const classes = featured
       ? 'button button-dark handdrawn calendar-button'
       : 'micro-button calendar-button';
-    return `<a class="${classes}" href="${esc(ics)}" download>Add to calendar</a>`;
+    return `<a class="${classes}" href="${esc(appleCal)}">Add to calendar</a>`;
   }
 
   function featuredMarkup(event, options = {}) {
