@@ -66,15 +66,31 @@
       .map((event) => ({ ...event, featured: false, past: true }));
   }
 
+  function googleCalendarUrl(event) {
+    if (!event.startsAt) return '';
+    const start = new Date(event.startsAt);
+    if (Number.isNaN(start.getTime())) return '';
+    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    const stamp = (date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: event.title || 'SSA Event',
+      dates: `${stamp(start)}/${stamp(end)}`,
+      details: event.description || '',
+      location: event.location || ''
+    });
+    return `https://calendar.google.com/calendar/render?${params}`;
+  }
+
   function calendarButton(event, options = {}) {
-    if (!event.id || isPast(event)) return '';
-    const icsUrl = new URL(`/api/events/${event.id}/ics`, window.location.origin);
-    const appleCal = icsUrl.href.replace(/^https?:/i, 'webcal:');
+    if (isPast(event) || !event.startsAt) return '';
+    const googleCal = googleCalendarUrl(event);
+    if (!googleCal) return '';
     const featured = options.featured;
     const classes = featured
       ? 'button button-dark handdrawn calendar-button'
       : 'micro-button calendar-button';
-    return `<a class="${classes}" href="${esc(appleCal)}">Add to calendar</a>`;
+    return `<a class="${classes}" href="${esc(googleCal)}" target="_blank" rel="noopener">Add to calendar</a>`;
   }
 
   function featuredMarkup(event, options = {}) {

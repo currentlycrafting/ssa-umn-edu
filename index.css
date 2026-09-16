@@ -734,6 +734,16 @@ h2 {
   text-align: center;
   text-decoration: none;
 }
+.event-calendar-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+.event-calendar-split .calendar-button {
+  width: 100%;
+  min-width: 0;
+}
 .event-grid {
   align-items: stretch;
 }
@@ -3528,6 +3538,9 @@ html.reduce-motion .hero-center { opacity: 1 !important; }
   text-decoration: none;
   box-sizing: border-box;
 }
+.featured-event-actions .event-calendar-split {
+  width: min(100%, 280px);
+}
 a.calendar-button.micro-button,
 a.calendar-button.button {
   display: inline-flex;
@@ -3591,25 +3604,6 @@ a.calendar-button.micro-button:hover {
   padding: 0 18px;
   flex: 0 0 auto;
 }
-.notify-prompt {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: calc(16px + env(safe-area-inset-bottom));
-  z-index: 50;
-  display: grid;
-  gap: 12px;
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: var(--surface);
-  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-  box-shadow: var(--shadow-soft);
-}
-.notify-prompt p { margin: 0; font-weight: 700; }
-.notify-prompt > div { display: flex; gap: 8px; flex-wrap: wrap; }
-.notify-prompt .button { min-height: 44px; }
 .feedback-stars div { display: flex; flex-wrap: wrap; gap: 8px; }
 .feedback-stars label span {
   min-width: 44px;

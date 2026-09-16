@@ -120,6 +120,7 @@
 .featured-event-actions { margin-top: auto; padding-top: 12px; flex: 0 0 auto; display: grid; gap: 10px; justify-items: start; }
 .featured-event-actions .button,
 .featured-event-actions .calendar-button { width: min(100%, 280px); }
+.featured-event-actions .event-calendar-split { width: min(100%, 280px); }
 .featured-event-body h3 { margin: 0 0 4px; font-size: clamp(28px, 5vw, 44px); letter-spacing: -.04em; }
 .featured-location { font-weight: 850; color: var(--accent); margin: 0; }
 .featured-copy { color: var(--muted); line-height: 1.65; margin: 0; font-size: 15px; }
