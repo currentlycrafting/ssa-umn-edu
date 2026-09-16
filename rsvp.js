@@ -3,6 +3,8 @@
   const modal = document.getElementById('rsvpModal');
   const form = document.getElementById('rsvpForm');
   const quickForm = document.getElementById('quickRsvpForm');
+  const feedbackModal = document.getElementById('feedbackModal');
+  const feedbackForm = document.getElementById('feedbackForm');
   const title = document.getElementById('rsvpTitle');
   const meta = document.getElementById('rsvpMeta');
   const modalCount = document.getElementById('rsvpModalCount');
@@ -99,6 +101,12 @@
     });
   }
 
+  function syncBringFriend(targetForm) {
+    const checked = targetForm.querySelector('[name="bringFriend"]')?.checked;
+    const friendField = targetForm.querySelector('.rsvp-friend-name');
+    if (friendField) friendField.hidden = !checked;
+  }
+
   function renderAttendees(data) {
     const attendees = data?.attendees || [];
     const count = Number(data?.count) || 0;
@@ -148,11 +156,14 @@
     form.reset();
     quickForm.reset();
     syncEligibility();
+    syncBringFriend(form);
+    syncBringFriend(quickForm);
     form.event.value = eventName;
     form.date.value = eventDate;
     quickForm.event.value = eventName;
     quickForm.date.value = eventDate;
     form.querySelector('output').textContent = '';
+    quickForm.querySelector('output').textContent = '';
     title.textContent = eventName;
     meta.textContent = eventDate;
     eyebrow.hidden = false;
@@ -183,9 +194,19 @@
     }
   }
 
-  Array.from(form.elements.isStudent).forEach((input) => {
+  function partyPayload(targetForm) {
+    return {
+      bringFriend: Boolean(targetForm.elements.bringFriend?.checked),
+      friendName: targetForm.elements.friendName?.value?.trim() || '',
+      guestToken: guestToken()
+    };
+  }
+
+  Array.from(form.elements.isStudent || []).forEach((input) => {
     input.addEventListener('change', syncEligibility);
   });
+  form.querySelector('[name="bringFriend"]')?.addEventListener('change', () => syncBringFriend(form));
+  quickForm.querySelector('[name="bringFriend"]')?.addEventListener('change', () => syncBringFriend(quickForm));
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -200,6 +221,7 @@
       output.textContent = 'You must be a U of MN student or at least 18 years old to RSVP.';
       return;
     }
+    const extras = partyPayload(form);
     const submit = form.querySelector('button[type="submit"]');
     submit.disabled = true;
     try {
@@ -211,7 +233,8 @@
           date: form.date.value,
           name: form.name.value.trim(),
           isStudent,
-          isOver18
+          isOver18,
+          ...extras
         }
       });
       saveRsvp(eventName);
@@ -233,6 +256,8 @@
         closeModal();
         return;
       }
+      const extras = partyPayload(quickForm);
+      const output = quickForm.querySelector('output');
       quickForm.querySelectorAll('button').forEach((item) => { item.disabled = true; });
       try {
         const eventName = quickForm.event.value;
@@ -242,7 +267,7 @@
             event: eventName,
             date: quickForm.date.value,
             coming: true,
-            guestToken: guestToken()
+            ...extras
           }
         });
         saveRsvp(eventName);
@@ -251,23 +276,80 @@
         window.markChecklistStep?.('events', 'Event response saved. Events step complete.');
         renderAttendees(data);
       } catch (error) {
-        quickForm.querySelector('output').textContent = error.message || 'Could not save your response.';
+        output.textContent = error.message || 'Could not save your response.';
       } finally {
         quickForm.querySelectorAll('button').forEach((item) => { item.disabled = false; });
       }
     });
   });
 
+  function openFeedback(button) {
+    if (!feedbackModal || !feedbackForm) return;
+    feedbackForm.reset();
+    feedbackForm.event.value = button.dataset.event || '';
+    feedbackForm.querySelector('output').textContent = '';
+    const heading = document.getElementById('feedbackTitle');
+    if (heading) heading.textContent = button.dataset.eventTitle || 'How was it?';
+    feedbackModal.classList.add('open');
+    feedbackModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeFeedback() {
+    if (!feedbackModal) return;
+    feedbackModal.classList.remove('open');
+    feedbackModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  feedbackForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const output = feedbackForm.querySelector('output');
+    const rating = Number(feedbackForm.elements.rating.value);
+    const comment = feedbackForm.comment.value.trim();
+    if (!rating) {
+      output.textContent = 'Pick a star rating.';
+      return;
+    }
+    const submit = feedbackForm.querySelector('button[type="submit"]');
+    submit.disabled = true;
+    try {
+      await api('/api/event-feedback', {
+        method: 'POST',
+        body: {
+          event: feedbackForm.event.value,
+          rating,
+          comment,
+          guestToken: guestToken()
+        }
+      });
+      output.textContent = 'Thanks — that helps us plan the next one.';
+      window.setTimeout(closeFeedback, 900);
+    } catch (error) {
+      output.textContent = error.message || 'Could not save feedback.';
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
   document.addEventListener('click', (event) => {
     const button = event.target.closest('.rsvp-button');
     if (button) openFor(button);
+    const feedback = event.target.closest('.feedback-button');
+    if (feedback) openFeedback(feedback);
   });
   modal.addEventListener('click', (event) => {
     if (event.target === modal) closeModal();
   });
   modal.querySelector('.modal-exit')?.addEventListener('click', closeModal);
+  feedbackModal?.addEventListener('click', (event) => {
+    if (event.target === feedbackModal) closeFeedback();
+  });
+  feedbackModal?.querySelector('.modal-exit')?.addEventListener('click', closeFeedback);
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && modal.classList.contains('open')) closeModal();
+    if (event.key !== 'Escape') return;
+    if (feedbackModal?.classList.contains('open')) closeFeedback();
+    else if (modal.classList.contains('open')) closeModal();
   });
   document.addEventListener('ssa:events-rendered', () => {
     updateButtons();

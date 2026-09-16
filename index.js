@@ -186,7 +186,7 @@ async function loadHomeSuggestions() {
     }
     host.innerHTML = items.map((item) => {
       const typeLabel = item.type === 'community' ? 'Community' : 'Campus';
-      const metaBits = [item.preferred_date, item.audience].filter(Boolean);
+      const metaBits = [item.preferred_date, item.audience, `${item.votes || 0} votes`].filter(Boolean);
       return `<article class="home-suggest-card">
         <span class="eyebrow">${escapeHtml(typeLabel)}</span>
         <h3>${escapeHtml(item.name)}</h3>

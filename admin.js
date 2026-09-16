@@ -156,6 +156,7 @@
       <div class="admin-form-grid admin-form-grid-simple">
         <label>Title<input name="title" value="${esc(event.title || '')}" required /></label>
         <label>Date &amp; start time<input type="datetime-local" name="startsAt" value="${esc(startsAt)}" required /></label>
+        <label>Location<input name="location" value="${esc(event.location || '')}" placeholder="Coffman, Northrop lawn…" /></label>
       </div>
       <label class="admin-field-label">Event image</label>
       <label class="gallery-drop admin-event-drop ${hasImage ? 'has-preview' : ''}" id="adminEventDrop">
@@ -284,6 +285,7 @@
           rsvpKey: form.rsvpKey.value.trim(),
           title: form.title.value.trim(),
           startsAt,
+          location: form.location.value.trim(),
           sortOrder: Number(form.sortOrder.value || 0),
           description: form.description.value.trim(),
           imageUrl,
@@ -371,14 +373,21 @@
       })),
       ...(admin.event_suggestions || []).map((item) => ({
         kind: 'Event idea',
-        primary: `${item.name} · ${item.type || 'Suggestion'}`,
+        primary: `${item.name} · ${item.type || 'Suggestion'} · ${item.votes || 0} votes`,
         meta: item.preferred_date || item.audience || '',
         detail: [item.description, item.notes].filter(Boolean).join('\n\n'),
         date: item.created_at
       })),
+      ...(admin.event_feedback || []).map((item) => ({
+        kind: 'Event feedback',
+        primary: `${item.event_name} · ${item.rating}/5`,
+        meta: '',
+        detail: item.comment,
+        date: item.created_at
+      })),
       ...(admin.rsvp || []).map((item) => ({
         kind: 'RSVP',
-        primary: item.name,
+        primary: `${item.name}${item.party_size > 1 ? ` · party of ${item.party_size}` : ''}`,
         meta: `${item.event_name || ''} · ${item.event_date || ''}`.replace(/^ · | · $/g, ''),
         detail: item.is_student ? 'U of MN student' : 'Community guest · 18+',
         date: item.created_at

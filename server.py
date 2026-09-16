@@ -88,7 +88,7 @@ def fetch_rsvp_summary():
     with db() as cur:
         cur.execute(
             """
-            SELECT event_name, COUNT(*) AS count
+            SELECT event_name, COALESCE(SUM(GREATEST(COALESCE(party_size, 1), 1)), 0) AS count
             FROM rsvp_interest
             GROUP BY event_name
             """
@@ -206,12 +206,22 @@ class SSAHandler(SimpleHTTPRequestHandler):
             messages = cur.fetchall()
             cur.execute(
                 """
-                SELECT event_name, event_date, name, is_student, is_over_18, created_at
+                SELECT event_name, event_date, name, party_size,
+                       is_student, is_over_18, created_at
                 FROM rsvp_interest
                 ORDER BY created_at DESC
                 """
             )
             rsvps = cur.fetchall()
+            cur.execute(
+                """
+                SELECT event_name, rating, comment, created_at
+                FROM event_feedback
+                ORDER BY created_at DESC
+                LIMIT 200
+                """
+            )
+            feedback = cur.fetchall()
             cur.execute(
                 """
                 SELECT reason, name, email, organization, details,
@@ -260,11 +270,21 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     "event_name": r["event_name"],
                     "event_date": r["event_date"],
                     "name": r["name"],
+                    "party_size": int(r.get("party_size") or 1),
                     "is_student": bool(r["is_student"]),
                     "is_over_18": bool(r["is_over_18"]),
                     "created_at": iso(r["created_at"]),
                 }
                 for r in rsvps
+            ],
+            "event_feedback": [
+                {
+                    "event_name": r["event_name"],
+                    "rating": int(r["rating"]),
+                    "comment": r["comment"],
+                    "created_at": iso(r["created_at"]),
+                }
+                for r in feedback
             ],
             "connect": [
                 {
@@ -335,6 +355,16 @@ class SSAHandler(SimpleHTTPRequestHandler):
         self.send_header("Location", url)
         self.send_header("Content-Length", "0")
         self.end_headers()
+
+    def _party_count(self, cur, event_name):
+        cur.execute(
+            """
+            SELECT COALESCE(SUM(GREATEST(COALESCE(party_size, 1), 1)), 0) AS count
+            FROM rsvp_interest WHERE event_name = %s
+            """,
+            (event_name,),
+        )
+        return int(cur.fetchone()["count"])
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -421,6 +451,45 @@ class SSAHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/events":
             self._send_json(200, {"ok": True, "events": cms.list_events()}, cache_seconds=30)
+            return
+        if path == "/api/events/featured":
+            events = cms.list_events()
+            featured = next((e for e in events if e.get("featured")), None)
+            self._send_json(
+                200,
+                {"ok": True, "featured": featured},
+                cache_seconds=30,
+            )
+            return
+        m = re.fullmatch(r"/api/events/(\d+)", path)
+        if m:
+            event = cms.get_event(int(m.group(1)))
+            if not event:
+                self._send_json(404, {"error": "Event not found."})
+            else:
+                self._send_json(200, {
+                    "ok": True,
+                    "event": event,
+                    "googleCalendarUrl": cms.google_calendar_url(event),
+                }, cache_seconds=30)
+            return
+        m = re.fullmatch(r"/api/events/(\d+)/ics", path)
+        if m:
+            event = cms.get_event(int(m.group(1)))
+            ics = cms.event_ics(event) if event else None
+            if not ics:
+                self._send_json(404, {"error": "Event not found."})
+                return
+            data = ics.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/calendar; charset=utf-8")
+            self.send_header(
+                "Content-Disposition",
+                f'attachment; filename="ssa-event-{event["id"]}.ics"',
+            )
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
             return
 
         if path == "/api/bulletin":
@@ -513,22 +582,25 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     )
                     row = cur.fetchone()
                     mode = row["attendance_mode"] if row else "rsvp"
-                    cur.execute(
-                        "SELECT COUNT(*) AS count FROM rsvp_interest WHERE event_name = %s",
-                        (event_name,),
-                    )
-                    count = int(cur.fetchone()["count"])
+                    count = self._party_count(cur, event_name)
                     attendees = []
                     if mode != "quick":
                         cur.execute(
                             """
-                            SELECT name FROM rsvp_interest
+                            SELECT name, COALESCE(party_size, 1) AS party_size
+                            FROM rsvp_interest
                             WHERE event_name = %s
                             ORDER BY created_at ASC
                             """,
                             (event_name,),
                         )
-                        attendees = [{"name": r["name"]} for r in cur.fetchall()]
+                        attendees = [
+                            {
+                                "name": r["name"],
+                                "partySize": int(r["party_size"] or 1),
+                            }
+                            for r in cur.fetchall()
+                        ]
                 self._send_json(
                     200,
                     {"count": count, "attendees": attendees, "mode": mode},
@@ -689,6 +761,15 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 status, resp = cms.add_event_suggestion(payload)
                 self._send_json(status, resp)
                 return
+            m = re.fullmatch(r"/api/event-suggestions/(\d+)/vote", post_path)
+            if m:
+                status, resp = cms.vote_event_suggestion(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/event-feedback":
+                status, resp = cms.submit_event_feedback(payload)
+                self._send_json(status, resp)
+                return
             if post_path == "/api/arcade":
                 status, resp = cms.arcade_submit(payload)
                 self._send_json(status, resp)
@@ -743,6 +824,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
             event_name = str(payload.get("event", "")).strip()
             event_date = str(payload.get("date", "")).strip()
             mode = self._event_attendance_mode(event_name)
+            bring_friend = payload.get("bringFriend") is True
+            party_size = 2 if bring_friend else 1
             if mode == "quick":
                 guest_token = str(payload.get("guestToken", "")).strip()[:80]
                 coming = payload.get("coming") is True
@@ -754,47 +837,104 @@ class SSAHandler(SimpleHTTPRequestHandler):
                         if coming:
                             cur.execute(
                                 """
-                                INSERT INTO rsvp_interest
-                                    (event_name, event_date, name, guest_token, created_at)
-                                VALUES (%s, %s, 'Guest', %s, %s)
-                                ON CONFLICT DO NOTHING
+                                UPDATE rsvp_interest
+                                SET party_size = %s, event_date = %s
+                                WHERE event_name = %s AND guest_token = %s
                                 """,
-                                (event_name, event_date, guest_token, now),
+                                (party_size, event_date, event_name, guest_token),
                             )
+                            if cur.rowcount == 0:
+                                cur.execute(
+                                    """
+                                    INSERT INTO rsvp_interest
+                                        (event_name, event_date, name, party_size,
+                                         guest_token, created_at)
+                                    VALUES (%s, %s, 'Guest', %s, %s, %s)
+                                    """,
+                                    (event_name, event_date, party_size, guest_token, now),
+                                )
                         else:
                             cur.execute(
                                 "DELETE FROM rsvp_interest WHERE event_name = %s AND guest_token = %s",
                                 (event_name, guest_token),
                             )
-                        cur.execute("SELECT COUNT(*) AS count FROM rsvp_interest WHERE event_name = %s", (event_name,))
-                        count = int(cur.fetchone()["count"])
+                        count = self._party_count(cur, event_name)
                     invalidate_rsvp_summary_cache()
-                    self._send_json(200, {"ok": True, "coming": coming, "count": count, "attendees": [], "mode": "quick"})
+                    self._send_json(200, {
+                        "ok": True,
+                        "coming": coming,
+                        "count": count,
+                        "attendees": [],
+                        "mode": "quick",
+                        "partySize": party_size if coming else 0,
+                    })
                 except Exception as exc:
                     self._send_json(503, {"ok": False, "error": str(exc)})
                 return
             name = str(payload.get("name", "")).strip()
+            friend_name = str(payload.get("friendName", "")).strip()[:80]
             is_student = payload.get("isStudent") is True
             is_over_18 = payload.get("isOver18") is True
+            guest_token = str(payload.get("guestToken", "")).strip()[:80]
+            if not guest_token or len(guest_token) < 16:
+                guest_token = None
             if not event_name or not event_date or not name:
                 self._send_json(400, {"error": "Event, date, and name are required."})
                 return
             if not is_student and not is_over_18:
                 self._send_json(403, {"error": "You must be a U of MN student or at least 18 years old to RSVP."})
                 return
+            display_name = name
+            if bring_friend:
+                display_name = f"{name} + {friend_name}" if friend_name else f"{name} + 1"
             try:
                 with db() as cur:
+                    if guest_token:
+                        cur.execute(
+                            """
+                            UPDATE rsvp_interest
+                            SET name = %s,
+                                party_size = %s,
+                                is_student = %s,
+                                is_over_18 = %s,
+                                event_date = %s
+                            WHERE event_name = %s AND guest_token = %s
+                            """,
+                            (
+                                display_name, party_size,
+                                is_student, is_over_18, event_date,
+                                event_name, guest_token,
+                            ),
+                        )
+                        if cur.rowcount == 0:
+                            cur.execute(
+                                """
+                                INSERT INTO rsvp_interest
+                                    (event_name, event_date, name, party_size,
+                                     is_student, is_over_18, guest_token, created_at)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                                """,
+                                (
+                                    event_name, event_date, display_name, party_size,
+                                    is_student, is_over_18, guest_token, now,
+                                ),
+                            )
+                    else:
+                        cur.execute(
+                            """
+                            INSERT INTO rsvp_interest
+                                (event_name, event_date, name, party_size,
+                                 is_student, is_over_18, created_at)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            """,
+                            (
+                                event_name, event_date, display_name, party_size,
+                                is_student, is_over_18, now,
+                            ),
+                        )
                     cur.execute(
                         """
-                        INSERT INTO rsvp_interest
-                            (event_name, event_date, name, is_student, is_over_18, created_at)
-                        VALUES (%s, %s, %s, %s, %s, %s)
-                        """,
-                        (event_name, event_date, name, is_student, is_over_18, now),
-                    )
-                    cur.execute(
-                        """
-                        SELECT name
+                        SELECT name, COALESCE(party_size, 1) AS party_size
                         FROM rsvp_interest
                         WHERE event_name = %s
                         ORDER BY created_at ASC
@@ -802,13 +942,18 @@ class SSAHandler(SimpleHTTPRequestHandler):
                         (event_name,),
                     )
                     rows = cur.fetchall()
-                attendees = [{"name": r["name"]} for r in rows]
+                    count = self._party_count(cur, event_name)
+                attendees = [
+                    {"name": r["name"], "partySize": int(r["party_size"] or 1)}
+                    for r in rows
+                ]
                 invalidate_rsvp_summary_cache()
                 self._send_json(200, {
                     "ok": True,
                     "already": False,
-                    "count": len(attendees),
+                    "count": count,
                     "attendees": attendees,
+                    "partySize": party_size,
                 })
             except Exception as exc:
                 self._send_json(503, {"ok": False, "error": str(exc)})

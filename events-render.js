@@ -44,12 +44,36 @@
     element.hidden = hidden;
   }
 
+  function isPast(event) {
+    if (event.past) return true;
+    if (!event.startsAt) return false;
+    return new Date(event.startsAt).getTime() <= Date.now();
+  }
+
   function upcomingEvents(events) {
     const now = Date.now();
     return (events || [])
       .filter((event) => event.startsAt && new Date(event.startsAt).getTime() > now)
       .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
-      .map((event, index) => ({ ...event, featured: index === 0, showCountdown: true }));
+      .map((event, index) => ({ ...event, featured: index === 0, showCountdown: true, past: false }));
+  }
+
+  function pastEvents(events) {
+    const now = Date.now();
+    return (events || [])
+      .filter((event) => event.startsAt && new Date(event.startsAt).getTime() <= now)
+      .sort((a, b) => new Date(b.startsAt) - new Date(a.startsAt))
+      .map((event) => ({ ...event, featured: false, past: true }));
+  }
+
+  function calendarButton(event, options = {}) {
+    if (!event.id || isPast(event)) return '';
+    const ics = `/api/events/${event.id}/ics`;
+    const featured = options.featured;
+    const classes = featured
+      ? 'button button-dark handdrawn calendar-button'
+      : 'micro-button calendar-button';
+    return `<a class="${classes}" href="${esc(ics)}" download>Add to calendar</a>`;
   }
 
   function featuredMarkup(event, options = {}) {
@@ -78,11 +102,13 @@
         </div>
         <div class="featured-event-actions">
           <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
+          ${calendarButton(event, { featured: true })}
         </div>
       </div>`;
   }
 
   function eventCard(event) {
+    const past = isPast(event);
     const short = displayShort(event);
     const time = event.startsAt
       ? new Date(event.startsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
@@ -91,24 +117,30 @@
     const poster = event.imageUrl
       ? `<button type="button" class="event-card-poster event-poster-zoom" data-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View poster larger"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></button>`
       : '';
-    return `<article class="event-card">
+    const actions = past
+      ? `<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
+      : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}`;
+    return `<article class="event-card${past ? ' event-card--past' : ''}" data-event-id="${esc(event.id || '')}" ${past ? 'data-past="true"' : ''}>
       ${poster}
       <div class="event-card-body">
+        ${past ? '<span class="event-finished">Finished</span>' : ''}
         <span class="event-date">${esc(short)}${time ? ` · ${esc(time)}` : ''}</span>
         <h3>${esc(event.title)}</h3>
+        ${past ? '' : `<p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>`}
         <div class="event-copy-stack">
           <p class="event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
           <button class="event-read-more" type="button" hidden>Read more</button>
         </div>
       </div>
       <div class="event-card-actions">
-        <button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
+        ${actions}
       </div>
     </article>`;
   }
 
   let countdownTimer = null;
   let sourceEvents = [];
+  let stickyFeatured = null;
 
   function renderFeatured(target, event, options = {}) {
     if (!target) return;
@@ -145,10 +177,40 @@
       setHidden(homeRegular, true);
     }
     if (eventsGrid) eventsGrid.innerHTML = '';
+    updateStickyBar(null);
+  }
+
+  function updateStickyBar(featured) {
+    stickyFeatured = featured;
+    let bar = document.getElementById('eventStickyRsvp');
+    if (!document.body.classList.contains('events-page')) {
+      bar?.remove();
+      return;
+    }
+    if (!featured) {
+      bar?.remove();
+      return;
+    }
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'eventStickyRsvp';
+      bar.className = 'event-sticky-rsvp';
+      document.body.appendChild(bar);
+    }
+    const rsvpLabel = featured.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP';
+    bar.innerHTML = `
+      <div class="event-sticky-rsvp-inner">
+        <div>
+          <strong>${esc(featured.title)}</strong>
+          <span>${esc(displayShort(featured))}</span>
+        </div>
+        <button class="button button-dark rsvp-button" type="button" data-event="${esc(featured.rsvpKey)}" data-date="${esc(displayDate(featured))}" data-attendance-mode="${esc(featured.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
+      </div>`;
   }
 
   function paint(events) {
     const upcoming = upcomingEvents(events);
+    const past = pastEvents(events);
     const featured = upcoming[0] || null;
     const regular = upcoming.slice(1);
     const homeFeatured = document.getElementById('featuredEvent');
@@ -174,6 +236,7 @@
       renderFeatured(homeFeatured, null);
     }
     renderFeatured(eventsFeatured, featured);
+    updateStickyBar(featured);
 
     if (homeHead && !condensedHome) {
       if (featured) {
@@ -193,8 +256,12 @@
     }
 
     if (eventsGrid) {
+      const pastBlock = past.length
+        ? `<div class="event-past-head" style="grid-column:1/-1"><span class="eyebrow">Past</span><h2>Recently finished</h2></div>${past.map(eventCard).join('')}`
+        : '';
       eventsGrid.innerHTML = regular.map(eventCard).join('')
-        || (featured ? '' : '<p class="admin-empty" style="grid-column:1/-1">No upcoming events yet. Suggest one!</p>');
+        + pastBlock
+        || (featured ? pastBlock : '<p class="admin-empty" style="grid-column:1/-1">No upcoming events yet. Suggest one!</p>');
     }
 
     startCountdown(featured);

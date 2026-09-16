@@ -92,6 +92,9 @@ def init_db():
         cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS is_student BOOLEAN NOT NULL DEFAULT FALSE")
         cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS is_over_18 BOOLEAN NOT NULL DEFAULT TRUE")
         cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS guest_token TEXT")
+        cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS party_size INTEGER NOT NULL DEFAULT 1")
+        cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS phone TEXT")
+        cur.execute("ALTER TABLE rsvp_interest ADD COLUMN IF NOT EXISTS reminder_sent BOOLEAN NOT NULL DEFAULT FALSE")
         cur.execute(
             """
             CREATE UNIQUE INDEX IF NOT EXISTS idx_rsvp_event_guest

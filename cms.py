@@ -2,15 +2,18 @@
 import base64
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
 from db import db
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "SSA")
+BASE_URL = (os.environ.get("BASE_URL") or "https://www.ssaumn.com").rstrip("/")
 ALLOWED_IMAGE_TYPES = {"png": "png", "jpg": "jpg", "jpeg": "jpg", "webp": "webp"}
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 DISPLAY_TZ = ZoneInfo("America/Chicago")
+PAST_EVENT_DAYS = 90
 
 BLOCK_TYPES = {"heading", "paragraph", "announcement", "image", "timeline", "game"}
 ALLOWED_RICH_TAGS = {"b", "strong", "i", "em", "u", "ul", "ol", "li", "br", "p", "span", "div"}
@@ -255,8 +258,9 @@ def get_newsletter_image(image_id):
 # ---------------- events CMS ----------------
 
 def _event_json(row):
+    event_id = row["id"]
     return {
-        "id": row["id"],
+        "id": event_id,
         "rsvpKey": row["rsvp_key"],
         "title": row["title"],
         "description": row["description"],
@@ -291,28 +295,36 @@ def _parse_starts_at(value):
 
 def _annotate_events(events, public_only=False):
     now = utcnow()
+    past_cutoff = now - timedelta(days=PAST_EVENT_DAYS)
     annotated = []
     for event in events:
         starts = _parse_starts_at(event.get("startsAt"))
         event = dict(event)
         event["showCountdown"] = True
         event["_starts"] = starts
-        if public_only and (not starts or starts <= now):
-            continue
+        past = bool(starts and starts <= now)
+        event["past"] = past
+        if public_only:
+            if not starts:
+                continue
+            if past and starts < past_cutoff:
+                continue
         annotated.append(event)
-    annotated.sort(
+    upcoming = [e for e in annotated if not e.get("past")]
+    past_events = [e for e in annotated if e.get("past")]
+    upcoming.sort(
         key=lambda event: (
             event["_starts"] is None,
             event["_starts"] or datetime.max.replace(tzinfo=timezone.utc),
             event.get("sortOrder", 0),
         )
     )
-    next_id = None
-    for event in annotated:
-        starts = event.get("_starts")
-        if starts and starts > now:
-            next_id = event.get("id")
-            break
+    past_events.sort(
+        key=lambda event: event["_starts"] or datetime.min.replace(tzinfo=timezone.utc),
+        reverse=True,
+    )
+    annotated = upcoming + past_events
+    next_id = upcoming[0]["id"] if upcoming else None
     for event in annotated:
         event["featured"] = event.get("id") == next_id and next_id is not None
         event.pop("_starts", None)
@@ -331,6 +343,67 @@ def list_events(include_unpublished=False):
         rows = cur.fetchall()
     events = [_event_json(row) for row in rows]
     return _annotate_events(events, public_only=not include_unpublished)
+
+
+def get_event(event_id):
+    with db() as cur:
+        cur.execute("SELECT * FROM events WHERE id = %s AND published = TRUE", (int(event_id),))
+        row = cur.fetchone()
+    if not row:
+        return None
+    return _annotate_events([_event_json(row)], public_only=False)[0]
+
+
+def event_ics(event):
+    """Build a minimal .ics calendar payload for one event."""
+    starts = _parse_starts_at(event.get("startsAt"))
+    if not starts:
+        return None
+    ends = starts + timedelta(hours=2)
+    def stamp(dt):
+        return dt.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    uid = f"ssa-event-{event['id']}@ssaumn.com"
+    summary = (event.get("title") or "SSA Event").replace("\n", " ")
+    description = (event.get("description") or "").replace("\n", "\\n")
+    location = (event.get("location") or "").replace("\n", " ")
+    url = f"{BASE_URL}/events"
+    return "\r\n".join([
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//SSA UMN//Events//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        f"UID:{uid}",
+        f"DTSTAMP:{stamp(utcnow())}",
+        f"DTSTART:{stamp(starts)}",
+        f"DTEND:{stamp(ends)}",
+        f"SUMMARY:{summary}",
+        f"DESCRIPTION:{description}",
+        f"LOCATION:{location}",
+        f"URL:{url}",
+        "END:VEVENT",
+        "END:VCALENDAR",
+        "",
+    ])
+
+
+def google_calendar_url(event):
+    starts = _parse_starts_at(event.get("startsAt"))
+    if not starts:
+        return ""
+    ends = starts + timedelta(hours=2)
+    def stamp(dt):
+        return dt.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    params = {
+        "action": "TEMPLATE",
+        "text": event.get("title") or "SSA Event",
+        "dates": f"{stamp(starts)}/{stamp(ends)}",
+        "details": event.get("description") or "",
+        "location": event.get("location") or "",
+    }
+    query = "&".join(f"{k}={quote(str(v))}" for k, v in params.items())
+    return f"https://calendar.google.com/calendar/render?{query}"
 
 
 def save_event(payload):
@@ -383,15 +456,15 @@ def save_event(payload):
                 """
                 UPDATE events SET rsvp_key=%s, title=%s, description=%s, location=%s,
                     date_label=%s, short_date=%s, start_time=%s, starts_at=%s, image_url=%s,
-                    attendance_mode=%s, featured=%s, show_countdown=%s, sort_order=%s,
-                    published=%s, updated_at=%s
+                    attendance_mode=%s, featured=%s, show_countdown=%s,
+                    sort_order=%s, published=%s, updated_at=%s
                 WHERE id=%s
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, attendance_mode, featured,
-                    show_countdown, sort_order, published, utcnow(),
+                    start_time, starts_at, image_url, attendance_mode,
+                    featured, show_countdown, sort_order, published, utcnow(),
                     int(event_id),
                 ),
             )
@@ -400,15 +473,15 @@ def save_event(payload):
                 """
                 INSERT INTO events
                     (rsvp_key, title, description, location, date_label, short_date,
-                     start_time, starts_at, image_url, attendance_mode, featured,
-                     show_countdown, sort_order, published, created_at)
+                     start_time, starts_at, image_url, attendance_mode,
+                     featured, show_countdown, sort_order, published, created_at)
                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, attendance_mode, featured,
-                    show_countdown, sort_order, published, utcnow(),
+                    start_time, starts_at, image_url, attendance_mode,
+                    featured, show_countdown, sort_order, published, utcnow(),
                 ),
             )
         row = cur.fetchone()
@@ -484,20 +557,68 @@ def add_event_suggestion(payload):
         cur.execute(
             """
             INSERT INTO event_suggestions
-                (name, type, description, audience, budget, preferred_date, notes, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                (name, type, description, audience, budget, preferred_date, notes, votes, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 0, %s)
+            RETURNING id
             """,
             (name, etype, description, audience, budget, preferred_date, notes, utcnow()),
         )
-    return 200, {"ok": True}
+        suggestion_id = cur.fetchone()["id"]
+    return 200, {"ok": True, "id": suggestion_id}
+
+
+def vote_event_suggestion(suggestion_id, payload):
+    guest_token = str(payload.get("guestToken", "")).strip()[:80]
+    if len(guest_token) < 16:
+        return 400, {"error": "Missing voter id."}
+    with db() as cur:
+        cur.execute("SELECT id, votes FROM event_suggestions WHERE id = %s", (int(suggestion_id),))
+        row = cur.fetchone()
+        if not row:
+            return 404, {"error": "Suggestion not found."}
+        cur.execute(
+            """
+            INSERT INTO event_suggestion_votes (suggestion_id, guest_token, created_at)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (suggestion_id, guest_token) DO NOTHING
+            RETURNING id
+            """,
+            (int(suggestion_id), guest_token, utcnow()),
+        )
+        inserted = cur.fetchone()
+        if not inserted:
+            cur.execute(
+                "SELECT votes FROM event_suggestions WHERE id = %s",
+                (int(suggestion_id),),
+            )
+            votes = int(cur.fetchone()["votes"] or 0)
+            return 200, {"ok": True, "already": True, "votes": votes}
+        cur.execute(
+            """
+            UPDATE event_suggestions
+            SET votes = COALESCE(votes, 0) + 1
+            WHERE id = %s
+            RETURNING votes
+            """,
+            (int(suggestion_id),),
+        )
+        votes = int(cur.fetchone()["votes"])
+    return 200, {"ok": True, "already": False, "votes": votes}
 
 
 def list_event_suggestions():
     with db() as cur:
-        cur.execute("SELECT * FROM event_suggestions ORDER BY created_at DESC LIMIT 200")
+        cur.execute(
+            """
+            SELECT * FROM event_suggestions
+            ORDER BY COALESCE(votes, 0) DESC, created_at DESC
+            LIMIT 200
+            """
+        )
         rows = cur.fetchall()
     return [
         {
+            "id": r["id"],
             "name": r["name"],
             "type": r["type"],
             "description": r["description"],
@@ -505,6 +626,7 @@ def list_event_suggestions():
             "budget": r["budget"] or "",
             "preferred_date": r["preferred_date"] or "",
             "notes": r["notes"] or "",
+            "votes": int(r.get("votes") or 0),
             "created_at": _iso(r["created_at"]),
         }
         for r in rows
@@ -516,24 +638,87 @@ def list_event_suggestions_public():
     with db() as cur:
         cur.execute(
             """
-            SELECT name, type, description, audience, preferred_date, created_at
+            SELECT id, name, type, description, audience, preferred_date, votes, created_at
             FROM event_suggestions
-            ORDER BY created_at DESC
+            ORDER BY COALESCE(votes, 0) DESC, created_at DESC
             LIMIT 200
             """
         )
         rows = cur.fetchall()
     return [
         {
+            "id": r["id"],
             "name": r["name"],
             "type": r["type"],
             "description": r["description"],
             "audience": r["audience"] or "",
             "preferred_date": r["preferred_date"] or "",
+            "votes": int(r.get("votes") or 0),
             "created_at": _iso(r["created_at"]),
         }
         for r in rows
     ]
+
+
+def submit_event_feedback(payload):
+    event_name = str(payload.get("event", "")).strip()[:120]
+    guest_token = str(payload.get("guestToken", "")).strip()[:80]
+    comment = str(payload.get("comment", "")).strip()[:280]
+    try:
+        rating = int(payload.get("rating", 0))
+    except (TypeError, ValueError):
+        rating = 0
+    if not event_name or len(guest_token) < 16:
+        return 400, {"error": "Event and guest id are required."}
+    if rating < 1 or rating > 5:
+        return 400, {"error": "Pick a rating from 1 to 5."}
+    if not comment:
+        return 400, {"error": "Leave a one-line note."}
+    with db() as cur:
+        cur.execute(
+            "SELECT id FROM events WHERE rsvp_key = %s AND published = TRUE",
+            (event_name,),
+        )
+        if not cur.fetchone():
+            return 404, {"error": "Event not found."}
+        cur.execute(
+            """
+            INSERT INTO event_feedback (event_name, guest_token, rating, comment, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (event_name, guest_token)
+            DO UPDATE SET rating = EXCLUDED.rating, comment = EXCLUDED.comment, created_at = EXCLUDED.created_at
+            RETURNING id
+            """,
+            (event_name, guest_token, rating, comment, utcnow()),
+        )
+    return 200, {"ok": True}
+
+
+def list_event_feedback_admin(payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT event_name, rating, comment, created_at
+            FROM event_feedback
+            ORDER BY created_at DESC
+            LIMIT 300
+            """
+        )
+        rows = cur.fetchall()
+    return 200, {
+        "ok": True,
+        "items": [
+            {
+                "event_name": r["event_name"],
+                "rating": int(r["rating"]),
+                "comment": r["comment"],
+                "created_at": _iso(r["created_at"]),
+            }
+            for r in rows
+        ],
+    }
 
 
 # ---------------- moderated gallery ----------------
@@ -747,6 +932,44 @@ def init_tables():
         cur.execute(
             "ALTER TABLE events ADD COLUMN IF NOT EXISTS show_countdown "
             "BOOLEAN NOT NULL DEFAULT FALSE"
+        )
+        cur.execute(
+            "ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS votes INTEGER NOT NULL DEFAULT 0"
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS event_suggestion_votes (
+                id SERIAL PRIMARY KEY,
+                suggestion_id INTEGER NOT NULL REFERENCES event_suggestions(id) ON DELETE CASCADE,
+                guest_token TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                UNIQUE (suggestion_id, guest_token)
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS event_feedback (
+                id SERIAL PRIMARY KEY,
+                event_name TEXT NOT NULL,
+                guest_token TEXT NOT NULL,
+                rating INTEGER NOT NULL,
+                comment TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                UNIQUE (event_name, guest_token)
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS push_subscriptions (
+                id SERIAL PRIMARY KEY,
+                endpoint TEXT NOT NULL UNIQUE,
+                p256dh TEXT NOT NULL DEFAULT '',
+                auth TEXT NOT NULL DEFAULT '',
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
         )
         cur.execute(
             """

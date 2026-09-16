@@ -174,4 +174,82 @@
   });
 
   window.setTimeout(() => ideaInput.focus(), 200);
+
+  function voterToken() {
+    let token = localStorage.getItem('ssaSuggestVoterId') || '';
+    if (token.length < 16) {
+      token = window.crypto?.randomUUID?.() || `voter-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem('ssaSuggestVoterId', token);
+    }
+    return token;
+  }
+
+  function votedSet() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('ssaSuggestVotes') || '[]'));
+    } catch (_) {
+      return new Set();
+    }
+  }
+
+  function markVoted(id) {
+    const set = votedSet();
+    set.add(String(id));
+    localStorage.setItem('ssaSuggestVotes', JSON.stringify([...set]));
+  }
+
+  async function loadVotes() {
+    const list = document.getElementById('suggestVoteList');
+    if (!list) return;
+    try {
+      const data = await api('/api/event-suggestions');
+      const items = data.items || [];
+      if (!items.length) {
+        list.innerHTML = '<p class="admin-empty">No ideas yet — yours could be first.</p>';
+        return;
+      }
+      const voted = votedSet();
+      list.innerHTML = items.slice(0, 12).map((item) => `
+        <article class="suggest-vote-card">
+          <div>
+            <span class="eyebrow">${item.type === 'community' ? 'Community' : 'Campus'}</span>
+            <h3>${escapeHtml(item.name)}</h3>
+            <p>${escapeHtml(item.description)}</p>
+          </div>
+          <button type="button" class="button button-line suggest-vote-btn" data-vote-id="${item.id}" ${voted.has(String(item.id)) ? 'disabled' : ''}>
+            <strong data-vote-count="${item.id}">${item.votes || 0}</strong>
+            <span>${voted.has(String(item.id)) ? 'Voted' : 'Vote'}</span>
+          </button>
+        </article>`).join('');
+    } catch (_) {
+      list.innerHTML = '<p class="admin-empty">Ideas will show here once they load.</p>';
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[char]));
+  }
+
+  document.getElementById('suggestVoteList')?.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-vote-id]');
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    try {
+      const data = await api(`/api/event-suggestions/${button.dataset.voteId}/vote`, {
+        method: 'POST',
+        body: { guestToken: voterToken() }
+      });
+      markVoted(button.dataset.voteId);
+      const count = button.querySelector('[data-vote-count]');
+      if (count) count.textContent = String(data.votes ?? 0);
+      const label = button.querySelector('span');
+      if (label) label.textContent = 'Voted';
+    } catch (_) {
+      button.disabled = false;
+    }
+  });
+
+  loadVotes();
 })();

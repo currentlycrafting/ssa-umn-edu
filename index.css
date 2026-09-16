@@ -723,10 +723,16 @@ h2 {
   margin-top: auto;
   padding: 16px 22px 22px;
   flex: 0 0 auto;
+  display: grid;
+  gap: 10px;
 }
 .event-card-actions .micro-button,
-.event-card-actions .rsvp-button {
+.event-card-actions .rsvp-button,
+.event-card-actions .calendar-button {
   width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
 }
 .event-grid {
   align-items: stretch;
@@ -1322,6 +1328,13 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   font-size: 14px;
   font-weight: 800;
   color: var(--muted);
+}
+.event-card .event-going {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+.event-card .event-going-num {
+  font-size: 18px;
 }
 .event-going-num {
   color: var(--accent);
@@ -3460,4 +3473,169 @@ html.reduce-motion .hero-center { opacity: 1 !important; }
 @keyframes lightboxCardIn {
   from { opacity: 0; transform: scale(.92); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* Event extras: past cards, sticky RSVP, +1, notify */
+.rsvp-bring-toggle {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  margin: 4px 0 8px;
+  cursor: pointer;
+}
+.rsvp-bring-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.rsvp-bring-face {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 2px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  background: var(--glass);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+.rsvp-bring-toggle input:checked + .rsvp-bring-face,
+.rsvp-bring-toggle:has(input:checked) .rsvp-bring-face {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.rsvp-bring-toggle:hover .rsvp-bring-face {
+  transform: translateY(-1px);
+}
+.quick-rsvp-form .rsvp-bring-toggle {
+  margin: 12px auto 16px;
+  max-width: 100%;
+}
+.featured-event-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+.featured-event-actions .calendar-button,
+.featured-event-actions .rsvp-button {
+  width: min(100%, 280px);
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+a.calendar-button.micro-button,
+a.calendar-button.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+}
+a.calendar-button.micro-button:hover {
+  background: var(--ink);
+  color: var(--paper);
+  opacity: 0.92;
+}
+.event-card--past {
+  opacity: 0.55;
+  filter: grayscale(0.25);
+}
+.event-card--past .event-card-actions .micro-button {
+  opacity: 1;
+}
+.event-finished {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.event-past-head h2 {
+  margin: 4px 0 0;
+  font-size: clamp(22px, 4vw, 30px);
+}
+.event-sticky-rsvp {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  box-shadow: 0 -10px 30px rgba(0,0,0,.08);
+}
+.event-sticky-rsvp-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.event-sticky-rsvp strong { display: block; font-size: 14px; }
+.event-sticky-rsvp span { color: var(--muted); font-size: 12px; font-weight: 700; }
+.event-sticky-rsvp .button {
+  min-height: 48px;
+  min-width: 120px;
+  padding: 0 18px;
+  flex: 0 0 auto;
+}
+.notify-prompt {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 50;
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+.notify-prompt p { margin: 0; font-weight: 700; }
+.notify-prompt > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.notify-prompt .button { min-height: 44px; }
+.feedback-stars div { display: flex; flex-wrap: wrap; gap: 8px; }
+.feedback-stars label span {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 720px) {
+  .event-sticky-rsvp { display: block; }
+  body.events-page { padding-bottom: 88px; }
+  .featured-event-actions .button,
+  .featured-event-actions .calendar-button,
+  .event-card-actions .micro-button,
+  .event-card-actions .rsvp-button,
+  .event-card-actions .calendar-button,
+  .event-card-actions .feedback-button {
+    min-height: 48px;
+    font-size: 15px;
+    padding: 0 18px;
+  }
+  .rsvp-bring-face {
+    min-height: 64px;
+    font-size: 17px;
+  }
+  .rsvp-modal .button,
+  .quick-rsvp-actions .button {
+    min-height: 48px;
+  }
 }
