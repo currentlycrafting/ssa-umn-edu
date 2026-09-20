@@ -34,8 +34,6 @@
   const djBar = $('auxDjBar');
   const searchInput = $('auxSearch');
   const searchResults = $('auxSearchResults');
-  const spotifyQueueEl = $('auxSpotifyQueue');
-  const spotifyEmptyEl = $('auxSpotifyEmpty');
   const toastEl = $('auxToast');
 
   function showToast(message) {
@@ -62,7 +60,7 @@
     if (!np) {
       $('auxNpImg').hidden = true;
       $('auxNpSong').textContent = 'Please start playing a song first';
-      $('auxNpArtist').textContent = 'Open Spotify on the connected account and start any song.';
+      $('auxNpArtist').textContent = '';
       return;
     }
     $('auxNpImg').hidden = false;
@@ -102,15 +100,35 @@
     });
   }
 
-  function renderSpotifyQueue(queue) {
-    if (!spotifyQueueEl || !spotifyEmptyEl) return;
-    spotifyEmptyEl.hidden = queue.length > 0;
-    spotifyQueueEl.innerHTML = queue.map((song, i) => `
-      <div class="aux-spotify-item">
-        <span class="aux-queue-number">${i + 1}</span>
-        <img src="${escapeHtml(song.albumImage || '/assets/brand/ssa-logo.png')}" alt="" />
-        <div><strong>${escapeHtml(song.songName)}</strong><span>${escapeHtml(song.artist)}</span></div>
+  function renderQueue(queue) {
+    if (!queueEl) return;
+    emptyEl.hidden = queue.length > 0;
+    queueEl.innerHTML = queue.map((q, i) => `
+      <div class="aux-item" data-id="${q.id}">
+        <span style="font-weight:900;color:var(--muted);min-width:20px">${i + 1}</span>
+        <img src="${escapeHtml(q.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
+        <div class="aux-item-main">
+          <div class="aux-item-song">${escapeHtml(q.songName)}</div>
+          <div class="aux-item-meta">${escapeHtml(q.artist)} · requested by ${escapeHtml(q.requestedBy)}</div>
+        </div>
+        ${q.canDelete ? `<button type="button" class="button button-line aux-remove-own" data-remove-own="${q.id}">Remove</button>` : ''}
       </div>`).join('');
+    queueEl.querySelectorAll('[data-remove-own]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        try {
+          await fetchJson(`/api/aux/request/${button.dataset.removeOwn}/remove-own`, {
+            method: 'POST',
+            body: { guestId }
+          });
+          showToast('Your song was removed from the request queue.');
+          refresh(true);
+        } catch (error) {
+          showToast(error.message);
+          button.disabled = false;
+        }
+      });
+    });
   }
 
   async function refresh(force) {
@@ -123,7 +141,6 @@
       version = data.version;
       renderNowPlaying(data.nowPlaying, data.djConnected);
       renderQueue(data.queue);
-      renderSpotifyQueue(data.spotifyQueue || []);
       if (djBar) {
         djBar.hidden = !data.djConnected;
       }
