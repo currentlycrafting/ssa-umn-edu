@@ -6,10 +6,16 @@
   <title>Events — SSA</title>
   <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/index.css?v=24" />
-  <link rel="stylesheet" href="/site-pages.css?v=25" />
+  <link rel="stylesheet" href="/index.css?v=29" />
+  <link rel="stylesheet" href="/site-pages.css?v=29" />
   <script src="/api.js"></script>
-  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+  <script>
+    (function () {
+      var stored = localStorage.getItem('ssaTheme');
+      var theme = stored === 'dark' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 <body class="events-page">
   <nav class="nav page-nav" aria-label="Primary navigation">
@@ -25,7 +31,17 @@
     <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
   </nav>
   <main class="page-main">
-    <header class="page-hero" data-reveal><span class="eyebrow">Calendar</span><h1>SSA Events</h1><p>RSVP, show up, bring friends.</p></header>
+    <header class="page-hero" data-reveal>
+      <span class="eyebrow">Calendar</span>
+      <h1>SSA Events</h1>
+      <p>RSVP, show up, bring friends.</p>
+      <aside class="events-parking" aria-label="Fall Kickoff parking">
+        <span class="eyebrow">Fall Kickoff</span>
+        <strong>Nolte Center</strong>
+        <p>Enter at 14 Church St SE, Minneapolis, MN 55455 for the kickoff.</p>
+        <a href="https://maps.google.com/?q=14+Church+St+SE,+Minneapolis,+MN+55455" target="_blank" rel="noopener">Open in Maps →</a>
+      </aside>
+    </header>
     <aside class="featured-event" id="eventsFeatured" aria-label="Featured event" data-reveal hidden></aside>
     <div class="event-grid" id="eventsGrid" data-reveal-group></div>
     <p style="text-align:center;margin-top:32px" data-reveal><a class="button button-line" href="/suggest">Suggest an event</a></p>
@@ -98,7 +114,7 @@
   </div>
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
   <script src="/motion.js"></script>
-  <script src="/nav.js?v=13"></script>
+  <script src="/nav.js?v=16"></script>
   <script src="/events-render.js?v=22"></script>
   <script src="/rsvp.js?v=4"></script>
   <script src="/checklist.js?v=8"></script>

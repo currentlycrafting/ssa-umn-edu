@@ -73,6 +73,7 @@
 [data-theme="dark"] .social-row a:hover { background: var(--accent); color: oklch(22% 0.06 264); border-color: var(--accent); }
 [data-theme="dark"] .tile.selected { background: var(--accent); color: oklch(22% 0.06 264); }
 
+
 html {
   scroll-behavior: smooth;
   overflow-x: clip;
@@ -2343,6 +2344,13 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   stroke-dashoffset: 420;
   animation: doodleDraw 1.6s ease forwards;
 }
+.doodle rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 @keyframes doodleDraw { to { stroke-dashoffset: 0; } }
 .doodle-1 { top: 16%; left: 8%; width: 64px; animation: floaty 6s ease-in-out infinite; }
 .doodle-2 { top: 22%; right: 9%; width: 76px; animation: floaty 7.5s ease-in-out infinite .4s; }
@@ -3485,7 +3493,56 @@ html.reduce-motion .hero-center { opacity: 1 !important; }
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Event extras: past cards, sticky RSVP, +1, notify */
+.home-parking {
+  margin-top: 28px;
+  padding: 22px 24px;
+  border: 2px solid color-mix(in oklch, var(--blue) 55%, var(--line));
+  border-radius: 24px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+}
+.home-parking .eyebrow { color: var(--blue); }
+.home-parking h3 {
+  margin: 4px 0 8px;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -.03em;
+}
+.home-parking p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.events-parking {
+  margin: 22px auto 0;
+  max-width: 520px;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 2px solid color-mix(in oklch, var(--blue) 45%, var(--line));
+  background: var(--surface);
+  color: var(--ink);
+}
+.events-parking .eyebrow { color: var(--blue); }
+.events-parking strong {
+  display: block;
+  font-size: 15px;
+}
+.events-parking p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.events-parking a {
+  font-weight: 850;
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .rsvp-bring-toggle {
   display: grid;
   justify-items: center;

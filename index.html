@@ -18,13 +18,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=24" />
+  <link rel="stylesheet" href="index.css?v=29" />
   <link rel="stylesheet" href="site-pages.css?v=26" />
   <script src="api.js"></script>
   <script>
     (function () {
       var stored = localStorage.getItem('ssaTheme');
-      var theme = stored || 'light';
+      var theme = stored === 'dark' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
@@ -60,12 +60,12 @@
 
   <main id="top">
     <section class="hero" id="hero">
-      <svg class="doodle doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
-      <svg class="doodle doodle-2" viewBox="0 0 80 40" aria-hidden="true"><path d="M4 24 Q14 4 24 24 T44 24 T64 24 T76 18" /></svg>
-      <svg class="doodle doodle-3" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" /><path d="M21 26 V32 M39 26 V32 M20 38 Q30 48 40 38" /></svg>
-      <svg class="doodle doodle-4" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,6 36,24 54,24 40,35 45,54 30,43 15,54 20,35 6,24 24,24" /></svg>
-      <svg class="doodle doodle-5" viewBox="0 0 50 50" aria-hidden="true"><path d="M6 25 L44 25 M30 12 L44 25 L30 38" /></svg>
-      <svg class="doodle doodle-6" viewBox="0 0 50 50" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
+      <svg class="doodle doodle-default doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
+      <svg class="doodle doodle-default doodle-2" viewBox="0 0 80 40" aria-hidden="true"><path d="M4 24 Q14 4 24 24 T44 24 T64 24 T76 18" /></svg>
+      <svg class="doodle doodle-default doodle-3" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" /><path d="M21 26 V32 M39 26 V32 M20 38 Q30 48 40 38" /></svg>
+      <svg class="doodle doodle-default doodle-4" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,6 36,24 54,24 40,35 45,54 30,43 15,54 20,35 6,24 24,24" /></svg>
+      <svg class="doodle doodle-default doodle-5" viewBox="0 0 50 50" aria-hidden="true"><path d="M6 25 L44 25 M30 12 L44 25 L30 38" /></svg>
+      <svg class="doodle doodle-default doodle-6" viewBox="0 0 50 50" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
       <div class="hero-center">
         <div class="hero-logo-wrap">
           <img class="hero-logo" src="assets/brand/ssa-logo.png" alt="SSA lion logo" />
@@ -136,6 +136,13 @@
         <button class="button button-line handdrawn" type="button" id="homeNewsletterOpen">Subscribe</button>
         <button class="button button-line handdrawn" type="button" data-open-outreach>Other ways to reach us</button>
       </nav>
+
+      <aside class="home-parking" aria-label="Fall Kickoff parking">
+        <span class="eyebrow">Fall Kickoff</span>
+        <h3>Nolte Center</h3>
+        <p>Enter at 14 Church St SE, Minneapolis, MN 55455 for the kickoff.</p>
+        <a class="button button-dark handdrawn" href="https://maps.google.com/?q=14+Church+St+SE,+Minneapolis,+MN+55455" target="_blank" rel="noopener">Open in Maps</a>
+      </aside>
     </section>
 
     <section class="section home-explore" id="explore">
@@ -372,7 +379,7 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=13"></script>
+  <script src="nav.js?v=16"></script>
   <script src="micro.js?v=2"></script>
   <script src="checklist.js?v=8"></script>
   <script src="newsletter.js"></script>

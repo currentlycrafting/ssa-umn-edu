@@ -2,12 +2,17 @@
 (function () {
   const THEMES = ['light', 'dark'];
 
+  function themeLabel(name) {
+    return name === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  }
+
   function applyTheme(name) {
+    if (name === 'kickoff' || name === 'maroon') name = 'dark';
     if (!THEMES.includes(name)) name = 'light';
     document.documentElement.setAttribute('data-theme', name);
     localStorage.setItem('ssaTheme', name);
     document.querySelectorAll('.theme-toggle').forEach((el) => {
-      el.setAttribute('aria-label', name === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      el.setAttribute('aria-label', themeLabel(name));
     });
   }
 
