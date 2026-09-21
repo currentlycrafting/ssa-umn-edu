@@ -3501,6 +3501,7 @@ html.reduce-motion .hero-center { opacity: 1 !important; }
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-soft);
+  text-align: left;
 }
 .home-parking .eyebrow { color: var(--blue); }
 .home-parking h3 {
@@ -3513,35 +3514,10 @@ html.reduce-motion .hero-center { opacity: 1 !important; }
   color: var(--muted);
   font-weight: 700;
 }
-.events-parking {
-  margin: 22px auto 0;
-  max-width: 520px;
-  display: grid;
-  gap: 6px;
-  text-align: left;
-  padding: 16px 18px;
-  border-radius: 18px;
-  border: 2px solid color-mix(in oklch, var(--blue) 45%, var(--line));
-  background: var(--surface);
-  color: var(--ink);
-}
-.events-parking .eyebrow { color: var(--blue); }
-.events-parking strong {
-  display: block;
-  font-size: 15px;
-}
-.events-parking p {
-  margin: 0;
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 1.45;
-}
-.events-parking a {
-  font-weight: 850;
-  color: var(--blue);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.page-hero .home-parking {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 560px;
 }
 .rsvp-bring-toggle {
   display: grid;
