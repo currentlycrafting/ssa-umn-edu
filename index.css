@@ -540,7 +540,7 @@ button, input, textarea { font: inherit; }
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 30px;
+  margin-top: 22px;
 }
 .button {
   display: inline-flex;
