@@ -729,7 +729,8 @@ h2 {
 }
 .event-card-actions .micro-button,
 .event-card-actions .rsvp-button,
-.event-card-actions .calendar-button {
+.event-card-actions .calendar-button,
+.event-card-actions .event-ig-card {
   width: 100%;
   box-sizing: border-box;
   text-align: center;
@@ -3533,7 +3534,7 @@ html.reduce-motion .hero-center { opacity: 1 !important; }
   width: min(560px, calc(100vw - 32px));
   max-height: min(88dvh, 820px);
   overflow: auto;
-  padding: 0 0 24px;
+  padding: 24px 0;
   text-align: left;
 }
 .event-detail-art {
@@ -3667,11 +3668,30 @@ a.calendar-button.micro-button:hover {
   opacity: 0.92;
 }
 .event-card--past {
+  opacity: 1;
+  filter: none;
+}
+.event-card--past .event-card-poster,
+.event-card--past .event-card-body {
   opacity: 0.55;
   filter: grayscale(0.25);
 }
-.event-card--past .event-card-actions .micro-button {
+.event-card--past .event-card-actions {
   opacity: 1;
+  filter: none;
+}
+.event-card--past .feedback-button {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  opacity: 1;
+  filter: none;
+  font-weight: 850;
+}
+[data-theme="dark"] .event-card--past .feedback-button {
+  background: var(--accent);
+  color: oklch(22% 0.06 264);
+  border-color: var(--accent);
 }
 .event-finished {
   display: inline-block;
@@ -3730,7 +3750,8 @@ a.calendar-button.micro-button:hover {
   .event-card-actions .micro-button,
   .event-card-actions .rsvp-button,
   .event-card-actions .calendar-button,
-  .event-card-actions .feedback-button {
+  .event-card-actions .feedback-button,
+  .event-card-actions .event-ig-card {
     min-height: 48px;
     font-size: 15px;
     padding: 0 18px;

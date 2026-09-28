@@ -57,11 +57,22 @@
     return event.location || '';
   }
 
-  function attendingLabel(event) {
+  function attendingCount(event) {
     const raw = document.querySelector(`[data-event-count="${CSS.escape(event.rsvpKey || '')}"]`)?.textContent;
     const count = raw && raw !== '—' ? Number(raw) : null;
-    if (count == null || Number.isNaN(count)) return 'RSVPs coming in';
+    if (count == null || Number.isNaN(count)) return null;
+    return count;
+  }
+
+  function attendingLabel(event) {
+    const count = attendingCount(event);
+    if (count == null) return 'RSVPs coming in';
     return `${count} ${count === 1 ? 'person' : 'people'} coming`;
+  }
+
+  function igCardButton(event, featured) {
+    const classes = featured ? 'button button-line event-ig-card' : 'micro-button event-ig-card';
+    return `<button class="${classes}" type="button" data-open-ig-card="${esc(eventKey(event))}">Download IG card</button>`;
   }
 
   function eventKey(event) {
@@ -153,6 +164,7 @@
         <div class="featured-event-actions">
           <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
           ${calendarButton(event, { featured: true })}
+          ${igCardButton(event, true)}
         </div>
       </div>`;
   }
@@ -168,8 +180,8 @@
       ? `<div class="event-card-poster"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></div>`
       : '';
     const actions = past
-      ? `<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
-      : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}`;
+      ? `<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>${igCardButton(event)}`
+      : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}${igCardButton(event)}`;
     return `<article class="event-card${past ? ' event-card--past' : ''}" data-event-id="${esc(event.id || '')}" data-event-key="${esc(eventKey(event))}" ${past ? 'data-past="true"' : ''}>
       ${poster}
       <div class="event-card-body">
@@ -500,15 +512,14 @@
       });
     }
 
-    const pillText = attendingLabel(event);
-    ctx.font = '800 22px "Plus Jakarta Sans", system-ui, sans-serif';
-    const pillW = Math.min(mediaW, ctx.measureText(pillText).width + 48);
-    const pillY = H - 148;
-    roundRectPath(ctx, 72, pillY, pillW, 56, 28);
-    ctx.fillStyle = cssVar('--ink', '#16181d');
-    ctx.fill();
-    ctx.fillStyle = cssVar('--paper', '#ffffff');
-    ctx.fillText(pillText, 96, pillY + 37);
+    const count = attendingCount(event);
+    const countY = H - 156;
+    ctx.fillStyle = ink;
+    ctx.font = '900 108px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillText(count == null ? '—' : String(count), 72, countY);
+    ctx.fillStyle = muted;
+    ctx.font = '800 28px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillText(count === 1 ? 'person coming' : 'people coming', 72, countY + 42);
 
     ctx.fillStyle = muted;
     ctx.font = '700 20px "Plus Jakarta Sans", system-ui, sans-serif';
@@ -582,19 +593,14 @@
     const liveCount = document.querySelector(`[data-event-count="${CSS.escape(event.rsvpKey || '')}"]`);
     countEl.textContent = liveCount?.textContent || '—';
     countEl.dataset.eventCount = event.rsvpKey || '';
-    if (event.imageUrl) {
-      art.hidden = false;
-      art.innerHTML = `<button type="button" class="event-poster-zoom" data-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View poster larger"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" /></button>`;
-    } else {
-      art.hidden = true;
-      art.innerHTML = '';
-    }
+    art.hidden = true;
+    art.innerHTML = '';
     const past = isPast(event);
     const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
     const rsvp = past
       ? `<button class="button button-line feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
       : `<button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event, { featured: true })}`;
-    actions.innerHTML = `${rsvp}<button class="button button-line event-detail-download" type="button">Download Event Card</button>`;
+    actions.innerHTML = `${rsvp}<button class="button button-dark event-detail-download" type="button">Download IG card</button>`;
     actions.querySelector('.event-detail-download')?.addEventListener('click', () => downloadEventGraphic(event));
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
@@ -675,6 +681,13 @@
   }
 
   document.addEventListener('click', (event) => {
+    const ig = event.target.closest('[data-open-ig-card]');
+    if (ig) {
+      event.preventDefault();
+      event.stopPropagation();
+      openEventDetail(ig.dataset.openIgCard);
+      return;
+    }
     const poster = event.target.closest('#eventDetailModal [data-event-poster]');
     if (poster) {
       event.preventDefault();
@@ -682,7 +695,7 @@
       lightbox._openPoster(poster.dataset.eventPoster, poster.dataset.eventCaption || '');
       return;
     }
-    if (event.target.closest('.rsvp-button, .calendar-button, .feedback-button, .event-read-more, .event-detail-download, a, button, input, label')) return;
+    if (event.target.closest('.rsvp-button, .calendar-button, .feedback-button, .event-read-more, .event-detail-download, .event-ig-card, a, button, input, label')) return;
     const card = event.target.closest('.event-card[data-event-key], .featured-event[data-event-key]');
     if (!card) return;
     event.preventDefault();
