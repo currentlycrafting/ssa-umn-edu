@@ -350,7 +350,6 @@ if (newsletterModalForm) {
       localStorage.setItem('ssaNewsletterSubscribed', '1');
       syncNewsletterModalState();
       window.ssaNewsletter?.refreshCounts?.();
-      window.markChecklistStep?.('newsletter', 'Newsletter saved. Checklist complete.');
       if (out) out.textContent = 'You are in. Welcome to SSA.';
       window.setTimeout(() => closeNewsletterModal(false), 1100);
     } catch (error) {

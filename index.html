@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=31" />
+  <link rel="stylesheet" href="index.css?v=32" />
   <link rel="stylesheet" href="site-pages.css?v=26" />
   <script src="api.js"></script>
   <script>
@@ -302,17 +302,14 @@
         <input type="hidden" name="date" />
         <input type="text" name="name" placeholder="Name" required />
         <fieldset class="rsvp-choice">
-          <legend>Are you a student at the U of MN?</legend>
-          <div><label><input type="radio" name="isStudent" value="yes" required /><span>Yes</span></label><label><input type="radio" name="isStudent" value="no" /><span>No</span></label></div>
-        </fieldset>
-        <fieldset class="rsvp-choice rsvp-age-question" hidden>
-          <legend>Are you 18 or older?</legend>
-          <div><label><input type="radio" name="isOver18" value="yes" /><span>Yes</span></label><label><input type="radio" name="isOver18" value="no" /><span>No</span></label></div>
+          <legend>Are you bringing your college ID?</legend>
+          <div><label><input type="radio" name="bringCollegeId" value="yes" required /><span>Yes</span></label><label><input type="radio" name="bringCollegeId" value="no" /><span>No</span></label></div>
         </fieldset>
         <label class="rsvp-bring-toggle">
           <input type="checkbox" name="bringFriend" />
           <span class="rsvp-bring-face">I&apos;m bringing a friend (+1)</span>
         </label>
+        <p class="rsvp-plus-note">Plus-ones must be college students as well.</p>
         <input class="rsvp-friend-name" type="text" name="friendName" placeholder="Friend&apos;s name (optional)" hidden autocomplete="off" />
         <button class="button button-dark" type="submit">RSVP</button>
         <output></output>
@@ -320,13 +317,17 @@
       <form id="quickRsvpForm" class="quick-rsvp-form" hidden>
         <input type="hidden" name="event" />
         <input type="hidden" name="date" />
-        <h3>Are you coming?</h3>
+        <fieldset class="rsvp-choice">
+          <legend>Are you bringing your college ID?</legend>
+          <div><label><input type="radio" name="bringCollegeId" value="yes" required /><span>Yes</span></label><label><input type="radio" name="bringCollegeId" value="no" /><span>No</span></label></div>
+        </fieldset>
         <label class="rsvp-bring-toggle">
           <input type="checkbox" name="bringFriend" />
-          <span class="rsvp-bring-face">Yes — I&apos;m bringing a friend</span>
+          <span class="rsvp-bring-face">I&apos;m bringing a friend (+1)</span>
         </label>
+        <p class="rsvp-plus-note">Plus-ones must be college students as well.</p>
         <input class="rsvp-friend-name" type="text" name="friendName" placeholder="Friend&apos;s name (optional)" hidden autocomplete="off" />
-        <div class="quick-rsvp-actions"><button class="button button-dark" type="button" data-quick-coming="yes">Yes!</button><button class="button button-line" type="button" data-quick-coming="no">No</button></div>
+        <button class="button button-dark" type="button" data-quick-coming="yes">I&apos;m coming</button>
         <output></output>
       </form>
       <div class="rsvp-result" id="rsvpResult" hidden></div>
@@ -384,10 +385,9 @@
   <script src="motion.js"></script>
   <script src="nav.js?v=16"></script>
   <script src="micro.js?v=2"></script>
-  <script src="checklist.js?v=8"></script>
   <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=22"></script>
-  <script src="/rsvp.js?v=4"></script>
+  <script src="/events-render.js?v=23"></script>
+  <script src="/rsvp.js?v=5"></script>
   <script src="index.js?v=17"></script>
   <script src="/outreach.js?v=4"></script>
   <script src="/whats-new.js?v=8"></script>

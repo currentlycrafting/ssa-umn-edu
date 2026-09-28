@@ -39,6 +39,39 @@
     return event.shortDate || '';
   }
 
+  function eventWhen(event) {
+    if (event.startsAt) {
+      const date = new Date(event.startsAt);
+      if (!Number.isNaN(date.getTime())) {
+        return date.toLocaleString([], { weekday: 'short', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      }
+    }
+    if (event.dateLabel) {
+      const time = displayTime(event.startTime);
+      return time ? `${event.dateLabel} · ${time}` : event.dateLabel;
+    }
+    return displayTime(event.startTime) || 'Date TBD';
+  }
+
+  function eventWhere(event) {
+    return event.location || '';
+  }
+
+  function attendingLabel(event) {
+    const raw = document.querySelector(`[data-event-count="${CSS.escape(event.rsvpKey || '')}"]`)?.textContent;
+    const count = raw && raw !== '—' ? Number(raw) : null;
+    if (count == null || Number.isNaN(count)) return 'RSVPs coming in';
+    return `${count} ${count === 1 ? 'person' : 'people'} coming`;
+  }
+
+  function eventKey(event) {
+    return String(event.rsvpKey || event.id || event.title || '');
+  }
+
+  function findEvent(key) {
+    return (sourceEvents || []).find((event) => eventKey(event) === String(key));
+  }
+
   function setHidden(element, hidden) {
     if (!element) return;
     element.hidden = hidden;
@@ -96,12 +129,12 @@
   function featuredMarkup(event, options = {}) {
     const image = event.imageUrl || '';
     const art = image
-      ? `<div class="featured-event-art"><button type="button" class="event-poster-zoom" data-event-poster="${esc(image)}" data-event-caption="${esc(event.title)}" aria-label="View poster larger"><img src="${esc(image)}" alt="${esc(event.title)} poster" /></button></div>`
+      ? `<div class="featured-event-art"><img src="${esc(image)}" alt="${esc(event.title)} poster" /></div>`
       : '';
     const ribbon = options.ribbon
       ? '<span class="home-event-ribbon" aria-hidden="true">Next up</span>'
       : '';
-    const rsvpLabel = event.attendanceMode === 'quick' ? 'Are you coming?' : 'Reserve Your Spot';
+    const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
     return `
       ${ribbon}
       ${art}
@@ -130,14 +163,14 @@
     const time = event.startsAt
       ? new Date(event.startsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
       : displayTime(event.startTime);
-    const rsvpLabel = event.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP';
+    const rsvpLabel = 'RSVP';
     const poster = event.imageUrl
-      ? `<button type="button" class="event-card-poster event-poster-zoom" data-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View poster larger"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></button>`
+      ? `<div class="event-card-poster"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></div>`
       : '';
     const actions = past
       ? `<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
       : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}`;
-    return `<article class="event-card${past ? ' event-card--past' : ''}" data-event-id="${esc(event.id || '')}" ${past ? 'data-past="true"' : ''}>
+    return `<article class="event-card${past ? ' event-card--past' : ''}" data-event-id="${esc(event.id || '')}" data-event-key="${esc(eventKey(event))}" ${past ? 'data-past="true"' : ''}>
       ${poster}
       <div class="event-card-body">
         ${past ? '<span class="event-finished">Finished</span>' : ''}
@@ -163,10 +196,12 @@
     if (!target) return;
     if (!event) {
       target.innerHTML = '';
+      delete target.dataset.eventKey;
       setHidden(target, true);
       return;
     }
     target.innerHTML = featuredMarkup(event, options);
+    target.dataset.eventKey = eventKey(event);
     target.classList.toggle('featured-event--no-art', !event.imageUrl);
     setHidden(target, false);
   }
@@ -187,6 +222,7 @@
           <a class="button button-dark handdrawn" href="/suggest">Suggest an Event</a>
         </div>`;
       homeFeatured.classList.add('featured-event--no-art');
+      delete homeFeatured.dataset.eventKey;
       setHidden(homeFeatured, false);
     }
     if (homeRegular) {
@@ -214,7 +250,7 @@
       bar.className = 'event-sticky-rsvp';
       document.body.appendChild(bar);
     }
-    const rsvpLabel = featured.attendanceMode === 'quick' ? 'Are you coming?' : 'RSVP';
+    const rsvpLabel = 'RSVP';
     bar.innerHTML = `
       <div class="event-sticky-rsvp-inner">
         <div>
@@ -248,6 +284,7 @@
           <a class="button button-dark handdrawn" href="/suggest">Suggest an Event</a>
         </div>`;
       homeFeatured.classList.add('featured-event--no-art');
+      delete homeFeatured.dataset.eventKey;
       setHidden(homeFeatured, false);
     } else {
       renderFeatured(homeFeatured, null);
@@ -306,6 +343,263 @@
     };
     apply();
     requestAnimationFrame(apply);
+  }
+
+  function cssVar(name, fallback) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('image'));
+      img.src = src;
+    });
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + w, y, x + w, y + h, radius);
+    ctx.arcTo(x + w, y + h, x, y + h, radius);
+    ctx.arcTo(x, y + h, x, y, radius);
+    ctx.arcTo(x, y, x + w, y, radius);
+    ctx.closePath();
+  }
+
+  function wrapLines(ctx, text, maxWidth, maxLines) {
+    const words = String(text || '').split(/\s+/).filter(Boolean);
+    const lines = [];
+    let line = '';
+    words.forEach((word) => {
+      const next = line ? `${line} ${word}` : word;
+      if (ctx.measureText(next).width <= maxWidth) {
+        line = next;
+      } else {
+        if (line) lines.push(line);
+        line = word;
+      }
+    });
+    if (line) lines.push(line);
+    if (lines.length > maxLines) {
+      const clipped = lines.slice(0, maxLines);
+      let last = clipped[maxLines - 1];
+      while (last.length && ctx.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
+      clipped[maxLines - 1] = `${last}…`;
+      return clipped;
+    }
+    return lines;
+  }
+
+  function drawCover(ctx, img, x, y, w, h) {
+    const scale = Math.max(w / img.width, h / img.height);
+    const dw = img.width * scale;
+    const dh = img.height * scale;
+    const dx = x + (w - dw) / 2;
+    const dy = y + (h - dh) / 2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
+
+  async function downloadEventGraphic(event) {
+    const W = 1080;
+    const H = 1350;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const paper = cssVar('--paper', '#f6f8fb');
+    const ink = cssVar('--ink', '#16181d');
+    const muted = cssVar('--muted', '#6b7280');
+    const accent = cssVar('--accent', '#3d6d8c');
+    const blue = cssVar('--blue', '#9ec9e3');
+    const surface = cssVar('--surface', '#ffffff');
+    try { await document.fonts.ready; } catch (_) {}
+
+    ctx.fillStyle = paper;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = blue;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.arc(980, -40, 280, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-80, 1280, 260, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    let logo = null;
+    try { logo = await loadImage('/assets/brand/ssa-logo.png'); } catch (_) {}
+    if (logo) ctx.drawImage(logo, 72, 64, 86, 86);
+    ctx.fillStyle = ink;
+    ctx.font = '800 28px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillText('SSA', logo ? 176 : 72, 98);
+    ctx.fillStyle = muted;
+    ctx.font = '700 18px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.letterSpacing = '0.16em';
+    ctx.fillText('UNIVERSITY OF MINNESOTA', logo ? 176 : 72, 128);
+    ctx.letterSpacing = '0';
+
+    const mediaX = 72;
+    const mediaY = 180;
+    const mediaW = W - 144;
+    const mediaH = 560;
+    roundRectPath(ctx, mediaX, mediaY, mediaW, mediaH, 36);
+    ctx.save();
+    ctx.clip();
+    let poster = null;
+    if (event.imageUrl) {
+      try { poster = await loadImage(event.imageUrl); } catch (_) { poster = null; }
+    }
+    if (poster) {
+      drawCover(ctx, poster, mediaX, mediaY, mediaW, mediaH);
+    } else {
+      ctx.fillStyle = surface;
+      ctx.fillRect(mediaX, mediaY, mediaW, mediaH);
+      if (logo) ctx.drawImage(logo, mediaX + mediaW / 2 - 90, mediaY + mediaH / 2 - 90, 180, 180);
+    }
+    ctx.restore();
+    ctx.strokeStyle = cssVar('--line', '#e4e7ee');
+    ctx.lineWidth = 4;
+    roundRectPath(ctx, mediaX, mediaY, mediaW, mediaH, 36);
+    ctx.stroke();
+
+    let y = mediaY + mediaH + 56;
+    ctx.fillStyle = accent;
+    ctx.font = '800 20px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillText('SSA EVENT', 72, y);
+    y += 58;
+    ctx.fillStyle = ink;
+    ctx.font = '800 58px "Plus Jakarta Sans", system-ui, sans-serif';
+    wrapLines(ctx, event.title || 'SSA Event', mediaW, 3).forEach((line) => {
+      ctx.fillText(line, 72, y);
+      y += 64;
+    });
+    y += 8;
+    ctx.fillStyle = accent;
+    ctx.font = '750 28px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillText(eventWhen(event), 72, y);
+    y += 40;
+    if (eventWhere(event)) {
+      ctx.fillStyle = ink;
+      ctx.font = '700 26px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillText(eventWhere(event), 72, y);
+      y += 40;
+    }
+    if (event.description) {
+      y += 8;
+      ctx.fillStyle = muted;
+      ctx.font = '600 24px "Plus Jakarta Sans", system-ui, sans-serif';
+      wrapLines(ctx, event.description, mediaW, 3).forEach((line) => {
+        ctx.fillText(line, 72, y);
+        y += 34;
+      });
+    }
+
+    const pillText = attendingLabel(event);
+    ctx.font = '800 22px "Plus Jakarta Sans", system-ui, sans-serif';
+    const pillW = Math.min(mediaW, ctx.measureText(pillText).width + 48);
+    const pillY = H - 148;
+    roundRectPath(ctx, 72, pillY, pillW, 56, 28);
+    ctx.fillStyle = cssVar('--ink', '#16181d');
+    ctx.fill();
+    ctx.fillStyle = cssVar('--paper', '#ffffff');
+    ctx.fillText(pillText, 96, pillY + 37);
+
+    ctx.fillStyle = muted;
+    ctx.font = '700 20px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillText('@ssa.umn', W - 72 - ctx.measureText('@ssa.umn').width, H - 64);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const link = document.createElement('a');
+      const slug = String(event.title || 'event').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'event';
+      link.href = URL.createObjectURL(blob);
+      link.download = `ssa-${slug}.png`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(link.href), 1500);
+    }, 'image/png');
+  }
+
+  function ensureEventDetail() {
+    let modal = document.getElementById('eventDetailModal');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.className = 'modal-backdrop event-detail-modal';
+    modal.id = 'eventDetailModal';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+      <div class="event-detail-sheet modal-sheet modal-card" role="dialog" aria-modal="true" aria-labelledby="eventDetailTitle">
+        <div class="event-detail-art" id="eventDetailArt" hidden></div>
+        <span class="eyebrow">SSA Event</span>
+        <h2 id="eventDetailTitle"></h2>
+        <p class="event-detail-when" id="eventDetailWhen"></p>
+        <p class="event-detail-where" id="eventDetailWhere" hidden></p>
+        <p class="event-going"><span class="event-going-num" id="eventDetailCount">—</span> coming</p>
+        <p class="event-detail-copy" id="eventDetailCopy"></p>
+        <div class="event-detail-actions" id="eventDetailActions"></div>
+      </div>
+      <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>`;
+    document.body.appendChild(modal);
+
+    function close() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+    }
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) close();
+    });
+    modal.querySelector('.modal-exit')?.addEventListener('click', close);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('open')) close();
+    });
+    modal._close = close;
+    return modal;
+  }
+
+  function openEventDetail(key) {
+    const event = findEvent(key);
+    if (!event) return;
+    const modal = ensureEventDetail();
+    const art = modal.querySelector('#eventDetailArt');
+    const where = modal.querySelector('#eventDetailWhere');
+    const actions = modal.querySelector('#eventDetailActions');
+    modal.querySelector('#eventDetailTitle').textContent = event.title || 'SSA Event';
+    modal.querySelector('#eventDetailWhen').textContent = eventWhen(event);
+    if (eventWhere(event)) {
+      where.hidden = false;
+      where.textContent = eventWhere(event);
+    } else {
+      where.hidden = true;
+    }
+    modal.querySelector('#eventDetailCopy').textContent = event.description || '';
+    const countEl = modal.querySelector('#eventDetailCount');
+    const liveCount = document.querySelector(`[data-event-count="${CSS.escape(event.rsvpKey || '')}"]`);
+    countEl.textContent = liveCount?.textContent || '—';
+    countEl.dataset.eventCount = event.rsvpKey || '';
+    if (event.imageUrl) {
+      art.hidden = false;
+      art.innerHTML = `<button type="button" class="event-poster-zoom" data-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View poster larger"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" /></button>`;
+    } else {
+      art.hidden = true;
+      art.innerHTML = '';
+    }
+    const past = isPast(event);
+    const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
+    const rsvp = past
+      ? `<button class="button button-line feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
+      : `<button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event, { featured: true })}`;
+    actions.innerHTML = `${rsvp}<button class="button button-line event-detail-download" type="button">Download Event Card</button>`;
+    actions.querySelector('.event-detail-download')?.addEventListener('click', () => downloadEventGraphic(event));
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    document.dispatchEvent(new CustomEvent('ssa:events-rendered'));
   }
 
   function ensurePosterLightbox() {
@@ -381,11 +675,18 @@
   }
 
   document.addEventListener('click', (event) => {
-    const trigger = event.target.closest('[data-event-poster]');
-    if (!trigger) return;
+    const poster = event.target.closest('#eventDetailModal [data-event-poster]');
+    if (poster) {
+      event.preventDefault();
+      const lightbox = ensurePosterLightbox();
+      lightbox._openPoster(poster.dataset.eventPoster, poster.dataset.eventCaption || '');
+      return;
+    }
+    if (event.target.closest('.rsvp-button, .calendar-button, .feedback-button, .event-read-more, .event-detail-download, a, button, input, label')) return;
+    const card = event.target.closest('.event-card[data-event-key], .featured-event[data-event-key]');
+    if (!card) return;
     event.preventDefault();
-    const lightbox = ensurePosterLightbox();
-    lightbox._openPoster(trigger.dataset.eventPoster, trigger.dataset.eventCaption || '');
+    openEventDetail(card.dataset.eventKey);
   });
 
   function startCountdown(featured) {

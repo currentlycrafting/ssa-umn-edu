@@ -881,8 +881,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
             if not event_name or not event_date or not name:
                 self._send_json(400, {"error": "Event, date, and name are required."})
                 return
-            if not is_student and not is_over_18:
-                self._send_json(403, {"error": "You must be a U of MN student or at least 18 years old to RSVP."})
+            if not is_student:
+                self._send_json(403, {"error": "You must bring a college ID to RSVP. Plus-ones must be college students as well."})
                 return
             display_name = name
             if bring_friend:

@@ -434,7 +434,6 @@ nameForm.addEventListener('submit', async (event) => {
   if (saveBtn) saveBtn.classList.remove('is-loading');
   if (localStorage.getItem('ssaGameSubmitted') !== '1') {
     localStorage.setItem('ssaGameSubmitted', '1');
-    window.markChecklistStep?.('game', 'Score saved — game step complete.');
   }
   resultMeta.textContent = 'Saved. Thanks for playing — come back to beat your time.';
   nameInput.style.display = 'none';

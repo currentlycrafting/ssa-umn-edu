@@ -92,13 +92,12 @@
   }
 
   function syncEligibility() {
-    const isStudent = form.elements.isStudent.value;
-    const ageQuestion = form.querySelector('.rsvp-age-question');
-    ageQuestion.hidden = isStudent !== 'no';
-    ageQuestion.querySelectorAll('input').forEach((input) => {
-      input.required = isStudent === 'no' && input.value === 'yes';
-      if (isStudent !== 'no') input.checked = false;
-    });
+    const field = form.elements.bringCollegeId;
+    if (!field) return;
+  }
+
+  function bringingId(targetForm) {
+    return targetForm.elements.bringCollegeId?.value === 'yes';
   }
 
   function syncBringFriend(targetForm) {
@@ -202,9 +201,6 @@
     };
   }
 
-  Array.from(form.elements.isStudent || []).forEach((input) => {
-    input.addEventListener('change', syncEligibility);
-  });
   form.querySelector('[name="bringFriend"]')?.addEventListener('change', () => syncBringFriend(form));
   quickForm.querySelector('[name="bringFriend"]')?.addEventListener('change', () => syncBringFriend(quickForm));
 
@@ -214,11 +210,9 @@
       showAttendees(form.event.value);
       return;
     }
-    const isStudent = form.elements.isStudent.value === 'yes';
-    const isOver18 = form.elements.isOver18.value === 'yes';
     const output = form.querySelector('output');
-    if (!isStudent && !isOver18) {
-      output.textContent = 'You must be a U of MN student or at least 18 years old to RSVP.';
+    if (!bringingId(form)) {
+      output.textContent = 'You need to bring a college ID to RSVP. Plus-ones must be college students as well.';
       return;
     }
     const extras = partyPayload(form);
@@ -232,15 +226,14 @@
           event: eventName,
           date: form.date.value,
           name: form.name.value.trim(),
-          isStudent,
-          isOver18,
+          isStudent: true,
+          isOver18: true,
           ...extras
         }
       });
       saveRsvp(eventName);
       setCount(eventName, data.count || 0);
       updateButtons();
-      window.markChecklistStep?.('events', 'RSVP saved. Events step complete.');
       renderAttendees(data);
     } catch (error) {
       output.textContent = error.message || 'Could not save RSVP.';
@@ -251,13 +244,12 @@
 
   quickForm.querySelectorAll('[data-quick-coming]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const coming = button.dataset.quickComing === 'yes';
-      if (!coming) {
-        closeModal();
+      const output = quickForm.querySelector('output');
+      if (!bringingId(quickForm)) {
+        output.textContent = 'You need to bring a college ID to attend. Plus-ones must be college students as well.';
         return;
       }
       const extras = partyPayload(quickForm);
-      const output = quickForm.querySelector('output');
       quickForm.querySelectorAll('button').forEach((item) => { item.disabled = true; });
       try {
         const eventName = quickForm.event.value;
@@ -267,13 +259,13 @@
             event: eventName,
             date: quickForm.date.value,
             coming: true,
+            isStudent: true,
             ...extras
           }
         });
         saveRsvp(eventName);
         setCount(eventName, data.count || 0);
         updateButtons();
-        window.markChecklistStep?.('events', 'Event response saved. Events step complete.');
         renderAttendees(data);
       } catch (error) {
         output.textContent = error.message || 'Could not save your response.';
