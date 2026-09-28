@@ -2577,8 +2577,10 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   filter: invert(1) hue-rotate(185deg) brightness(.82) saturate(1.05);
   opacity: .22;
 }
-.game-page main, .game-page .nav, .game-page .footer,
-.events-page main, .events-page .nav, .events-page .footer { position: relative; z-index: 1; }
+.game-page main, .game-page .footer,
+.events-page main, .events-page .footer { position: relative; z-index: 1; }
+.game-page .nav,
+.events-page .nav { z-index: 50; }
 .game-wrap {
   width: min(640px, calc(100% - 36px));
   margin: 0 auto;
