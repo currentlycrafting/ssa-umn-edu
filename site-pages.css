@@ -118,7 +118,7 @@
 .featured-event-copy { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
 .featured-event-copy .event-copy-stack { margin-top: 4px; }
 .featured-event-actions { margin-top: auto; padding-top: 12px; flex: 0 0 auto; display: grid; gap: 10px; justify-items: start; }
-.featured-event-actions .button,
+.featured-event-actions .button:not(.event-ig-card),
 .featured-event-actions .calendar-button { width: min(100%, 280px); }
 .featured-event-actions .event-calendar-split { width: min(100%, 280px); }
 .featured-event-body h3 { margin: 0 0 4px; font-size: clamp(28px, 5vw, 44px); letter-spacing: -.04em; }
@@ -366,6 +366,7 @@
   border-radius: 28px;
   background: var(--surface);
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
 .aux-request-queue .eyebrow { font-size: 13px; letter-spacing: .12em; }
 .aux-request-queue .aux-section-head h2 {
@@ -392,15 +393,44 @@
   letter-spacing: -.05em;
   line-height: 1.05;
 }
-.aux-queue { display: grid; gap: 10px; }
+.aux-queue { display: grid; gap: 10px; min-width: 0; }
 .aux-item {
-  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-  border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+}
+.aux-item-num {
+  flex: 0 0 auto;
+  min-width: 20px;
+  font-weight: 900;
+  color: var(--muted);
 }
 .aux-item img { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
-.aux-item-main { flex: 1; min-width: 0; }
-.aux-item-song { font-weight: 850; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.aux-item-meta { color: var(--muted); font-size: 12px; font-weight: 700; }
+.aux-item-main { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+.aux-item-song {
+  font-weight: 850;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.aux-item-meta {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
 .aux-remove-own { min-height: 36px; padding: 0 12px; flex-shrink: 0; font-size: 12px; }
 .aux-empty { text-align: center; color: var(--muted); padding: 24px; font-weight: 700; }
 .aux-results { display: grid; gap: 8px; margin-top: 10px; }
@@ -2599,13 +2629,11 @@
 .home-explore { padding-top: 12px; }
 .home-explore-grid {
   grid-template-areas:
-    "games aux"
-    "bulletin more";
+    "aux more";
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.3fr);
 }
-.home-explore-grid .home-explore-cell:nth-child(1) { grid-area: games; }
-.home-explore-grid .home-explore-cell:nth-child(2) { grid-area: aux; }
-.home-explore-grid .home-explore-cell:nth-child(3) { grid-area: bulletin; }
-.home-explore-grid .home-explore-cell:nth-child(4) { grid-area: more; }
+.home-explore-grid .home-explore-cell:nth-child(1) { grid-area: aux; }
+.home-explore-grid .home-explore-cell:nth-child(2) { grid-area: more; }
 .home-explore-cell h3 {
   margin: 0 0 8px;
   font-size: clamp(22px, 3vw, 30px);
@@ -2686,11 +2714,18 @@
 }
 .home-board-snap {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(12, 1fr);
   gap: 8px;
-  margin: 0 0 12px;
+  margin: 0;
   flex: 1 1 auto;
   width: 100%;
+}
+.home-board-snap .home-board-card:nth-child(-n+3) { grid-column: span 4; }
+.home-board-snap .home-board-card:nth-child(n+4) { grid-column: span 3; }
+@media (max-width: 720px) {
+  .home-board-snap { grid-template-columns: 1fr 1fr; }
+  .home-board-snap .home-board-card:nth-child(-n+3),
+  .home-board-snap .home-board-card:nth-child(n+4) { grid-column: auto; }
 }
 .home-explore-board .home-board-card.board-card {
   margin: 0;
@@ -2938,10 +2973,9 @@
   }
   .home-explore-grid {
     grid-template-areas:
-      "games"
       "aux"
-      "bulletin"
       "more";
+    grid-template-columns: 1fr;
   }
   .home-suggest-feed-compact {
     grid-template-columns: 1fr;

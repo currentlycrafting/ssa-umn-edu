@@ -31,15 +31,15 @@
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
         <a href="/newsletter">Newsletter</a>
-        <a href="/suggest">Suggest an Event</a>
         <a href="/gallery">Gallery</a>
-        <a href="/bulletin">Bulletin</a>
+        <a href="/timeline">Timeline</a>
         <div class="nav-options">
           <button class="nav-options-toggle" type="button" aria-label="More pages" aria-expanded="false" aria-controls="navOptionsMenu">
             <span class="nav-options-icon" aria-hidden="true"></span>
           </button>
           <div class="nav-options-menu" id="navOptionsMenu">
-            <a href="/timeline">Timeline</a>
+            <a href="/suggest">Suggest an Event</a>
+            <a href="/bulletin">Bulletin</a>
             <a href="/aux">Want The Aux</a>
             <a href="/games">Arcade</a>
             <a href="/donate">Donate</a>
@@ -141,7 +141,7 @@
       a.classList.add('active');
     }
   });
-  if (['/daily', '/connections', '/games', '/donate', '/board', '/schedule'].includes(path)) {
+  if (['/daily', '/connections', '/games', '/donate', '/board', '/schedule', '/suggest', '/bulletin'].includes(path)) {
     optionsToggle?.classList.add('active');
   }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');

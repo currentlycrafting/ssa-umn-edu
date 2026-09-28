@@ -72,7 +72,7 @@
 
   function igCardButton(event, featured) {
     const classes = featured ? 'button button-line event-ig-card' : 'micro-button event-ig-card';
-    return `<button class="${classes}" type="button" data-open-ig-card="${esc(eventKey(event))}">Download IG card</button>`;
+    return `<button class="${classes}" type="button" data-open-ig-card="${esc(eventKey(event))}" aria-label="Download IG card" title="Download IG card"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.15" cy="6.85" r="1.15" fill="currentColor"/></svg></button>`;
   }
 
   function eventKey(event) {
@@ -513,7 +513,7 @@
     }
 
     const count = attendingCount(event);
-    const countY = H - 156;
+    const countY = Math.min(H - 168, y + 128);
     ctx.fillStyle = ink;
     ctx.font = '900 108px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.fillText(count == null ? '—' : String(count), 72, countY);
