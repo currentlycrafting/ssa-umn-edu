@@ -30,7 +30,6 @@
       links.innerHTML = `
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
-        <a href="/newsletter">Newsletter</a>
         <a href="/gallery">Gallery</a>
         <a href="/board">Board</a>
         <a href="/timeline">Timeline</a>
@@ -41,6 +40,7 @@
           <div class="nav-options-menu" id="navOptionsMenu">
             <a href="/suggest">Suggest an Event</a>
             <a href="/bulletin">Bulletin</a>
+            <a href="/newsletter">Newsletter</a>
             <a href="/aux">Want The Aux</a>
             <a href="/games">Arcade</a>
             <a href="/donate">Donate</a>
@@ -141,7 +141,10 @@
       a.classList.add('active');
     }
   });
-  if (['/daily', '/connections', '/games', '/donate', '/schedule', '/suggest', '/bulletin'].includes(path)) {
+  if (['/daily', '/connections', '/games', '/donate', '/schedule', '/suggest', '/bulletin', '/newsletter'].includes(path)
+    || path.endsWith('/newsletter-page.html')
+    || path === '/newsletter/studio'
+    || path.endsWith('/newsletter-studio.html')) {
     optionsToggle?.classList.add('active');
   }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
