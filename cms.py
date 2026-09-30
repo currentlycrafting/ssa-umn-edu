@@ -606,6 +606,55 @@ def vote_event_suggestion(suggestion_id, payload):
     return 200, {"ok": True, "already": False, "votes": votes}
 
 
+def kickoff_id_poll_counts(guest_token=""):
+    token = str(guest_token or "").strip()[:80]
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT
+              COUNT(*) FILTER (WHERE answer = 'yes') AS yes_count,
+              COUNT(*) FILTER (WHERE answer = 'no') AS no_count
+            FROM kickoff_id_votes
+            """
+        )
+        row = cur.fetchone() or {}
+        mine = None
+        if len(token) >= 16:
+            cur.execute(
+                "SELECT answer FROM kickoff_id_votes WHERE guest_token = %s",
+                (token,),
+            )
+            mine_row = cur.fetchone()
+            if mine_row:
+                mine = mine_row["answer"]
+    return {
+        "ok": True,
+        "yes": int(row.get("yes_count") or 0),
+        "no": int(row.get("no_count") or 0),
+        "mine": mine,
+    }
+
+
+def vote_kickoff_id_poll(payload):
+    guest_token = str(payload.get("guestToken", "")).strip()[:80]
+    answer = str(payload.get("answer", "")).strip().lower()
+    if len(guest_token) < 16:
+        return 400, {"error": "Missing voter id."}
+    if answer not in ("yes", "no"):
+        return 400, {"error": "Choose yes or no."}
+    with db() as cur:
+        cur.execute(
+            """
+            INSERT INTO kickoff_id_votes (guest_token, answer, created_at, updated_at)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (guest_token) DO UPDATE
+            SET answer = EXCLUDED.answer, updated_at = EXCLUDED.updated_at
+            """,
+            (guest_token, answer, utcnow(), utcnow()),
+        )
+    return 200, kickoff_id_poll_counts(guest_token)
+
+
 def list_event_suggestions():
     with db() as cur:
         cur.execute(
@@ -934,6 +983,10 @@ def init_tables():
             "BOOLEAN NOT NULL DEFAULT FALSE"
         )
         cur.execute(
+            "ALTER TABLE events ADD COLUMN IF NOT EXISTS instagram_tags "
+            "JSONB NOT NULL DEFAULT '[]'::jsonb"
+        )
+        cur.execute(
             "ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS votes INTEGER NOT NULL DEFAULT 0"
         )
         cur.execute(
@@ -968,6 +1021,16 @@ def init_tables():
                 p256dh TEXT NOT NULL DEFAULT '',
                 auth TEXT NOT NULL DEFAULT '',
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS kickoff_id_votes (
+                guest_token TEXT PRIMARY KEY,
+                answer TEXT NOT NULL CHECK (answer IN ('yes', 'no')),
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ
             )
             """
         )

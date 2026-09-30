@@ -8,6 +8,30 @@
     }[char]));
   }
 
+  const MENTION_RE = /@\[([^\]]+)\]\((https?:\/\/(?:www\.)?instagram\.com\/[^\s)]+)\)/gi;
+
+  function plainDescription(text) {
+    return String(text || '').replace(MENTION_RE, '$1');
+  }
+
+  function descriptionHtml(event) {
+    const text = String(event?.description || '');
+    if (!text) return '';
+    let html = '';
+    let last = 0;
+    const re = new RegExp(MENTION_RE.source, 'gi');
+    let match;
+    while ((match = re.exec(text))) {
+      html += esc(text.slice(last, match.index));
+      const label = esc(match[1]);
+      const href = esc(match[2]);
+      html += `<a class="event-ig-tag" href="${href}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+      last = match.index + match[0].length;
+    }
+    html += esc(text.slice(last));
+    return html;
+  }
+
   function displayTime(startTime) {
     if (!startTime) return '';
     const [hours, minutes] = startTime.split(':').map(Number);
@@ -140,7 +164,7 @@
   function featuredMarkup(event, options = {}) {
     const image = event.imageUrl || '';
     const art = image
-      ? `<div class="featured-event-art"><img src="${esc(image)}" alt="${esc(event.title)} poster" /></div>`
+      ? `<button class="featured-event-art" type="button" data-open-event-poster="${esc(image)}" data-event-caption="${esc(event.title)}" aria-label="View ${esc(event.title)} poster"><img src="${esc(image)}" alt="${esc(event.title)} poster" /></button>`
       : '';
     const ribbon = options.ribbon
       ? '<span class="home-event-ribbon" aria-hidden="true">Next up</span>'
@@ -157,7 +181,7 @@
           ${event.startsAt ? `<div class="featured-countdown" id="cmsFeaturedCountdown" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
           <p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>
           <div class="event-copy-stack">
-            <p class="featured-copy event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
+            <p class="featured-copy event-card-copy is-clamped" data-full-copy>${descriptionHtml(event)}</p>
             <button class="event-read-more" type="button" hidden>Read more</button>
           </div>
         </div>
@@ -177,7 +201,7 @@
       : displayTime(event.startTime);
     const rsvpLabel = 'RSVP';
     const poster = event.imageUrl
-      ? `<div class="event-card-poster"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></div>`
+      ? `<button class="event-card-poster" type="button" data-open-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View ${esc(event.title)} poster"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></button>`
       : '';
     const actions = past
       ? `<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>${igCardButton(event)}`
@@ -190,7 +214,7 @@
         <h3>${esc(event.title)}</h3>
         ${past ? '' : `<p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>`}
         <div class="event-copy-stack">
-          <p class="event-card-copy is-clamped" data-full-copy>${esc(event.description)}</p>
+          <p class="event-card-copy is-clamped" data-full-copy>${descriptionHtml(event)}</p>
           <button class="event-read-more" type="button" hidden>Read more</button>
         </div>
       </div>
@@ -506,7 +530,7 @@
       y += 8;
       ctx.fillStyle = muted;
       ctx.font = '600 24px "Plus Jakarta Sans", system-ui, sans-serif';
-      wrapLines(ctx, event.description, mediaW, 3).forEach((line) => {
+      wrapLines(ctx, plainDescription(event.description), mediaW, 3).forEach((line) => {
         ctx.fillText(line, 72, y);
         y += 34;
       });
@@ -588,7 +612,7 @@
     } else {
       where.hidden = true;
     }
-    modal.querySelector('#eventDetailCopy').textContent = event.description || '';
+    modal.querySelector('#eventDetailCopy').innerHTML = descriptionHtml(event);
     const countEl = modal.querySelector('#eventDetailCount');
     const liveCount = document.querySelector(`[data-event-count="${CSS.escape(event.rsvpKey || '')}"]`);
     countEl.textContent = liveCount?.textContent || '—';
@@ -688,14 +712,17 @@
       openEventDetail(ig.dataset.openIgCard);
       return;
     }
-    const poster = event.target.closest('#eventDetailModal [data-event-poster]');
-    if (poster) {
+    const openPoster = event.target.closest('[data-open-event-poster], #eventDetailModal [data-event-poster]');
+    if (openPoster) {
       event.preventDefault();
+      event.stopPropagation();
+      const src = openPoster.dataset.openEventPoster || openPoster.dataset.eventPoster;
+      if (!src) return;
       const lightbox = ensurePosterLightbox();
-      lightbox._openPoster(poster.dataset.eventPoster, poster.dataset.eventCaption || '');
+      lightbox._openPoster(src, openPoster.dataset.eventCaption || '');
       return;
     }
-    if (event.target.closest('.rsvp-button, .calendar-button, .feedback-button, .event-read-more, .event-detail-download, .event-ig-card, a, button, input, label')) return;
+    if (event.target.closest('.rsvp-button, .calendar-button, .feedback-button, .event-read-more, .event-detail-download, .event-ig-card, .event-card-poster, .featured-event-art, a, button, input, label')) return;
     const card = event.target.closest('.event-card[data-event-key], .featured-event[data-event-key]');
     if (!card) return;
     event.preventDefault();

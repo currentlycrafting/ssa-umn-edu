@@ -18,8 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=36" />
-  <link rel="stylesheet" href="site-pages.css?v=32" />
+  <link rel="stylesheet" href="index.css?v=42" />
+  <link rel="stylesheet" href="site-pages.css?v=38" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -74,9 +74,10 @@
         <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
         <p class="hero-listen">We&apos;re always looking and listening — ask, and you&apos;ll receive.</p>
-        <div class="hero-actions">
-          <button class="button button-dark handdrawn" type="button" data-open-outreach>Reach us</button>
+        <div class="hero-actions hero-actions-song">
+          <a class="button button-dark handdrawn hero-song-btn" href="/aux">Change the song?</a>
         </div>
+        <p class="hero-song-note">At events you can change what’s playing — open Want the Aux and queue a track for the room.</p>
         <div class="hero-meter year-montage" aria-label="SSA since 1998">
           <span class="ym-label">Serving Somali students</span>
           <div class="ym-year" id="ymYear">1998</div>
@@ -88,6 +89,69 @@
         <span class="has-tip" data-tip="Events, mixers, service">Community</span>
         <span class="has-tip" data-tip="Committees and board roles">Leadership</span>
         <span class="has-tip" data-tip="Mentorship and belonging">Student Support</span>
+      </div>
+    </section>
+
+    <section class="section home-kickoff" id="kickoff">
+      <div class="section-head">
+        <span class="eyebrow">Fall Kickoff</span>
+        <h2>Welcome to SSA&apos;s Fall Kickoff</h2>
+        <p>Music, vendors, parking, and everything you need for the night.</p>
+      </div>
+
+      <div class="kickoff-layout">
+        <div class="kickoff-top">
+          <div class="kickoff-now-wrap">
+            <a class="aux-now kickoff-aux-now" id="kickoffAuxNow" href="/aux" aria-live="polite" aria-label="Open Want the Aux">
+              <div class="aux-now-label">Now playing</div>
+              <img src="/assets/brand/ssa-logo.png" alt="" />
+              <div class="aux-now-copy">
+                <div class="aux-np-title">Checking what’s on…</div>
+                <div class="aux-np-artist"></div>
+              </div>
+            </a>
+          </div>
+
+          <aside class="home-parking kickoff-parking" aria-label="Fall Kickoff parking">
+            <span class="eyebrow">Fall Kickoff</span>
+            <h3>Parking</h3>
+            <p>14 Church St SE, Minneapolis, MN 55455 for the kickoff.</p>
+            <a class="button button-dark handdrawn" href="https://maps.google.com/?q=14+Church+St+SE,+Minneapolis,+MN+55455" target="_blank" rel="noopener">Open in Maps</a>
+          </aside>
+        </div>
+
+        <div class="kickoff-vendors">
+          <span class="eyebrow">Vendors</span>
+          <h3>Vendor list</h3>
+          <div class="kickoff-vendor-row">
+            <a class="kickoff-vendor" href="https://www.instagram.com/pictureperfectmn/" target="_blank" rel="noopener noreferrer">
+              <img src="/assets/vendors/picture-perfect.jpg" alt="Picture Perfect" />
+              <strong>Picture Perfect</strong>
+              <span>@pictureperfectmn</span>
+            </a>
+            <a class="kickoff-vendor" href="https://www.instagram.com/sweethavenco_/" target="_blank" rel="noopener noreferrer">
+              <img src="/assets/vendors/sweet-haven.jpg" alt="Sweet Haven Co" />
+              <strong>Sweet Haven</strong>
+              <span>@sweethavenco_</span>
+            </a>
+            <a class="kickoff-vendor" href="https://www.instagram.com/shotbyrvna/" target="_blank" rel="noopener noreferrer">
+              <img src="/assets/vendors/rina.jpg" alt="Rina · ShotByRVNA" />
+              <strong>Rina</strong>
+              <span>@shotbyrvna</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="kickoff-id" id="kickoffIdPoll">
+          <span class="eyebrow">Entry</span>
+          <h3>College IDs required</h3>
+          <p>Do you have your college ID?</p>
+          <div class="kickoff-id-actions">
+            <button class="button button-dark handdrawn" type="button" data-kickoff-id="yes">Yes</button>
+            <button class="button button-line handdrawn" type="button" data-kickoff-id="no">No</button>
+          </div>
+          <p class="kickoff-id-counts" id="kickoffIdCounts" aria-live="polite">Yes 0 · No 0</p>
+        </div>
       </div>
     </section>
 
@@ -139,13 +203,6 @@
         <button class="button button-line handdrawn" type="button" id="homeNewsletterOpen">Subscribe</button>
         <button class="button button-line handdrawn" type="button" data-open-outreach>Other ways to reach us</button>
       </nav>
-
-      <aside class="home-parking" aria-label="Fall Kickoff parking">
-        <span class="eyebrow">Fall Kickoff</span>
-        <h3>Nolte Center</h3>
-        <p>Enter at 14 Church St SE, Minneapolis, MN 55455 for the kickoff.</p>
-        <a class="button button-dark handdrawn" href="https://maps.google.com/?q=14+Church+St+SE,+Minneapolis,+MN+55455" target="_blank" rel="noopener">Open in Maps</a>
-      </aside>
     </section>
 
     <section class="section home-explore" id="explore">
@@ -165,19 +222,19 @@
             <span class="eyebrow">Board</span>
             <a href="/board">Meet →</a>
           </div>
-          <h3>Leadership</h3>
+          <h3>Meet the Board</h3>
           <div class="home-board-snap" id="homeBoardSnap" aria-label="SSA board">
             <article class="board-card home-board-card" data-member-name="Salman Said"><span class="board-role">President</span><h3>Salman Said</h3></article>
-            <article class="board-card home-board-card" data-member-name="Suhaila Osman"><span class="board-role">External Vice-President</span><h3>Suhaila Osman</h3></article>
             <article class="board-card home-board-card" data-member-name="Ruweyda Warsame"><span class="board-role">Internal Vice-President</span><h3>Ruweyda Warsame</h3></article>
-            <article class="board-card home-board-card" data-member-name="Muno Aynab"><span class="board-role">Community Outreach</span><h3>Muno Aynab</h3></article>
-            <article class="board-card home-board-card" data-member-name="Kamila Deef"><span class="board-role">Event Coordinator</span><h3>Kamila Deef</h3></article>
-            <article class="board-card home-board-card" data-member-name="Zakaria Samatar"><span class="board-role">Event Coordinator &amp; Social Media &amp; Marketing</span><h3>Zakaria Samatar</h3></article>
-            <article class="board-card home-board-card" data-member-name="Suhaib Mohamed"><span class="board-role">Treasurer</span><h3>Suhaib Mohamed</h3></article>
-            <article class="board-card home-board-card" data-member-name="Zakaria Hussein"><span class="board-role">Treasurer</span><h3>Zakaria Hussein</h3></article>
+            <article class="board-card home-board-card" data-member-name="Suhaila Osman"><span class="board-role">External Vice-President</span><h3>Suhaila Osman</h3></article>
             <article class="board-card home-board-card" data-member-name="Salma Tawane"><span class="board-role">Committee Chair</span><h3>Salma Tawane</h3></article>
             <article class="board-card home-board-card" data-member-name="Bashir Mumin"><span class="board-role">Committee Chair</span><h3>Bashir Mumin</h3></article>
-            <article class="board-card home-board-card" data-member-name="Asma Yusuf"><span class="board-role">Social Media &amp; Marketing</span><h3>Asma Yusuf</h3></article>
+            <article class="board-card home-board-card" data-member-name="Zakaria Samatar"><span class="board-role">Event Coordinator &amp; Social Media &amp; Marketing Coordinator</span><h3>Zakaria Samatar</h3></article>
+            <article class="board-card home-board-card" data-member-name="Kamila Deef"><span class="board-role">Event Coordinator</span><h3>Kamila Deef</h3></article>
+            <article class="board-card home-board-card" data-member-name="Asma Yusuf"><span class="board-role">Social Media &amp; Marketing Coordinator</span><h3>Asma Yusuf</h3></article>
+            <article class="board-card home-board-card" data-member-name="Zakaria Hussein"><span class="board-role">Treasurer</span><h3>Zakaria Hussein</h3></article>
+            <article class="board-card home-board-card" data-member-name="Suhaib Mohamed"><span class="board-role">Treasury</span><h3>Suhaib Mohamed</h3></article>
+            <article class="board-card home-board-card" data-member-name="Muno Aynab"><span class="board-role">Community Outreach</span><h3>Muno Aynab</h3></article>
           </div>
         </article>
       </div>
@@ -356,12 +413,12 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=17"></script>
+  <script src="nav.js?v=18"></script>
   <script src="micro.js?v=2"></script>
   <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=26"></script>
+  <script src="/events-render.js?v=28"></script>
   <script src="/rsvp.js?v=5"></script>
-  <script src="index.js?v=17"></script>
+  <script src="index.js?v=18"></script>
   <script src="/outreach.js?v=4"></script>
   <script src="/whats-new.js?v=8"></script>
   <script>

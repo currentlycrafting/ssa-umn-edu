@@ -32,6 +32,7 @@
         <a href="/events">Events</a>
         <a href="/newsletter">Newsletter</a>
         <a href="/gallery">Gallery</a>
+        <a href="/board">Board</a>
         <a href="/timeline">Timeline</a>
         <div class="nav-options">
           <button class="nav-options-toggle" type="button" aria-label="More pages" aria-expanded="false" aria-controls="navOptionsMenu">
@@ -43,7 +44,6 @@
             <a href="/aux">Want The Aux</a>
             <a href="/games">Arcade</a>
             <a href="/donate">Donate</a>
-            <a href="/board">Board</a>
             <a href="/schedule">Schedule a meeting</a>
           </div>
         </div>`;
@@ -141,7 +141,7 @@
       a.classList.add('active');
     }
   });
-  if (['/daily', '/connections', '/games', '/donate', '/board', '/schedule', '/suggest', '/bulletin'].includes(path)) {
+  if (['/daily', '/connections', '/games', '/donate', '/schedule', '/suggest', '/bulletin'].includes(path)) {
     optionsToggle?.classList.add('active');
   }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
@@ -158,7 +158,7 @@
           <a href="/timeline">Timeline</a>
           <a href="/aux">Want The Aux</a>
           <a href="/donate">Donate</a>
-          <a href="/board">Board</a>
+          <a href="/board">Meet the Board</a>
         </nav>
         <div class="social-row">
           <a href="mailto:ssa@umn.edu">Email</a>

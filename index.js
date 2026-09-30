@@ -252,29 +252,111 @@ async function loadHomeArcadeBoard() {
 }
 loadHomeArcadeBoard();
 
+function paintKickoffAuxNow(host, data) {
+  const np = data?.nowPlaying;
+  if (!data?.djConnected || !np) {
+    host.innerHTML = `
+      <div class="aux-now-label">Now playing</div>
+      <img src="/assets/brand/ssa-logo.png" alt="" />
+      <div class="aux-now-copy">
+        <div class="aux-np-title">Nothing playing yet</div>
+        <div class="aux-np-artist">Open Want the Aux when the DJ is live</div>
+      </div>`;
+    return;
+  }
+  host.innerHTML = `
+    <div class="aux-now-label">Now playing</div>
+    <img src="${escapeHtml(np.albumImage || '/assets/brand/ssa-logo.png')}" alt="" />
+    <div class="aux-now-copy">
+      <div class="aux-np-title">${escapeHtml(np.songName || 'Unknown track')}</div>
+      <div class="aux-np-artist">${escapeHtml(np.artist || '')}</div>
+    </div>`;
+}
+
 async function loadHomeAuxNow() {
+  const kickoffHost = document.getElementById('kickoffAuxNow');
   const host = document.getElementById('homeAuxNow');
-  if (!host) return;
+  if (!kickoffHost && !host) return;
   try {
     const data = await getJson('/api/aux/state');
-    const np = data.nowPlaying;
-    if (!data.djConnected || !np) {
-      host.innerHTML = '<p class="home-explore-empty">Nothing playing yet — open Want the Aux when the DJ is live.</p>';
-      return;
+    if (kickoffHost) paintKickoffAuxNow(kickoffHost, data);
+    if (host) {
+      const np = data.nowPlaying;
+      if (!data.djConnected || !np) {
+        host.innerHTML = '<p class="home-explore-empty">Nothing playing yet — open Want the Aux when the DJ is live.</p>';
+      } else {
+        host.innerHTML = `<div class="home-aux-now">
+          <img src="${escapeHtml(np.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
+          <div>
+            <span class="eyebrow">Now playing</span>
+            <h4>${escapeHtml(np.songName || 'Unknown track')}</h4>
+            <p>${escapeHtml(np.artist || '')}</p>
+          </div>
+        </div>`;
+      }
     }
-    host.innerHTML = `<div class="home-aux-now">
-      <img src="${escapeHtml(np.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
-      <div>
-        <span class="eyebrow">Now playing</span>
-        <h4>${escapeHtml(np.songName || 'Unknown track')}</h4>
-        <p>${escapeHtml(np.artist || '')}</p>
-      </div>
-    </div>`;
   } catch (_) {
-    host.innerHTML = '<p class="home-explore-empty">Could not load the live queue.</p>';
+    if (kickoffHost) {
+      paintKickoffAuxNow(kickoffHost, null);
+      kickoffHost.querySelector('.aux-np-title').textContent = 'Could not load the live queue';
+      kickoffHost.querySelector('.aux-np-artist').textContent = '';
+    }
+    if (host) host.innerHTML = '<p class="home-explore-empty">Could not load the live queue.</p>';
   }
 }
 loadHomeAuxNow();
+window.setInterval(loadHomeAuxNow, 12000);
+
+function kickoffGuestId() {
+  let id = localStorage.getItem('ssaKickoffGuestId') || '';
+  if (id.length < 16) {
+    id = window.crypto?.randomUUID?.() || `kickoff-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem('ssaKickoffGuestId', id);
+  }
+  return id;
+}
+
+function paintKickoffIdCounts(data) {
+  const counts = document.getElementById('kickoffIdCounts');
+  const poll = document.getElementById('kickoffIdPoll');
+  if (!counts) return;
+  const yes = Number(data?.yes) || 0;
+  const no = Number(data?.no) || 0;
+  counts.textContent = `Yes ${yes} · No ${no}`;
+  poll?.querySelectorAll('[data-kickoff-id]').forEach((button) => {
+    button.classList.toggle('is-selected', data?.mine === button.dataset.kickoffId);
+  });
+}
+
+async function loadKickoffIdPoll() {
+  const poll = document.getElementById('kickoffIdPoll');
+  if (!poll) return;
+  try {
+    const data = await getJson(`/api/kickoff/id-poll?guest=${encodeURIComponent(kickoffGuestId())}`);
+    paintKickoffIdCounts(data);
+  } catch (_) {
+    const counts = document.getElementById('kickoffIdCounts');
+    if (counts) counts.textContent = 'Counter unavailable right now';
+  }
+  poll.querySelectorAll('[data-kickoff-id]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        const data = await postJson('/api/kickoff/id-poll', {
+          guestToken: kickoffGuestId(),
+          answer: button.dataset.kickoffId
+        });
+        paintKickoffIdCounts(data);
+      } catch (_) {
+        const counts = document.getElementById('kickoffIdCounts');
+        if (counts) counts.textContent = 'Could not save your answer';
+      } finally {
+        poll.querySelectorAll('[data-kickoff-id]').forEach((btn) => { btn.disabled = false; });
+      }
+    });
+  });
+}
+loadKickoffIdPoll();
 
 async function loadHomeBulletinPreview() {
   const host = document.getElementById('homeBulletinPreview');

@@ -3,45 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Board — SSA</title>
+  <title>Meet the Board — SSA</title>
   <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/index.css" />
-  <link rel="stylesheet" href="/site-pages.css" />
+  <link rel="stylesheet" href="/index.css?v=39" />
+  <link rel="stylesheet" href="/site-pages.css?v=38" />
   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
 </head>
-<body>
+<body class="board-page">
   <nav class="nav page-nav" aria-label="Primary navigation">
     <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
     <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
     <div class="nav-links" id="navLinks">
-      <a href="/index.html">Home</a><a href="/events">Events</a><a href="/games">Games</a><a href="/aux">Want The Aux</a>
-      <button type="button">Options</button>
+      <a href="/index.html">Home</a>
     </div>
     <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
   </nav>
-  <main class="page-main">
-    <header class="page-hero board-page-hero" data-reveal>
+
+  <main class="board-meet">
+    <header class="board-meet-hero" data-reveal>
       <span class="eyebrow">Leadership</span>
-      <h1>SSA Board</h1>
-      <p>Student leaders running programming, culture, and community at the U of M.</p>
-      <a class="button button-dark handdrawn board-schedule-open" href="/schedule">Schedule Group Meet</a>
+      <h1>Meet the Board</h1>
+      <p>The student leaders behind SSA programming, culture, and community at the U of M.</p>
     </header>
-    <div class="board-grid" data-reveal-group>
-      <article class="board-card" data-member-name="Salman Said"><span class="board-role">President</span><h3>Salman Said</h3></article>
-      <article class="board-card" data-member-name="Suhaila Osman"><span class="board-role">External Vice-President</span><h3>Suhaila Osman</h3></article>
-      <article class="board-card" data-member-name="Ruweyda Warsame"><span class="board-role">Internal Vice-President</span><h3>Ruweyda Warsame</h3></article>
-      <article class="board-card" data-member-name="Muno Aynab"><span class="board-role">Community Outreach</span><h3>Muno Aynab</h3></article>
-      <article class="board-card" data-member-name="Kamila Deef"><span class="board-role">Event Coordinator</span><h3>Kamila Deef</h3></article>
-      <article class="board-card" data-member-name="Zakaria Samatar"><span class="board-role">Event Coordinator &amp; Social Media &amp; Marketing</span><h3>Zakaria Samatar</h3></article>
-      <article class="board-card" data-member-name="Suhaib Mohamed"><span class="board-role">Treasurer</span><h3>Suhaib Mohamed</h3></article>
-      <article class="board-card" data-member-name="Zakaria Hussein"><span class="board-role">Treasurer</span><h3>Zakaria Hussein</h3></article>
-      <article class="board-card" data-member-name="Salma Tawane"><span class="board-role">Committee Chair</span><h3>Salma Tawane</h3></article>
-      <article class="board-card" data-member-name="Bashir Mumin"><span class="board-role">Committee Chair</span><h3>Bashir Mumin</h3></article>
-      <article class="board-card" data-member-name="Asma Yusuf"><span class="board-role">Social Media &amp; Marketing</span><h3>Asma Yusuf</h3></article>
+
+    <section class="board-wheel-section" aria-label="Board carousel">
+      <div class="board-wheel-stage" id="boardWheelStage">
+        <div class="board-wheel" id="boardWheel" style="--count: 11;">
+          <article class="board-wheel-card" style="--i: 0;" tabindex="0" aria-label="Salman Said, President">
+            <img src="/assets/board/salman-said.jpg" alt="" loading="eager" />
+            <div class="board-wheel-meta">
+              <strong>Salman Said</strong>
+              <span>President</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 1;" tabindex="0" aria-label="Ruweyda Warsame, Internal Vice-President">
+            <img src="/assets/board/ruweyda-warsame.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Ruweyda Warsame</strong>
+              <span>Internal Vice-President</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 2;" tabindex="0" aria-label="Suhaila Osman, External Vice-President">
+            <img src="/assets/board/suhaila-osman.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Suhaila Osman</strong>
+              <span>External Vice-President</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 3;" tabindex="0" aria-label="Salma Tawane, Committee Chair">
+            <img src="/assets/board/salma-tawane.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Salma Tawane</strong>
+              <span>Committee Chair</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 4;" tabindex="0" aria-label="Bashir Mumin, Committee Chair">
+            <img src="/assets/board/bashir-mumin.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Bashir Mumin</strong>
+              <span>Committee Chair</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 5;" tabindex="0" aria-label="Zakaria Samatar, Event Coordinator and Social Media and Marketing Coordinator">
+            <img src="/assets/board/zakaria-samatar.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Zakaria Samatar</strong>
+              <span>Event Coordinator &amp; Social Media &amp; Marketing Coordinator</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 6;" tabindex="0" aria-label="Kamila Deef, Event Coordinator">
+            <img src="/assets/board/kamila-deef.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Kamila Deef</strong>
+              <span>Event Coordinator</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 7;" tabindex="0" aria-label="Asma Yusuf, Social Media and Marketing Coordinator">
+            <img src="/assets/board/asma-yusuf.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Asma Yusuf</strong>
+              <span>Social Media &amp; Marketing Coordinator</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 8;" tabindex="0" aria-label="Zakaria Hussein, Treasurer">
+            <img src="/assets/board/zakaria-hussein.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Zakaria Hussein</strong>
+              <span>Treasurer</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 9;" tabindex="0" aria-label="Suhaib Mohamed, Treasury">
+            <img src="/assets/board/suhaib-mohamed.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Suhaib Mohamed</strong>
+              <span>Treasury</span>
+            </div>
+          </article>
+          <article class="board-wheel-card" style="--i: 10;" tabindex="0" aria-label="Muno Aynab, Community Outreach">
+            <img src="/assets/board/muno-aynab.jpg" alt="" loading="lazy" />
+            <div class="board-wheel-meta">
+              <strong>Muno Aynab</strong>
+              <span>Community Outreach</span>
+            </div>
+          </article>
+        </div>
+      </div>
+      <p class="board-wheel-hint">Hover a photo to pause and meet them</p>
+    </section>
+
+    <div class="board-meet-actions">
+      <a class="button button-dark handdrawn" href="/schedule">Schedule a meeting</a>
     </div>
   </main>
+
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
-  <script src="/motion.js"></script><script src="/nav.js?v=17"></script>
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=18"></script>
+  <script src="/board.js?v=5"></script>
 </body>
 </html>

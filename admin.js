@@ -171,7 +171,21 @@
         </span>
         <img class="admin-event-drop-preview" id="adminEventDropPreview" src="${esc(previewImage)}" alt="" ${hasImage ? '' : 'hidden'} />
       </label>
-      <label>Description<textarea name="description" rows="4" required>${esc(event.description || '')}</textarea></label>
+      <label class="admin-desc-field">Description
+        <small>Type @ then a name — a popup lets you attach their Instagram link.</small>
+        <div class="admin-desc-shell" id="adminDescShell">
+          <div class="admin-desc-editor" id="adminDescEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="What’s this event about?"></div>
+          <textarea name="description" id="adminDescValue" hidden required>${esc(event.description || '')}</textarea>
+          <div class="admin-mention-pop" id="adminMentionPop" hidden>
+            <span>Instagram link for <strong id="adminMentionName">…</strong></span>
+            <input id="adminMentionUrl" type="url" placeholder="https://instagram.com/handle" autocomplete="off" />
+            <div class="admin-mention-pop-actions">
+              <button class="button button-dark" type="button" id="adminMentionSave">Save</button>
+              <button class="button button-line" type="button" id="adminMentionCancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </label>
       <fieldset class="admin-feature-choice"><legend>How should guests respond?</legend><div><label><input type="radio" name="attendanceMode" value="rsvp" ${event.attendanceMode === 'quick' ? '' : 'checked'} /><span>Full RSVP form</span></label><label><input type="radio" name="attendanceMode" value="quick" ${event.attendanceMode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label></div><small>The next upcoming event is featured automatically with a countdown.</small></fieldset>
       <div class="admin-event-preview" id="adminEventPreview" data-image="${esc(previewImage)}"></div>
       <div class="admin-editor-actions"><button class="button button-dark" type="submit">${event.id ? 'Save changes' : 'Publish event'}</button><output></output></div>
@@ -199,6 +213,244 @@
       reader.onload = () => resolve(String(reader.result || ''));
       reader.onerror = reject;
       reader.readAsDataURL(file);
+    });
+  }
+
+  const MENTION_RE = /@\[([^\]]+)\]\((https?:\/\/(?:www\.)?instagram\.com\/[^\s)]+)\)/gi;
+
+  function normalizeIgUrl(value) {
+    let raw = String(value || '').trim();
+    if (!raw) return '';
+    if (!raw.includes('instagram.com')) {
+      raw = `https://www.instagram.com/${raw.replace(/^@/, '')}/`;
+    } else if (!/^https?:\/\//i.test(raw)) {
+      raw = `https://${raw}`;
+    }
+    try {
+      const url = new URL(raw);
+      if (!url.hostname.replace(/^www\./i, '').endsWith('instagram.com')) return '';
+      const handle = url.pathname.split('/').filter(Boolean)[0] || '';
+      const clean = handle.replace(/[^a-zA-Z0-9._]/g, '').slice(0, 60);
+      if (!clean) return '';
+      return `https://www.instagram.com/${clean}/`;
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function descriptionToEditorHtml(text) {
+    const value = String(text || '');
+    let html = '';
+    let last = 0;
+    const re = new RegExp(MENTION_RE.source, 'gi');
+    let match;
+    while ((match = re.exec(value))) {
+      html += esc(value.slice(last, match.index)).replace(/\n/g, '<br>');
+      html += `<a class="event-ig-tag" data-ig-mention contenteditable="false" href="${esc(match[2])}" target="_blank" rel="noopener noreferrer">${esc(match[1])}</a>`;
+      last = match.index + match[0].length;
+    }
+    html += esc(value.slice(last)).replace(/\n/g, '<br>');
+    return html || '';
+  }
+
+  function descriptionFromEditor(editor) {
+    if (!editor) return '';
+    let out = '';
+    const walk = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        out += node.textContent || '';
+        return;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      if (node.matches?.('[data-ig-mention]')) {
+        const label = (node.textContent || '').trim().slice(0, 80);
+        const href = normalizeIgUrl(node.getAttribute('href') || '');
+        if (label && href) out += `@[${label}](${href})`;
+        else out += label;
+        return;
+      }
+      if (node.tagName === 'BR') {
+        out += '\n';
+        return;
+      }
+      if (node.tagName === 'DIV' || node.tagName === 'P') {
+        if (out && !out.endsWith('\n')) out += '\n';
+      }
+      [...node.childNodes].forEach(walk);
+    };
+    [...editor.childNodes].forEach(walk);
+    return out.replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function descriptionPreviewHtml(text) {
+    const value = String(text || '');
+    let html = '';
+    let last = 0;
+    const re = new RegExp(MENTION_RE.source, 'gi');
+    let match;
+    while ((match = re.exec(value))) {
+      html += esc(value.slice(last, match.index));
+      html += `<a class="event-ig-tag" href="${esc(match[2])}" target="_blank" rel="noopener noreferrer">${esc(match[1])}</a>`;
+      last = match.index + match[0].length;
+    }
+    html += esc(value.slice(last));
+    return html;
+  }
+
+  function bindDescriptionMentions(form, onChange) {
+    const editor = document.getElementById('adminDescEditor');
+    const hidden = document.getElementById('adminDescValue');
+    const shell = document.getElementById('adminDescShell');
+    const pop = document.getElementById('adminMentionPop');
+    const nameEl = document.getElementById('adminMentionName');
+    const urlInput = document.getElementById('adminMentionUrl');
+    const saveBtn = document.getElementById('adminMentionSave');
+    const cancelBtn = document.getElementById('adminMentionCancel');
+    if (!editor || !hidden || !shell || !pop) return;
+
+    let active = null;
+
+    function syncHidden() {
+      hidden.value = descriptionFromEditor(editor);
+      onChange?.();
+    }
+
+    function hidePop() {
+      pop.hidden = true;
+      active = null;
+      if (urlInput) urlInput.value = '';
+    }
+
+    function findActiveMention() {
+      const sel = window.getSelection();
+      if (!sel?.rangeCount || !editor.contains(sel.anchorNode)) return null;
+      const node = sel.anchorNode;
+      if (node.nodeType !== Node.TEXT_NODE) return null;
+      if (node.parentElement?.closest('[data-ig-mention]')) return null;
+      const offset = sel.anchorOffset;
+      const before = node.textContent.slice(0, offset);
+      if (/@\[[^\]]*$/.test(before)) return null;
+      const match = before.match(/@([A-Za-z0-9._][A-Za-z0-9._ ]{0,79}|)$/);
+      if (!match) return null;
+      const start = offset - match[0].length;
+      return {
+        node,
+        start,
+        end: offset,
+        query: match[1].replace(/\s+$/, ''),
+        full: match[0]
+      };
+    }
+
+    function placePop(mention) {
+      const range = document.createRange();
+      range.setStart(mention.node, mention.start);
+      range.setEnd(mention.node, mention.end);
+      const rect = range.getBoundingClientRect();
+      const shellRect = shell.getBoundingClientRect();
+      pop.hidden = false;
+      const left = Math.max(8, Math.min(rect.left - shellRect.left, shellRect.width - 280));
+      const top = rect.bottom - shellRect.top + shell.scrollTop + 6;
+      pop.style.left = `${left}px`;
+      pop.style.top = `${top}px`;
+      if (nameEl) nameEl.textContent = mention.query ? `@${mention.query}` : '@…';
+    }
+
+    function refreshMentionUi() {
+      const mention = findActiveMention();
+      if (!mention) {
+        hidePop();
+        return;
+      }
+      active = mention;
+      placePop(mention);
+    }
+
+    function insertMention(label, href) {
+      const mention = active || findActiveMention();
+      if (!mention || !label || !href) return;
+      const range = document.createRange();
+      range.setStart(mention.node, mention.start);
+      range.setEnd(mention.node, mention.end);
+      range.deleteContents();
+      const link = document.createElement('a');
+      link.className = 'event-ig-tag';
+      link.setAttribute('data-ig-mention', '');
+      link.contentEditable = 'false';
+      link.href = href;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = label;
+      const space = document.createTextNode(' ');
+      range.insertNode(space);
+      range.insertNode(link);
+      const sel = window.getSelection();
+      const after = document.createRange();
+      after.setStartAfter(space);
+      after.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(after);
+      hidePop();
+      syncHidden();
+      editor.focus();
+    }
+
+    editor.innerHTML = descriptionToEditorHtml(form.description?.value || hidden.value || '');
+    if (!editor.innerHTML) editor.innerHTML = '';
+    syncHidden();
+
+    editor.addEventListener('input', () => {
+      syncHidden();
+      refreshMentionUi();
+    });
+    editor.addEventListener('keyup', refreshMentionUi);
+    editor.addEventListener('click', (event) => {
+      if (event.target.closest('[data-ig-mention]')) event.preventDefault();
+      refreshMentionUi();
+    });
+    editor.addEventListener('blur', () => {
+      window.setTimeout(() => {
+        if (pop.contains(document.activeElement)) return;
+        if (!findActiveMention()) hidePop();
+      }, 120);
+    });
+    editor.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !pop.hidden) {
+        event.preventDefault();
+        hidePop();
+      }
+      if (event.key === 'Enter' && !pop.hidden && document.activeElement === urlInput) {
+        event.preventDefault();
+        saveBtn?.click();
+      }
+    });
+
+    saveBtn?.addEventListener('click', () => {
+      const mention = active || findActiveMention();
+      const label = (mention?.query || '').trim().slice(0, 80);
+      const href = normalizeIgUrl(urlInput?.value || '');
+      if (!label) {
+        urlInput?.focus();
+        return;
+      }
+      if (!href) {
+        urlInput?.focus();
+        urlInput?.select();
+        return;
+      }
+      insertMention(label, href);
+    });
+    cancelBtn?.addEventListener('click', hidePop);
+    urlInput?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        saveBtn?.click();
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        hidePop();
+        editor.focus();
+      }
     });
   }
 
@@ -234,11 +486,15 @@
       const art = previewImage
         ? `<div class="featured-event-art"><img src="${esc(previewImage)}" alt="" /></div>`
         : '';
-      preview.innerHTML = `<span class="admin-preview-label">Preview · ${esc(responseLabel)} · Countdown on</span><article class="featured-event${!previewImage ? ' featured-event--no-art' : ''}">${art}<div class="featured-event-body"><span class="eyebrow">Featured Event</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(when)}</p><p class="featured-copy">${esc(description)}</p><div class="featured-countdown" aria-label="Countdown preview"><div class="fc-cell"><b>00</b><span>days</span></div><div class="fc-cell"><b>00</b><span>hrs</span></div><div class="fc-cell"><b>00</b><span>min</span></div><div class="fc-cell"><b>00</b><span>sec</span></div></div><button class="button button-dark" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</button></div></article>`;
+      preview.innerHTML = `<span class="admin-preview-label">Preview · ${esc(responseLabel)} · Countdown on</span><article class="featured-event${!previewImage ? ' featured-event--no-art' : ''}">${art}<div class="featured-event-body"><span class="eyebrow">Featured Event</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(when)}</p><p class="featured-copy">${descriptionPreviewHtml(description)}</p><div class="featured-countdown" aria-label="Countdown preview"><div class="fc-cell"><b>00</b><span>days</span></div><div class="fc-cell"><b>00</b><span>hrs</span></div><div class="fc-cell"><b>00</b><span>min</span></div><div class="fc-cell"><b>00</b><span>sec</span></div></div><button class="button button-dark" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</button></div></article>`;
     }
 
+    bindDescriptionMentions(form, updatePreview);
+
     form?.querySelectorAll('input, textarea').forEach((field) => {
-      if (field.type !== 'file') field.addEventListener('input', updatePreview);
+      if (field.type !== 'file' && field.id !== 'adminMentionUrl') {
+        field.addEventListener('input', updatePreview);
+      }
       if (field.type === 'radio') field.addEventListener('change', updatePreview);
     });
     form?.image.addEventListener('change', async () => {
@@ -269,6 +525,9 @@
       event.preventDefault();
       const button = form.querySelector('button[type="submit"]');
       const output = form.querySelector('output');
+      const editor = document.getElementById('adminDescEditor');
+      const hidden = document.getElementById('adminDescValue');
+      if (editor && hidden) hidden.value = descriptionFromEditor(editor);
       button.disabled = true;
       output.textContent = 'Saving…';
       try {
@@ -280,6 +539,8 @@
         }
         const startsAt = fromDatetimeLocal(form.startsAt.value);
         if (!startsAt) throw new Error('Set a date and start time.');
+        const description = (hidden?.value || form.description.value || '').trim();
+        if (!description) throw new Error('Add a description.');
         await post('/api/events', {
           id: form.id.value || undefined,
           rsvpKey: form.rsvpKey.value.trim(),
@@ -287,7 +548,7 @@
           startsAt,
           location: form.location.value.trim(),
           sortOrder: Number(form.sortOrder.value || 0),
-          description: form.description.value.trim(),
+          description,
           imageUrl,
           attendanceMode: form.attendanceMode.value,
           published: true

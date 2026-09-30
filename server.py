@@ -515,6 +515,10 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 cache_seconds=30,
             )
             return
+        if path == "/api/kickoff/id-poll":
+            guest = (qs.get("guest") or [""])[0]
+            self._send_json(200, cms.kickoff_id_poll_counts(guest), cache_seconds=5)
+            return
         m = re.fullmatch(r"/api/gallery/(\d+)/image", path)
         if m:
             image = cms.get_gallery_image(int(m.group(1)))
@@ -768,6 +772,10 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 return
             if post_path == "/api/event-feedback":
                 status, resp = cms.submit_event_feedback(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/kickoff/id-poll":
+                status, resp = cms.vote_kickoff_id_poll(payload)
                 self._send_json(status, resp)
                 return
             if post_path == "/api/arcade":

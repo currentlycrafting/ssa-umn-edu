@@ -542,6 +542,25 @@ button, input, textarea { font: inherit; }
   gap: 12px;
   margin-top: 22px;
 }
+.hero-actions-song {
+  flex-direction: column;
+  align-items: center;
+}
+.hero-song-btn {
+  min-height: 58px;
+  padding: 0 34px;
+  font-size: clamp(17px, 2.4vw, 22px);
+  font-weight: 850;
+}
+.hero-song-note {
+  max-width: 420px;
+  margin: 12px auto 0 !important;
+  color: var(--muted) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.5 !important;
+  text-align: center;
+}
 .button {
   display: inline-flex;
   justify-content: center;
@@ -641,7 +660,20 @@ h2 {
   aspect-ratio: 4 / 5;
   max-height: 220px;
   overflow: hidden;
-  pointer-events: none;
+  cursor: zoom-in;
+}
+.event-ig-tag {
+  color: #0a66c2;
+  font-weight: 800;
+  font-size: 1.08em;
+  text-decoration: none;
+  display: inline-block;
+  transform-origin: center;
+  transition: transform .2s cubic-bezier(.2, .8, .2, 1);
+}
+.event-ig-tag:hover {
+  text-decoration: none;
+  transform: scale(1.12);
 }
 .event-card-poster img {
   width: 100%;
@@ -3557,6 +3589,166 @@ html.reduce-motion .hero-center { opacity: 1 !important; }
   margin-left: auto;
   margin-right: auto;
   max-width: 560px;
+}
+.home-kickoff {
+  padding-top: 28px;
+}
+.home-kickoff .section-head {
+  margin-bottom: 28px;
+}
+.kickoff-layout {
+  display: grid;
+  gap: 28px;
+}
+.kickoff-top {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+.kickoff-now-wrap {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  align-content: center;
+  margin: 0;
+}
+.kickoff-now-wrap .aux-now,
+.kickoff-aux-now {
+  width: min(100%, 260px);
+  margin: 0;
+  padding: 16px 14px 14px;
+  border-radius: 22px;
+}
+.kickoff-aux-now img {
+  width: min(58%, 140px);
+  border-radius: 14px;
+}
+.kickoff-aux-now .aux-np-title {
+  font-size: clamp(16px, 2.2vw, 20px);
+}
+a.kickoff-aux-now {
+  text-decoration: none;
+  color: inherit;
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+a.kickoff-aux-now:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+.kickoff-parking {
+  max-width: none;
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.kickoff-vendors,
+.kickoff-food,
+.kickoff-games,
+.kickoff-id {
+  max-width: none;
+  margin: 0;
+  text-align: center;
+}
+.kickoff-vendors .eyebrow,
+.kickoff-food .eyebrow,
+.kickoff-games .eyebrow,
+.kickoff-id .eyebrow {
+  color: var(--blue);
+}
+.kickoff-vendors h3,
+.kickoff-food h3,
+.kickoff-games h3,
+.kickoff-id h3 {
+  margin: 6px 0 14px;
+  font-size: clamp(24px, 3.4vw, 34px);
+  letter-spacing: -.035em;
+}
+.kickoff-vendor-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.kickoff-vendor {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .22s ease;
+}
+.kickoff-vendor:hover { transform: translateY(-3px); }
+.kickoff-vendor img {
+  width: min(120px, 28vw);
+  height: min(120px, 28vw);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .12), var(--shadow-soft);
+  background: var(--surface-2);
+}
+.kickoff-vendor strong {
+  font-size: 15px;
+  letter-spacing: -.02em;
+}
+.kickoff-vendor span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.kickoff-games ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.kickoff-games li {
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 750;
+  font-size: 14px;
+}
+.kickoff-id p {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.kickoff-id-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.kickoff-id-actions .button.is-selected {
+  outline: 3px solid color-mix(in oklch, var(--blue) 55%, transparent);
+  outline-offset: 2px;
+}
+.kickoff-id-counts {
+  margin: 0 !important;
+  font-weight: 850 !important;
+  color: var(--ink) !important;
+}
+@media (max-width: 820px) {
+  .kickoff-top {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .kickoff-parking { width: min(100%, 520px); }
+}
+@media (max-width: 640px) {
+  .kickoff-vendor-row { grid-template-columns: 1fr; justify-items: center; }
+  .kickoff-vendor { width: min(220px, 100%); }
+  .hero-song-btn { width: min(100%, 320px); }
 }
 .rsvp-plus-note {
   margin: -4px 0 12px;
