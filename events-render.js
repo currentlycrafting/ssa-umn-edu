@@ -537,7 +537,8 @@
     }
 
     const count = attendingCount(event);
-    const countY = Math.min(H - 168, y + 128);
+    // Keep the count near the bottom of the card, below the copy.
+    const countY = Math.max(y + 96, H - 150);
     ctx.fillStyle = ink;
     ctx.font = '900 108px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.fillText(count == null ? '—' : String(count), 72, countY);

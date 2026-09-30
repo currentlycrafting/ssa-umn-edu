@@ -260,7 +260,7 @@ function paintKickoffAuxNow(host, data) {
       <img src="/assets/brand/ssa-logo.png" alt="" />
       <div class="aux-now-copy">
         <div class="aux-np-title">Nothing playing yet</div>
-        <div class="aux-np-artist">Open Want the Aux when the DJ is live</div>
+        <div class="aux-np-artist"></div>
       </div>`;
     return;
   }
