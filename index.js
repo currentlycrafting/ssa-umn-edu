@@ -307,57 +307,6 @@ async function loadHomeAuxNow() {
 loadHomeAuxNow();
 window.setInterval(loadHomeAuxNow, 12000);
 
-function kickoffGuestId() {
-  let id = localStorage.getItem('ssaKickoffGuestId') || '';
-  if (id.length < 16) {
-    id = window.crypto?.randomUUID?.() || `kickoff-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    localStorage.setItem('ssaKickoffGuestId', id);
-  }
-  return id;
-}
-
-function paintKickoffIdCounts(data) {
-  const counts = document.getElementById('kickoffIdCounts');
-  const poll = document.getElementById('kickoffIdPoll');
-  if (!counts) return;
-  const yes = Number(data?.yes) || 0;
-  const no = Number(data?.no) || 0;
-  counts.textContent = `Yes ${yes} · No ${no}`;
-  poll?.querySelectorAll('[data-kickoff-id]').forEach((button) => {
-    button.classList.toggle('is-selected', data?.mine === button.dataset.kickoffId);
-  });
-}
-
-async function loadKickoffIdPoll() {
-  const poll = document.getElementById('kickoffIdPoll');
-  if (!poll) return;
-  try {
-    const data = await getJson(`/api/kickoff/id-poll?guest=${encodeURIComponent(kickoffGuestId())}`);
-    paintKickoffIdCounts(data);
-  } catch (_) {
-    const counts = document.getElementById('kickoffIdCounts');
-    if (counts) counts.textContent = 'Counter unavailable right now';
-  }
-  poll.querySelectorAll('[data-kickoff-id]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      button.disabled = true;
-      try {
-        const data = await postJson('/api/kickoff/id-poll', {
-          guestToken: kickoffGuestId(),
-          answer: button.dataset.kickoffId
-        });
-        paintKickoffIdCounts(data);
-      } catch (_) {
-        const counts = document.getElementById('kickoffIdCounts');
-        if (counts) counts.textContent = 'Could not save your answer';
-      } finally {
-        poll.querySelectorAll('[data-kickoff-id]').forEach((btn) => { btn.disabled = false; });
-      }
-    });
-  });
-}
-loadKickoffIdPoll();
-
 async function loadHomeBulletinPreview() {
   const host = document.getElementById('homeBulletinPreview');
   if (!host) return;

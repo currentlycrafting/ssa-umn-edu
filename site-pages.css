@@ -2902,7 +2902,8 @@ body.board-page {
   text-align: left;
 }
 .home-upcoming {
-  padding-bottom: 40px;
+  padding-top: 28px;
+  padding-bottom: 28px;
 }
 .home-upcoming-grid {
   display: grid;
@@ -2910,7 +2911,7 @@ body.board-page {
   grid-template-areas:
     "event suggest"
     "newsletter album";
-  gap: 16px;
+  gap: 12px;
   align-items: stretch;
 }
 .home-upcoming-event { grid-area: event; min-height: 100%; }
@@ -3246,9 +3247,9 @@ body.board-page {
 .home-upcoming-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
-  margin-top: 22px;
+  margin-top: 14px;
 }
 .home-upcoming-actions .button {
   min-height: 44px;
