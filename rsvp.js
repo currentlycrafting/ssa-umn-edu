@@ -163,29 +163,33 @@
     quickForm.date.value = eventDate;
     form.querySelector('output').textContent = '';
     quickForm.querySelector('output').textContent = '';
-    title.textContent = eventName;
-    meta.textContent = eventDate;
-    eyebrow.hidden = false;
-    title.hidden = false;
-    meta.hidden = false;
     result.hidden = true;
     result.innerHTML = '';
-    modalCount.hidden = false;
-    const count = counts[eventName] || 0;
-    modalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
     form.hidden = false;
     quickForm.hidden = true;
     openModal();
     if (attendanceMode === 'quick') {
       form.hidden = true;
       quickForm.hidden = false;
-      eyebrow.textContent = 'Quick response';
+      eyebrow.hidden = true;
+      title.hidden = false;
+      title.textContent = 'Are you coming?';
+      meta.hidden = true;
+      modalCount.hidden = true;
       if (button.dataset.rsvped === 'true' || rsvpedEvents().includes(eventName)) {
         showAttendees(eventName);
       }
       return;
     }
+    eyebrow.hidden = false;
     eyebrow.textContent = 'RSVP';
+    title.hidden = false;
+    title.textContent = eventName;
+    meta.hidden = false;
+    meta.textContent = eventDate;
+    modalCount.hidden = false;
+    const count = counts[eventName] || 0;
+    modalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
     if (button.dataset.rsvped === 'true' || rsvpedEvents().includes(eventName)) {
       showAttendees(eventName);
     } else {

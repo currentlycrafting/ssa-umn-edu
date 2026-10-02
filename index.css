@@ -1148,7 +1148,8 @@ p { color: var(--muted); }
   color: var(--ink);
   transition: border-color .2s ease, box-shadow .2s ease;
 }
-.form-card input:focus, .form-card textarea:focus, .rsvp-modal input:focus {
+.form-card input:focus, .form-card textarea:focus,
+.rsvp-modal input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]):focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 4px var(--blue-2);
@@ -1616,7 +1617,15 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 .rsvp-modal form[hidden],
 .rsvp-modal .rsvp-result[hidden],
 .rsvp-modal [hidden] { display: none !important; }
-.rsvp-modal input {
+.rsvp-modal > .rsvp-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  width: 36px;
+  height: 36px;
+}
+.rsvp-modal input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]) {
   width: 100%;
   border: 1px solid var(--line-strong);
   border-radius: 14px;
@@ -1630,7 +1639,19 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
 .rsvp-choice legend { margin-bottom: 8px; font-size: 14px; font-weight: 800; color: var(--ink); }
 .rsvp-choice > div { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .rsvp-choice label { position: relative; cursor: pointer; }
-.rsvp-choice input { position: absolute; opacity: 0; pointer-events: none; }
+.rsvp-choice input {
+  position: absolute;
+  inset: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  pointer-events: none;
+}
 .rsvp-choice span {
   display: grid; place-items: center; min-height: 46px;
   border: 2px solid var(--line-strong); border-radius: 14px;
@@ -3798,6 +3819,7 @@ a.kickoff-aux-now:hover {
   box-sizing: border-box;
 }
 .rsvp-bring-toggle {
+  position: relative;
   display: grid;
   justify-items: center;
   width: 100%;
@@ -3806,7 +3828,14 @@ a.kickoff-aux-now:hover {
 }
 .rsvp-bring-toggle input {
   position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
   opacity: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
   pointer-events: none;
 }
 .rsvp-bring-face {
