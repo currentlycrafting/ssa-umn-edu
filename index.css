@@ -3904,6 +3904,11 @@ a.calendar-button.micro-button:hover {
   opacity: 0.55;
   filter: grayscale(0.25);
 }
+.event-card--past .event-going--past {
+  opacity: 1;
+  filter: none;
+  color: var(--ink);
+}
 .event-card--past .event-card-actions {
   opacity: 1;
   filter: none;

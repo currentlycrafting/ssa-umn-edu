@@ -31,6 +31,7 @@
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
         <a href="/gallery">Gallery</a>
+        <a href="/photoshoots">Photoshoots</a>
         <a href="/board">Board</a>
         <a href="/timeline">Timeline</a>
         <div class="nav-options">
@@ -157,6 +158,7 @@
           <a href="/events">Events</a>
           <a href="/newsletter">Newsletter</a>
           <a href="/gallery">Gallery</a>
+          <a href="/photoshoots">Photoshoots</a>
           <a href="/bulletin">Bulletin</a>
           <a href="/timeline">Timeline</a>
           <a href="/aux">Want The Aux</a>

@@ -2,6 +2,7 @@
 import base64
 import json
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
@@ -870,6 +871,190 @@ def delete_gallery_item(item_id, payload):
     return 200, {"ok": True}
 
 
+# ---------------- photoshoots ----------------
+
+def _photoshoot_slug(value):
+    slug = re.sub(r"[^a-z0-9]+", "-", str(value or "").lower()).strip("-")
+    return (slug or "photoshoot")[:80]
+
+
+def _photoshoot_row(row, photos):
+    return {
+        "id": row["id"],
+        "title": row["title"],
+        "season": row["season"],
+        "description": row["description"],
+        "slug": row["slug"],
+        "published": bool(row["published"]),
+        "created_at": _iso(row["created_at"]),
+        "photos": [
+            {
+                "id": photo["id"],
+                "caption": photo["caption"],
+                "sort_order": photo["sort_order"],
+                "src": f"/api/photoshoots/{row['id']}/photos/{photo['id']}/image",
+            }
+            for photo in photos
+        ],
+    }
+
+
+def list_photoshoots(include_unpublished=False):
+    with db() as cur:
+        if include_unpublished:
+            cur.execute(
+                "SELECT id, title, season, description, slug, published, created_at "
+                "FROM photoshoots ORDER BY created_at DESC"
+            )
+        else:
+            cur.execute(
+                "SELECT id, title, season, description, slug, published, created_at "
+                "FROM photoshoots WHERE published = TRUE ORDER BY created_at DESC"
+            )
+        shoots = cur.fetchall()
+        photos = []
+        if shoots:
+            cur.execute(
+                "SELECT id, photoshoot_id, caption, sort_order FROM photoshoot_photos "
+                "WHERE photoshoot_id = ANY(%s) ORDER BY sort_order ASC, id ASC",
+                ([row["id"] for row in shoots],),
+            )
+            photos = cur.fetchall()
+    grouped = {}
+    for photo in photos:
+        grouped.setdefault(photo["photoshoot_id"], []).append(photo)
+    return [_photoshoot_row(row, grouped.get(row["id"], [])) for row in shoots]
+
+
+def _unique_photoshoot_slug(cur, title, ignore_id=None):
+    base = _photoshoot_slug(title)
+    slug = base
+    suffix = 2
+    while True:
+        if ignore_id is None:
+            cur.execute("SELECT id FROM photoshoots WHERE slug = %s", (slug,))
+        else:
+            cur.execute(
+                "SELECT id FROM photoshoots WHERE slug = %s AND id <> %s",
+                (slug, ignore_id),
+            )
+        if not cur.fetchone():
+            return slug
+        slug = f"{base}-{suffix}"[:80]
+        suffix += 1
+
+
+def create_photoshoot(payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    title = str(payload.get("title", "")).strip()[:120]
+    description = str(payload.get("description", "")).strip()[:800]
+    if not title:
+        return 400, {"error": "A photoshoot title is required."}
+    with db() as cur:
+        slug = _unique_photoshoot_slug(cur, title)
+        cur.execute(
+            """
+            INSERT INTO photoshoots (title, season, description, slug, published, created_at)
+            VALUES (%s, '', %s, %s, TRUE, %s)
+            RETURNING id
+            """,
+            (title, description, slug, utcnow()),
+        )
+        shoot_id = cur.fetchone()["id"]
+    return 200, {"ok": True, "id": shoot_id}
+
+
+def update_photoshoot(shoot_id, payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    title = str(payload.get("title", "")).strip()[:120]
+    description = str(payload.get("description", "")).strip()[:800]
+    if not title:
+        return 400, {"error": "A photoshoot title is required."}
+    with db() as cur:
+        cur.execute("SELECT id FROM photoshoots WHERE id = %s", (shoot_id,))
+        if not cur.fetchone():
+            return 404, {"error": "Photoshoot not found."}
+        slug = _unique_photoshoot_slug(cur, title, ignore_id=shoot_id)
+        cur.execute(
+            """
+            UPDATE photoshoots
+            SET title = %s, season = '', description = %s, slug = %s
+            WHERE id = %s
+            """,
+            (title, description, slug, shoot_id),
+        )
+    return 200, {"ok": True, "id": shoot_id}
+
+
+def delete_photoshoot(shoot_id, payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute("DELETE FROM photoshoots WHERE id = %s", (shoot_id,))
+        if cur.rowcount == 0:
+            return 404, {"error": "Photoshoot not found."}
+    return 200, {"ok": True}
+
+
+def add_photoshoot_photo(shoot_id, payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    caption = str(payload.get("caption", "")).strip()[:300]
+    raw, mime, error = _decode_public_image(payload.get("data"), payload.get("filename"))
+    if error:
+        return 400, {"error": error}
+    if not raw:
+        return 400, {"error": "A photo is required."}
+    with db() as cur:
+        cur.execute("SELECT id FROM photoshoots WHERE id = %s", (shoot_id,))
+        if not cur.fetchone():
+            return 404, {"error": "Photoshoot not found."}
+        cur.execute(
+            "SELECT COALESCE(MAX(sort_order), 0) + 1 AS next_order FROM photoshoot_photos WHERE photoshoot_id = %s",
+            (shoot_id,),
+        )
+        sort_order = int(cur.fetchone()["next_order"])
+        cur.execute(
+            """
+            INSERT INTO photoshoot_photos
+                (photoshoot_id, caption, image_data, content_type, sort_order, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            (shoot_id, caption, raw, mime, sort_order, utcnow()),
+        )
+        photo_id = cur.fetchone()["id"]
+    return 200, {"ok": True, "id": photo_id}
+
+
+def delete_photoshoot_photo(photo_id, payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute("DELETE FROM photoshoot_photos WHERE id = %s", (photo_id,))
+        if cur.rowcount == 0:
+            return 404, {"error": "Photo not found."}
+    return 200, {"ok": True}
+
+
+def get_photoshoot_image(shoot_id, photo_id):
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT image_data, content_type
+            FROM photoshoot_photos
+            WHERE id = %s AND photoshoot_id = %s
+            """,
+            (photo_id, shoot_id),
+        )
+        row = cur.fetchone()
+    if not row:
+        return None
+    return bytes(row["image_data"]), row["content_type"]
+
+
 # ---------------- arcade (SSA Daily) ----------------
 
 def arcade_leaderboard(game):
@@ -1081,6 +1266,32 @@ def init_tables():
                 game TEXT NOT NULL,
                 name TEXT NOT NULL,
                 score INTEGER NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS photoshoots (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                season TEXT NOT NULL DEFAULT 'Summer',
+                description TEXT NOT NULL DEFAULT '',
+                slug TEXT NOT NULL UNIQUE,
+                published BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS photoshoot_photos (
+                id SERIAL PRIMARY KEY,
+                photoshoot_id INTEGER NOT NULL REFERENCES photoshoots(id) ON DELETE CASCADE,
+                caption TEXT NOT NULL DEFAULT '',
+                image_data BYTEA NOT NULL,
+                content_type TEXT NOT NULL,
+                sort_order INTEGER NOT NULL DEFAULT 0,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )
             """

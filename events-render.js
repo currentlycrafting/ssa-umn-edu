@@ -219,6 +219,7 @@
         </div>
       </div>
       <div class="event-card-actions">
+        ${past ? `<p class="event-going event-going--past"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> RSVP&apos;d</p>` : ''}
         ${actions}
       </div>
     </article>`;
