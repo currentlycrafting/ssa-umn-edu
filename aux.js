@@ -74,38 +74,7 @@
     emptyEl.hidden = queue.length > 0;
     queueEl.innerHTML = queue.map((q, i) => `
       <div class="aux-item" data-id="${q.id}">
-        <span style="font-weight:900;color:var(--muted);min-width:20px">${i + 1}</span>
-        <img src="${escapeHtml(q.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
-        <div class="aux-item-main">
-          <div class="aux-item-song">${escapeHtml(q.songName)}</div>
-          <div class="aux-item-meta">${escapeHtml(q.artist)} · requested by ${escapeHtml(q.requestedBy)}</div>
-        </div>
-        ${q.canDelete ? `<button type="button" class="button button-line aux-remove-own" data-remove-own="${q.id}">Remove</button>` : ''}
-      </div>`).join('');
-    queueEl.querySelectorAll('[data-remove-own]').forEach((button) => {
-      button.addEventListener('click', async () => {
-        button.disabled = true;
-        try {
-          await fetchJson(`/api/aux/request/${button.dataset.removeOwn}/remove-own`, {
-            method: 'POST',
-            body: { guestId }
-          });
-          showToast('Your song was removed from the request queue.');
-          refresh(true);
-        } catch (error) {
-          showToast(error.message);
-          button.disabled = false;
-        }
-      });
-    });
-  }
-
-  function renderQueue(queue) {
-    if (!queueEl) return;
-    emptyEl.hidden = queue.length > 0;
-    queueEl.innerHTML = queue.map((q, i) => `
-      <div class="aux-item" data-id="${q.id}">
-        <span style="font-weight:900;color:var(--muted);min-width:20px">${i + 1}</span>
+        <span class="aux-item-num">${i + 1}</span>
         <img src="${escapeHtml(q.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
         <div class="aux-item-main">
           <div class="aux-item-song">${escapeHtml(q.songName)}</div>
