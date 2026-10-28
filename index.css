@@ -3909,10 +3909,50 @@ a.calendar-button.micro-button:hover {
   filter: none;
   color: var(--ink);
 }
+button.event-going--past.rsvp-attendees-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+button.event-going--past.rsvp-attendees-button:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.event-going-link {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+}
+.event-going-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rsvp-quick-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
 .event-card--past .event-card-actions {
   opacity: 1;
   filter: none;
 }
+.event-card--past .rsvp-attendees-button.micro-button,
 .event-card--past .feedback-button {
   background: var(--ink);
   color: var(--paper);
@@ -3921,10 +3961,20 @@ a.calendar-button.micro-button:hover {
   filter: none;
   font-weight: 850;
 }
+.event-card--past .rsvp-attendees-button.micro-button {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
 [data-theme="dark"] .event-card--past .feedback-button {
   background: var(--accent);
   color: oklch(22% 0.06 264);
   border-color: var(--accent);
+}
+[data-theme="dark"] .event-card--past .rsvp-attendees-button.micro-button {
+  background: transparent;
+  color: var(--paper);
+  border-color: color-mix(in oklch, var(--paper) 55%, transparent);
 }
 .event-finished {
   display: inline-block;

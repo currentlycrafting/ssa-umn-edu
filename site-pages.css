@@ -1479,6 +1479,49 @@ body.board-page {
 .admin-event-date { display: grid; place-items: center; min-height: 62px; padding: 8px; border-radius: 14px; background: var(--ink); color: var(--paper); font-weight: 850; text-align: center; }
 .admin-event-item h3, .admin-event-item p { margin: 3px 0; }
 .admin-event-item p, .admin-data-row span, .admin-data-row time { color: var(--muted); font-size: 13px; }
+.admin-event-rsvp-count { font-weight: 750; color: var(--ink) !important; }
+.admin-rsvp-panel { margin-top: 8px; }
+.admin-rsvp-groups { display: grid; gap: 14px; margin-bottom: 28px; }
+.admin-rsvp-group {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  padding: 18px 16px;
+  display: grid;
+  gap: 12px;
+}
+.admin-rsvp-group-head h4 { margin: 4px 0 0; font-size: 18px; letter-spacing: -.02em; }
+.admin-rsvp-group-head p { margin: 4px 0 0; color: var(--muted); font-size: 13px; font-weight: 650; }
+.admin-rsvp-guest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.admin-rsvp-guest-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in oklch, var(--blue) 8%, var(--surface-2, var(--paper)));
+}
+.admin-rsvp-guest-list strong { grid-column: 1; }
+.admin-rsvp-guest-list span {
+  grid-column: 1;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+.admin-rsvp-guest-list time {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
 .admin-item-actions { justify-content: flex-end; align-self: end; margin-top: 22px; padding: 6px 0 2px; }
 .admin-item-actions .button {
   justify-content: center;

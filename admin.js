@@ -196,15 +196,47 @@
     </form>`;
   }
 
+  function rsvpsForEvent(rsvpKey) {
+    const key = String(rsvpKey || '');
+    if (!key) return [];
+    return (data.admin.rsvp || []).filter((item) => item.event_name === key);
+  }
+
+  function rsvpPartyTotal(items) {
+    return items.reduce((sum, item) => sum + (Number(item.party_size) || 1), 0);
+  }
+
+  function eventRsvpPanel(event) {
+    if (!event?.rsvpKey) return '';
+    const items = rsvpsForEvent(event.rsvpKey);
+    const total = rsvpPartyTotal(items);
+    const status = eventStatus(event);
+    const heading = status === 'Past' ? "Who RSVP'd" : "Who's coming";
+    if (!items.length) {
+      return `<div class="admin-rsvp-panel"><div class="admin-list-head"><h3>${heading}</h3><span>0</span></div><p class="admin-empty">No RSVPs yet for this event.</p></div>`;
+    }
+    return `<div class="admin-rsvp-panel"><div class="admin-list-head"><h3>${heading}</h3><span>${total} ${total === 1 ? 'person' : 'people'} · ${items.length} ${items.length === 1 ? 'RSVP' : 'RSVPs'}</span></div><div class="admin-data-list">${items.map((item) =>
+      row(
+        esc(`${item.name}${item.party_size > 1 ? ` · party of ${item.party_size}` : ''}`),
+        esc(item.is_student ? 'U of MN student' : item.name === 'Guest' ? 'Quick check-in' : 'Community guest'),
+        '',
+        item.created_at
+      )
+    ).join('')}</div></div>`;
+  }
+
   function renderEvents(editId) {
     const editing = data.events.find((event) => event.id === Number(editId));
-    content.innerHTML = eventForm(editing) + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => {
+    content.innerHTML = eventForm(editing)
+      + (editing ? eventRsvpPanel(editing) : '')
+      + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => {
       const when = event.location
         ? `${esc(event.shortDate || fmt(event.startsAt))} - ${esc(event.location)}`
         : esc(event.dateLabel || fmt(event.startsAt));
+      const rsvpCount = rsvpPartyTotal(rsvpsForEvent(event.rsvpKey));
       return `
       <article class="admin-event-item admin-event-item-clean ${event.published ? '' : 'is-draft'}">
-        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${when}</p></div>
+        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${when}</p><p class="admin-event-rsvp-count">${rsvpCount} RSVP&apos;d</p></div>
         <div class="admin-item-actions"><button class="button button-line" data-edit-event="${event.id}">Edit</button><button class="button button-line" data-delete-event="${event.id}">Remove</button></div>
       </article>`;
     }).join('') || '<p class="admin-empty">No events yet.</p>'}</div>`;
@@ -760,24 +792,61 @@
         meta: '',
         detail: item.comment,
         date: item.created_at
-      })),
-      ...(admin.rsvp || []).map((item) => ({
-        kind: 'RSVP',
-        primary: `${item.name}${item.party_size > 1 ? ` · party of ${item.party_size}` : ''}`,
-        meta: `${item.event_name || ''} · ${item.event_date || ''}`.replace(/^ · | · $/g, ''),
-        detail: item.is_student ? 'U of MN student' : 'Community guest · 18+',
-        date: item.created_at
       }))
     ].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
-    if (!items.length) {
+    const rsvpsByEvent = new Map();
+    (admin.rsvp || []).forEach((item) => {
+      const key = item.event_name || 'Unknown event';
+      if (!rsvpsByEvent.has(key)) rsvpsByEvent.set(key, []);
+      rsvpsByEvent.get(key).push(item);
+    });
+    const rsvpGroups = [...rsvpsByEvent.entries()].map(([eventName, guests]) => {
+      const sorted = [...guests].sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+      const latest = sorted.reduce((max, item) => {
+        const stamp = new Date(item.created_at || 0).getTime();
+        return stamp > max ? stamp : max;
+      }, 0);
+      const matched = data.events.find((event) => event.rsvpKey === eventName);
+      const past = matched ? eventStatus(matched) === 'Past' : false;
+      return {
+        eventName,
+        guests: sorted,
+        total: rsvpPartyTotal(sorted),
+        dateLabel: sorted[0]?.event_date || '',
+        latest,
+        past
+      };
+    }).sort((a, b) => b.latest - a.latest);
+
+    if (!items.length && !rsvpGroups.length) {
       content.innerHTML = '<div class="admin-empty"><h3>No messages yet</h3><p>Contact notes, community connects, event ideas, and RSVPs will show up here.</p></div>';
       return;
     }
 
-    content.innerHTML = `<div class="admin-list-head"><h3>Inbox</h3><span>${items.length}</span></div><div class="admin-data-list">${items.map((item) =>
-      row(`${esc(item.kind)} · ${esc(item.primary)}`, esc(item.meta), esc(item.detail), item.date)
-    ).join('')}</div>`;
+    const rsvpHtml = rsvpGroups.length
+      ? `<div class="admin-list-head"><h3>RSVPs by event</h3><span>${rsvpGroups.length}</span></div><div class="admin-rsvp-groups">${rsvpGroups.map((group) => `
+          <article class="admin-rsvp-group">
+            <div class="admin-rsvp-group-head">
+              <div>
+                <span class="eyebrow">${group.past ? 'Past event' : 'Event'}</span>
+                <h4>${esc(group.eventName)}</h4>
+                <p>${esc(group.dateLabel || '')}${group.dateLabel ? ' · ' : ''}${group.total} ${group.total === 1 ? 'person' : 'people'}</p>
+              </div>
+            </div>
+            <ul class="admin-rsvp-guest-list">${group.guests.map((guest) =>
+              `<li><strong>${esc(guest.name)}</strong><span>${guest.party_size > 1 ? `Party of ${guest.party_size}` : 'Party of 1'}${guest.name === 'Guest' ? ' · quick check-in' : guest.is_student ? ' · student' : ''}</span><time>${fmt(guest.created_at)}</time></li>`
+            ).join('')}</ul>
+          </article>`).join('')}</div>`
+      : '';
+
+    const inboxHtml = items.length
+      ? `<div class="admin-list-head"><h3>Inbox</h3><span>${items.length}</span></div><div class="admin-data-list">${items.map((item) =>
+          row(`${esc(item.kind)} · ${esc(item.primary)}`, esc(item.meta), esc(item.detail), item.date)
+        ).join('')}</div>`
+      : '';
+
+    content.innerHTML = rsvpHtml + inboxHtml;
   }
 
   function renderNewsletter() {
