@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photoshoots — SSA</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css?v=49" />
+  <link rel="stylesheet" href="/site-pages.css?v=43" />
+  <script src="/api.js"></script>
+  <script>
+    (function () {
+      var stored = localStorage.getItem('ssaTheme');
+      var theme = stored === 'dark' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body class="photoshoot-page">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/index.html">Home</a>
+      <a href="/events">Events</a>
+      <a href="/photoshoots" class="active">Photoshoots</a>
+      <button type="button">Options</button>
+    </div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+  <main class="page-main photoshoot-main">
+    <header class="photoshoot-hero" id="photoshootHero">
+      <span class="eyebrow">Photoshoots</span>
+      <h1>SSA photoshoots</h1>
+      <p>Open a shoot to swipe through the photos.</p>
+    </header>
+    <div id="photoshootList" aria-live="polite"></div>
+  </main>
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=20"></script>
+  <script src="/photoshoots.js?v=3"></script>
+</body>
+</html>

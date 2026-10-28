@@ -153,6 +153,7 @@ PAGE_ROUTES = {
     "/bulletin": "bulletin.html",
     "/schedule": "schedule.html",
     "/gallery": "gallery.html",
+    "/photoshoots": "photoshoots.html",
     "/timeline": "timeline.html",
     "/connections": "connections.html",
     "/admin": "admin.html",
@@ -508,6 +509,20 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 cache_seconds=60,
             )
             return
+        if path == "/api/photoshoots":
+            self._send_json(
+                200,
+                {"ok": True, "photoshoots": cms.list_photoshoots()},
+            )
+            return
+        m = re.fullmatch(r"/api/photoshoots/(\d+)/photos/(\d+)/image", path)
+        if m:
+            image = cms.get_photoshoot_image(int(m.group(1)), int(m.group(2)))
+            if not image:
+                self.send_error(404)
+            else:
+                self._send_bytes(200, image[0], image[1], cache_seconds=86400)
+            return
         if path == "/api/event-suggestions":
             self._send_json(
                 200,
@@ -715,6 +730,36 @@ class SSAHandler(SimpleHTTPRequestHandler):
             m = re.fullmatch(r"/api/gallery/(\d+)/delete", post_path)
             if m:
                 status, resp = cms.delete_gallery_item(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/photoshoots":
+                status, resp = cms.create_photoshoot(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/photoshoots/list-all":
+                if not cms.is_admin(payload):
+                    self._send_json(401, {"error": "Invalid password."})
+                else:
+                    self._send_json(200, {"ok": True, "photoshoots": cms.list_photoshoots(include_unpublished=True)})
+                return
+            m = re.fullmatch(r"/api/photoshoots/(\d+)/update", post_path)
+            if m:
+                status, resp = cms.update_photoshoot(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/photoshoots/(\d+)/delete", post_path)
+            if m:
+                status, resp = cms.delete_photoshoot(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/photoshoots/(\d+)/photos", post_path)
+            if m:
+                status, resp = cms.add_photoshoot_photo(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/photoshoot-photos/(\d+)/delete", post_path)
+            if m:
+                status, resp = cms.delete_photoshoot_photo(int(m.group(1)), payload)
                 self._send_json(status, resp)
                 return
             if post_path == "/api/events":

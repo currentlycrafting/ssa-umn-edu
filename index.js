@@ -252,56 +252,26 @@ async function loadHomeArcadeBoard() {
 }
 loadHomeArcadeBoard();
 
-function paintKickoffAuxNow(host, data) {
-  const np = data?.nowPlaying;
-  if (!data?.djConnected || !np) {
-    host.innerHTML = `
-      <div class="aux-now-label">Now playing</div>
-      <img src="/assets/brand/ssa-logo.png" alt="" />
-      <div class="aux-now-copy">
-        <div class="aux-np-title">Nothing playing yet</div>
-        <div class="aux-np-artist"></div>
-      </div>`;
-    return;
-  }
-  host.innerHTML = `
-    <div class="aux-now-label">Now playing</div>
-    <img src="${escapeHtml(np.albumImage || '/assets/brand/ssa-logo.png')}" alt="" />
-    <div class="aux-now-copy">
-      <div class="aux-np-title">${escapeHtml(np.songName || 'Unknown track')}</div>
-      <div class="aux-np-artist">${escapeHtml(np.artist || '')}</div>
-    </div>`;
-}
-
 async function loadHomeAuxNow() {
-  const kickoffHost = document.getElementById('kickoffAuxNow');
   const host = document.getElementById('homeAuxNow');
-  if (!kickoffHost && !host) return;
+  if (!host) return;
   try {
     const data = await getJson('/api/aux/state');
-    if (kickoffHost) paintKickoffAuxNow(kickoffHost, data);
-    if (host) {
-      const np = data.nowPlaying;
-      if (!data.djConnected || !np) {
-        host.innerHTML = '<p class="home-explore-empty">Nothing playing yet — open Want the Aux when the DJ is live.</p>';
-      } else {
-        host.innerHTML = `<div class="home-aux-now">
-          <img src="${escapeHtml(np.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
-          <div>
-            <span class="eyebrow">Now playing</span>
-            <h4>${escapeHtml(np.songName || 'Unknown track')}</h4>
-            <p>${escapeHtml(np.artist || '')}</p>
-          </div>
-        </div>`;
-      }
+    const np = data.nowPlaying;
+    if (!data.djConnected || !np) {
+      host.innerHTML = '<p class="home-explore-empty">Nothing playing yet.</p>';
+    } else {
+      host.innerHTML = `<div class="home-aux-now">
+        <img src="${escapeHtml(np.albumImage || '/assets/brand/ssa-logo.png')}" alt="" loading="lazy" />
+        <div>
+          <span class="eyebrow">Now playing</span>
+          <h4>${escapeHtml(np.songName || 'Unknown track')}</h4>
+          <p>${escapeHtml(np.artist || '')}</p>
+        </div>
+      </div>`;
     }
   } catch (_) {
-    if (kickoffHost) {
-      paintKickoffAuxNow(kickoffHost, null);
-      kickoffHost.querySelector('.aux-np-title').textContent = 'Could not load the live queue';
-      kickoffHost.querySelector('.aux-np-artist').textContent = '';
-    }
-    if (host) host.innerHTML = '<p class="home-explore-empty">Could not load the live queue.</p>';
+    host.innerHTML = '<p class="home-explore-empty">Could not load the live queue.</p>';
   }
 }
 loadHomeAuxNow();

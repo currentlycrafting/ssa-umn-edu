@@ -9,7 +9,8 @@
   const title = document.getElementById('adminSectionTitle');
   let password = sessionStorage.getItem('ssaAdminPassword') || '';
   let section = 'overview';
-  let data = { admin: {}, events: [], gallery: [], editions: [], timeline: [], bulletin: [] };
+  let activeShootId = null;
+  let data = { admin: {}, events: [], gallery: [], editions: [], timeline: [], bulletin: [], photoshoots: [] };
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -74,18 +75,20 @@
     workspace.hidden = false;
     data.admin = admin;
     render();
-    const [eventsResult, galleryResult, editionsResult, timelineResult, bulletinResult] = await Promise.allSettled([
+    const [eventsResult, galleryResult, editionsResult, timelineResult, bulletinResult, photoshootResult] = await Promise.allSettled([
       post('/api/events/list-all'),
       post('/api/gallery/list-all'),
       post('/api/newsletters/list-all'),
       post('/api/timeline/list-all'),
-      post('/api/bulletin/list-all')
+      post('/api/bulletin/list-all'),
+      post('/api/photoshoots/list-all')
     ]);
     if (eventsResult.status === 'fulfilled') data.events = eventsResult.value.events || [];
     if (galleryResult.status === 'fulfilled') data.gallery = galleryResult.value.items || [];
     if (editionsResult.status === 'fulfilled') data.editions = editionsResult.value.newsletters || [];
     if (timelineResult.status === 'fulfilled') data.timeline = timelineResult.value.events || [];
     if (bulletinResult.status === 'fulfilled') data.bulletin = bulletinResult.value.posts || [];
+    if (photoshootResult.status === 'fulfilled') data.photoshoots = photoshootResult.value.photoshoots || [];
     render();
   }
 
@@ -113,6 +116,7 @@
       <div class="admin-quick-grid">
         <button data-go="events"><strong>Event</strong><span>Add the next event to the calendar.</span></button>
         <button data-go="gallery"><strong>Gallery</strong><span>Add or remove community photos.</span></button>
+        <button data-go="photoshoots"><strong>Photoshoot</strong><span>Create a shoot and add photos.</span></button>
         <button data-go="timeline"><strong>Timeline</strong><span>Add sticky-note moments to the timeline.</span></button>
         <button data-go="bulletin"><strong>Bulletin</strong><span>Edit or remove board posts.</span></button>
         <a href="/newsletter/studio"><strong>Newsletter</strong><span>Publish the next edition.</span></a>
@@ -192,15 +196,47 @@
     </form>`;
   }
 
+  function rsvpsForEvent(rsvpKey) {
+    const key = String(rsvpKey || '');
+    if (!key) return [];
+    return (data.admin.rsvp || []).filter((item) => item.event_name === key);
+  }
+
+  function rsvpPartyTotal(items) {
+    return items.reduce((sum, item) => sum + (Number(item.party_size) || 1), 0);
+  }
+
+  function eventRsvpPanel(event) {
+    if (!event?.rsvpKey) return '';
+    const items = rsvpsForEvent(event.rsvpKey);
+    const total = rsvpPartyTotal(items);
+    const status = eventStatus(event);
+    const heading = status === 'Past' ? "Who RSVP'd" : "Who's coming";
+    if (!items.length) {
+      return `<div class="admin-rsvp-panel"><div class="admin-list-head"><h3>${heading}</h3><span>0</span></div><p class="admin-empty">No RSVPs yet for this event.</p></div>`;
+    }
+    return `<div class="admin-rsvp-panel"><div class="admin-list-head"><h3>${heading}</h3><span>${total} ${total === 1 ? 'person' : 'people'} · ${items.length} ${items.length === 1 ? 'RSVP' : 'RSVPs'}</span></div><div class="admin-data-list">${items.map((item) =>
+      row(
+        esc(`${item.name}${item.party_size > 1 ? ` · party of ${item.party_size}` : ''}`),
+        esc(item.is_student ? 'U of MN student' : item.name === 'Guest' ? 'Quick check-in' : 'Community guest'),
+        '',
+        item.created_at
+      )
+    ).join('')}</div></div>`;
+  }
+
   function renderEvents(editId) {
     const editing = data.events.find((event) => event.id === Number(editId));
-    content.innerHTML = eventForm(editing) + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => {
+    content.innerHTML = eventForm(editing)
+      + (editing ? eventRsvpPanel(editing) : '')
+      + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => {
       const when = event.location
         ? `${esc(event.shortDate || fmt(event.startsAt))} - ${esc(event.location)}`
         : esc(event.dateLabel || fmt(event.startsAt));
+      const rsvpCount = rsvpPartyTotal(rsvpsForEvent(event.rsvpKey));
       return `
       <article class="admin-event-item admin-event-item-clean ${event.published ? '' : 'is-draft'}">
-        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${when}</p></div>
+        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${when}</p><p class="admin-event-rsvp-count">${rsvpCount} RSVP&apos;d</p></div>
         <div class="admin-item-actions"><button class="button button-line" data-edit-event="${event.id}">Edit</button><button class="button button-line" data-delete-event="${event.id}">Remove</button></div>
       </article>`;
     }).join('') || '<p class="admin-empty">No events yet.</p>'}</div>`;
@@ -611,6 +647,117 @@
     });
   }
 
+  function renderPhotoshoots() {
+    const shoots = data.photoshoots || [];
+    const active = shoots.find((shoot) => String(shoot.id) === String(activeShootId)) || shoots[0] || null;
+    if (active) activeShootId = active.id;
+    const editor = active ? `
+      <form class="admin-editor" id="adminShootEdit">
+        <div class="admin-editor-head"><div><span class="eyebrow">Details</span><h3>Edit this photoshoot</h3></div></div>
+        <input name="title" value="${esc(active.title)}" maxlength="120" required />
+        <textarea name="description" maxlength="800" placeholder="A short description shown on the photoshoot button">${esc(active.description || '')}</textarea>
+        <div class="admin-editor-actions"><button class="button button-dark" type="submit">Save details</button><button class="button button-line" type="button" data-delete-shoot="${active.id}">Delete photoshoot</button><output></output></div>
+      </form>
+      <form class="admin-editor admin-gallery-add" id="adminShootPhotoForm">
+        <div class="admin-editor-head"><div><span class="eyebrow">New frame</span><h3>Add a photo</h3></div></div>
+        <label class="gallery-drop admin-gallery-drop" id="adminShootDrop">
+          <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" required />
+          <span class="admin-gallery-prompt"><strong>Choose a photo</strong><small>PNG, JPG, or WEBP · 5 MB max</small></span>
+          <figure class="admin-gallery-live-polaroid"><img id="adminShootPreviewImage" alt="Photo you are about to add" /><figcaption id="adminShootPreviewCaption">Your caption</figcaption></figure>
+        </label>
+        <input name="caption" id="adminShootCaption" placeholder="Caption" maxlength="300" />
+        <div class="admin-editor-actions"><button class="button button-dark" type="submit">Add to slideshow</button><output></output></div>
+      </form>
+      <div class="admin-list-head"><h3>Slideshow</h3><span>${(active.photos || []).length} photos</span></div>
+      <div class="admin-gallery-grid">${(active.photos || []).map((photo, index) => `
+        <article class="admin-gallery-item"><img src="${esc(photo.src)}" alt="${esc(photo.caption || active.title)}" /><div><strong>${esc(photo.caption || `Photo ${index + 1}`)}</strong><button class="button button-line" data-delete-shoot-photo="${photo.id}">Remove</button></div></article>`).join('') || '<p class="admin-empty">No photos in this shoot yet.</p>'}</div>` : '<p class="admin-empty">Create a photoshoot, then add photos to it.</p>';
+    content.innerHTML = `
+      <form class="admin-editor" id="adminShootCreate">
+        <div class="admin-editor-head"><div><span class="eyebrow">New photoshoot</span><h3>Name and details</h3></div></div>
+        <input name="title" placeholder="Photoshoot name" maxlength="120" required />
+        <textarea name="description" maxlength="800" placeholder="What this shoot was"></textarea>
+        <div class="admin-editor-actions"><button class="button button-dark" type="submit">Create photoshoot</button><output></output></div>
+      </form>
+      <div class="admin-list-head"><h3>Photoshoots</h3><span>${shoots.length}</span></div>
+      <div class="admin-event-list">${shoots.map((shoot) => `
+        <article class="admin-event-item admin-event-item-clean">
+          <div><span class="eyebrow">${(shoot.photos || []).length} photos</span><h3>${esc(shoot.title)}</h3><p>${esc(shoot.description || 'No description yet')}</p></div>
+          <div class="admin-item-actions"><button class="button button-line" data-open-shoot="${shoot.id}">${String(shoot.id) === String(activeShootId) ? 'Editing' : 'Open'}</button></div>
+        </article>`).join('') || ''}</div>
+      ${editor}`;
+    document.getElementById('adminShootCreate')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const created = await post('/api/photoshoots', {
+          title: form.title.value.trim(),
+          description: form.description.value.trim()
+        });
+        activeShootId = created.id;
+        await loadAll();
+        section = 'photoshoots';
+        render();
+      } catch (error) {
+        form.querySelector('output').textContent = error.message || 'Could not create photoshoot.';
+        button.disabled = false;
+      }
+    });
+    document.getElementById('adminShootEdit')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        await post(`/api/photoshoots/${active.id}/update`, {
+          title: form.title.value.trim(),
+          description: form.description.value.trim()
+        });
+        await loadAll();
+        section = 'photoshoots';
+        render();
+      } catch (error) {
+        form.querySelector('output').textContent = error.message || 'Could not save photoshoot.';
+        button.disabled = false;
+      }
+    });
+    const shootPhotoForm = document.getElementById('adminShootPhotoForm');
+    const shootDrop = document.getElementById('adminShootDrop');
+    const shootPreviewImage = document.getElementById('adminShootPreviewImage');
+    const shootPreviewCaption = document.getElementById('adminShootPreviewCaption');
+    shootPhotoForm?.photo.addEventListener('change', async () => {
+      const file = shootPhotoForm.photo.files[0];
+      if (!file || !shootPreviewImage || !shootDrop) return;
+      shootPreviewImage.src = await readFile(file);
+      shootDrop.classList.add('has-preview');
+    });
+    shootPhotoForm?.caption.addEventListener('input', () => {
+      if (shootPreviewCaption) shootPreviewCaption.textContent = shootPhotoForm.caption.value.trim() || 'Your caption';
+    });
+    shootPhotoForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const file = form.photo.files[0];
+      const button = form.querySelector('button[type="submit"]');
+      if (!file || !active) return;
+      button.disabled = true;
+      try {
+        await post(`/api/photoshoots/${active.id}/photos`, {
+          filename: file.name,
+          data: await readFile(file),
+          caption: form.caption.value.trim()
+        });
+        await loadAll();
+        section = 'photoshoots';
+        render();
+      } catch (error) {
+        form.querySelector('output').textContent = error.message || 'Could not add photo.';
+        button.disabled = false;
+      }
+    });
+  }
+
   function row(primary, meta, detail, date) {
     return `<article class="admin-data-row"><div><strong>${primary}</strong>${meta ? `<span>${meta}</span>` : ''}${detail ? `<p>${detail}</p>` : ''}</div><div><time>${fmt(date)}</time></div></article>`;
   }
@@ -645,24 +792,61 @@
         meta: '',
         detail: item.comment,
         date: item.created_at
-      })),
-      ...(admin.rsvp || []).map((item) => ({
-        kind: 'RSVP',
-        primary: `${item.name}${item.party_size > 1 ? ` · party of ${item.party_size}` : ''}`,
-        meta: `${item.event_name || ''} · ${item.event_date || ''}`.replace(/^ · | · $/g, ''),
-        detail: item.is_student ? 'U of MN student' : 'Community guest · 18+',
-        date: item.created_at
       }))
     ].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
-    if (!items.length) {
+    const rsvpsByEvent = new Map();
+    (admin.rsvp || []).forEach((item) => {
+      const key = item.event_name || 'Unknown event';
+      if (!rsvpsByEvent.has(key)) rsvpsByEvent.set(key, []);
+      rsvpsByEvent.get(key).push(item);
+    });
+    const rsvpGroups = [...rsvpsByEvent.entries()].map(([eventName, guests]) => {
+      const sorted = [...guests].sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+      const latest = sorted.reduce((max, item) => {
+        const stamp = new Date(item.created_at || 0).getTime();
+        return stamp > max ? stamp : max;
+      }, 0);
+      const matched = data.events.find((event) => event.rsvpKey === eventName);
+      const past = matched ? eventStatus(matched) === 'Past' : false;
+      return {
+        eventName,
+        guests: sorted,
+        total: rsvpPartyTotal(sorted),
+        dateLabel: sorted[0]?.event_date || '',
+        latest,
+        past
+      };
+    }).sort((a, b) => b.latest - a.latest);
+
+    if (!items.length && !rsvpGroups.length) {
       content.innerHTML = '<div class="admin-empty"><h3>No messages yet</h3><p>Contact notes, community connects, event ideas, and RSVPs will show up here.</p></div>';
       return;
     }
 
-    content.innerHTML = `<div class="admin-list-head"><h3>Inbox</h3><span>${items.length}</span></div><div class="admin-data-list">${items.map((item) =>
-      row(`${esc(item.kind)} · ${esc(item.primary)}`, esc(item.meta), esc(item.detail), item.date)
-    ).join('')}</div>`;
+    const rsvpHtml = rsvpGroups.length
+      ? `<div class="admin-list-head"><h3>RSVPs by event</h3><span>${rsvpGroups.length}</span></div><div class="admin-rsvp-groups">${rsvpGroups.map((group) => `
+          <article class="admin-rsvp-group">
+            <div class="admin-rsvp-group-head">
+              <div>
+                <span class="eyebrow">${group.past ? 'Past event' : 'Event'}</span>
+                <h4>${esc(group.eventName)}</h4>
+                <p>${esc(group.dateLabel || '')}${group.dateLabel ? ' · ' : ''}${group.total} ${group.total === 1 ? 'person' : 'people'}</p>
+              </div>
+            </div>
+            <ul class="admin-rsvp-guest-list">${group.guests.map((guest) =>
+              `<li><strong>${esc(guest.name)}</strong><span>${guest.party_size > 1 ? `Party of ${guest.party_size}` : 'Party of 1'}${guest.name === 'Guest' ? ' · quick check-in' : guest.is_student ? ' · student' : ''}</span><time>${fmt(guest.created_at)}</time></li>`
+            ).join('')}</ul>
+          </article>`).join('')}</div>`
+      : '';
+
+    const inboxHtml = items.length
+      ? `<div class="admin-list-head"><h3>Inbox</h3><span>${items.length}</span></div><div class="admin-data-list">${items.map((item) =>
+          row(`${esc(item.kind)} · ${esc(item.primary)}`, esc(item.meta), esc(item.detail), item.date)
+        ).join('')}</div>`
+      : '';
+
+    content.innerHTML = rsvpHtml + inboxHtml;
   }
 
   function renderNewsletter() {
@@ -843,6 +1027,7 @@
       overview: 'Overview',
       events: 'Events',
       gallery: 'Gallery',
+      photoshoots: 'Photoshoots',
       timeline: 'Timeline',
       messages: 'Messages',
       bulletin: 'Bulletin',
@@ -855,6 +1040,7 @@
     if (section === 'overview') renderOverview();
     else if (section === 'events') renderEvents();
     else if (section === 'gallery') renderGallery();
+    else if (section === 'photoshoots') renderPhotoshoots();
     else if (section === 'timeline') renderTimeline();
     else if (section === 'bulletin') renderBulletin();
     else if (section === 'newsletters') renderNewsletter();
@@ -911,6 +1097,28 @@
       if (!(await askConfirm({ title: 'Are you sure?', copy: 'This permanently deletes the event from the calendar and database.', confirmLabel: 'Yes, remove' }))) return;
       await post(`/api/events/${deleteEvent.dataset.deleteEvent}/delete`);
       await loadAll(); section = 'events'; render();
+      return;
+    }
+    const openShoot = event.target.closest('[data-open-shoot]');
+    if (openShoot) {
+      activeShootId = openShoot.dataset.openShoot;
+      section = 'photoshoots';
+      render();
+      return;
+    }
+    const deleteShoot = event.target.closest('[data-delete-shoot]');
+    if (deleteShoot) {
+      if (!(await askConfirm({ title: 'Delete this photoshoot?', copy: 'This removes the shoot and every photo in it.', confirmLabel: 'Yes, delete' }))) return;
+      await post(`/api/photoshoots/${deleteShoot.dataset.deleteShoot}/delete`);
+      if (String(activeShootId) === String(deleteShoot.dataset.deleteShoot)) activeShootId = null;
+      await loadAll(); section = 'photoshoots'; render();
+      return;
+    }
+    const deleteShootPhoto = event.target.closest('[data-delete-shoot-photo]');
+    if (deleteShootPhoto) {
+      if (!(await askConfirm({ title: 'Remove this photo?', copy: 'This permanently deletes the photo from the slideshow.', confirmLabel: 'Yes, remove' }))) return;
+      await post(`/api/photoshoot-photos/${deleteShootPhoto.dataset.deleteShootPhoto}/delete`);
+      await loadAll(); section = 'photoshoots'; render();
       return;
     }
     const deletePhoto = event.target.closest('[data-delete-photo]');

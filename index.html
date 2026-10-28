@@ -18,8 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=47" />
-  <link rel="stylesheet" href="site-pages.css?v=41" />
+  <link rel="stylesheet" href="index.css?v=50" />
+  <link rel="stylesheet" href="site-pages.css?v=44" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -89,58 +89,6 @@
         <span class="has-tip" data-tip="Events, mixers, service">Community</span>
         <span class="has-tip" data-tip="Committees and board roles">Leadership</span>
         <span class="has-tip" data-tip="Mentorship and belonging">Student Support</span>
-      </div>
-    </section>
-
-    <section class="section home-kickoff" id="kickoff">
-      <div class="section-head">
-        <span class="eyebrow">Fall Kickoff</span>
-        <h2>Welcome to SSA&apos;s Fall Kickoff</h2>
-        <p>Music, vendors, parking, and everything you need for the night.</p>
-      </div>
-
-      <div class="kickoff-layout">
-        <div class="kickoff-top">
-          <div class="kickoff-now-wrap">
-            <a class="aux-now kickoff-aux-now" id="kickoffAuxNow" href="/aux" aria-live="polite" aria-label="Open Want the Aux">
-              <div class="aux-now-label">Now playing</div>
-              <img src="/assets/brand/ssa-logo.png" alt="" />
-              <div class="aux-now-copy">
-                <div class="aux-np-title">Checking what’s on…</div>
-                <div class="aux-np-artist"></div>
-              </div>
-            </a>
-          </div>
-
-          <aside class="home-parking kickoff-parking" aria-label="Fall Kickoff parking">
-            <span class="eyebrow">Fall Kickoff</span>
-            <h3>Parking</h3>
-            <p>14 Church St SE, Minneapolis, MN 55455 for the kickoff.</p>
-            <a class="button button-dark handdrawn" href="https://maps.google.com/?q=14+Church+St+SE,+Minneapolis,+MN+55455" target="_blank" rel="noopener">Open in Maps</a>
-          </aside>
-        </div>
-
-        <div class="kickoff-vendors">
-          <span class="eyebrow">Vendors</span>
-          <h3>Vendor list</h3>
-          <div class="kickoff-vendor-row">
-            <a class="kickoff-vendor" href="https://www.instagram.com/pictureperfectmn/" target="_blank" rel="noopener noreferrer">
-              <img src="/assets/vendors/picture-perfect.jpg" alt="Picture Perfect" />
-              <strong>Picture Perfect</strong>
-              <span>@pictureperfectmn</span>
-            </a>
-            <a class="kickoff-vendor" href="https://www.instagram.com/sweethavenco_/" target="_blank" rel="noopener noreferrer">
-              <img src="/assets/vendors/sweet-haven.jpg" alt="Sweet Haven Co" />
-              <strong>Sweet Haven</strong>
-              <span>@sweethavenco_</span>
-            </a>
-            <a class="kickoff-vendor" href="https://www.instagram.com/shotbyrvna/" target="_blank" rel="noopener noreferrer">
-              <img src="/assets/vendors/rina.jpg" alt="Rina · ShotByRVNA" />
-              <strong>Rina</strong>
-              <span>@shotbyrvna</span>
-            </a>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -312,6 +260,7 @@
 
   <div class="modal-backdrop" id="rsvpModal" aria-hidden="true">
     <div class="rsvp-modal modal-sheet modal-card modal-card-compact" role="dialog" aria-modal="true" aria-labelledby="rsvpTitle">
+      <button class="modal-exit rsvp-modal-close" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
       <span class="eyebrow">RSVP</span>
       <h2 id="rsvpTitle">Event</h2>
       <p id="rsvpMeta"></p>
@@ -321,7 +270,7 @@
         <input type="hidden" name="date" />
         <input type="text" name="name" placeholder="Name" required />
         <fieldset class="rsvp-choice">
-          <legend>Are you bringing your college ID?</legend>
+          <legend>Do you have a college ID?</legend>
           <div><label><input type="radio" name="bringCollegeId" value="yes" required /><span>Yes</span></label><label><input type="radio" name="bringCollegeId" value="no" /><span>No</span></label></div>
         </fieldset>
         <label class="rsvp-bring-toggle">
@@ -337,7 +286,7 @@
         <input type="hidden" name="event" />
         <input type="hidden" name="date" />
         <fieldset class="rsvp-choice">
-          <legend>Are you bringing your college ID?</legend>
+          <legend>Do you have a college ID?</legend>
           <div><label><input type="radio" name="bringCollegeId" value="yes" required /><span>Yes</span></label><label><input type="radio" name="bringCollegeId" value="no" /><span>No</span></label></div>
         </fieldset>
         <label class="rsvp-bring-toggle">
@@ -351,11 +300,11 @@
       </form>
       <div class="rsvp-result" id="rsvpResult" hidden></div>
     </div>
-    <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
 
   <div class="modal-backdrop" id="feedbackModal" aria-hidden="true">
     <div class="rsvp-modal modal-sheet modal-card modal-card-compact" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+      <button class="modal-exit rsvp-modal-close" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
       <span class="eyebrow">After the event</span>
       <h2 id="feedbackTitle">How was it?</h2>
       <p>Quick rating + one line helps us plan better nights.</p>
@@ -376,7 +325,6 @@
         <output></output>
       </form>
     </div>
-    <button class="modal-exit" type="button" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
   </div>
 
   <div class="modal-backdrop newsletter-takeover" id="newsletterModal" aria-hidden="true">
@@ -402,12 +350,12 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=19"></script>
+  <script src="nav.js?v=20"></script>
   <script src="micro.js?v=2"></script>
   <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=29"></script>
-  <script src="/rsvp.js?v=5"></script>
-  <script src="index.js?v=22"></script>
+  <script src="/events-render.js?v=31"></script>
+  <script src="/rsvp.js?v=7"></script>
+  <script src="index.js?v=23"></script>
   <script src="/outreach.js?v=4"></script>
   <script src="/whats-new.js?v=8"></script>
   <script>

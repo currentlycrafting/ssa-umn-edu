@@ -106,20 +106,28 @@
     if (friendField) friendField.hidden = !checked;
   }
 
-  function renderAttendees(data) {
+  function renderAttendees(data, options = {}) {
     const attendees = data?.attendees || [];
     const count = Number(data?.count) || 0;
     const quick = data?.mode === 'quick';
+    const past = Boolean(options.past);
+    const empty = past
+      ? '<li class="rsvp-attendee rsvp-attendee-empty">No RSVPs were recorded for this event.</li>'
+      : '<li class="rsvp-attendee rsvp-attendee-empty">No names yet — you might be the first.</li>';
     const names = attendees.length
       ? attendees.map((attendee) =>
           `<li class="rsvp-attendee"><span class="rsvp-name">${escapeHtml(attendee.name || attendee)}</span></li>`
         ).join('')
-      : '<li class="rsvp-attendee rsvp-attendee-empty">No names yet — you might be the first.</li>';
-    result.innerHTML = quick
-      ? `<h3 class="rsvp-whos-coming">You&apos;re coming!</h3><p class="rsvp-count">${count} ${count === 1 ? 'person is' : 'people are'} coming</p>`
-      : '<h3 class="rsvp-whos-coming">Who&apos;s coming</h3>' +
-        `<p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} total</p>` +
+      : empty;
+    if (quick && !past) {
+      result.innerHTML = `<h3 class="rsvp-whos-coming">You&apos;re coming!</h3><p class="rsvp-count">${count} ${count === 1 ? 'person is' : 'people are'} coming</p>`;
+    } else if (quick && past) {
+      result.innerHTML = `<h3 class="rsvp-whos-coming">Who RSVP&apos;d</h3><p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} RSVP&apos;d</p><p class="rsvp-quick-note">This event used quick check-in, so individual names weren&apos;t collected.</p>`;
+    } else {
+      result.innerHTML = `<h3 class="rsvp-whos-coming">${past ? 'Who RSVP&apos;d' : 'Who&apos;s coming'}</h3>` +
+        `<p class="rsvp-count">${count} ${count === 1 ? 'person' : 'people'} ${past ? "RSVP'd" : 'total'}</p>` +
         `<ul class="rsvp-list">${names}</ul>`;
+    }
     form.hidden = true;
     quickForm.hidden = true;
     eyebrow.hidden = true;
@@ -129,9 +137,9 @@
     result.hidden = false;
   }
 
-  async function showAttendees(eventName, initialData) {
+  async function showAttendees(eventName, initialData, options = {}) {
     result.hidden = false;
-    result.innerHTML = '<p>Loading who&apos;s coming…</p>';
+    result.innerHTML = options.past ? '<p>Loading who RSVP&apos;d…</p>' : '<p>Loading who&apos;s coming…</p>';
     form.hidden = true;
     quickForm.hidden = true;
     eyebrow.hidden = true;
@@ -139,13 +147,19 @@
     meta.hidden = true;
     modalCount.hidden = true;
     try {
-      const data = initialData?.attendees
+      const data = initialData?.attendees || initialData?.count != null
         ? initialData
         : await api('/api/rsvp?event=' + encodeURIComponent(eventName));
-      renderAttendees(data);
+      renderAttendees(data, options);
     } catch (_) {
       result.innerHTML = '<p>Could not load the RSVP list right now.</p>';
     }
+  }
+
+  function openAttendeeList(button) {
+    const eventName = button.dataset.event || 'SSA Event';
+    openModal();
+    showAttendees(eventName, null, { past: button.dataset.past === 'true' });
   }
 
   function openFor(button) {
@@ -163,29 +177,33 @@
     quickForm.date.value = eventDate;
     form.querySelector('output').textContent = '';
     quickForm.querySelector('output').textContent = '';
-    title.textContent = eventName;
-    meta.textContent = eventDate;
-    eyebrow.hidden = false;
-    title.hidden = false;
-    meta.hidden = false;
     result.hidden = true;
     result.innerHTML = '';
-    modalCount.hidden = false;
-    const count = counts[eventName] || 0;
-    modalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
     form.hidden = false;
     quickForm.hidden = true;
     openModal();
     if (attendanceMode === 'quick') {
       form.hidden = true;
       quickForm.hidden = false;
-      eyebrow.textContent = 'Quick response';
+      eyebrow.hidden = true;
+      title.hidden = false;
+      title.textContent = 'Are you coming?';
+      meta.hidden = true;
+      modalCount.hidden = true;
       if (button.dataset.rsvped === 'true' || rsvpedEvents().includes(eventName)) {
         showAttendees(eventName);
       }
       return;
     }
+    eyebrow.hidden = false;
     eyebrow.textContent = 'RSVP';
+    title.hidden = false;
+    title.textContent = eventName;
+    meta.hidden = false;
+    meta.textContent = eventDate;
+    modalCount.hidden = false;
+    const count = counts[eventName] || 0;
+    modalCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} coming so far`;
     if (button.dataset.rsvped === 'true' || rsvpedEvents().includes(eventName)) {
       showAttendees(eventName);
     } else {
@@ -325,6 +343,11 @@
   });
 
   document.addEventListener('click', (event) => {
+    const attendees = event.target.closest('.rsvp-attendees-button');
+    if (attendees) {
+      openAttendeeList(attendees);
+      return;
+    }
     const button = event.target.closest('.rsvp-button');
     if (button) openFor(button);
     const feedback = event.target.closest('.feedback-button');

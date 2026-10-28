@@ -203,8 +203,11 @@
     const poster = event.imageUrl
       ? `<button class="event-card-poster" type="button" data-open-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View ${esc(event.title)} poster"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></button>`
       : '';
+    const whoRsvped = past
+      ? `<button class="micro-button rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button>`
+      : '';
     const actions = past
-      ? `<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>${igCardButton(event)}`
+      ? `${whoRsvped}<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>${igCardButton(event)}`
       : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}${igCardButton(event)}`;
     return `<article class="event-card${past ? ' event-card--past' : ''}" data-event-id="${esc(event.id || '')}" data-event-key="${esc(eventKey(event))}" ${past ? 'data-past="true"' : ''}>
       ${poster}
@@ -219,6 +222,7 @@
         </div>
       </div>
       <div class="event-card-actions">
+        ${past ? `<button class="event-going event-going--past rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> RSVP&apos;d</button>` : ''}
         ${actions}
       </div>
     </article>`;
@@ -614,16 +618,20 @@
       where.hidden = true;
     }
     modal.querySelector('#eventDetailCopy').innerHTML = descriptionHtml(event);
-    const countEl = modal.querySelector('#eventDetailCount');
     const liveCount = document.querySelector(`[data-event-count="${CSS.escape(event.rsvpKey || '')}"]`);
-    countEl.textContent = liveCount?.textContent || '—';
-    countEl.dataset.eventCount = event.rsvpKey || '';
+    const countText = liveCount?.textContent || '—';
     art.hidden = true;
     art.innerHTML = '';
     const past = isPast(event);
     const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
+    const countWrap = modal.querySelector('.event-going');
+    if (countWrap) {
+      countWrap.innerHTML = past
+        ? `<button class="event-going-link rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" id="eventDetailCount" data-event-count="${esc(event.rsvpKey || '')}">${esc(countText)}</span> RSVP&apos;d · see list</button>`
+        : `<span class="event-going-num" id="eventDetailCount" data-event-count="${esc(event.rsvpKey || '')}">${esc(countText)}</span> coming`;
+    }
     const rsvp = past
-      ? `<button class="button button-line feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
+      ? `<button class="button button-dark handdrawn rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button><button class="button button-line feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
       : `<button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event, { featured: true })}`;
     actions.innerHTML = `${rsvp}<button class="button button-dark event-detail-download" type="button">Download IG card</button>`;
     actions.querySelector('.event-detail-download')?.addEventListener('click', () => downloadEventGraphic(event));
@@ -723,7 +731,7 @@
       lightbox._openPoster(src, openPoster.dataset.eventCaption || '');
       return;
     }
-    if (event.target.closest('.rsvp-button, .calendar-button, .feedback-button, .event-read-more, .event-detail-download, .event-ig-card, .event-card-poster, .featured-event-art, a, button, input, label')) return;
+    if (event.target.closest('.rsvp-button, .rsvp-attendees-button, .calendar-button, .feedback-button, .event-read-more, .event-detail-download, .event-ig-card, .event-card-poster, .featured-event-art, a, button, input, label')) return;
     const card = event.target.closest('.event-card[data-event-key], .featured-event[data-event-key]');
     if (!card) return;
     event.preventDefault();
