@@ -846,7 +846,7 @@
         ).join('')}</div>`
       : '';
 
-    content.innerHTML = rsvpHtml + inboxHtml;
+    content.innerHTML = inboxHtml + rsvpHtml;
   }
 
   function renderNewsletter() {

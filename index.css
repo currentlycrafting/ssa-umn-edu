@@ -3905,8 +3905,6 @@ a.calendar-button.micro-button:hover {
   filter: grayscale(0.25);
 }
 .event-card--past .event-going--past {
-  opacity: 1;
-  filter: none;
   color: var(--ink);
 }
 button.event-going--past.rsvp-attendees-button {
@@ -3949,16 +3947,14 @@ button.event-going--past.rsvp-attendees-button:hover {
   line-height: 1.45;
 }
 .event-card--past .event-card-actions {
-  opacity: 1;
-  filter: none;
+  opacity: 0.55;
+  filter: grayscale(0.25);
 }
 .event-card--past .rsvp-attendees-button.micro-button,
 .event-card--past .feedback-button {
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
-  opacity: 1;
-  filter: none;
   font-weight: 850;
 }
 .event-card--past .rsvp-attendees-button.micro-button {
