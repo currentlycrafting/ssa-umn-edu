@@ -47,6 +47,16 @@ _newsletter_count_cache = {"at": 0.0, "count": None}
 NEWSLETTER_COUNT_TTL = int(os.environ.get("NEWSLETTER_COUNT_TTL", "30"))
 RSVP_SUMMARY_TTL = int(os.environ.get("RSVP_SUMMARY_TTL", "20"))
 _rsvp_summary_cache = {"at": 0.0, "events": {}}
+APP_SUMMARY_TTL = int(os.environ.get("APP_SUMMARY_TTL", "20"))
+_app_summary_cache = {"at": 0.0, "payload": None}
+
+INTERN_AREAS = (
+    "Executive",
+    "Finance & Grants",
+    "Social Media & Marketing",
+    "Event Planning & Logistics",
+    "Community Outreach",
+)
 
 
 def utcnow():
@@ -66,6 +76,36 @@ def invalidate_newsletter_count_cache():
 def invalidate_rsvp_summary_cache():
     _rsvp_summary_cache["at"] = 0.0
     _rsvp_summary_cache["events"] = {}
+
+
+def invalidate_app_summary_cache():
+    _app_summary_cache["at"] = 0.0
+    _app_summary_cache["payload"] = None
+
+
+def fetch_application_summary():
+    now = time.monotonic()
+    cached = _app_summary_cache["payload"]
+    if cached is not None and now - _app_summary_cache["at"] < APP_SUMMARY_TTL:
+        return dict(cached)
+    with db() as cur:
+        cur.execute("SELECT COUNT(*) AS c FROM intern_applications")
+        total = int(cur.fetchone()["c"])
+        cur.execute("SELECT preferred_area FROM intern_applications")
+        rows = cur.fetchall()
+    by_area = {area: 0 for area in INTERN_AREAS}
+    for row in rows:
+        raw = str(row["preferred_area"] or "")
+        parts = [part.strip() for part in raw.replace("|||", "/").split("/") if part.strip()]
+        if not parts and raw:
+            parts = [raw.strip()]
+        for area in parts:
+            if area in by_area:
+                by_area[area] += 1
+    payload = {"total": total, "byArea": by_area}
+    _app_summary_cache["at"] = now
+    _app_summary_cache["payload"] = payload
+    return dict(payload)
 
 
 def fetch_newsletter_count():
@@ -153,7 +193,8 @@ PAGE_ROUTES = {
     "/bulletin": "bulletin.html",
     "/schedule": "schedule.html",
     "/gallery": "gallery.html",
-    "/photoshoots": "photoshoots.html",
+    "/interns": "interns.html",
+    "/initiatives": "initiatives.html",
     "/timeline": "timeline.html",
     "/connections": "connections.html",
     "/admin": "admin.html",
@@ -251,6 +292,25 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 """
             )
             aux_queue = cur.fetchall()
+            cur.execute(
+                """
+                SELECT id, email, name, year, preferred_area, interest_why,
+                       contribution, goals, stay_on, questions, created_at
+                FROM intern_applications
+                ORDER BY created_at DESC
+                """
+            )
+            applications = cur.fetchall()
+            cur.execute(
+                """
+                SELECT f.initiative_id, f.rating, f.comment, f.created_at, i.title
+                FROM initiative_feedback f
+                LEFT JOIN initiatives i ON i.id = f.initiative_id
+                ORDER BY f.created_at DESC
+                LIMIT 200
+                """
+            )
+            initiative_feedback = cur.fetchall()
 
         def iso(value):
             return value.isoformat() if hasattr(value, "isoformat") else str(value)
@@ -302,6 +362,16 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 for r in connects
             ],
             "event_suggestions": cms.list_event_suggestions(),
+            "initiative_feedback": [
+                {
+                    "initiativeId": r["initiative_id"],
+                    "title": r["title"] or f"Initiative #{r['initiative_id']}",
+                    "rating": int(r["rating"]),
+                    "comment": r["comment"],
+                    "created_at": iso(r["created_at"]),
+                }
+                for r in initiative_feedback
+            ],
             "aux": [
                 {
                     "id": r["id"],
@@ -323,6 +393,22 @@ class SSAHandler(SimpleHTTPRequestHandler):
                     "created_at": iso(r["created_at"]),
                 }
                 for r in scores
+            ],
+            "applications": [
+                {
+                    "id": r["id"],
+                    "email": r["email"],
+                    "name": r["name"],
+                    "year": r["year"],
+                    "preferredArea": r["preferred_area"],
+                    "interestWhy": r["interest_why"],
+                    "contribution": r["contribution"],
+                    "goals": r["goals"],
+                    "stayOn": r["stay_on"],
+                    "questions": r["questions"] or "",
+                    "created_at": iso(r["created_at"]),
+                }
+                for r in applications
             ],
         }
 
@@ -376,6 +462,12 @@ class SSAHandler(SimpleHTTPRequestHandler):
             self._redirect("/gallery")
             return
 
+        if path == "/photoshoots":
+            self.send_response(301)
+            self.send_header("Location", "/gallery")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         if path in PAGE_ROUTES:
             self._send_file(PAGE_ROUTES[path])
             return
@@ -452,6 +544,16 @@ class SSAHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/events":
             self._send_json(200, {"ok": True, "events": cms.list_events()}, cache_seconds=30)
+            return
+        if path == "/api/initiatives":
+            self._send_json(200, {"ok": True, "initiatives": cms.list_initiatives()}, cache_seconds=30)
+            return
+        if path == "/api/suggestions/answered":
+            self._send_json(
+                200,
+                {"ok": True, "items": cms.list_answered_suggestions_public()},
+                cache_seconds=30,
+            )
             return
         if path == "/api/events/featured":
             events = cms.list_events()
@@ -584,6 +686,13 @@ class SSAHandler(SimpleHTTPRequestHandler):
             try:
                 events = fetch_rsvp_summary()
                 self._send_json(200, {"events": events}, cache_seconds=RSVP_SUMMARY_TTL)
+            except Exception as exc:
+                self._send_json(503, {"ok": False, "error": str(exc)})
+            return
+        if path == "/api/applications/summary":
+            try:
+                summary = fetch_application_summary()
+                self._send_json(200, {"ok": True, **summary}, cache_seconds=APP_SUMMARY_TTL)
             except Exception as exc:
                 self._send_json(503, {"ok": False, "error": str(exc)})
             return
@@ -721,6 +830,10 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 status, resp = cms.submit_gallery_item(payload)
                 self._send_json(status, resp)
                 return
+            if post_path == "/api/gallery/dump":
+                status, resp = cms.submit_gallery_dump(payload)
+                self._send_json(status, resp)
+                return
             if post_path == "/api/gallery/list-all":
                 if not cms.is_admin(payload):
                     self._send_json(401, {"error": "Invalid password."})
@@ -764,6 +877,25 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 return
             if post_path == "/api/events":
                 status, resp = cms.save_event(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/initiatives":
+                status, resp = cms.save_initiative(payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/initiatives/list-all":
+                if not cms.is_admin(payload):
+                    self._send_json(401, {"error": "Invalid password."})
+                else:
+                    self._send_json(200, {"ok": True, "initiatives": cms.list_initiatives(include_unpublished=True)})
+                return
+            m = re.fullmatch(r"/api/initiatives/(\d+)/delete", post_path)
+            if m:
+                status, resp = cms.delete_initiative(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            if post_path == "/api/initiative-feedback":
+                status, resp = cms.submit_initiative_feedback(payload)
                 self._send_json(status, resp)
                 return
             if post_path == "/api/bulletin":
@@ -813,6 +945,11 @@ class SSAHandler(SimpleHTTPRequestHandler):
             m = re.fullmatch(r"/api/event-suggestions/(\d+)/vote", post_path)
             if m:
                 status, resp = cms.vote_event_suggestion(int(m.group(1)), payload)
+                self._send_json(status, resp)
+                return
+            m = re.fullmatch(r"/api/event-suggestions/(\d+)/answer", post_path)
+            if m:
+                status, resp = cms.answer_event_suggestion(int(m.group(1)), payload)
                 self._send_json(status, resp)
                 return
             if post_path == "/api/event-feedback":
@@ -1035,6 +1172,82 @@ class SSAHandler(SimpleHTTPRequestHandler):
                 invalidate_leaderboard_cache()
                 scores = fetch_leaderboard()
                 self._send_json(200, {"ok": True, "scores": scores})
+            except Exception as exc:
+                self._send_json(503, {"ok": False, "error": str(exc)})
+            return
+
+        if self.path == "/api/applications":
+            email = str(payload.get("email", "")).strip().lower()[:160]
+            name = str(payload.get("name", "")).strip()[:120]
+            year = str(payload.get("year", "")).strip()[:40]
+            raw_areas = payload.get("preferredAreas")
+            if not raw_areas:
+                raw_areas = str(payload.get("preferredArea", "")).replace("&amp;", "&")
+            if isinstance(raw_areas, str):
+                raw_areas = [part.strip() for part in raw_areas.replace("|||", "/").split("/") if part.strip()]
+            elif not isinstance(raw_areas, list):
+                raw_areas = []
+            preferred_areas = []
+            for area in raw_areas:
+                cleaned = (
+                    str(area or "")
+                    .replace("&amp;", "&")
+                    .replace("\xa0", " ")
+                    .strip()[:80]
+                )
+                if cleaned in INTERN_AREAS and cleaned not in preferred_areas:
+                    preferred_areas.append(cleaned)
+            interest_why = str(payload.get("interestWhy", "")).strip()[:2000]
+            contribution = str(payload.get("contribution", "")).strip()[:2000]
+            goals = str(payload.get("goals", "")).strip()[:2000]
+            stay_on = str(payload.get("stayOn", "")).strip()[:20]
+            questions = str(payload.get("questions", "")).strip()[:1200]
+            if not email or "@" not in email or not email.endswith("@umn.edu"):
+                self._send_json(400, {"error": "Please use a valid UMN email (@umn.edu)."})
+                return
+            if not name:
+                self._send_json(400, {"error": "Name is required."})
+                return
+            if year not in ("Freshman", "Sophomore", "Junior", "Senior"):
+                self._send_json(400, {"error": "Select a valid year in school."})
+                return
+            if len(preferred_areas) != 2:
+                self._send_json(400, {"error": "Pick exactly two rotational areas."})
+                return
+            preferred_area = " / ".join(preferred_areas)
+            if not interest_why or not contribution or not goals:
+                self._send_json(400, {"error": "Please complete all required written responses."})
+                return
+            if stay_on not in ("Yes", "No", "Maybe"):
+                self._send_json(400, {"error": "Select Yes, No, or Maybe for staying on the board."})
+                return
+            try:
+                with db() as cur:
+                    cur.execute(
+                        "SELECT id FROM intern_applications WHERE LOWER(email) = %s",
+                        (email,),
+                    )
+                    if cur.fetchone():
+                        self._send_json(409, {"error": "An application with this email was already submitted."})
+                        return
+                    cur.execute(
+                        """
+                        INSERT INTO intern_applications
+                            (email, name, year, preferred_area, interest_why,
+                             contribution, goals, stay_on, questions, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                        """,
+                        (
+                            email, name, year, preferred_area, interest_why,
+                            contribution, goals, stay_on, questions or None, now,
+                        ),
+                    )
+                invalidate_app_summary_cache()
+                self._send_json(200, {
+                    "ok": True,
+                    "message": "Application submitted. We appreciate your interest — updates on interviews will follow soon!",
+                })
             except Exception as exc:
                 self._send_json(503, {"ok": False, "error": str(exc)})
             return

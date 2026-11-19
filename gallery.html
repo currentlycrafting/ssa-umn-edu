@@ -18,8 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css" />
-  <link rel="stylesheet" href="site-pages.css" />
+  <link rel="stylesheet" href="index.css?v=53" />
+  <link rel="stylesheet" href="site-pages.css?v=45" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -52,9 +52,18 @@
     <header class="gallery-hero">
       <span class="eyebrow">Gallery</span>
       <h1>The SSA photo book.</h1>
-      <p>A scrapbook of moments — backstage, board nights, and everything in between. Keep scrolling.</p>
+      <p>A scrapbook of moments — backstage, board nights, and everything in between. Browse every recap below, then keep scrolling the album.</p>
       <svg class="gallery-arrow" viewBox="0 0 50 60" aria-hidden="true"><path d="M25 4 L25 50 M10 36 L25 52 L40 36" /></svg>
     </header>
+
+    <section class="gallery-recaps" id="galleryRecaps" aria-label="Event recaps">
+      <div class="section-head" style="margin-bottom:8px">
+        <span class="eyebrow">Event recaps</span>
+        <h2 style="margin:6px 0;letter-spacing:-.04em;font-size:clamp(28px,4vw,40px)">All available recaps</h2>
+        <p style="margin:0;color:var(--muted)">Organized by event caption — every published gallery photo is included.</p>
+      </div>
+      <div id="galleryRecapGroups"><p class="home-album-empty">Loading recaps…</p></div>
+    </section>
 
     <section class="gallery-book" aria-label="SSA photos">
       <div id="communityGalleryItems"></div>
@@ -69,10 +78,10 @@
       <nav aria-label="Footer">
         <a href="index.html#demo">About Us</a>
         <a href="index.html#events">Events</a>
-        <a href="index.html#programs">Programs</a>
+        <a href="/initiatives">Initiatives</a>
         <a href="/timeline">Timeline</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="/games">Games</a>
+        <a href="/gallery">Gallery</a>
+        <a href="/interns">Interns</a>
         <a href="/board">Board</a>
       </nav>
       <div class="social-row">
@@ -91,16 +100,17 @@
         <article class="whats-new-card bulletin-flow-page is-active">
           <span class="eyebrow">Community Gallery</span>
           <h2 id="gallerySubmitTitle">Add a memory</h2>
-          <p>Share a photo with the community. It will appear in the gallery right away.</p>
+          <p>Add one photo or a full dump. The first image becomes the cover — tap it to open the rest.</p>
           <form id="gallerySubmitForm" class="connect-modal-form">
             <input type="password" name="password" placeholder="Admin password" required autocomplete="current-password" />
             <label class="gallery-drop" id="galleryDrop">
-              <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" />
-              <strong>Drop a photo here</strong>
-              <span>or click to browse · PNG, JPG, or WEBP</span>
+              <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" multiple />
+              <strong>Drop photos here</strong>
+              <span>one photo or a dump · PNG, JPG, or WEBP · up to 24</span>
             </label>
-            <img class="gallery-preview" id="galleryPreview" alt="Selected photo preview" />
-            <input type="text" name="caption" placeholder="Short caption" maxlength="300" required />
+            <div class="gallery-dump-previews" id="galleryPreviewList" hidden></div>
+            <img class="gallery-preview" id="galleryPreview" alt="Selected photo preview" hidden />
+            <input type="text" name="caption" placeholder="Caption for this photo or dump" maxlength="300" required />
             <button class="button button-dark" type="submit">Add to gallery</button>
             <output></output>
           </form>
@@ -116,7 +126,7 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=20"></script>
-  <script src="gallery.js?v=9"></script>
+  <script src="nav.js?v=22"></script>
+  <script src="gallery.js?v=10"></script>
 </body>
 </html>

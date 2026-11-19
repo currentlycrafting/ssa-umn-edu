@@ -134,3 +134,83 @@ def init_db():
             )
             """
         )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS intern_applications (
+                id SERIAL PRIMARY KEY,
+                email TEXT NOT NULL DEFAULT '',
+                name TEXT NOT NULL DEFAULT '',
+                year TEXT NOT NULL DEFAULT '',
+                preferred_area TEXT NOT NULL DEFAULT '',
+                interest_why TEXT NOT NULL DEFAULT '',
+                contribution TEXT NOT NULL DEFAULT '',
+                goals TEXT NOT NULL DEFAULT '',
+                stay_on TEXT NOT NULL DEFAULT '',
+                questions TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+        # Upgrade any earlier/partial table shapes before creating indexes.
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS email TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS name TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS year TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS preferred_area TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS interest_why TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS contribution TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS goals TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS stay_on TEXT NOT NULL DEFAULT ''")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS questions TEXT")
+        cur.execute("ALTER TABLE intern_applications ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()")
+        # Older form shapes left extra NOT NULL columns (major, role, etc.). Relax them.
+        required_cols = {
+            "id",
+            "email",
+            "name",
+            "year",
+            "preferred_area",
+            "interest_why",
+            "contribution",
+            "goals",
+            "stay_on",
+            "questions",
+            "created_at",
+        }
+        cur.execute(
+            """
+            SELECT column_name, data_type, udt_name
+            FROM information_schema.columns
+            WHERE table_name = 'intern_applications'
+              AND is_nullable = 'NO'
+              AND column_default IS NULL
+            """
+        )
+        for row in cur.fetchall():
+            col = row["column_name"]
+            if col in required_cols:
+                continue
+            cur.execute(
+                f"ALTER TABLE intern_applications ALTER COLUMN {col} DROP NOT NULL"
+            )
+            if row["udt_name"] in ("json", "jsonb") or row["data_type"] in ("json", "jsonb"):
+                cur.execute(
+                    f"ALTER TABLE intern_applications ALTER COLUMN {col} SET DEFAULT '{{}}'"
+                )
+            elif row["data_type"] in ("ARRAY", "USER-DEFINED") or str(row["udt_name"]).startswith("_"):
+                continue
+            else:
+                cur.execute(
+                    f"ALTER TABLE intern_applications ALTER COLUMN {col} SET DEFAULT ''"
+                )
+        cur.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_intern_applications_email
+            ON intern_applications (LOWER(email))
+            """
+        )
+        cur.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_intern_applications_area
+            ON intern_applications (preferred_area)
+            """
+        )

@@ -18,8 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=52" />
-  <link rel="stylesheet" href="site-pages.css?v=44" />
+  <link rel="stylesheet" href="index.css?v=53" />
+  <link rel="stylesheet" href="site-pages.css?v=45" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -55,6 +55,7 @@
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
     <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Upcoming</span></a>
+    <a href="#initiatives" data-section="initiatives"><span class="dot" aria-hidden="true"></span><span class="side-label">Initiatives</span></a>
     <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">By the numbers</span></a>
   </nav>
 
@@ -73,11 +74,11 @@
         </div>
         <h1><span class="word">Somali</span> <span class="blue-word">Student</span> <span class="scribble">Association<svg class="underline" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 Q60 4 120 14 T240 12 Q280 10 296 16" /></svg></span></h1>
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
-        <p class="hero-listen">We&apos;re always looking and listening — ask, and you&apos;ll receive.</p>
+        <p class="hero-listen">Ready to join the board? Apply for the SSA Internship.</p>
         <div class="hero-actions hero-actions-song">
-          <a class="button button-dark handdrawn hero-song-btn" href="/aux">Change the song?</a>
+          <a class="button button-dark handdrawn hero-song-btn" href="/interns">Apply for Internship</a>
         </div>
-        <p class="hero-song-note">At events you can change what’s playing — open Want the Aux and queue a track for the room.</p>
+        <p class="hero-song-note">Deadline November 27th at 11:59 PM.</p>
         <div class="hero-meter year-montage" aria-label="SSA since 1998">
           <span class="ym-label">Serving Somali students</span>
           <div class="ym-year" id="ymYear">1998</div>
@@ -133,13 +134,52 @@
 
       <nav class="home-upcoming-actions" aria-label="Explore SSA">
         <a class="button button-dark handdrawn" href="/events">Events</a>
+        <a class="button button-dark handdrawn" href="/interns">Internship</a>
         <a class="button button-dark handdrawn" href="/suggest">Suggest an Event</a>
         <a class="button button-dark handdrawn" href="/gallery">Photo Album</a>
         <a class="button button-dark handdrawn" href="/newsletter">Newsletter</a>
         <a class="button button-dark handdrawn" href="/aux">Want the Aux</a>
+        <a class="button button-line handdrawn" href="/initiatives">Initiatives</a>
         <button class="button button-line handdrawn" type="button" id="homeNewsletterOpen">Subscribe</button>
         <button class="button button-line handdrawn" type="button" data-open-outreach>Other ways to reach us</button>
       </nav>
+    </section>
+
+    <section class="section" id="intern-promo">
+      <aside class="ssa-promo-strip" data-reveal>
+        <span class="eyebrow">Applications open</span>
+        <h2>Join the SSA Internship</h2>
+        <p>Deadline November 27th at 11:59 PM — <strong data-app-count="total">—</strong> people have applied.</p>
+        <div class="ssa-promo-actions">
+          <a class="button button-dark handdrawn" href="/interns#apply">Apply now</a>
+          <a class="button button-line handdrawn" href="/interns">Learn more</a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="initiatives">
+      <div class="section-head">
+        <span class="eyebrow">Community</span>
+        <h2>Initiatives &amp; impact</h2>
+        <p>Longer projects and collaborations — plus answers to ideas you suggested.</p>
+      </div>
+      <div class="home-initiatives" id="homeInitiatives">
+        <a class="home-initiative-card" href="/initiatives">
+          <span class="eyebrow">Browse</span>
+          <h3>See all initiatives</h3>
+          <p>Collaborators, photos, and “you asked, we listened” answers.</p>
+        </a>
+        <a class="home-initiative-card" href="/suggest">
+          <span class="eyebrow">Ideas</span>
+          <h3>Suggest something</h3>
+          <p>Tell the board what SSA should try next.</p>
+        </a>
+        <a class="home-initiative-card" href="/interns">
+          <span class="eyebrow">Internship</span>
+          <h3>Join the board</h3>
+          <p>Apply for the rotational internship before Nov 27.</p>
+        </a>
+      </div>
     </section>
 
     <section class="section home-explore" id="explore">
@@ -162,15 +202,16 @@
           <h3>Meet the Board</h3>
           <div class="home-board-snap" id="homeBoardSnap" aria-label="SSA board">
             <article class="board-card home-board-card" data-member-name="Salman Said"><span class="board-role">President</span><h3>Salman Said</h3></article>
-            <article class="board-card home-board-card" data-member-name="Ruweyda Warsame"><span class="board-role">Internal Vice-President</span><h3>Ruweyda Warsame</h3></article>
-            <article class="board-card home-board-card" data-member-name="Suhaila Osman"><span class="board-role">External Vice-President</span><h3>Suhaila Osman</h3></article>
-            <article class="board-card home-board-card" data-member-name="Salma Tawane"><span class="board-role">Committee Chair</span><h3>Salma Tawane</h3></article>
-            <article class="board-card home-board-card" data-member-name="Bashir Mumin"><span class="board-role">Committee Chair</span><h3>Bashir Mumin</h3></article>
-            <article class="board-card home-board-card" data-member-name="Zakaria Samatar"><span class="board-role">Event Coordinator &amp; Social Media &amp; Marketing Coordinator</span><h3>Zakaria Samatar</h3></article>
-            <article class="board-card home-board-card" data-member-name="Kamila Deef"><span class="board-role">Event Coordinator</span><h3>Kamila Deef</h3></article>
-            <article class="board-card home-board-card" data-member-name="Asma Yusuf"><span class="board-role">Social Media &amp; Marketing Coordinator</span><h3>Asma Yusuf</h3></article>
-            <article class="board-card home-board-card" data-member-name="Zakaria Hussein"><span class="board-role">Treasurer</span><h3>Zakaria Hussein</h3></article>
-            <article class="board-card home-board-card" data-member-name="Suhaib Mohamed"><span class="board-role">Treasury</span><h3>Suhaib Mohamed</h3></article>
+            <article class="board-card home-board-card" data-member-name="Ruweyda Warsame"><span class="board-role">Vice President</span><h3>Ruweyda Warsame</h3></article>
+            <article class="board-card home-board-card" data-member-name="Zakaria Samatar"><span class="board-role">Vice President</span><h3>Zakaria Samatar</h3></article>
+            <article class="board-card home-board-card" data-member-name="Suhaib Mohamed"><span class="board-role">Finance &amp; Grants</span><h3>Suhaib Mohamed</h3></article>
+            <article class="board-card home-board-card" data-member-name="Zakaria Hussein"><span class="board-role">Finance &amp; Grants</span><h3>Zakaria Hussein</h3></article>
+            <article class="board-card home-board-card" data-member-name="Jama Ahmed"><span class="board-role">Social Media &amp; Marketing</span><h3>Jama Ahmed</h3></article>
+            <article class="board-card home-board-card" data-member-name="Asma Yusuf"><span class="board-role">Social Media &amp; Marketing</span><h3>Asma Yusuf</h3></article>
+            <article class="board-card home-board-card" data-member-name="Nurah Muhammad"><span class="board-role">Event Planning &amp; Logistics</span><h3>Nurah Muhammad</h3></article>
+            <article class="board-card home-board-card" data-member-name="Kamila Deef"><span class="board-role">Event Planning &amp; Logistics</span><h3>Kamila Deef</h3></article>
+            <article class="board-card home-board-card" data-member-name="Salma Tawane"><span class="board-role">Cultural &amp; Performance Committee</span><h3>Salma Tawane</h3></article>
+            <article class="board-card home-board-card" data-member-name="Bashir Mumin"><span class="board-role">Cultural &amp; Performance Committee</span><h3>Bashir Mumin</h3></article>
             <article class="board-card home-board-card" data-member-name="Muno Aynab"><span class="board-role">Community Outreach</span><h3>Muno Aynab</h3></article>
           </div>
         </article>
@@ -350,7 +391,7 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=20"></script>
+  <script src="nav.js?v=22"></script>
   <script src="micro.js?v=2"></script>
   <script src="newsletter.js"></script>
   <script src="/events-render.js?v=31"></script>
@@ -362,6 +403,21 @@
     document.getElementById('homeNewsletterOpen')?.addEventListener('click', () => {
       window.openNewsletterModal?.(true);
     });
+    (function () {
+      const api = window.ssaFetch?.json;
+      if (!api) return;
+      async function loadAppCounts() {
+        try {
+          const data = await api('/api/applications/summary');
+          const total = Number(data.total) || 0;
+          document.querySelectorAll('[data-app-count="total"]').forEach((el) => {
+            el.textContent = String(total);
+          });
+        } catch (_) {}
+      }
+      loadAppCounts();
+      setInterval(loadAppCounts, 60000);
+    })();
   </script>
   <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
   <script>

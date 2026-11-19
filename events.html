@@ -6,8 +6,8 @@
   <title>Events — SSA</title>
   <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/index.css?v=52" />
-  <link rel="stylesheet" href="/site-pages.css?v=44" />
+  <link rel="stylesheet" href="/index.css?v=53" />
+  <link rel="stylesheet" href="/site-pages.css?v=45" />
   <script src="/api.js"></script>
   <script>
     (function () {
@@ -36,6 +36,16 @@
       <h1>SSA Events</h1>
       <p>RSVP, show up, bring friends.</p>
     </header>
+    <aside class="ssa-promo-strip" data-reveal>
+      <span class="eyebrow">Now open</span>
+      <h2>Internship applications</h2>
+      <p>Join the SSA board through our rotational internship. Deadline November 27th at 11:59 PM — <strong data-app-count="total">—</strong> people have applied so far.</p>
+      <div class="ssa-promo-actions">
+        <a class="button button-dark handdrawn" href="/interns#apply">Apply now</a>
+        <a class="button button-line handdrawn" href="/initiatives">Browse initiatives</a>
+        <a class="button button-line handdrawn" href="/suggest">Suggest an idea</a>
+      </div>
+    </aside>
     <aside class="featured-event" id="eventsFeatured" aria-label="Featured event" data-reveal hidden></aside>
     <div class="event-grid" id="eventsGrid" data-reveal-group></div>
     <p style="text-align:center;margin-top:32px" data-reveal><a class="button button-line" href="/suggest">Suggest an event</a></p>
@@ -109,8 +119,25 @@
   </div>
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
   <script src="/motion.js"></script>
-  <script src="/nav.js?v=20"></script>
+  <script src="/nav.js?v=22"></script>
   <script src="/events-render.js?v=31"></script>
   <script src="/rsvp.js?v=7"></script>
+  <script>
+    (function () {
+      const api = window.ssaFetch?.json;
+      if (!api) return;
+      async function loadAppCounts() {
+        try {
+          const data = await api('/api/applications/summary');
+          const total = Number(data.total) || 0;
+          document.querySelectorAll('[data-app-count="total"]').forEach((el) => {
+            el.textContent = String(total);
+          });
+        } catch (_) {}
+      }
+      loadAppCounts();
+      setInterval(loadAppCounts, 60000);
+    })();
+  </script>
 </body>
 </html>

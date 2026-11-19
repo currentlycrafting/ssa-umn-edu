@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/index.css" />
-  <link rel="stylesheet" href="/site-pages.css?v=44" />
+  <link rel="stylesheet" href="/site-pages.css?v=51" />
   <script src="/api.js"></script>
   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
 </head>
@@ -44,8 +44,9 @@
         <nav id="adminSections" aria-label="Admin sections">
           <button class="active" data-section="overview">Overview</button>
           <button data-section="events">Events</button>
+          <button data-section="initiatives">Initiatives</button>
+          <button data-section="applications">Applications</button>
           <button data-section="gallery">Gallery</button>
-          <button data-section="photoshoots">Photoshoots</button>
           <button data-section="timeline">Timeline</button>
           <button data-section="messages">Messages</button>
           <button data-section="bulletin">Bulletin</button>
@@ -80,8 +81,35 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="adminCollabModal" aria-hidden="true">
+    <div class="modal-sheet modal-card modal-card-compact" role="dialog" aria-modal="true" aria-labelledby="adminCollabTitle">
+      <button class="modal-exit" type="button" id="adminCollabClose" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+      <span class="eyebrow">Collaborator</span>
+      <h2 id="adminCollabTitle">Add collab &amp; org</h2>
+      <form id="adminCollabForm" class="connect-modal-form">
+        <label>Type
+          <select name="kind">
+            <option value="person">Person</option>
+            <option value="org">Organization</option>
+          </select>
+        </label>
+        <label>Instagram @
+          <input name="igHandle" placeholder="handle" required autocomplete="off" />
+        </label>
+        <label class="gallery-drop" id="adminCollabDrop">
+          <input type="file" name="avatar" accept="image/png,image/jpeg,image/webp" />
+          <strong>Profile photo (optional)</strong>
+          <span>PNG, JPG, or WEBP</span>
+        </label>
+        <img class="admin-collab-preview" id="adminCollabPreview" alt="" hidden />
+        <button class="button button-dark" type="submit">Add collaborator</button>
+        <output></output>
+      </form>
+    </div>
+  </div>
+
   <script src="/motion.js"></script>
-  <script src="/nav.js?v=20"></script>
-  <script src="/admin.js?v=16"></script>
+  <script src="/nav.js?v=22"></script>
+  <script src="/admin.js?v=20"></script>
 </body>
 </html>

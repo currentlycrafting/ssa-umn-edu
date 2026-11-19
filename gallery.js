@@ -2,27 +2,85 @@
   const book = document.querySelector('.gallery-book');
   const communityAnchor = document.getElementById('communityGalleryItems');
   let items = [];
+  let lightboxItems = [];
+
   function createGalleryFigure(item, index) {
     const figure = document.createElement('figure');
     figure.className = `polaroid visible ${index % 2 ? 'right' : 'left'}`;
     figure.style.setProperty('--rot', `${index % 2 ? 2.5 : -2.5}deg`);
+    if (item.dumpCount > 1) figure.classList.add('is-dump');
     const image = document.createElement('img');
     image.src = item.src;
     image.alt = item.alt || item.caption;
     image.loading = 'lazy';
     const caption = document.createElement('figcaption');
-    caption.textContent = item.caption;
+    caption.textContent = item.dumpCount > 1
+      ? `${item.caption} · ${item.dumpCount} photos`
+      : item.caption;
     figure.append(image, caption);
+    if (item.dumpCount > 1) {
+      const badge = document.createElement('span');
+      badge.className = 'gallery-dump-badge';
+      badge.textContent = `${item.dumpCount}`;
+      figure.append(badge);
+    }
+    figure.dataset.itemIndex = String(index);
     return figure;
   }
+
+  function groupKey(caption) {
+    const text = String(caption || 'SSA moment').trim();
+    const split = text.split(/\s+[—\-–:|]\s+/);
+    return (split[0] || text).slice(0, 80) || 'SSA moment';
+  }
+
+  function renderRecaps(sourceItems) {
+    const host = document.getElementById('galleryRecapGroups');
+    if (!host) return;
+    const flat = [];
+    sourceItems.forEach((item) => {
+      if (item.dumpPhotos?.length) flat.push(...item.dumpPhotos);
+      else flat.push(item);
+    });
+    if (!flat.length) {
+      host.innerHTML = '<p class="home-album-empty">Recap photos will appear here once published in the gallery.</p>';
+      return;
+    }
+    const groups = new Map();
+    flat.forEach((item) => {
+      const key = groupKey(item.caption);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    });
+    host.innerHTML = [...groups.entries()].map(([title, photos]) => `
+      <section class="gallery-recap-group">
+        <h2>${title.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))}</h2>
+        <p class="gallery-recap-meta">${photos.length} photo${photos.length === 1 ? '' : 's'}</p>
+        <div class="gallery-recap-photos">
+          ${photos.map((photo) => `<img src="${String(photo.src || '').replace(/"/g, '&quot;')}" alt="${String(photo.caption || title).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))}" loading="lazy" />`).join('')}
+        </div>
+      </section>`).join('');
+  }
+
+  function readFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   if (book && communityAnchor && window.ssaFetch) {
     try {
       const data = await window.ssaFetch.json('/api/gallery');
-      (data.items || []).forEach((item, index) => {
+      items = data.items || [];
+      renderRecaps(items);
+      items.forEach((item, index) => {
         book.insertBefore(createGalleryFigure(item, index), communityAnchor);
       });
     } catch (_) {
-      // Existing gallery remains usable if community additions cannot load.
+      renderRecaps([]);
     }
   }
 
@@ -31,15 +89,16 @@
   const submitClose = document.getElementById('gallerySubmitClose');
   const submitForm = document.getElementById('gallerySubmitForm');
   const preview = document.getElementById('galleryPreview');
+  const previewList = document.getElementById('galleryPreviewList');
   const drop = document.getElementById('galleryDrop');
-  let selectedData = '';
-  let selectedFile = null;
+  let selectedFiles = [];
 
   function closeSubmit() {
     submitModal?.classList.remove('open');
     submitModal?.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
   }
+
   function animatePolaroidAdd(figure, dataUrl, caption) {
     const developer = document.createElement('div');
     developer.className = 'gallery-developing';
@@ -57,6 +116,39 @@
       figure.classList.remove('polaroid-added');
     }, 2050);
   }
+
+  async function stagePhotos(fileList) {
+    selectedFiles = [];
+    preview?.classList.remove('visible');
+    if (previewList) {
+      previewList.hidden = true;
+      previewList.innerHTML = '';
+    }
+    const files = [...(fileList || [])].filter((file) => /^image\/(png|jpeg|webp)$/i.test(file.type)).slice(0, 24);
+    if (!files.length) return;
+    for (const file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        submitForm.querySelector('output').textContent = 'Each photo must be under 5 MB.';
+        return;
+      }
+      selectedFiles.push({ file, data: await readFile(file) });
+    }
+    drop.querySelector('strong').textContent = selectedFiles.length === 1
+      ? selectedFiles[0].file.name
+      : `${selectedFiles.length} photos selected`;
+    if (selectedFiles.length === 1 && preview) {
+      preview.src = selectedFiles[0].data;
+      preview.hidden = false;
+      preview.classList.add('visible');
+    } else if (previewList) {
+      previewList.hidden = false;
+      previewList.innerHTML = selectedFiles.map((item) =>
+        `<img src="${item.data}" alt="" />`
+      ).join('');
+      if (preview) preview.hidden = true;
+    }
+  }
+
   submitOpen?.addEventListener('click', () => {
     submitModal.classList.add('open');
     submitModal.setAttribute('aria-hidden', 'false');
@@ -69,29 +161,8 @@
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && submitModal?.classList.contains('open')) closeSubmit();
   });
-  function stagePhoto(file) {
-    selectedData = '';
-    selectedFile = null;
-    preview.classList.remove('visible');
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      submitForm.querySelector('output').textContent = 'Photo must be under 5 MB.';
-      submitForm.photo.value = '';
-      return;
-    }
-    selectedFile = file;
-    drop.querySelector('strong').textContent = file.name;
-    const reader = new FileReader();
-    reader.onload = () => {
-      selectedData = String(reader.result || '');
-      preview.src = selectedData;
-      preview.classList.add('visible');
-    };
-    reader.readAsDataURL(file);
-  }
-  submitForm?.photo.addEventListener('change', () => {
-    stagePhoto(submitForm.photo.files[0]);
-  });
+
+  submitForm?.photo.addEventListener('change', () => stagePhotos(submitForm.photo.files));
   drop?.addEventListener('dragover', (event) => {
     event.preventDefault();
     drop.classList.add('dragging');
@@ -100,45 +171,89 @@
   drop?.addEventListener('drop', (event) => {
     event.preventDefault();
     drop.classList.remove('dragging');
-    stagePhoto(event.dataTransfer.files[0]);
+    stagePhotos(event.dataTransfer.files);
   });
+
   submitForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const out = submitForm.querySelector('output');
     const button = submitForm.querySelector('button[type="submit"]');
-    const file = selectedFile;
-    if (!file || !selectedData) {
-      out.textContent = 'Choose a photo first.';
+    if (!selectedFiles.length) {
+      out.textContent = 'Choose at least one photo.';
       return;
     }
     button.disabled = true;
     try {
-      const response = await window.ssaFetch.json('/api/gallery', {
-        method: 'POST',
-        body: {
-          password: submitForm.password.value,
-          filename: file.name,
-          data: selectedData,
-          caption: submitForm.caption.value.trim()
-        },
-        timeout: 30000
-      });
-      const item = {
-        src: `/api/gallery/${response.id}/image`,
-        alt: submitForm.caption.value.trim(),
-        caption: submitForm.caption.value.trim()
-      };
-      const figure = createGalleryFigure(item, items.length);
-      book?.insertBefore(figure, communityAnchor);
-      items.push(item);
-      figure.addEventListener('click', () => open(items.length - 1));
-      animatePolaroidAdd(figure, selectedData, item.caption);
-      out.textContent = 'Added to the gallery.';
+      const caption = submitForm.caption.value.trim();
+      let response;
+      if (selectedFiles.length === 1) {
+        response = await window.ssaFetch.json('/api/gallery', {
+          method: 'POST',
+          body: {
+            password: submitForm.password.value,
+            filename: selectedFiles[0].file.name,
+            data: selectedFiles[0].data,
+            caption
+          },
+          timeout: 30000
+        });
+        const item = {
+          id: response.id,
+          src: `/api/gallery/${response.id}/image`,
+          alt: caption,
+          caption,
+          dumpCount: 1
+        };
+        const figure = createGalleryFigure(item, items.length);
+        book?.insertBefore(figure, communityAnchor);
+        items.push(item);
+        figure.addEventListener('click', () => open(items.length - 1));
+        animatePolaroidAdd(figure, selectedFiles[0].data, caption);
+      } else {
+        response = await window.ssaFetch.json('/api/gallery/dump', {
+          method: 'POST',
+          body: {
+            password: submitForm.password.value,
+            caption,
+            photos: selectedFiles.map((item) => ({
+              filename: item.file.name,
+              data: item.data,
+              caption
+            }))
+          },
+          timeout: 120000
+        });
+        const dumpPhotos = (response.ids || []).map((id, index) => ({
+          id,
+          src: `/api/gallery/${id}/image`,
+          alt: caption,
+          caption,
+          dumpOrder: index
+        }));
+        const item = {
+          id: dumpPhotos[0]?.id,
+          src: dumpPhotos[0]?.src,
+          alt: caption,
+          caption,
+          dumpGroup: response.dumpGroup,
+          dumpCount: dumpPhotos.length,
+          dumpPhotos
+        };
+        const figure = createGalleryFigure(item, items.length);
+        book?.insertBefore(figure, communityAnchor);
+        items.push(item);
+        figure.addEventListener('click', () => open(items.length - 1));
+        animatePolaroidAdd(figure, selectedFiles[0].data, caption);
+      }
+      out.textContent = response.message || 'Added to the gallery.';
       submitForm.reset();
-      selectedData = '';
-      selectedFile = null;
-      drop.querySelector('strong').textContent = 'Drop a photo here';
-      preview.classList.remove('visible');
+      selectedFiles = [];
+      drop.querySelector('strong').textContent = 'Drop photos here';
+      preview?.classList.remove('visible');
+      if (previewList) {
+        previewList.hidden = true;
+        previewList.innerHTML = '';
+      }
       window.setTimeout(closeSubmit, 180);
     } catch (error) {
       out.textContent = error.message || 'Could not submit this photo.';
@@ -147,23 +262,9 @@
     }
   });
 
-  const figures = Array.from(document.querySelectorAll('.gallery-book .polaroid'));
-  figures.forEach((figure) => figure.classList.add('visible'));
-
   const CLOSE_ICON =
     '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">' +
     '<path d="M4 4l8 8M12 4l-8 8"/></svg>';
-
-  const mobileMq = window.matchMedia('(max-width: 720px)');
-
-  items = figures.map((fig) => {
-    const img = fig.querySelector('img');
-    return {
-      src: img?.currentSrc || img?.src || '',
-      alt: img?.alt || '',
-      caption: fig.querySelector('figcaption')?.textContent?.trim() || ''
-    };
-  }).filter((item) => item.src);
 
   const lightbox = document.createElement('div');
   lightbox.className = 'gallery-lightbox';
@@ -184,119 +285,52 @@
     '</div>';
   document.body.appendChild(lightbox);
 
-  const viewport = document.getElementById('galleryLightboxViewport');
-  const img = document.getElementById('galleryLightboxImg');
-  const caption = document.getElementById('galleryLightboxCaption');
-  const prevZone = lightbox.querySelector('.gallery-lightbox-zone-prev');
-  const nextZone = lightbox.querySelector('.gallery-lightbox-zone-next');
-  const closeBtn = lightbox.querySelector('.gallery-lightbox-close');
+  const imgEl = document.getElementById('galleryLightboxImg');
+  const captionEl = document.getElementById('galleryLightboxCaption');
+  let current = 0;
 
-  let index = 0;
-  let zoomed = false;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function isMobile() {
-    return mobileMq.matches;
+  function show(index) {
+    if (!lightboxItems.length) return;
+    current = (index + lightboxItems.length) % lightboxItems.length;
+    const item = lightboxItems[current];
+    imgEl.src = item.src;
+    imgEl.alt = item.alt || item.caption || '';
+    captionEl.textContent = lightboxItems.length > 1
+      ? `${item.caption || ''} (${current + 1}/${lightboxItems.length})`.trim()
+      : (item.caption || '');
   }
 
-  function setZoom(on) {
-    if (isMobile()) {
-      zoomed = false;
-      img.classList.remove('zoomed');
-      viewport.classList.remove('zoomed');
-      return;
-    }
-    zoomed = on;
-    img.classList.toggle('zoomed', zoomed);
-    viewport.classList.toggle('zoomed', zoomed);
-    if (!zoomed) viewport.scrollTo(0, 0);
-  }
-
-  function updateZones() {
-    prevZone.disabled = index <= 0;
-    nextZone.disabled = index >= items.length - 1;
-  }
-
-  function render() {
-    const item = items[index];
-    img.classList.add('is-changing');
-    window.setTimeout(() => {
-      img.src = item.src;
-      img.alt = item.alt;
-      caption.textContent = item.caption;
-      img.classList.remove('is-changing');
-    }, reduced ? 0 : 160);
-    setZoom(false);
-    updateZones();
-  }
-
-  function open(at) {
-    index = at;
-    render();
+  function open(index) {
+    const cover = items[index];
+    lightboxItems = cover?.dumpPhotos?.length ? cover.dumpPhotos : [cover].filter(Boolean);
+    if (!lightboxItems.length) return;
     lightbox.classList.add('open');
     lightbox.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('gallery-lightbox-open');
-    closeBtn.focus();
+    document.body.classList.add('modal-open');
+    show(0);
   }
 
   function close() {
     lightbox.classList.remove('open');
     lightbox.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('gallery-lightbox-open');
-    setZoom(false);
+    document.body.classList.remove('modal-open');
   }
 
-  function step(delta) {
-    const next = index + delta;
-    if (next < 0 || next >= items.length) return;
-    index = next;
-    render();
-  }
-
-  figures.forEach((fig, i) => {
-    const imgEl = fig.querySelector('img');
-    if (!imgEl) return;
-    fig.classList.add('polaroid-clickable');
-    fig.setAttribute('tabindex', '0');
-    fig.setAttribute('role', 'button');
-    fig.setAttribute('aria-label', 'View larger: ' + (imgEl.alt || 'SSA photo'));
-    fig.addEventListener('click', () => open(i));
-    fig.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        open(i);
-      }
-    });
+  book?.addEventListener('click', (event) => {
+    const figure = event.target.closest('.polaroid');
+    if (!figure || !book.contains(figure)) return;
+    const index = Number(figure.dataset.itemIndex);
+    if (Number.isFinite(index)) open(index);
   });
 
-  img.addEventListener('click', (event) => {
-    event.stopPropagation();
-    if (isMobile()) return;
-    setZoom(!zoomed);
-  });
-
-  prevZone.addEventListener('click', (event) => {
-    event.stopPropagation();
-    step(-1);
-  });
-  nextZone.addEventListener('click', (event) => {
-    event.stopPropagation();
-    step(1);
-  });
-
-  closeBtn.addEventListener('click', (event) => {
-    event.stopPropagation();
-    close();
-  });
-
-  lightbox.querySelector('[data-close].gallery-lightbox-bg').addEventListener('click', close);
-
-  mobileMq.addEventListener('change', () => setZoom(false));
-
-  window.addEventListener('keydown', (event) => {
+  lightbox.querySelector('[data-close]')?.addEventListener('click', close);
+  lightbox.querySelector('.gallery-lightbox-close')?.addEventListener('click', close);
+  lightbox.querySelector('.gallery-lightbox-zone-prev')?.addEventListener('click', () => show(current - 1));
+  lightbox.querySelector('.gallery-lightbox-zone-next')?.addEventListener('click', () => show(current + 1));
+  document.addEventListener('keydown', (event) => {
     if (!lightbox.classList.contains('open')) return;
     if (event.key === 'Escape') close();
-    if (event.key === 'ArrowLeft') step(-1);
-    if (event.key === 'ArrowRight') step(1);
+    if (event.key === 'ArrowLeft') show(current - 1);
+    if (event.key === 'ArrowRight') show(current + 1);
   });
 })();
