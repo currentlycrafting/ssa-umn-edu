@@ -28,40 +28,6 @@
     return figure;
   }
 
-  function groupKey(caption) {
-    const text = String(caption || 'SSA moment').trim();
-    const split = text.split(/\s+[—\-–:|]\s+/);
-    return (split[0] || text).slice(0, 80) || 'SSA moment';
-  }
-
-  function renderRecaps(sourceItems) {
-    const host = document.getElementById('galleryRecapGroups');
-    if (!host) return;
-    const flat = [];
-    sourceItems.forEach((item) => {
-      if (item.dumpPhotos?.length) flat.push(...item.dumpPhotos);
-      else flat.push(item);
-    });
-    if (!flat.length) {
-      host.innerHTML = '<p class="home-album-empty">Recap photos will appear here once published in the gallery.</p>';
-      return;
-    }
-    const groups = new Map();
-    flat.forEach((item) => {
-      const key = groupKey(item.caption);
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(item);
-    });
-    host.innerHTML = [...groups.entries()].map(([title, photos]) => `
-      <section class="gallery-recap-group">
-        <h2>${title.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))}</h2>
-        <p class="gallery-recap-meta">${photos.length} photo${photos.length === 1 ? '' : 's'}</p>
-        <div class="gallery-recap-photos">
-          ${photos.map((photo) => `<img src="${String(photo.src || '').replace(/"/g, '&quot;')}" alt="${String(photo.caption || title).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]))}" loading="lazy" />`).join('')}
-        </div>
-      </section>`).join('');
-  }
-
   function readFile(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -75,7 +41,6 @@
     try {
       const data = await window.ssaFetch.json('/api/gallery');
       items = data.items || [];
-      renderRecaps(items);
       items.forEach((item, index) => {
         book.insertBefore(createGalleryFigure(item, index), communityAnchor);
       });

@@ -1218,8 +1218,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
             if not interest_why or not contribution or not goals:
                 self._send_json(400, {"error": "Please complete all required written responses."})
                 return
-            if stay_on not in ("Yes", "No", "Maybe"):
-                self._send_json(400, {"error": "Select Yes, No, or Maybe for staying on the board."})
+            if stay_on not in ("Yes", "No"):
+                self._send_json(400, {"error": "Select Yes or No for staying on the board."})
                 return
             try:
                 with db() as cur:

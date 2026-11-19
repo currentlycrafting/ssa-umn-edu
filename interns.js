@@ -136,8 +136,8 @@
     }
     if (current === 4) {
       const stay = checkedValues('stayOn');
-      if (stay.length !== 1 || !['Yes', 'No', 'Maybe'].includes(stay[0])) {
-        return 'Pick Yes, No, or Maybe.';
+      if (stay.length !== 1 || !['Yes', 'No'].includes(stay[0])) {
+        return 'Pick Yes or No.';
       }
       return '';
     }
