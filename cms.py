@@ -1797,10 +1797,6 @@ def init_tables():
         cur.execute(
             "ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS answered_initiative_id INTEGER"
         )
-        cur.execute(
-            "ALTER TABLE initiative_collaborators ADD COLUMN IF NOT EXISTS avatar_url "
-            "TEXT NOT NULL DEFAULT ''"
-        )
         cur.execute("ALTER TABLE gallery_items ADD COLUMN IF NOT EXISTS dump_group TEXT")
         cur.execute(
             "ALTER TABLE gallery_items ADD COLUMN IF NOT EXISTS dump_order "
@@ -1834,9 +1830,14 @@ def init_tables():
                 description TEXT NOT NULL DEFAULT '',
                 ig_handle TEXT NOT NULL DEFAULT '',
                 ig_url TEXT NOT NULL DEFAULT '',
+                avatar_url TEXT NOT NULL DEFAULT '',
                 sort_order INTEGER NOT NULL DEFAULT 0
             )
             """
+        )
+        cur.execute(
+            "ALTER TABLE initiative_collaborators ADD COLUMN IF NOT EXISTS avatar_url "
+            "TEXT NOT NULL DEFAULT ''"
         )
         cur.execute(
             """
