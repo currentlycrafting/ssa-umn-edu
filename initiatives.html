@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Initiatives — SSA</title>
+  <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css?v=54" />
+  <link rel="stylesheet" href="/site-pages.css?v=46" />
+  <script src="/api.js"></script>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') || 'light');</script>
+</head>
+<body class="initiatives-page">
+  <nav class="nav page-nav" aria-label="Primary navigation">
+    <button class="nav-menu-toggle" id="navMenuToggle" type="button" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span class="nav-menu-icon" aria-hidden="true"></span></button>
+    <a class="brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="SSA logo" /><span>SSA</span></a>
+    <div class="nav-links" id="navLinks"><a href="/index.html">Home</a></div>
+    <div class="nav-tools"><button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button></div>
+  </nav>
+
+  <main class="page-main initiatives-main">
+    <header class="page-hero" data-reveal>
+      <span class="eyebrow">Beyond one night</span>
+      <h1>SSA Initiatives</h1>
+      <p>Longer projects, collaborations, and the ideas you asked us to chase.</p>
+    </header>
+
+    <section class="initiatives-list" id="initiativesList" data-reveal aria-live="polite">
+      <p class="home-album-empty">Loading initiatives…</p>
+    </section>
+
+    <section class="initiatives-asked" id="youAsked" data-reveal>
+      <header>
+        <span class="eyebrow">Community</span>
+        <h2>You asked, we listened</h2>
+        <p>Suggested ideas the board answered — and what we&apos;re doing about them.</p>
+      </header>
+      <div id="askedList"><p class="home-album-empty">Loading answers…</p></div>
+      <a class="button button-line handdrawn" href="/suggest">Suggest an idea</a>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="initiativeReviewModal" aria-hidden="true">
+    <div class="rsvp-modal modal-sheet modal-card modal-card-compact" role="dialog" aria-modal="true" aria-labelledby="initiativeReviewTitle">
+      <button class="modal-exit" type="button" id="initiativeReviewClose" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+      <span class="eyebrow">Your take</span>
+      <h2 id="initiativeReviewTitle">Would you want us to do this again?</h2>
+      <p id="initiativeReviewMeta"></p>
+      <form id="initiativeReviewForm">
+        <input type="hidden" name="initiativeId" />
+        <fieldset class="rsvp-choice feedback-stars">
+          <legend>How strongly should we run this again?</legend>
+          <div>
+            <label><input type="radio" name="rating" value="5" required /><span>5</span></label>
+            <label><input type="radio" name="rating" value="4" /><span>4</span></label>
+            <label><input type="radio" name="rating" value="3" /><span>3</span></label>
+            <label><input type="radio" name="rating" value="2" /><span>2</span></label>
+            <label><input type="radio" name="rating" value="1" /><span>1</span></label>
+          </div>
+        </fieldset>
+        <input type="text" name="comment" maxlength="280" placeholder="What should we keep, change, or try next time?" required />
+        <button class="button button-dark" type="submit">Send review</button>
+        <output></output>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
+  <script src="/motion.js"></script>
+  <script src="/nav.js?v=22"></script>
+  <script src="/initiatives.js?v=3"></script>
+</body>
+</html>

@@ -30,9 +30,10 @@
       links.innerHTML = `
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
+        <a href="/initiatives">Initiatives</a>
         <a href="/gallery">Gallery</a>
-        <a href="/photoshoots">Photoshoots</a>
         <a href="/board">Board</a>
+        <a href="/interns">Interns</a>
         <a href="/timeline">Timeline</a>
         <div class="nav-options">
           <button class="nav-options-toggle" type="button" aria-label="More pages" aria-expanded="false" aria-controls="navOptionsMenu">
@@ -150,31 +151,34 @@
   }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
 
-  const footerHtml = `
-    <footer class="footer">
-      <div class="footer-card">
-        <a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a>
-        <nav aria-label="Footer">
-          <a href="/events">Events</a>
-          <a href="/newsletter">Newsletter</a>
-          <a href="/gallery">Gallery</a>
-          <a href="/photoshoots">Photoshoots</a>
-          <a href="/bulletin">Bulletin</a>
-          <a href="/timeline">Timeline</a>
-          <a href="/aux">Want The Aux</a>
-          <a href="/donate">Donate</a>
-          <a href="/board">Meet the Board</a>
-        </nav>
-        <div class="social-row">
-          <a href="mailto:ssa@umn.edu">Email</a>
-          <a href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">Instagram</a>
-          <a href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">TikTok</a>
-          <a href="https://www.linkedin.com/in/somali-student-association-at-the-university-of-minnesota-b435362a2" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+  if (!document.body.classList.contains('interns-page')) {
+    const footerHtml = `
+      <footer class="footer">
+        <div class="footer-card">
+          <a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a>
+          <nav aria-label="Footer">
+            <a href="/events">Events</a>
+            <a href="/initiatives">Initiatives</a>
+            <a href="/newsletter">Newsletter</a>
+            <a href="/gallery">Gallery</a>
+            <a href="/interns">Interns</a>
+            <a href="/bulletin">Bulletin</a>
+            <a href="/timeline">Timeline</a>
+            <a href="/aux">Want The Aux</a>
+            <a href="/donate">Donate</a>
+            <a href="/board">Meet the Board</a>
+          </nav>
+          <div class="social-row">
+            <a href="mailto:ssa@umn.edu">Email</a>
+            <a href="https://www.instagram.com/ssa.umn/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://www.tiktok.com/@ssaumn" target="_blank" rel="noopener noreferrer">TikTok</a>
+            <a href="https://www.linkedin.com/in/somali-student-association-at-the-university-of-minnesota-b435362a2" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          </div>
+          <small>© 2026 Somali Student Association — University of Minnesota</small>
         </div>
-        <small>© 2026 Somali Student Association — University of Minnesota</small>
-      </div>
-    </footer>`;
-  const footer = document.querySelector('.footer');
-  if (footer) footer.outerHTML = footerHtml;
-  else document.body.insertAdjacentHTML('beforeend', footerHtml);
+      </footer>`;
+    const footer = document.querySelector('.footer');
+    if (footer) footer.outerHTML = footerHtml;
+    else document.body.insertAdjacentHTML('beforeend', footerHtml);
+  }
 })();

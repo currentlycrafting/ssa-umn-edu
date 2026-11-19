@@ -677,6 +677,65 @@ def list_event_suggestions():
             "preferred_date": r["preferred_date"] or "",
             "notes": r["notes"] or "",
             "votes": int(r.get("votes") or 0),
+            "adminAnswer": r.get("admin_answer") or "",
+            "answeredAt": _iso(r["answered_at"]) if r.get("answered_at") else "",
+            "showOnInitiatives": bool(r.get("show_on_initiatives")),
+            "answeredInitiativeId": r.get("answered_initiative_id"),
+            "created_at": _iso(r["created_at"]),
+        }
+        for r in rows
+    ]
+
+
+def link_suggestion_to_initiative(suggestion_id, initiative_id, initiative_title=""):
+    with db() as cur:
+        cur.execute("SELECT id, name, description FROM event_suggestions WHERE id = %s", (int(suggestion_id),))
+        suggestion = cur.fetchone()
+        if not suggestion:
+            return
+        answer = f"We're answering this through an initiative: {initiative_title or 'SSA initiative'}."
+        cur.execute(
+            """
+            UPDATE event_suggestions
+            SET admin_answer = %s,
+                answered_at = %s,
+                show_on_initiatives = TRUE,
+                answered_initiative_id = %s
+            WHERE id = %s
+            """,
+            (answer, utcnow(), int(initiative_id), int(suggestion_id)),
+        )
+
+
+def list_answered_suggestions_public():
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT s.id, s.name, s.description, s.admin_answer, s.answered_at, s.votes,
+                   s.created_at, s.answered_initiative_id, i.title AS initiative_title, i.slug
+            FROM event_suggestions s
+            LEFT JOIN initiatives i ON i.id = s.answered_initiative_id AND i.published = TRUE
+            WHERE s.show_on_initiatives = TRUE
+              AND (
+                s.answered_initiative_id IS NOT NULL
+                OR (s.admin_answer IS NOT NULL AND TRIM(s.admin_answer) <> '')
+              )
+            ORDER BY s.answered_at DESC NULLS LAST, s.created_at DESC
+            LIMIT 100
+            """
+        )
+        rows = cur.fetchall()
+    return [
+        {
+            "id": r["id"],
+            "name": r["name"],
+            "description": r["description"],
+            "answer": r["admin_answer"] or "",
+            "answeredAt": _iso(r["answered_at"]) if r.get("answered_at") else "",
+            "votes": int(r.get("votes") or 0),
+            "initiativeId": r.get("answered_initiative_id"),
+            "initiativeTitle": r.get("initiative_title") or "",
+            "initiativeSlug": r.get("slug") or "",
             "created_at": _iso(r["created_at"]),
         }
         for r in rows
@@ -771,6 +830,338 @@ def list_event_feedback_admin(payload):
     }
 
 
+# ---------------- initiatives ----------------
+
+def _initiative_slug(value):
+    slug = re.sub(r"[^a-z0-9]+", "-", str(value or "").lower()).strip("-")
+    return (slug or "initiative")[:80]
+
+
+def _normalize_ig_handle(value):
+    handle = str(value or "").strip()
+    if not handle:
+        return "", ""
+    if "instagram.com" in handle.lower():
+        match = re.search(r"instagram\.com/([A-Za-z0-9._]+)", handle, re.I)
+        handle = match.group(1) if match else handle
+    handle = handle.lstrip("@").split("?")[0].strip("/")
+    handle = re.sub(r"[^A-Za-z0-9._]", "", handle)[:60]
+    if not handle:
+        return "", ""
+    return handle, f"https://www.instagram.com/{handle}/"
+
+
+def _initiative_json(row, collaborators=None, photos=None):
+    return {
+        "id": row["id"],
+        "slug": row["slug"],
+        "title": row["title"],
+        "description": row["description"] or "",
+        "paragraph": row["paragraph"] or "",
+        "imageUrl": row["image_url"] or "",
+        "linkUrl": row["link_url"] or "",
+        "linkLabel": row["link_label"] or "",
+        "published": bool(row["published"]),
+        "sortOrder": int(row.get("sort_order") or 0),
+        "created_at": _iso(row["created_at"]),
+        "collaborators": collaborators or [],
+        "photos": photos or [],
+    }
+
+
+def _load_initiative_children(cur, initiative_ids):
+    if not initiative_ids:
+        return {}, {}
+    cur.execute(
+        """
+        SELECT id, initiative_id, kind, name, description, ig_handle, ig_url, avatar_url, sort_order
+        FROM initiative_collaborators
+        WHERE initiative_id = ANY(%s)
+        ORDER BY sort_order ASC, id ASC
+        """,
+        (list(initiative_ids),),
+    )
+    collab_rows = cur.fetchall()
+    cur.execute(
+        """
+        SELECT id, initiative_id, image_url, caption, sort_order
+        FROM initiative_photos
+        WHERE initiative_id = ANY(%s)
+        ORDER BY sort_order ASC, id ASC
+        """,
+        (list(initiative_ids),),
+    )
+    photo_rows = cur.fetchall()
+    collaborators = {}
+    photos = {}
+    for row in collab_rows:
+        collaborators.setdefault(row["initiative_id"], []).append({
+            "id": row["id"],
+            "kind": row["kind"],
+            "name": row["name"],
+            "description": row["description"] or "",
+            "igHandle": row["ig_handle"] or "",
+            "igUrl": row["ig_url"] or "",
+            "avatarUrl": row.get("avatar_url") or "",
+            "sortOrder": int(row["sort_order"] or 0),
+        })
+    for row in photo_rows:
+        photos.setdefault(row["initiative_id"], []).append({
+            "id": row["id"],
+            "src": row["image_url"],
+            "caption": row["caption"] or "",
+            "sortOrder": int(row["sort_order"] or 0),
+        })
+    return collaborators, photos
+
+
+def list_initiatives(include_unpublished=False):
+    with db() as cur:
+        if include_unpublished:
+            cur.execute(
+                """
+                SELECT * FROM initiatives
+                ORDER BY sort_order ASC, created_at DESC
+                """
+            )
+        else:
+            cur.execute(
+                """
+                SELECT * FROM initiatives
+                WHERE published = TRUE
+                ORDER BY sort_order ASC, created_at DESC
+                """
+            )
+        rows = cur.fetchall()
+        collabs, photos = _load_initiative_children(cur, [r["id"] for r in rows])
+    return [
+        _initiative_json(row, collabs.get(row["id"], []), photos.get(row["id"], []))
+        for row in rows
+    ]
+
+
+def get_initiative(initiative_id):
+    with db() as cur:
+        cur.execute("SELECT * FROM initiatives WHERE id = %s", (int(initiative_id),))
+        row = cur.fetchone()
+        if not row:
+            return None
+        collabs, photos = _load_initiative_children(cur, [row["id"]])
+    return _initiative_json(row, collabs.get(row["id"], []), photos.get(row["id"], []))
+
+
+def _unique_initiative_slug(cur, title, ignore_id=None):
+    base = _initiative_slug(title)
+    slug = base
+    n = 2
+    while True:
+        if ignore_id:
+            cur.execute(
+                "SELECT id FROM initiatives WHERE slug = %s AND id <> %s",
+                (slug, ignore_id),
+            )
+        else:
+            cur.execute("SELECT id FROM initiatives WHERE slug = %s", (slug,))
+        if not cur.fetchone():
+            return slug
+        slug = f"{base}-{n}"[:80]
+        n += 1
+
+
+def save_initiative(payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    initiative_id = payload.get("id")
+    title = str(payload.get("title", "")).strip()[:160]
+    description = str(payload.get("description", "")).strip()[:4000]
+    paragraph = str(payload.get("paragraph", "")).strip()[:4000]
+    image_url = str(payload.get("imageUrl", "")).strip()[:500]
+    link_url = str(payload.get("linkUrl", "")).strip()[:500]
+    link_label = str(payload.get("linkLabel", "")).strip()[:80]
+    published = payload.get("published") is not False
+    try:
+        sort_order = int(payload.get("sortOrder", 0))
+    except (TypeError, ValueError):
+        sort_order = 0
+    if not title:
+        return 400, {"error": "Title is required."}
+    if not description and not paragraph:
+        return 400, {"error": "Add a description or paragraph."}
+    if image_url and not (
+        image_url.startswith("/assets/") or image_url.startswith("/api/uploads/")
+    ):
+        return 400, {"error": "Use an uploaded image or a site asset."}
+    raw_collabs = payload.get("collaborators") or []
+    raw_photos = payload.get("photos") or []
+    if not isinstance(raw_collabs, list):
+        raw_collabs = []
+    if not isinstance(raw_photos, list):
+        raw_photos = []
+    collaborators = []
+    for index, item in enumerate(raw_collabs[:40]):
+        if not isinstance(item, dict):
+            continue
+        kind = str(item.get("kind", "person")).strip().lower()
+        if kind not in ("org", "person"):
+            kind = "person"
+        handle, ig_url = _normalize_ig_handle(item.get("igHandle") or item.get("igUrl") or "")
+        name = str(item.get("name", "")).strip()[:120] or (f"@{handle}" if handle else "")
+        if not name and not handle:
+            continue
+        avatar = str(item.get("avatarUrl") or "").strip()[:500]
+        if avatar and not (avatar.startswith("/assets/") or avatar.startswith("/api/uploads/")):
+            avatar = ""
+        collaborators.append({
+            "kind": kind,
+            "name": name or f"@{handle}",
+            "description": str(item.get("description", "")).strip()[:2000],
+            "ig_handle": handle,
+            "ig_url": ig_url,
+            "avatar_url": avatar,
+            "sort_order": index * 10,
+        })
+    suggestion_id = payload.get("suggestionId")
+    try:
+        suggestion_id = int(suggestion_id) if suggestion_id else None
+    except (TypeError, ValueError):
+        suggestion_id = None
+    with db() as cur:
+        if initiative_id:
+            cur.execute("SELECT id FROM initiatives WHERE id = %s", (int(initiative_id),))
+            if not cur.fetchone():
+                return 404, {"error": "Initiative not found."}
+            slug = _unique_initiative_slug(cur, title, ignore_id=int(initiative_id))
+            cur.execute(
+                """
+                UPDATE initiatives
+                SET title = %s, slug = %s, description = %s, paragraph = %s,
+                    image_url = %s, link_url = %s, link_label = %s,
+                    published = %s, sort_order = %s, updated_at = %s
+                WHERE id = %s
+                RETURNING *
+                """,
+                (
+                    title, slug, description, paragraph, image_url, link_url, link_label,
+                    published, sort_order, utcnow(), int(initiative_id),
+                ),
+            )
+            row = cur.fetchone()
+            cur.execute("DELETE FROM initiative_collaborators WHERE initiative_id = %s", (row["id"],))
+            cur.execute("DELETE FROM initiative_photos WHERE initiative_id = %s", (row["id"],))
+        else:
+            slug = _unique_initiative_slug(cur, title)
+            cur.execute(
+                """
+                INSERT INTO initiatives
+                    (title, slug, description, paragraph, image_url, link_url, link_label,
+                     published, sort_order, created_at)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                RETURNING *
+                """,
+                (
+                    title, slug, description, paragraph, image_url, link_url, link_label,
+                    published, sort_order, utcnow(),
+                ),
+            )
+            row = cur.fetchone()
+        for item in collaborators:
+            cur.execute(
+                """
+                INSERT INTO initiative_collaborators
+                    (initiative_id, kind, name, description, ig_handle, ig_url, avatar_url, sort_order)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                """,
+                (
+                    row["id"], item["kind"], item["name"], item["description"],
+                    item["ig_handle"], item["ig_url"], item["avatar_url"], item["sort_order"],
+                ),
+            )
+        collabs, photos_map = _load_initiative_children(cur, [row["id"]])
+    if suggestion_id:
+        link_suggestion_to_initiative(suggestion_id, row["id"], row["title"])
+    return 200, {
+        "ok": True,
+        "initiative": _initiative_json(row, collabs.get(row["id"], []), photos_map.get(row["id"], [])),
+    }
+
+
+def delete_initiative(initiative_id, payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute("DELETE FROM initiatives WHERE id = %s RETURNING id", (int(initiative_id),))
+        if not cur.fetchone():
+            return 404, {"error": "Initiative not found."}
+    return 200, {"ok": True}
+
+
+def submit_initiative_feedback(payload):
+    try:
+        initiative_id = int(payload.get("initiativeId") or payload.get("id") or 0)
+    except (TypeError, ValueError):
+        initiative_id = 0
+    guest_token = str(payload.get("guestToken", "")).strip()[:80]
+    comment = str(payload.get("comment", "")).strip()[:280]
+    try:
+        rating = int(payload.get("rating", 0))
+    except (TypeError, ValueError):
+        rating = 0
+    if not initiative_id or len(guest_token) < 16:
+        return 400, {"error": "Initiative and guest id are required."}
+    if rating < 1 or rating > 5:
+        return 400, {"error": "Pick a rating from 1 to 5."}
+    if not comment:
+        return 400, {"error": "Leave a short note."}
+    with db() as cur:
+        cur.execute(
+            "SELECT id FROM initiatives WHERE id = %s AND published = TRUE",
+            (initiative_id,),
+        )
+        if not cur.fetchone():
+            return 404, {"error": "Initiative not found."}
+        cur.execute(
+            """
+            INSERT INTO initiative_feedback
+                (initiative_id, guest_token, rating, comment, created_at)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (initiative_id, guest_token)
+            DO UPDATE SET rating = EXCLUDED.rating, comment = EXCLUDED.comment, created_at = EXCLUDED.created_at
+            RETURNING id
+            """,
+            (initiative_id, guest_token, rating, comment, utcnow()),
+        )
+    return 200, {"ok": True}
+
+
+def list_initiative_feedback_admin(payload):
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    with db() as cur:
+        cur.execute(
+            """
+            SELECT f.initiative_id, f.rating, f.comment, f.created_at, i.title
+            FROM initiative_feedback f
+            LEFT JOIN initiatives i ON i.id = f.initiative_id
+            ORDER BY f.created_at DESC
+            LIMIT 300
+            """
+        )
+        rows = cur.fetchall()
+    return 200, {
+        "ok": True,
+        "items": [
+            {
+                "initiativeId": r["initiative_id"],
+                "title": r["title"] or f"Initiative #{r['initiative_id']}",
+                "rating": int(r["rating"]),
+                "comment": r["comment"],
+                "created_at": _iso(r["created_at"]),
+            }
+            for r in rows
+        ],
+    }
+
+
 # ---------------- moderated gallery ----------------
 
 def _decode_public_image(data, filename):
@@ -794,6 +1185,11 @@ def submit_gallery_item(payload):
     if not is_admin(payload):
         return 401, {"error": "Invalid password."}
     caption = str(payload.get("caption", "")).strip()[:300]
+    dump_group = str(payload.get("dumpGroup", "")).strip()[:80] or None
+    try:
+        dump_order = int(payload.get("dumpOrder", 0))
+    except (TypeError, ValueError):
+        dump_order = 0
     raw, mime, error = _decode_public_image(payload.get("data"), payload.get("filename"))
     if not caption:
         return 400, {"error": "A caption and photo are required."}
@@ -803,14 +1199,57 @@ def submit_gallery_item(payload):
         cur.execute(
             """
             INSERT INTO gallery_items
-                (submitter, email, caption, alt_text, image_data, content_type, status, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s, 'approved', %s)
+                (submitter, email, caption, alt_text, image_data, content_type, status,
+                 dump_group, dump_order, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, 'approved', %s, %s, %s)
             RETURNING id
             """,
-            ("SSA", "", caption, caption, raw, mime, utcnow()),
+            ("SSA", "", caption, caption, raw, mime, dump_group, dump_order, utcnow()),
         )
         item_id = cur.fetchone()["id"]
-    return 200, {"ok": True, "id": item_id, "message": "Added to the gallery."}
+    return 200, {"ok": True, "id": item_id, "message": "Added to the gallery.", "dumpGroup": dump_group}
+
+
+def submit_gallery_dump(payload):
+    """Upload multiple photos as one dump group. First photo is the cover."""
+    if not is_admin(payload):
+        return 401, {"error": "Invalid password."}
+    caption = str(payload.get("caption", "")).strip()[:300]
+    photos = payload.get("photos") or []
+    if not caption:
+        return 400, {"error": "A caption is required for the dump."}
+    if not isinstance(photos, list) or len(photos) < 1:
+        return 400, {"error": "Add at least one photo."}
+    photos = photos[:24]
+    dump_group = str(payload.get("dumpGroup") or "").strip()[:80]
+    if len(dump_group) < 8:
+        dump_group = f"dump-{int(utcnow().timestamp())}-{os.urandom(3).hex()}"
+    ids = []
+    with db() as cur:
+        for index, item in enumerate(photos):
+            if not isinstance(item, dict):
+                return 400, {"error": "Invalid photo payload."}
+            raw, mime, error = _decode_public_image(item.get("data"), item.get("filename"))
+            if error:
+                return 400, {"error": error}
+            photo_caption = str(item.get("caption") or caption).strip()[:300] or caption
+            cur.execute(
+                """
+                INSERT INTO gallery_items
+                    (submitter, email, caption, alt_text, image_data, content_type, status,
+                     dump_group, dump_order, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, 'approved', %s, %s, %s)
+                RETURNING id
+                """,
+                ("SSA", "", photo_caption, photo_caption, raw, mime, dump_group, index, utcnow()),
+            )
+            ids.append(cur.fetchone()["id"])
+    return 200, {
+        "ok": True,
+        "ids": ids,
+        "dumpGroup": dump_group,
+        "message": f"Added dump with {len(ids)} photos.",
+    }
 
 
 def list_gallery_items(include_pending=False, limit=None):
@@ -823,18 +1262,28 @@ def list_gallery_items(include_pending=False, limit=None):
     with db() as cur:
         if include_pending:
             cur.execute(
-                "SELECT id, submitter, email, caption, alt_text, status, created_at "
-                "FROM gallery_items ORDER BY created_at DESC LIMIT %s",
+                """
+                SELECT id, submitter, email, caption, alt_text, status, created_at,
+                       dump_group, dump_order
+                FROM gallery_items
+                ORDER BY created_at DESC
+                LIMIT %s
+                """,
                 (limit or 300,),
             )
         else:
             cur.execute(
-                "SELECT id, caption, alt_text, status, created_at FROM gallery_items "
-                "WHERE status <> 'rejected' ORDER BY created_at ASC LIMIT %s",
-                (limit or 200,),
+                """
+                SELECT id, caption, alt_text, status, created_at, dump_group, dump_order
+                FROM gallery_items
+                WHERE status <> 'rejected'
+                ORDER BY created_at ASC
+                LIMIT %s
+                """,
+                (limit or 400,),
             )
         rows = cur.fetchall()
-    return [
+    items = [
         {
             "id": r["id"],
             "submitter": r.get("submitter") or "",
@@ -843,10 +1292,33 @@ def list_gallery_items(include_pending=False, limit=None):
             "alt": r["alt_text"],
             "status": r["status"],
             "src": f"/api/gallery/{r['id']}/image",
+            "dumpGroup": r.get("dump_group") or "",
+            "dumpOrder": int(r.get("dump_order") or 0),
             "created_at": _iso(r["created_at"]),
         }
         for r in rows
     ]
+    if include_pending:
+        return items
+    # Public: collapse dumps into cover cards with dumpPhotos arrays.
+    dumps = {}
+    singles = []
+    for item in items:
+        group = item.get("dumpGroup") or ""
+        if not group:
+            singles.append(item)
+            continue
+        dumps.setdefault(group, []).append(item)
+    collapsed = []
+    for group, photos in dumps.items():
+        photos = sorted(photos, key=lambda p: (p.get("dumpOrder", 0), p.get("id", 0)))
+        cover = dict(photos[0])
+        cover["dumpPhotos"] = photos
+        cover["dumpCount"] = len(photos)
+        collapsed.append(cover)
+    collapsed.sort(key=lambda item: item.get("created_at") or "")
+    singles.sort(key=lambda item: item.get("created_at") or "")
+    return singles + collapsed
 
 
 def get_gallery_image(item_id):
@@ -1316,3 +1788,77 @@ def init_tables():
         cur.execute("ALTER TABLE connect_interest ADD COLUMN IF NOT EXISTS year TEXT")
         cur.execute("ALTER TABLE connect_interest ADD COLUMN IF NOT EXISTS major TEXT")
         cur.execute("ALTER TABLE connect_interest ADD COLUMN IF NOT EXISTS interests TEXT")
+        cur.execute("ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS admin_answer TEXT")
+        cur.execute("ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS answered_at TIMESTAMPTZ")
+        cur.execute(
+            "ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS show_on_initiatives "
+            "BOOLEAN NOT NULL DEFAULT FALSE"
+        )
+        cur.execute(
+            "ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS answered_initiative_id INTEGER"
+        )
+        cur.execute(
+            "ALTER TABLE initiative_collaborators ADD COLUMN IF NOT EXISTS avatar_url "
+            "TEXT NOT NULL DEFAULT ''"
+        )
+        cur.execute("ALTER TABLE gallery_items ADD COLUMN IF NOT EXISTS dump_group TEXT")
+        cur.execute(
+            "ALTER TABLE gallery_items ADD COLUMN IF NOT EXISTS dump_order "
+            "INTEGER NOT NULL DEFAULT 0"
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS initiatives (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                slug TEXT NOT NULL UNIQUE,
+                description TEXT NOT NULL DEFAULT '',
+                paragraph TEXT NOT NULL DEFAULT '',
+                image_url TEXT NOT NULL DEFAULT '',
+                link_url TEXT NOT NULL DEFAULT '',
+                link_label TEXT NOT NULL DEFAULT '',
+                published BOOLEAN NOT NULL DEFAULT TRUE,
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS initiative_collaborators (
+                id SERIAL PRIMARY KEY,
+                initiative_id INTEGER NOT NULL REFERENCES initiatives(id) ON DELETE CASCADE,
+                kind TEXT NOT NULL DEFAULT 'person',
+                name TEXT NOT NULL,
+                description TEXT NOT NULL DEFAULT '',
+                ig_handle TEXT NOT NULL DEFAULT '',
+                ig_url TEXT NOT NULL DEFAULT '',
+                sort_order INTEGER NOT NULL DEFAULT 0
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS initiative_photos (
+                id SERIAL PRIMARY KEY,
+                initiative_id INTEGER NOT NULL REFERENCES initiatives(id) ON DELETE CASCADE,
+                image_url TEXT NOT NULL,
+                caption TEXT NOT NULL DEFAULT '',
+                sort_order INTEGER NOT NULL DEFAULT 0
+            )
+            """
+        )
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS initiative_feedback (
+                id SERIAL PRIMARY KEY,
+                initiative_id INTEGER NOT NULL REFERENCES initiatives(id) ON DELETE CASCADE,
+                guest_token TEXT NOT NULL,
+                rating INTEGER NOT NULL,
+                comment TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                UNIQUE (initiative_id, guest_token)
+            )
+            """
+        )

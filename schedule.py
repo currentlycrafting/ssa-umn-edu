@@ -74,16 +74,17 @@ def _poll_members(poll):
     if not members and not _has_pin(poll):
         return [
             "Salman Said",
-            "Suhaila Osman",
             "Ruweyda Warsame",
-            "Muno Aynab",
-            "Kamila Deef",
             "Zakaria Samatar",
             "Suhaib Mohamed",
             "Zakaria Hussein",
+            "Jama Ahmed",
+            "Asma Yusuf",
+            "Nurah Muhammad",
+            "Kamila Deef",
             "Salma Tawane",
             "Bashir Mumin",
-            "Asma Yusuf",
+            "Muno Aynab",
         ]
     return members
 

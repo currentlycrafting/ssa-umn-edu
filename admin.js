@@ -10,7 +10,9 @@
   let password = sessionStorage.getItem('ssaAdminPassword') || '';
   let section = 'overview';
   let activeShootId = null;
-  let data = { admin: {}, events: [], gallery: [], editions: [], timeline: [], bulletin: [], photoshoots: [] };
+  let data = { admin: {}, events: [], gallery: [], editions: [], timeline: [], bulletin: [], photoshoots: [], applications: [], initiatives: [] };
+  let activeApplicationId = null;
+  let initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -75,20 +77,21 @@
     workspace.hidden = false;
     data.admin = admin;
     render();
-    const [eventsResult, galleryResult, editionsResult, timelineResult, bulletinResult, photoshootResult] = await Promise.allSettled([
+    const [eventsResult, galleryResult, editionsResult, timelineResult, bulletinResult, initiativesResult] = await Promise.allSettled([
       post('/api/events/list-all'),
       post('/api/gallery/list-all'),
       post('/api/newsletters/list-all'),
       post('/api/timeline/list-all'),
       post('/api/bulletin/list-all'),
-      post('/api/photoshoots/list-all')
+      post('/api/initiatives/list-all')
     ]);
     if (eventsResult.status === 'fulfilled') data.events = eventsResult.value.events || [];
     if (galleryResult.status === 'fulfilled') data.gallery = galleryResult.value.items || [];
     if (editionsResult.status === 'fulfilled') data.editions = editionsResult.value.newsletters || [];
     if (timelineResult.status === 'fulfilled') data.timeline = timelineResult.value.events || [];
     if (bulletinResult.status === 'fulfilled') data.bulletin = bulletinResult.value.posts || [];
-    if (photoshootResult.status === 'fulfilled') data.photoshoots = photoshootResult.value.photoshoots || [];
+    if (initiativesResult.status === 'fulfilled') data.initiatives = initiativesResult.value.initiatives || [];
+    data.applications = data.admin.applications || [];
     render();
   }
 
@@ -108,6 +111,7 @@
     content.innerHTML = `
       <div class="admin-stat-grid">
         ${stat('Published events', data.events.filter((event) => event.published).length, 'Public calendar')}
+        ${stat('Intern apps', (admin.applications || []).length, 'Internship applications')}
         ${stat('Gallery photos', data.gallery.length, 'Community album')}
         ${stat('Subscribers', (admin.newsletters || []).length, 'Newsletter audience')}
         ${stat('Bulletin posts', data.bulletin.filter((post) => post.status === 'active').length, 'Active board notes')}
@@ -115,8 +119,9 @@
       </div>
       <div class="admin-quick-grid">
         <button data-go="events"><strong>Event</strong><span>Add the next event to the calendar.</span></button>
+        <button data-go="initiatives"><strong>Initiative</strong><span>Publish a project with collaborators.</span></button>
+        <button data-go="applications"><strong>Applications</strong><span>Review internship applications.</span></button>
         <button data-go="gallery"><strong>Gallery</strong><span>Add or remove community photos.</span></button>
-        <button data-go="photoshoots"><strong>Photoshoot</strong><span>Create a shoot and add photos.</span></button>
         <button data-go="timeline"><strong>Timeline</strong><span>Add sticky-note moments to the timeline.</span></button>
         <button data-go="bulletin"><strong>Bulletin</strong><span>Edit or remove board posts.</span></button>
         <a href="/newsletter/studio"><strong>Newsletter</strong><span>Publish the next edition.</span></a>
@@ -431,7 +436,7 @@
       editor.focus();
     }
 
-    editor.innerHTML = descriptionToEditorHtml(form.description?.value || hidden.value || '');
+    editor.innerHTML = descriptionToEditorHtml(form?.description?.value || hidden.value || '');
     if (!editor.innerHTML) editor.innerHTML = '';
     syncHidden();
 
@@ -781,14 +786,24 @@
       })),
       ...(admin.event_suggestions || []).map((item) => ({
         kind: 'Event idea',
+        id: item.id,
+        answered: Boolean(item.adminAnswer || item.answeredInitiativeId),
         primary: `${item.name} · ${item.type || 'Suggestion'} · ${item.votes || 0} votes`,
         meta: item.preferred_date || item.audience || '',
         detail: [item.description, item.notes].filter(Boolean).join('\n\n'),
+        answer: item.adminAnswer || '',
         date: item.created_at
       })),
       ...(admin.event_feedback || []).map((item) => ({
         kind: 'Event feedback',
         primary: `${item.event_name} · ${item.rating}/5`,
+        meta: '',
+        detail: item.comment,
+        date: item.created_at
+      })),
+      ...(admin.initiative_feedback || []).map((item) => ({
+        kind: 'Initiative review',
+        primary: `${item.title} · ${item.rating}/5 · do again?`,
         meta: '',
         detail: item.comment,
         date: item.created_at
@@ -841,12 +856,38 @@
       : '';
 
     const inboxHtml = items.length
-      ? `<div class="admin-list-head"><h3>Inbox</h3><span>${items.length}</span></div><div class="admin-data-list">${items.map((item) =>
-          row(`${esc(item.kind)} · ${esc(item.primary)}`, esc(item.meta), esc(item.detail), item.date)
-        ).join('')}</div>`
+      ? `<div class="admin-list-head"><h3>Inbox</h3><span>${items.length}</span></div><div class="admin-data-list">${items.map((item) => {
+          if (item.kind === 'Event idea' && item.id) {
+            return `<article class="admin-data-row admin-idea-row">
+              <div>
+                <strong>${esc(item.kind)} · ${esc(item.primary)}</strong>
+                ${item.meta ? `<span>${esc(item.meta)}</span>` : ''}
+                ${item.detail ? `<p>${esc(item.detail)}</p>` : ''}
+                ${item.answered ? `<p class="admin-idea-answered">Already answered as an initiative.</p>` : ''}
+                <button class="button button-dark" type="button" data-answer-suggestion="${item.id}">Answer Suggestion</button>
+              </div>
+              <div><time>${fmt(item.date)}</time></div>
+            </article>`;
+          }
+          return row(`${esc(item.kind)} · ${esc(item.primary)}`, esc(item.meta), esc(item.detail), item.date);
+        }).join('')}</div>`
       : '';
 
     content.innerHTML = inboxHtml + rsvpHtml;
+    content.querySelectorAll('[data-answer-suggestion]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const suggestion = (data.admin.event_suggestions || []).find((item) => String(item.id) === String(button.dataset.answerSuggestion));
+        initiativeDraft = {
+          collaborators: [],
+          photos: [],
+          suggestionId: suggestion?.id || Number(button.dataset.answerSuggestion),
+          suggestionTitle: suggestion?.name || '',
+          suggestionDescription: suggestion?.description || ''
+        };
+        section = 'initiatives';
+        renderInitiatives();
+      });
+    });
   }
 
   function renderNewsletter() {
@@ -1022,10 +1063,328 @@
     bindTimelineForm();
   }
 
+  function collaboratorRowsHtml() {
+    const rows = initiativeDraft.collaborators || [];
+    if (!rows.length) return '<p class="admin-empty">No collaborators yet. Use Add collabs &amp; orgs.</p>';
+    return `<div class="admin-collab-chips">${rows.map((item, index) => `
+      <article class="admin-collab-chip">
+        ${item.avatarUrl ? `<img src="${esc(item.avatarUrl)}" alt="" />` : `<span class="admin-collab-fallback">@</span>`}
+        <div>
+          <strong>${esc(item.name || `@${item.igHandle || ''}`)}</strong>
+          <span>${esc(item.kind === 'org' ? 'Organization' : 'Person')}${item.igHandle ? ` · @${esc(item.igHandle)}` : ''}</span>
+        </div>
+        <button class="button button-line" type="button" data-remove-collab="${index}">Remove</button>
+      </article>`).join('')}</div>`;
+  }
+
+  function initiativeForm(item = {}) {
+    const answering = Boolean(initiativeDraft.suggestionId) && !item.id;
+    const title = item.title || initiativeDraft.suggestionTitle || '';
+    const description = item.description || initiativeDraft.suggestionDescription || '';
+    if (item.id) {
+      initiativeDraft = {
+        collaborators: (item.collaborators || []).map((row) => ({ ...row })),
+        photos: [],
+        suggestionId: null,
+        suggestionTitle: '',
+        suggestionDescription: ''
+      };
+    } else if (!answering) {
+      initiativeDraft.collaborators = initiativeDraft.collaborators || [];
+      initiativeDraft.photos = [];
+    } else {
+      initiativeDraft.collaborators = initiativeDraft.collaborators || [];
+      initiativeDraft.photos = [];
+    }
+    const previewImage = item.imageUrl || '';
+    const hasImage = Boolean(previewImage);
+    return `<form class="admin-editor" id="adminInitiativeForm">
+      <input type="hidden" name="id" value="${esc(item.id || '')}" />
+      <input type="hidden" name="suggestionId" value="${esc(answering ? initiativeDraft.suggestionId : '')}" />
+      <input type="hidden" name="sortOrder" value="${esc(item.sortOrder ?? data.initiatives.length * 10)}" />
+      <input type="hidden" name="imageUrl" value="${esc(item.imageUrl || '')}" />
+      <div class="admin-editor-head"><div><span class="eyebrow">${item.id ? 'Edit initiative' : answering ? 'Answer suggestion' : 'New initiative'}</span><h3>${item.id ? esc(item.title) : answering ? 'Turn this idea into an initiative' : 'Add an initiative'}</h3></div>${item.id || answering ? '<button type="button" class="button button-line" data-new-initiative>New initiative</button>' : ''}</div>
+      ${answering ? `<p class="admin-idea-answered">Answering suggestion: <strong>${esc(initiativeDraft.suggestionTitle || 'Untitled idea')}</strong></p>` : ''}
+      <div class="admin-form-grid admin-form-grid-simple">
+        <label>Title<input name="title" value="${esc(title)}" required /></label>
+        <label>External link<input name="linkUrl" value="${esc(item.linkUrl || '')}" placeholder="https://…" /></label>
+        <label>Link label<input name="linkLabel" value="${esc(item.linkLabel || '')}" placeholder="Learn more" /></label>
+      </div>
+      <label class="admin-field-label">Cover image</label>
+      <label class="gallery-drop admin-event-drop ${hasImage ? 'has-preview' : ''}" id="adminInitiativeDrop">
+        <input type="file" name="image" accept="image/png,image/jpeg,image/webp" />
+        <span class="admin-event-drop-prompt"><strong>Drop an image here</strong><small>or click to browse</small></span>
+        <img class="admin-event-drop-preview" id="adminInitiativeDropPreview" src="${esc(previewImage)}" alt="" ${hasImage ? '' : 'hidden'} />
+      </label>
+      <label class="admin-desc-field">Description
+        <small>Type @ then a name — popup attaches their Instagram link (same as events).</small>
+        <div class="admin-desc-shell" id="adminDescShell">
+          <div class="admin-desc-editor" id="adminDescEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="What’s this initiative about?"></div>
+          <textarea name="description" id="adminDescValue" hidden>${esc(description)}</textarea>
+          <div class="admin-mention-pop" id="adminMentionPop" hidden>
+            <span>Instagram link for <strong id="adminMentionName">…</strong></span>
+            <input id="adminMentionUrl" type="url" placeholder="https://instagram.com/handle" autocomplete="off" />
+            <div class="admin-mention-pop-actions">
+              <button class="button button-dark" type="button" id="adminMentionSave">Save</button>
+              <button class="button button-line" type="button" id="adminMentionCancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </label>
+      <label>Paragraph<textarea name="paragraph" rows="4" placeholder="Longer story / impact paragraph">${esc(item.paragraph || '')}</textarea></label>
+      <div class="admin-list-head"><h3>Collaborators &amp; orgs</h3><button class="button button-dark" type="button" id="adminAddCollab">Add collabs &amp; orgs</button></div>
+      <div id="adminCollabList">${collaboratorRowsHtml()}</div>
+      <div class="admin-editor-actions"><button class="button button-dark" type="submit">${item.id ? 'Save changes' : answering ? 'Publish answer as initiative' : 'Publish initiative'}</button><output></output></div>
+    </form>`;
+  }
+
+  function openCollabModal() {
+    const modal = document.getElementById('adminCollabModal');
+    const form = document.getElementById('adminCollabForm');
+    const preview = document.getElementById('adminCollabPreview');
+    if (!modal || !form) return;
+    form.reset();
+    form.querySelector('output').textContent = '';
+    if (preview) {
+      preview.hidden = true;
+      preview.removeAttribute('src');
+    }
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeCollabModal() {
+    const modal = document.getElementById('adminCollabModal');
+    modal?.classList.remove('open');
+    modal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  function bindCollabModal() {
+    const modal = document.getElementById('adminCollabModal');
+    const form = document.getElementById('adminCollabForm');
+    const preview = document.getElementById('adminCollabPreview');
+    if (!form || form.dataset.bound === '1') return;
+    form.dataset.bound = '1';
+    let avatarFile = null;
+
+    form.avatar?.addEventListener('change', async () => {
+      const file = form.avatar.files[0];
+      avatarFile = null;
+      if (!file) {
+        if (preview) preview.hidden = true;
+        return;
+      }
+      avatarFile = file;
+      const dataUrl = await readFile(file);
+      if (preview) {
+        preview.src = dataUrl;
+        preview.hidden = false;
+      }
+    });
+
+    document.getElementById('adminCollabClose')?.addEventListener('click', closeCollabModal);
+    modal?.addEventListener('click', (event) => {
+      if (event.target === modal) closeCollabModal();
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const output = form.querySelector('output');
+      const button = form.querySelector('button[type="submit"]');
+      const handle = String(form.igHandle.value || '').replace(/^@/, '').trim();
+      if (!handle) {
+        output.textContent = 'Add an Instagram @.';
+        return;
+      }
+      button.disabled = true;
+      output.textContent = 'Adding…';
+      try {
+        let avatarUrl = '';
+        if (avatarFile) {
+          const uploaded = await post('/api/uploads', {
+            filename: avatarFile.name,
+            data: await readFile(avatarFile)
+          });
+          avatarUrl = uploaded.url || '';
+        }
+        initiativeDraft.collaborators.push({
+          kind: form.kind.value === 'org' ? 'org' : 'person',
+          name: `@${handle}`,
+          igHandle: handle,
+          avatarUrl,
+          description: ''
+        });
+        const list = document.getElementById('adminCollabList');
+        if (list) list.innerHTML = collaboratorRowsHtml();
+        avatarFile = null;
+        closeCollabModal();
+      } catch (error) {
+        output.textContent = error.message || 'Could not add collaborator.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  function bindInitiativeForm() {
+    const form = document.getElementById('adminInitiativeForm');
+    if (!form) return;
+    bindDescriptionMentions(form);
+    bindCollabModal();
+    const drop = document.getElementById('adminInitiativeDrop');
+    const dropPreview = document.getElementById('adminInitiativeDropPreview');
+    let selectedFile = null;
+
+    async function applyImageFile(file) {
+      if (!file || !/^image\/(png|jpeg|webp)$/i.test(file.type)) return;
+      selectedFile = file;
+      const previewImage = await readFile(file);
+      if (dropPreview) {
+        dropPreview.src = previewImage;
+        dropPreview.hidden = false;
+      }
+      drop?.classList.add('has-preview');
+    }
+
+    form.image?.addEventListener('change', () => applyImageFile(form.image.files[0]));
+    drop?.addEventListener('dragover', (event) => { event.preventDefault(); drop.classList.add('dragging'); });
+    drop?.addEventListener('dragleave', () => drop.classList.remove('dragging'));
+    drop?.addEventListener('drop', (event) => {
+      event.preventDefault();
+      drop.classList.remove('dragging');
+      applyImageFile(event.dataTransfer.files[0]);
+    });
+
+    document.getElementById('adminAddCollab')?.addEventListener('click', openCollabModal);
+
+    content.querySelector('#adminCollabList')?.addEventListener('click', (event) => {
+      const remove = event.target.closest('[data-remove-collab]');
+      if (!remove) return;
+      initiativeDraft.collaborators.splice(Number(remove.dataset.removeCollab), 1);
+      document.getElementById('adminCollabList').innerHTML = collaboratorRowsHtml();
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const output = form.querySelector('output');
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      output.textContent = 'Saving…';
+      try {
+        const editor = document.getElementById('adminDescEditor');
+        const hidden = document.getElementById('adminDescValue');
+        if (editor && hidden && typeof descriptionFromEditor === 'function') {
+          hidden.value = descriptionFromEditor(editor);
+        }
+        let imageUrl = form.imageUrl.value;
+        if (selectedFile) {
+          const uploaded = await post('/api/uploads', {
+            filename: selectedFile.name,
+            data: await readFile(selectedFile)
+          });
+          imageUrl = uploaded.url;
+        }
+        await post('/api/initiatives', {
+          id: form.id.value || undefined,
+          suggestionId: form.suggestionId.value || undefined,
+          title: form.title.value.trim(),
+          description: form.description.value,
+          paragraph: form.paragraph.value.trim(),
+          imageUrl,
+          linkUrl: form.linkUrl.value.trim(),
+          linkLabel: form.linkLabel.value.trim(),
+          sortOrder: Number(form.sortOrder.value) || 0,
+          published: true,
+          collaborators: initiativeDraft.collaborators.filter((row) => row.igHandle || row.name),
+          photos: []
+        });
+        initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
+        await loadAll();
+        section = 'initiatives';
+        renderInitiatives();
+      } catch (error) {
+        output.textContent = error.message || 'Could not save initiative.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  function renderInitiatives(editId) {
+    const editing = data.initiatives.find((item) => item.id === Number(editId));
+    if (editId == null && !initiativeDraft.suggestionId) {
+      initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
+    }
+    content.innerHTML = initiativeForm(editing || {})
+      + `<div class="admin-list-head"><h3>Initiatives</h3><span>${data.initiatives.length}</span></div>
+         <div class="admin-event-list">${data.initiatives.map((item) => `
+           <article class="admin-event-item admin-event-item-clean">
+             <div><span class="eyebrow">${item.published ? 'Published' : 'Draft'}</span><h3>${esc(item.title)}</h3>
+             <p>${(item.collaborators || []).length} collaborators</p></div>
+             <div class="admin-item-actions">
+               <button class="button button-line" data-edit-initiative="${item.id}">Edit</button>
+               <button class="button button-line" data-delete-initiative="${item.id}">Remove</button>
+             </div>
+           </article>`).join('') || '<p class="admin-empty">No initiatives yet.</p>'}</div>`;
+    bindInitiativeForm();
+  }
+
+  function renderApplications() {
+    const apps = data.applications || data.admin.applications || [];
+    const byArea = {};
+    apps.forEach((app) => {
+      const key = app.preferredArea || 'Other';
+      byArea[key] = (byArea[key] || 0) + 1;
+    });
+    const active = apps.find((app) => String(app.id) === String(activeApplicationId));
+    const detail = active ? `
+      <article class="admin-app-detail">
+        <div class="admin-editor-head">
+          <div>
+            <span class="eyebrow">${esc(active.preferredArea || 'Application')}</span>
+            <h3>${esc(active.name)}</h3>
+            <p>${esc(active.email)} · ${esc(active.year)} · ${esc(fmt(active.created_at))}</p>
+          </div>
+          <button class="button button-line" type="button" data-close-app>Close</button>
+        </div>
+        <div class="admin-app-answers">
+          <div><strong>Preferred area</strong><p>${esc(active.preferredArea)}</p></div>
+          <div><strong>Stay on board after internship?</strong><p>${esc(active.stayOn)}</p></div>
+          <div><strong>Why these positions?</strong><p>${esc(active.interestWhy)}</p></div>
+          <div><strong>How would you contribute?</strong><p>${esc(active.contribution)}</p></div>
+          <div><strong>Goals &amp; skills</strong><p>${esc(active.goals)}</p></div>
+          ${active.questions ? `<div><strong>Questions for the board</strong><p>${esc(active.questions)}</p></div>` : ''}
+        </div>
+      </article>` : '';
+    content.innerHTML = `
+      <div class="admin-stat-grid">
+        ${stat('Total applications', apps.length, 'All submissions')}
+        ${Object.entries(byArea).map(([area, count]) => stat(area, count, 'Preferred area')).join('') || stat('By area', 0, 'No applications yet')}
+      </div>
+      ${detail}
+      <div class="admin-list-head"><h3>Applications</h3><span>${apps.length}</span></div>
+      <div class="admin-event-list">${apps.map((app) => `
+        <article class="admin-event-item admin-event-item-clean ${String(app.id) === String(activeApplicationId) ? 'is-active' : ''}">
+          <div>
+            <span class="eyebrow">${esc(app.preferredArea || 'Application')}</span>
+            <h3>${esc(app.name)}</h3>
+            <p>${esc(app.email)} · ${esc(app.year)} · ${esc(fmt(app.created_at))}</p>
+          </div>
+          <div class="admin-item-actions">
+            <button class="button button-line" data-open-app="${app.id}">View</button>
+          </div>
+        </article>`).join('') || '<p class="admin-empty">No internship applications yet.</p>'}
+      </div>`;
+  }
+
   function render() {
     const labels = {
       overview: 'Overview',
       events: 'Events',
+      initiatives: 'Initiatives',
+      applications: 'Applications',
       gallery: 'Gallery',
       photoshoots: 'Photoshoots',
       timeline: 'Timeline',
@@ -1039,6 +1398,8 @@
     });
     if (section === 'overview') renderOverview();
     else if (section === 'events') renderEvents();
+    else if (section === 'initiatives') renderInitiatives();
+    else if (section === 'applications') renderApplications();
     else if (section === 'gallery') renderGallery();
     else if (section === 'photoshoots') renderPhotoshoots();
     else if (section === 'timeline') renderTimeline();
@@ -1069,9 +1430,36 @@
   content.addEventListener('click', async (event) => {
     const go = event.target.closest('[data-go]');
     if (go) { section = go.dataset.go; render(); return; }
+    const openApp = event.target.closest('[data-open-app]');
+    if (openApp) {
+      activeApplicationId = openApp.dataset.openApp;
+      section = 'applications';
+      render();
+      return;
+    }
+    if (event.target.closest('[data-close-app]')) {
+      activeApplicationId = null;
+      section = 'applications';
+      render();
+      return;
+    }
     const edit = event.target.closest('[data-edit-event]');
     if (edit) { renderEvents(edit.dataset.editEvent); return; }
     if (event.target.closest('[data-new-event]')) { renderEvents(); return; }
+    const editInitiative = event.target.closest('[data-edit-initiative]');
+    if (editInitiative) { renderInitiatives(editInitiative.dataset.editInitiative); return; }
+    if (event.target.closest('[data-new-initiative]')) {
+      initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
+      renderInitiatives();
+      return;
+    }
+    const deleteInitiative = event.target.closest('[data-delete-initiative]');
+    if (deleteInitiative) {
+      if (!(await askConfirm({ title: 'Remove this initiative?', copy: 'This permanently deletes the initiative, collaborators, and photos.', confirmLabel: 'Yes, remove' }))) return;
+      await post(`/api/initiatives/${deleteInitiative.dataset.deleteInitiative}/delete`);
+      await loadAll(); section = 'initiatives'; render();
+      return;
+    }
     const editTl = event.target.closest('[data-edit-timeline]');
     if (editTl) { renderTimeline(editTl.dataset.editTimeline); return; }
     if (event.target.closest('[data-new-timeline]')) { renderTimeline(); return; }
