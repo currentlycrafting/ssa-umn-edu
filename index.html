@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="index.css?v=53" />
-  <link rel="stylesheet" href="site-pages.css?v=45" />
+  <link rel="stylesheet" href="site-pages.css?v=52" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -55,7 +55,7 @@
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
     <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Upcoming</span></a>
-    <a href="#initiatives" data-section="initiatives"><span class="dot" aria-hidden="true"></span><span class="side-label">Initiatives</span></a>
+    <a href="#timeline" data-section="timeline"><span class="dot" aria-hidden="true"></span><span class="side-label">Timeline</span></a>
     <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">By the numbers</span></a>
   </nav>
 
@@ -76,7 +76,7 @@
         <p>Culture, community, and leadership for Somali students at the University of Minnesota.</p>
         <p class="hero-listen">Ready to join the board? Apply for the SSA Internship.</p>
         <div class="hero-actions hero-actions-song">
-          <a class="button button-dark handdrawn hero-song-btn" href="/interns">Apply for Internship</a>
+          <button class="button button-dark handdrawn hero-song-btn" type="button" data-open-intern-apply>Apply for Internship</button>
         </div>
         <p class="hero-song-note">Deadline November 27th at 11:59 PM.</p>
         <div class="hero-meter year-montage" aria-label="SSA since 1998">
@@ -97,7 +97,7 @@
       <div class="section-head" id="featuredSectionHead">
         <span class="eyebrow">Upcoming</span>
         <h2>What&apos;s happening next</h2>
-        <p>Next event, fresh ideas, the latest newsletter, and a peek at the album — all in one place.</p>
+        <p>Next event, fresh ideas, recent timeline news, and a peek at the album.</p>
       </div>
 
       <div class="home-upcoming-grid">
@@ -113,12 +113,12 @@
           </div>
         </article>
 
-        <article class="home-upcoming-cell home-upcoming-newsletter" id="homeNewsletterSnap" aria-live="polite">
+        <article class="home-upcoming-cell home-upcoming-timeline" id="homeTimelineSnap" aria-live="polite">
           <div class="home-upcoming-cell-head">
-            <span class="eyebrow">Newsletter</span>
-            <a href="/newsletter">Read →</a>
+            <span class="eyebrow">Timeline</span>
+            <a href="#timeline">More →</a>
           </div>
-          <p class="home-newsletter-empty">Loading edition…</p>
+          <div id="homeTimelinePreview"><p class="home-newsletter-empty">Loading news…</p></div>
         </article>
 
         <article class="home-upcoming-cell home-upcoming-album">
@@ -134,13 +134,11 @@
 
       <nav class="home-upcoming-actions" aria-label="Explore SSA">
         <a class="button button-dark handdrawn" href="/events">Events</a>
-        <a class="button button-dark handdrawn" href="/interns">Internship</a>
-        <a class="button button-dark handdrawn" href="/suggest">Suggest an Event</a>
+        <button class="button button-dark handdrawn" type="button" data-open-intern-apply>Internship</button>
+        <a class="button button-dark handdrawn" href="/suggest">Suggest an idea</a>
         <a class="button button-dark handdrawn" href="/gallery">Photo Album</a>
-        <a class="button button-dark handdrawn" href="/newsletter">Newsletter</a>
         <a class="button button-dark handdrawn" href="/aux">Want the Aux</a>
-        <a class="button button-line handdrawn" href="/initiatives">Initiatives</a>
-        <button class="button button-line handdrawn" type="button" id="homeNewsletterOpen">Subscribe</button>
+        <a class="button button-line handdrawn" href="/events?view=initiatives">Initiatives</a>
         <button class="button button-line handdrawn" type="button" data-open-outreach>Other ways to reach us</button>
       </nav>
     </section>
@@ -151,34 +149,20 @@
         <h2>Join the SSA Internship</h2>
         <p>Deadline November 27th at 11:59 PM — <strong data-app-count="total">—</strong> people have applied.</p>
         <div class="ssa-promo-actions">
-          <a class="button button-dark handdrawn" href="/interns#apply">Apply now</a>
-          <a class="button button-line handdrawn" href="/interns">Learn more</a>
+          <button class="button button-dark handdrawn" type="button" data-open-intern-apply>Apply now</button>
+          <a class="button button-line handdrawn" href="/events">See what&apos;s happening</a>
         </div>
       </aside>
     </section>
 
-    <section class="section" id="initiatives">
+    <section class="section" id="timeline" data-reveal>
       <div class="section-head">
-        <span class="eyebrow">Community</span>
-        <h2>Initiatives &amp; impact</h2>
-        <p>Longer projects and collaborations — plus answers to ideas you suggested.</p>
+        <span class="eyebrow">SSA news</span>
+        <h2>Latest on the timeline</h2>
+        <p>Recent moments, photos, and updates from the board.</p>
       </div>
-      <div class="home-initiatives" id="homeInitiatives">
-        <a class="home-initiative-card" href="/initiatives">
-          <span class="eyebrow">Browse</span>
-          <h3>See all initiatives</h3>
-          <p>Collaborators, photos, and “you asked, we listened” answers.</p>
-        </a>
-        <a class="home-initiative-card" href="/suggest">
-          <span class="eyebrow">Ideas</span>
-          <h3>Suggest something</h3>
-          <p>Tell the board what SSA should try next.</p>
-        </a>
-        <a class="home-initiative-card" href="/interns">
-          <span class="eyebrow">Internship</span>
-          <h3>Join the board</h3>
-          <p>Apply for the rotational internship before Nov 27.</p>
-        </a>
+      <div class="home-timeline-board" id="homeTimelineBoard" aria-live="polite">
+        <p class="tl-empty">Loading timeline…</p>
       </div>
     </section>
 
@@ -285,8 +269,8 @@
         <a href="index.html#demo">About Us</a>
         <a href="/gallery">Gallery</a>
         <a href="/suggest">Suggest</a>
-        <a href="/newsletter">Newsletter</a>
-        <a href="/bulletin">Bulletin</a>
+        <a href="/suggest">Suggest</a>
+        <a href="#timeline">Timeline</a>
         <a href="/board">Board</a>
       </nav>
       <div class="social-row">
@@ -368,41 +352,85 @@
     </div>
   </div>
 
-  <div class="modal-backdrop newsletter-takeover" id="newsletterModal" aria-hidden="true">
-    <div class="newsletter-sheet modal-sheet modal-card" role="dialog" aria-modal="true" aria-labelledby="nlTitle">
-      <svg class="doodle nl-doodle-1" viewBox="0 0 60 60" aria-hidden="true"><polygon points="30,4 37,22 56,22 41,34 47,54 30,42 13,54 19,34 4,22 23,22" /></svg>
-      <svg class="doodle nl-doodle-2" viewBox="0 0 60 60" aria-hidden="true"><path d="M25 6 L30 20 L44 20 L33 29 L37 44 L25 35 L13 44 L17 29 L6 20 L20 20 Z" /></svg>
-      <div class="newsletter-modal-count" aria-live="polite">
-        <span class="nl-count-number" data-newsletter-count>—</span>
-        <span class="nl-count-label">students subscribed</span>
+  <div class="modal-backdrop" id="internApplyModal" aria-hidden="true">
+    <div class="intern-apply-sheet modal-sheet modal-card" role="dialog" aria-modal="true" aria-labelledby="internApplyTitle">
+      <button class="modal-exit" type="button" id="internApplyClose" aria-label="Close"><svg viewBox="0 0 44 44" aria-hidden="true"><path class="modal-exit-path" d="M22 6 C33 5 38 15 38 22 C38 33 29 38 22 38 C11 38 6 29 6 22 C6 11 14 6 22 6 Z"/><path class="modal-exit-x" d="M16.5 16.5 L27.5 27.5 M27.5 16.5 L16.5 27.5"/></svg></button>
+      <span class="eyebrow">Application · <span id="internStepLabel">1 / 4</span></span>
+      <h2 id="internApplyTitle">Apply for the internship</h2>
+      <div class="intern-step-dots" aria-hidden="true">
+        <span class="is-active" data-dot="1"></span><span data-dot="2"></span><span data-dot="3"></span><span data-dot="4"></span>
       </div>
-      <span class="eyebrow">Stay in the loop</span>
-      <h2 id="nlTitle">Join the SSA newsletter</h2>
-      <p id="nlLead">Drop your email for events, announcements, and Somali Night updates.</p>
-      <div class="newsletter-polaroids" id="newsletterPolaroids" aria-hidden="true"></div>
-      <p class="newsletter-subscribed-msg" id="newsletterSubscribedMsg" hidden>You&apos;re already on the list. Thanks for being part of SSA.</p>
-      <form id="newsletterModalForm">
-        <input type="email" name="email" placeholder="your@email.com" required />
-        <button class="button button-dark handdrawn shimmer" type="submit">Subscribe</button>
-        <output></output>
+      <form id="internForm" class="intern-apply-form" novalidate>
+        <section class="intern-step is-active" data-step="1">
+          <label><span>UMN email</span><input type="email" name="email" placeholder="x500@umn.edu" required autocomplete="email" /></label>
+          <label><span>Full name</span><input type="text" name="name" placeholder="First and last" maxlength="120" required autocomplete="name" /></label>
+          <fieldset class="intern-check-set">
+            <legend>Year in school <small>Pick exactly one</small></legend>
+            <div class="intern-year-grid">
+              <label class="intern-year-card"><input type="checkbox" name="year" value="Freshman" /><span class="intern-year-num">01</span><span class="intern-year-label">Freshman</span></label>
+              <label class="intern-year-card"><input type="checkbox" name="year" value="Sophomore" /><span class="intern-year-num">02</span><span class="intern-year-label">Sophomore</span></label>
+              <label class="intern-year-card"><input type="checkbox" name="year" value="Junior" /><span class="intern-year-num">03</span><span class="intern-year-label">Junior</span></label>
+              <label class="intern-year-card"><input type="checkbox" name="year" value="Senior" /><span class="intern-year-num">04</span><span class="intern-year-label">Senior</span></label>
+            </div>
+          </fieldset>
+        </section>
+        <section class="intern-step" data-step="2" hidden>
+          <fieldset class="intern-check-set">
+            <legend>Most excited rotational areas <small>Pick exactly two</small></legend>
+            <div class="intern-check-grid intern-check-grid-roles">
+              <label class="intern-check"><input type="checkbox" name="preferredArea" value="Executive" /><span>Executive</span></label>
+              <label class="intern-check"><input type="checkbox" name="preferredArea" value="Finance &amp; Grants" /><span>Finance &amp; Grants</span></label>
+              <label class="intern-check"><input type="checkbox" name="preferredArea" value="Social Media &amp; Marketing" /><span>Social Media &amp; Marketing</span></label>
+              <label class="intern-check"><input type="checkbox" name="preferredArea" value="Event Planning &amp; Logistics" /><span>Event Planning &amp; Logistics</span></label>
+              <label class="intern-check"><input type="checkbox" name="preferredArea" value="Community Outreach" /><span>Community Outreach</span></label>
+            </div>
+          </fieldset>
+          <label><span>Why these positions? (first + second choice)</span>
+            <textarea name="interestWhy" rows="5" maxlength="2000" required placeholder="Tell us about your first and second choice…"></textarea>
+          </label>
+        </section>
+        <section class="intern-step" data-step="3" hidden>
+          <label><span>How will you actively contribute beyond meetings and events?</span>
+            <textarea name="contribution" rows="5" maxlength="2000" required placeholder="On and off campus…"></textarea>
+          </label>
+          <label><span>Goals, ideas, and skills you hope to gain</span>
+            <textarea name="goals" rows="5" maxlength="2000" required placeholder="What do you want to learn and contribute?"></textarea>
+          </label>
+        </section>
+        <section class="intern-step" data-step="4" hidden>
+          <fieldset class="intern-check-set">
+            <legend>Planning to stay on the board after the internship? <small>Pick exactly one</small></legend>
+            <div class="intern-check-grid">
+              <label class="intern-check"><input type="checkbox" name="stayOn" value="Yes" /><span>Yes</span></label>
+              <label class="intern-check"><input type="checkbox" name="stayOn" value="No" /><span>No</span></label>
+            </div>
+          </fieldset>
+          <label><span>Questions for us? <em>(Optional)</em></span>
+            <textarea name="questions" rows="4" maxlength="1200" placeholder="Ask anything about the board or role…"></textarea>
+          </label>
+          <p class="intern-step-note"><strong data-app-count="total">—</strong> people have already applied. Deadline Nov 27 · 11:59 PM.</p>
+        </section>
+        <div class="intern-apply-nav">
+          <button class="button button-line intern-arrow" type="button" id="internPrev" hidden aria-label="Previous step">←</button>
+          <button class="button button-dark intern-arrow" type="button" id="internNext" aria-label="Next step">→</button>
+          <button class="button button-dark" type="submit" id="internSubmit" hidden>Submit application</button>
+        </div>
+        <output id="internOut" aria-live="polite"></output>
       </form>
-      <button class="nl-skip" id="newsletterSkip" type="button">Maybe later</button>
     </div>
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=22"></script>
+  <script src="nav.js?v=23"></script>
   <script src="micro.js?v=2"></script>
-  <script src="newsletter.js"></script>
-  <script src="/events-render.js?v=31"></script>
+  <script src="/events-render.js?v=32"></script>
   <script src="/rsvp.js?v=7"></script>
-  <script src="index.js?v=23"></script>
+  <script src="index.js?v=24"></script>
+  <script src="/timeline.js?v=2"></script>
+  <script src="/interns.js?v=7"></script>
   <script src="/outreach.js?v=4"></script>
   <script src="/whats-new.js?v=8"></script>
   <script>
-    document.getElementById('homeNewsletterOpen')?.addEventListener('click', () => {
-      window.openNewsletterModal?.(true);
-    });
     (function () {
       const api = window.ssaFetch?.json;
       if (!api) return;

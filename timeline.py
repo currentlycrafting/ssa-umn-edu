@@ -36,6 +36,7 @@ def _row_json(row):
         "title": row["title"],
         "heldAt": row["held_at"] or "",
         "copy": row["body"] or "",
+        "imageUrl": row.get("image_url") or "",
         "linkUrl": row["link_url"] or "",
         "linkLabel": row["link_label"] or "View the fun",
         "deco": row["deco"] or "none",
@@ -65,6 +66,9 @@ def init_tables():
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )
             """
+        )
+        cur.execute(
+            "ALTER TABLE timeline_events ADD COLUMN IF NOT EXISTS image_url TEXT NOT NULL DEFAULT ''"
         )
         cur.execute(
             "CREATE INDEX IF NOT EXISTS timeline_events_order_idx "
@@ -146,13 +150,14 @@ def init_tables():
                 )
 
 
-def list_public():
+def list_public(newest_first=False):
+    order = "DESC" if newest_first else "ASC"
     with db() as cur:
         cur.execute(
-            """
+            f"""
             SELECT * FROM timeline_events
             WHERE published = TRUE
-            ORDER BY event_date ASC, sort_order ASC, id ASC
+            ORDER BY event_date {order}, sort_order {order}, id {order}
             """
         )
         rows = cur.fetchall()
@@ -189,6 +194,11 @@ def save_event(payload):
         return 400, {"error": "Add a title."}
     held_at = str(payload.get("heldAt", "")).strip()[:160]
     body = str(payload.get("copy", payload.get("body", ""))).strip()[:2000]
+    image_url = str(payload.get("imageUrl", "")).strip()[:500]
+    if image_url and not (
+        image_url.startswith("/assets/") or image_url.startswith("/api/uploads/")
+    ):
+        return 400, {"error": "Use an uploaded image or a site asset."}
     link_url = str(payload.get("linkUrl", "")).strip()[:500]
     if link_url and not URL_RE.match(link_url):
         return 400, {"error": "Link must start with http:// or https://."}
@@ -205,13 +215,13 @@ def save_event(payload):
                 """
                 UPDATE timeline_events SET
                     event_date = %s, date_label = %s, pill = %s, title = %s,
-                    held_at = %s, body = %s, link_url = %s, link_label = %s,
+                    held_at = %s, body = %s, image_url = %s, link_url = %s, link_label = %s,
                     deco = %s, sort_order = %s, published = %s
                 WHERE id = %s
                 RETURNING *
                 """,
                 (
-                    event_date, date_label, pill, title, held_at, body,
+                    event_date, date_label, pill, title, held_at, body, image_url,
                     link_url, link_label, deco, sort_order, published, int(event_id),
                 ),
             )
@@ -222,13 +232,13 @@ def save_event(payload):
             cur.execute(
                 """
                 INSERT INTO timeline_events
-                    (event_date, date_label, pill, title, held_at, body,
+                    (event_date, date_label, pill, title, held_at, body, image_url,
                      link_url, link_label, deco, sort_order, published, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING *
                 """,
                 (
-                    event_date, date_label, pill, title, held_at, body,
+                    event_date, date_label, pill, title, held_at, body, image_url,
                     link_url, link_label, deco, sort_order, published, utcnow(),
                 ),
             )

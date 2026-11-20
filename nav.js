@@ -22,31 +22,21 @@
   const nav = document.querySelector('.nav');
   const links = document.getElementById('navLinks');
   const path = window.location.pathname.replace(/\/$/, '') || '/index.html';
-  const isStudio = path === '/newsletter/studio' || path.endsWith('/newsletter-studio.html');
   if (nav && links) {
-    if (isStudio) {
-      links.innerHTML = `<a class="nav-back" href="/newsletter">← Back to newsletter</a>`;
-    } else {
+    {
       links.innerHTML = `
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
-        <a href="/initiatives">Initiatives</a>
         <a href="/gallery">Gallery</a>
         <a href="/board">Board</a>
-        <a href="/interns">Interns</a>
-        <a href="/timeline">Timeline</a>
         <div class="nav-options">
           <button class="nav-options-toggle" type="button" aria-label="More pages" aria-expanded="false" aria-controls="navOptionsMenu">
             <span class="nav-options-icon" aria-hidden="true"></span>
           </button>
           <div class="nav-options-menu" id="navOptionsMenu">
-            <a href="/suggest">Suggest an Event</a>
-            <a href="/bulletin">Bulletin</a>
-            <a href="/newsletter">Newsletter</a>
+            <a href="/suggest">Suggest an idea</a>
             <a href="/aux">Want The Aux</a>
-            <a href="/games">Arcade</a>
             <a href="/donate">Donate</a>
-            <a href="/schedule">Schedule a meeting</a>
           </div>
         </div>`;
     }
@@ -139,31 +129,24 @@
     const normalized = href.replace(/\/$/, '');
   if (path === normalized
       || (path.endsWith('index.html') && normalized === '/index.html')
-      || (path === '/timeline' && (normalized === '/timeline' || normalized === '/timeline.html'))) {
+      || (path === '/events' && normalized === '/events')) {
       a.classList.add('active');
     }
   });
-  if (['/daily', '/connections', '/games', '/donate', '/schedule', '/suggest', '/bulletin', '/newsletter'].includes(path)
-    || path.endsWith('/newsletter-page.html')
-    || path === '/newsletter/studio'
-    || path.endsWith('/newsletter-studio.html')) {
+  if (['/donate', '/suggest', '/aux'].includes(path)) {
     optionsToggle?.classList.add('active');
   }
   if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
 
-  if (!document.body.classList.contains('interns-page')) {
+  {
     const footerHtml = `
       <footer class="footer">
         <div class="footer-card">
           <a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a>
           <nav aria-label="Footer">
             <a href="/events">Events</a>
-            <a href="/initiatives">Initiatives</a>
-            <a href="/newsletter">Newsletter</a>
             <a href="/gallery">Gallery</a>
-            <a href="/interns">Interns</a>
-            <a href="/bulletin">Bulletin</a>
-            <a href="/timeline">Timeline</a>
+            <a href="/suggest">Suggest</a>
             <a href="/aux">Want The Aux</a>
             <a href="/donate">Donate</a>
             <a href="/board">Meet the Board</a>

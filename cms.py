@@ -260,6 +260,9 @@ def get_newsletter_image(image_id):
 
 def _event_json(row):
     event_id = row["id"]
+    kind = str(row.get("event_kind") or "event").strip().lower()
+    if kind not in ("event", "form"):
+        kind = "event"
     return {
         "id": event_id,
         "rsvpKey": row["rsvp_key"],
@@ -272,6 +275,8 @@ def _event_json(row):
         "startsAt": _iso(row["starts_at"]) if row["starts_at"] else "",
         "imageUrl": row["image_url"] or "",
         "attendanceMode": row.get("attendance_mode") or "rsvp",
+        "eventKind": kind,
+        "formUrl": row.get("form_url") or "",
         "featured": bool(row["featured"]),
         "showCountdown": bool(row.get("show_countdown")),
         "sortOrder": int(row["sort_order"]),
@@ -301,20 +306,47 @@ def _annotate_events(events, public_only=False):
     for event in events:
         starts = _parse_starts_at(event.get("startsAt"))
         event = dict(event)
-        event["showCountdown"] = True
+        kind = str(event.get("eventKind") or "event").strip().lower()
+        if kind not in ("event", "form"):
+            kind = "event"
+        event["eventKind"] = kind
+        event["showCountdown"] = kind == "event"
         event["_starts"] = starts
         past = bool(starts and starts <= now)
         event["past"] = past
         if public_only:
-            if not starts:
-                continue
-            if past and starts < past_cutoff:
-                continue
+            if kind == "form":
+                # Featured forms stay visible; others need a date in window.
+                if not event.get("featured") and not starts:
+                    continue
+                if past and starts and starts < past_cutoff and not event.get("featured"):
+                    continue
+            else:
+                if not starts:
+                    continue
+                if past and starts < past_cutoff:
+                    continue
         annotated.append(event)
-    upcoming = [e for e in annotated if not e.get("past")]
-    past_events = [e for e in annotated if e.get("past")]
-    upcoming.sort(
+
+    regular_upcoming = [
+        e for e in annotated
+        if e.get("eventKind") != "form" and not e.get("past")
+    ]
+    form_items = [e for e in annotated if e.get("eventKind") == "form"]
+    past_events = [
+        e for e in annotated
+        if e.get("eventKind") != "form" and e.get("past")
+    ]
+    regular_upcoming.sort(
         key=lambda event: (
+            event["_starts"] is None,
+            event["_starts"] or datetime.max.replace(tzinfo=timezone.utc),
+            event.get("sortOrder", 0),
+        )
+    )
+    form_items.sort(
+        key=lambda event: (
+            not event.get("featured"),
             event["_starts"] is None,
             event["_starts"] or datetime.max.replace(tzinfo=timezone.utc),
             event.get("sortOrder", 0),
@@ -324,12 +356,33 @@ def _annotate_events(events, public_only=False):
         key=lambda event: event["_starts"] or datetime.min.replace(tzinfo=timezone.utc),
         reverse=True,
     )
-    annotated = upcoming + past_events
-    next_id = upcoming[0]["id"] if upcoming else None
-    for event in annotated:
-        event["featured"] = event.get("id") == next_id and next_id is not None
+
+    primary = regular_upcoming[0] if regular_upcoming else None
+    featured_form = next((e for e in form_items if e.get("featured")), None)
+    # Primary featured = next regular event, else the featured form.
+    # Featured form is secondary when a regular event owns the primary slot.
+    primary_id = primary["id"] if primary else (featured_form["id"] if featured_form else None)
+    secondary_id = (
+        featured_form["id"]
+        if featured_form and primary and featured_form["id"] != primary_id
+        else None
+    )
+
+    ordered = []
+    seen = set()
+    for event in ([primary] if primary else []) + ([featured_form] if featured_form and featured_form is not primary else []) + regular_upcoming[1:] + [
+        e for e in form_items if e is not featured_form
+    ] + past_events:
+        if not event or event["id"] in seen:
+            continue
+        seen.add(event["id"])
+        ordered.append(event)
+
+    for event in ordered:
+        event["featured"] = event.get("id") == primary_id and primary_id is not None
+        event["featuredSecondary"] = event.get("id") == secondary_id and secondary_id is not None
         event.pop("_starts", None)
-    return annotated
+    return ordered
 
 
 def list_events(include_unpublished=False):
@@ -416,27 +469,42 @@ def save_event(payload):
     description = str(payload.get("description", "")).strip()[:1200]
     location = str(payload.get("location", "")).strip()[:200]
     image_url = str(payload.get("imageUrl", "")).strip()[:500]
+    event_kind = str(payload.get("eventKind", "event")).strip().lower()
+    if event_kind not in ("event", "form"):
+        return 400, {"error": "Choose event or form."}
+    form_url = str(payload.get("formUrl", "")).strip()[:500]
     attendance_mode = str(payload.get("attendanceMode", "rsvp")).strip().lower()
-    if attendance_mode not in ("rsvp", "quick"):
+    if event_kind == "event" and attendance_mode not in ("rsvp", "quick"):
         return 400, {"error": "Choose RSVP form or quick Yes/No."}
+    if event_kind == "form":
+        attendance_mode = "rsvp"
+        if not form_url or not re.match(r"^https?://", form_url, re.I):
+            return 400, {"error": "Add a valid form link (http/https)."}
     published = payload.get("published") is not False
     try:
         sort_order = int(payload.get("sortOrder", 0))
     except (TypeError, ValueError):
         sort_order = 0
     starts = _parse_starts_at(payload.get("startsAt"))
-    if not starts:
+    if event_kind == "event" and not starts:
         return 400, {"error": "Set a date and start time."}
-    starts_at = starts.isoformat()
-    local = starts.astimezone(DISPLAY_TZ)
-    start_time = local.strftime("%H:%M")
-    date_label = local.strftime("%B %d, %Y · %I:%M %p").replace(" 0", " ")
-    short_date = local.strftime("%b %d").replace(" 0", " ")
-    if location:
-        date_label = f"{local.strftime('%B %d').replace(' 0', ' ')} - {location}"
+    if starts:
+        starts_at = starts.isoformat()
+        local = starts.astimezone(DISPLAY_TZ)
+        start_time = local.strftime("%H:%M")
+        date_label = local.strftime("%B %d, %Y · %I:%M %p").replace(" 0", " ")
         short_date = local.strftime("%b %d").replace(" 0", " ")
-    show_countdown = True
-    featured = False
+        if location:
+            date_label = f"{local.strftime('%B %d').replace(' 0', ' ')} - {location}"
+            short_date = local.strftime("%b %d").replace(" 0", " ")
+    else:
+        starts_at = None
+        start_time = ""
+        date_label = "Open form"
+        short_date = "Form"
+    show_countdown = event_kind == "event"
+    # Regular events are auto-featured by date; forms use the admin featured flag.
+    featured = bool(payload.get("featured")) if event_kind == "form" else False
     if not rsvp_key:
         rsvp_key = title
     if not title or not description:
@@ -457,14 +525,14 @@ def save_event(payload):
                 """
                 UPDATE events SET rsvp_key=%s, title=%s, description=%s, location=%s,
                     date_label=%s, short_date=%s, start_time=%s, starts_at=%s, image_url=%s,
-                    attendance_mode=%s, featured=%s, show_countdown=%s,
+                    attendance_mode=%s, event_kind=%s, form_url=%s, featured=%s, show_countdown=%s,
                     sort_order=%s, published=%s, updated_at=%s
                 WHERE id=%s
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, attendance_mode,
+                    start_time, starts_at, image_url, attendance_mode, event_kind, form_url,
                     featured, show_countdown, sort_order, published, utcnow(),
                     int(event_id),
                 ),
@@ -474,18 +542,21 @@ def save_event(payload):
                 """
                 INSERT INTO events
                     (rsvp_key, title, description, location, date_label, short_date,
-                     start_time, starts_at, image_url, attendance_mode,
+                     start_time, starts_at, image_url, attendance_mode, event_kind, form_url,
                      featured, show_countdown, sort_order, published, created_at)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 RETURNING *
                 """,
                 (
                     rsvp_key, title, description, location, date_label, short_date,
-                    start_time, starts_at, image_url, attendance_mode,
+                    start_time, starts_at, image_url, attendance_mode, event_kind, form_url,
                     featured, show_countdown, sort_order, published, utcnow(),
                 ),
             )
         row = cur.fetchone()
+        suggestion_id = payload.get("suggestionId")
+        if suggestion_id and row:
+            link_suggestion_to_event(int(suggestion_id), int(row["id"]), title)
     if not row:
         return 404, {"error": "Event not found."}
     return 200, {"ok": True, "event": _annotate_events([_event_json(row)])[0]}
@@ -681,10 +752,29 @@ def list_event_suggestions():
             "answeredAt": _iso(r["answered_at"]) if r.get("answered_at") else "",
             "showOnInitiatives": bool(r.get("show_on_initiatives")),
             "answeredInitiativeId": r.get("answered_initiative_id"),
+            "answeredEventId": r.get("answered_event_id"),
             "created_at": _iso(r["created_at"]),
         }
         for r in rows
     ]
+
+
+def link_suggestion_to_event(suggestion_id, event_id, event_title=""):
+    with db() as cur:
+        cur.execute("SELECT id FROM event_suggestions WHERE id = %s", (int(suggestion_id),))
+        if not cur.fetchone():
+            return
+        answer = f"Resolved — this idea became an SSA event: {event_title or 'SSA event'}."
+        cur.execute(
+            """
+            UPDATE event_suggestions
+            SET admin_answer = %s,
+                answered_at = %s,
+                answered_event_id = %s
+            WHERE id = %s
+            """,
+            (answer, utcnow(), int(event_id), int(suggestion_id)),
+        )
 
 
 def link_suggestion_to_initiative(suggestion_id, initiative_id, initiative_title=""):
@@ -712,14 +802,16 @@ def list_answered_suggestions_public():
         cur.execute(
             """
             SELECT s.id, s.name, s.description, s.admin_answer, s.answered_at, s.votes,
-                   s.created_at, s.answered_initiative_id, i.title AS initiative_title, i.slug
+                   s.created_at, s.answered_initiative_id, s.answered_event_id,
+                   i.title AS initiative_title, i.slug,
+                   e.title AS event_title
             FROM event_suggestions s
             LEFT JOIN initiatives i ON i.id = s.answered_initiative_id AND i.published = TRUE
-            WHERE s.show_on_initiatives = TRUE
-              AND (
-                s.answered_initiative_id IS NOT NULL
+            LEFT JOIN events e ON e.id = s.answered_event_id AND e.published = TRUE
+            WHERE
+                s.answered_event_id IS NOT NULL
+                OR s.show_on_initiatives = TRUE
                 OR (s.admin_answer IS NOT NULL AND TRIM(s.admin_answer) <> '')
-              )
             ORDER BY s.answered_at DESC NULLS LAST, s.created_at DESC
             LIMIT 100
             """
@@ -736,6 +828,8 @@ def list_answered_suggestions_public():
             "initiativeId": r.get("answered_initiative_id"),
             "initiativeTitle": r.get("initiative_title") or "",
             "initiativeSlug": r.get("slug") or "",
+            "eventId": r.get("answered_event_id"),
+            "eventTitle": r.get("event_title") or "",
             "created_at": _iso(r["created_at"]),
         }
         for r in rows
@@ -747,9 +841,12 @@ def list_event_suggestions_public():
     with db() as cur:
         cur.execute(
             """
-            SELECT id, name, type, description, audience, preferred_date, votes, created_at
-            FROM event_suggestions
-            ORDER BY COALESCE(votes, 0) DESC, created_at DESC
+            SELECT s.id, s.name, s.type, s.description, s.audience, s.preferred_date, s.votes,
+                   s.created_at, s.admin_answer, s.answered_at, s.answered_event_id,
+                   e.title AS event_title, e.rsvp_key AS event_key
+            FROM event_suggestions s
+            LEFT JOIN events e ON e.id = s.answered_event_id AND e.published = TRUE
+            ORDER BY COALESCE(s.votes, 0) DESC, s.created_at DESC
             LIMIT 200
             """
         )
@@ -764,6 +861,11 @@ def list_event_suggestions_public():
             "preferred_date": r["preferred_date"] or "",
             "votes": int(r.get("votes") or 0),
             "created_at": _iso(r["created_at"]),
+            "resolved": bool(r.get("answered_event_id") or r.get("admin_answer")),
+            "answeredEventId": r.get("answered_event_id"),
+            "eventTitle": r.get("event_title") or "",
+            "eventKey": r.get("event_key") or "",
+            "answer": r.get("admin_answer") or "",
         }
         for r in rows
     ]
@@ -1636,8 +1738,17 @@ def init_tables():
         cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS start_time TEXT NOT NULL DEFAULT ''")
         cur.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS attendance_mode TEXT NOT NULL DEFAULT 'rsvp'")
         cur.execute(
+            "ALTER TABLE events ADD COLUMN IF NOT EXISTS event_kind TEXT NOT NULL DEFAULT 'event'"
+        )
+        cur.execute(
+            "ALTER TABLE events ADD COLUMN IF NOT EXISTS form_url TEXT NOT NULL DEFAULT ''"
+        )
+        cur.execute(
             "ALTER TABLE events ADD COLUMN IF NOT EXISTS show_countdown "
             "BOOLEAN NOT NULL DEFAULT FALSE"
+        )
+        cur.execute(
+            "ALTER TABLE event_suggestions ADD COLUMN IF NOT EXISTS answered_event_id INTEGER"
         )
         cur.execute(
             "ALTER TABLE events ADD COLUMN IF NOT EXISTS instagram_tags "

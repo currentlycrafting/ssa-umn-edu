@@ -209,18 +209,27 @@
         return;
       }
       const voted = votedSet();
-      list.innerHTML = items.slice(0, 12).map((item) => `
-        <article class="suggest-vote-card">
-          <div>
-            <span class="eyebrow">${item.type === 'community' ? 'Community' : 'Campus'}</span>
-            <h3>${escapeHtml(item.name)}</h3>
-            <p>${escapeHtml(item.description)}</p>
-          </div>
-          <button type="button" class="button button-line suggest-vote-btn" data-vote-id="${item.id}" ${voted.has(String(item.id)) ? 'disabled' : ''}>
-            <strong data-vote-count="${item.id}">${item.votes || 0}</strong>
-            <span>${voted.has(String(item.id)) ? 'Voted' : 'Vote'}</span>
-          </button>
-        </article>`).join('');
+      list.innerHTML = items.slice(0, 12).map((item) => {
+        const resolved = Boolean(item.resolved && item.answeredEventId);
+        const href = resolved ? `/events#event-${item.answeredEventId}` : '';
+        const body = resolved
+          ? `<a class="suggest-resolved-link" href="${href}">
+              <span class="eyebrow">Resolved</span>
+              <h3>${escapeHtml(item.description || item.name)}</h3>
+              <p>${escapeHtml(item.eventTitle ? `Now an event: ${item.eventTitle}` : (item.answer || 'This idea became an SSA event.'))}</p>
+              <span class="suggest-resolved-cta">View event →</span>
+            </a>`
+          : `<div>
+              <span class="eyebrow">${item.type === 'community' ? 'Community' : 'Campus'}</span>
+              <h3>${escapeHtml(item.name)}</h3>
+              <p>${escapeHtml(item.description)}</p>
+            </div>
+            <button type="button" class="button button-line suggest-vote-btn" data-vote-id="${item.id}" ${voted.has(String(item.id)) ? 'disabled' : ''}>
+              <strong data-vote-count="${item.id}">${item.votes || 0}</strong>
+              <span>${voted.has(String(item.id)) ? 'Voted' : 'Vote'}</span>
+            </button>`;
+        return `<article class="suggest-vote-card${resolved ? ' is-resolved' : ''}">${body}</article>`;
+      }).join('');
     } catch (_) {
       list.innerHTML = '<p class="admin-empty">Ideas will show here once they load.</p>';
     }

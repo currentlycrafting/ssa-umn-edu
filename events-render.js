@@ -118,20 +118,68 @@
     return new Date(event.startsAt).getTime() <= Date.now();
   }
 
+  function isFormEvent(event) {
+    return String(event?.eventKind || 'event').toLowerCase() === 'form';
+  }
+
+  function hasServerFeaturedFlags(events) {
+    return (events || []).some((event) => event.featured || event.featuredSecondary);
+  }
+
   function upcomingEvents(events) {
+    if (hasServerFeaturedFlags(events)) {
+      return (events || []).filter((event) => !event.past);
+    }
     const now = Date.now();
-    return (events || [])
+    const sortFuture = (list) => (list || [])
       .filter((event) => event.startsAt && new Date(event.startsAt).getTime() > now)
-      .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
-      .map((event, index) => ({ ...event, featured: index === 0, showCountdown: true, past: false }));
+      .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
+    const regular = sortFuture((events || []).filter((event) => !isFormEvent(event)));
+    const forms = sortFuture((events || []).filter((event) => isFormEvent(event)));
+    const ordered = [...regular, ...forms];
+    return ordered.map((event, index) => ({
+      ...event,
+      featured: index === 0 && !isFormEvent(event),
+      featuredSecondary: false,
+      showCountdown: !isFormEvent(event),
+      past: false
+    }));
   }
 
   function pastEvents(events) {
     const now = Date.now();
     return (events || [])
-      .filter((event) => event.startsAt && new Date(event.startsAt).getTime() <= now)
+      .filter((event) => !isFormEvent(event) && event.startsAt && new Date(event.startsAt).getTime() <= now)
       .sort((a, b) => new Date(b.startsAt) - new Date(a.startsAt))
-      .map((event) => ({ ...event, featured: false, past: true }));
+      .map((event) => ({ ...event, featured: false, featuredSecondary: false, past: true }));
+  }
+
+  function resolveFeaturedSlots(events) {
+    const list = events || [];
+    if (hasServerFeaturedFlags(list)) {
+      const upcoming = list.filter((event) => !event.past);
+      return {
+        featured: upcoming.find((event) => event.featured) || list.find((event) => event.featured) || null,
+        featuredSecondary: upcoming.find((event) => event.featuredSecondary) || null,
+        upcoming,
+        past: list.filter((event) => event.past && !isFormEvent(event))
+      };
+    }
+    const upcoming = upcomingEvents(list);
+    const past = pastEvents(list);
+    return {
+      featured: upcoming.find((event) => event.featured) || upcoming[0] || null,
+      featuredSecondary: null,
+      upcoming,
+      past
+    };
+  }
+
+  function formOpenButton(event, featured) {
+    const url = String(event.formUrl || '').trim();
+    if (!url) return '';
+    const classes = featured ? 'button button-dark handdrawn' : 'micro-button';
+    return `<a class="${classes}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open form</a>`;
   }
 
   function googleCalendarUrl(event) {
@@ -169,16 +217,39 @@
     const ribbon = options.ribbon
       ? '<span class="home-event-ribbon" aria-hidden="true">Next up</span>'
       : '';
+    const form = isFormEvent(event);
+    const countdownId = options.countdownId || 'cmsFeaturedCountdown';
+    const eyebrow = form ? 'Featured Form' : 'Featured Event';
+    if (form) {
+      return `
+        ${ribbon}
+        ${art}
+        <div class="featured-event-body">
+          <div class="featured-event-copy">
+            <span class="eyebrow">${eyebrow}</span>
+            <h3>${esc(event.title)}</h3>
+            <p class="featured-location">${esc(displayDate(event))}</p>
+            <div class="event-copy-stack">
+              <p class="featured-copy event-card-copy is-clamped" data-full-copy>${descriptionHtml(event)}</p>
+              <button class="event-read-more" type="button" hidden>Read more</button>
+            </div>
+          </div>
+          <div class="featured-event-actions">
+            ${formOpenButton(event, true)}
+          </div>
+        </div>`;
+    }
     const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
+    const showCountdown = event.startsAt && event.showCountdown !== false;
     return `
       ${ribbon}
       ${art}
       <div class="featured-event-body">
         <div class="featured-event-copy">
-          <span class="eyebrow">Featured Event</span>
+          <span class="eyebrow">${eyebrow}</span>
           <h3>${esc(event.title)}</h3>
           <p class="featured-location">${esc(displayDate(event))}</p>
-          ${event.startsAt ? `<div class="featured-countdown" id="cmsFeaturedCountdown" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
+          ${showCountdown ? `<div class="featured-countdown" id="${esc(countdownId)}" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
           <p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>
           <div class="event-copy-stack">
             <p class="featured-copy event-card-copy is-clamped" data-full-copy>${descriptionHtml(event)}</p>
@@ -195,6 +266,7 @@
 
   function eventCard(event) {
     const past = isPast(event);
+    const form = isFormEvent(event);
     const short = displayShort(event);
     const time = event.startsAt
       ? new Date(event.startsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
@@ -206,23 +278,28 @@
     const whoRsvped = past
       ? `<button class="micro-button rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button>`
       : '';
-    const actions = past
-      ? `${whoRsvped}<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>${igCardButton(event)}`
-      : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}${igCardButton(event)}`;
-    return `<article class="event-card${past ? ' event-card--past' : ''}" data-event-id="${esc(event.id || '')}" data-event-key="${esc(eventKey(event))}" ${past ? 'data-past="true"' : ''}>
+    const actions = form
+      ? formOpenButton(event, false)
+      : past
+        ? `${whoRsvped}<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>${igCardButton(event)}`
+        : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}${igCardButton(event)}`;
+    const dateLine = form
+      ? `<span class="event-date">${esc(short || displayDate(event) || 'Open now')}</span>`
+      : `<span class="event-date">${esc(short)}${time ? ` · ${esc(time)}` : ''}</span>`;
+    return `<article class="event-card${past ? ' event-card--past' : ''}${form ? ' event-card--form' : ''}" id="event-${esc(event.id || '')}" data-event-id="${esc(event.id || '')}" data-event-key="${esc(eventKey(event))}" data-event-kind="${esc(event.eventKind || 'event')}" ${past ? 'data-past="true"' : ''}>
       ${poster}
       <div class="event-card-body">
-        ${past ? '<span class="event-finished">Finished</span>' : ''}
-        <span class="event-date">${esc(short)}${time ? ` · ${esc(time)}` : ''}</span>
+        ${form ? '<span class="eyebrow">Form</span>' : past ? '<span class="event-finished">Finished</span>' : ''}
+        ${dateLine}
         <h3>${esc(event.title)}</h3>
-        ${past ? '' : `<p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>`}
+        ${past || form ? '' : `<p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>`}
         <div class="event-copy-stack">
           <p class="event-card-copy is-clamped" data-full-copy>${descriptionHtml(event)}</p>
           <button class="event-read-more" type="button" hidden>Read more</button>
         </div>
       </div>
       <div class="event-card-actions">
-        ${past ? `<button class="event-going event-going--past rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> RSVP&apos;d</button>` : ''}
+        ${past && !form ? `<button class="event-going event-going--past rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> RSVP&apos;d</button>` : ''}
         ${actions}
       </div>
     </article>`;
@@ -250,9 +327,11 @@
     const homeFeatured = document.getElementById('featuredEvent');
     const homeRegular = document.getElementById('homeEvents');
     const eventsFeatured = document.getElementById('eventsFeatured');
+    const eventsFeaturedSecondary = document.getElementById('eventsFeaturedSecondary');
     const eventsGrid = document.getElementById('eventsGrid');
     renderFeatured(homeFeatured, null);
     renderFeatured(eventsFeatured, null);
+    renderFeatured(eventsFeaturedSecondary, null);
     if (homeFeatured && document.querySelector('.home-upcoming')) {
       homeFeatured.innerHTML = `
         <div class="featured-event-body home-upcoming-empty-event">
@@ -280,7 +359,7 @@
       bar?.remove();
       return;
     }
-    if (!featured) {
+    if (!featured || isFormEvent(featured)) {
       bar?.remove();
       return;
     }
@@ -302,14 +381,19 @@
   }
 
   function paint(events) {
-    const upcoming = upcomingEvents(events);
-    const past = pastEvents(events);
-    const featured = upcoming[0] || null;
-    const regular = upcoming.slice(1);
+    const slots = resolveFeaturedSlots(events);
+    const featured = slots.featured;
+    const featuredSecondary = slots.featuredSecondary;
+    const upcoming = slots.upcoming || upcomingEvents(events);
+    const past = slots.past || pastEvents(events);
+    const featuredId = featured ? featured.id : null;
+    const secondaryId = featuredSecondary ? featuredSecondary.id : null;
+    const regular = upcoming.filter((event) => event.id !== featuredId && event.id !== secondaryId);
     const homeFeatured = document.getElementById('featuredEvent');
     const homeHead = document.getElementById('featuredSectionHead');
     const homeRegular = document.getElementById('homeEvents');
     const eventsFeatured = document.getElementById('eventsFeatured');
+    const eventsFeaturedSecondary = document.getElementById('eventsFeaturedSecondary');
     const eventsGrid = document.getElementById('eventsGrid');
     const condensedHome = Boolean(document.querySelector('.home-upcoming'));
 
@@ -330,6 +414,9 @@
       renderFeatured(homeFeatured, null);
     }
     renderFeatured(eventsFeatured, featured);
+    if (eventsFeaturedSecondary) {
+      renderFeatured(eventsFeaturedSecondary, featuredSecondary, { countdownId: 'cmsFeaturedCountdownSecondary' });
+    }
     updateStickyBar(featured);
 
     if (homeHead && !condensedHome) {
@@ -342,7 +429,7 @@
     }
 
     if (homeRegular) {
-      const homeCards = upcoming.slice(1, 4).map(eventCard).join('');
+      const homeCards = regular.filter((event) => !isFormEvent(event)).slice(0, 3).map(eventCard).join('');
       homeRegular.innerHTML = homeCards;
       setHidden(homeRegular, !homeCards);
       homeRegular.classList.toggle('event-grid', Boolean(homeCards));
@@ -359,6 +446,7 @@
     }
 
     startCountdown(featured);
+    applyHubViewFilter();
     enhanceEventCopy();
     document.dispatchEvent(new CustomEvent('ssa:events-rendered'));
   }
@@ -609,6 +697,7 @@
     const art = modal.querySelector('#eventDetailArt');
     const where = modal.querySelector('#eventDetailWhere');
     const actions = modal.querySelector('#eventDetailActions');
+    const form = isFormEvent(event);
     modal.querySelector('#eventDetailTitle').textContent = event.title || 'SSA Event';
     modal.querySelector('#eventDetailWhen').textContent = eventWhen(event);
     if (eventWhere(event)) {
@@ -626,15 +715,24 @@
     const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
     const countWrap = modal.querySelector('.event-going');
     if (countWrap) {
-      countWrap.innerHTML = past
-        ? `<button class="event-going-link rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" id="eventDetailCount" data-event-count="${esc(event.rsvpKey || '')}">${esc(countText)}</span> RSVP&apos;d · see list</button>`
-        : `<span class="event-going-num" id="eventDetailCount" data-event-count="${esc(event.rsvpKey || '')}">${esc(countText)}</span> coming`;
+      if (form) {
+        countWrap.hidden = true;
+      } else {
+        countWrap.hidden = false;
+        countWrap.innerHTML = past
+          ? `<button class="event-going-link rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" id="eventDetailCount" data-event-count="${esc(event.rsvpKey || '')}">${esc(countText)}</span> RSVP&apos;d · see list</button>`
+          : `<span class="event-going-num" id="eventDetailCount" data-event-count="${esc(event.rsvpKey || '')}">${esc(countText)}</span> coming`;
+      }
     }
-    const rsvp = past
-      ? `<button class="button button-dark handdrawn rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button><button class="button button-line feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
-      : `<button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event, { featured: true })}`;
-    actions.innerHTML = `${rsvp}<button class="button button-dark event-detail-download" type="button">Download IG card</button>`;
-    actions.querySelector('.event-detail-download')?.addEventListener('click', () => downloadEventGraphic(event));
+    if (form) {
+      actions.innerHTML = formOpenButton(event, true);
+    } else {
+      const rsvp = past
+        ? `<button class="button button-dark handdrawn rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button><button class="button button-line feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
+        : `<button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event, { featured: true })}`;
+      actions.innerHTML = `${rsvp}<button class="button button-dark event-detail-download" type="button">Download IG card</button>`;
+      actions.querySelector('.event-detail-download')?.addEventListener('click', () => downloadEventGraphic(event));
+    }
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
@@ -738,13 +836,249 @@
     openEventDetail(card.dataset.eventKey);
   });
 
+  const HUB_VIEWS = new Set(['all', 'events', 'initiatives', 'forms']);
+  let currentHubView = 'all';
+  let hubInitiativeWired = false;
+
+  function parseHubView() {
+    const params = new URLSearchParams(window.location.search);
+    const query = String(params.get('view') || '').toLowerCase();
+    if (HUB_VIEWS.has(query)) return query;
+    const hash = window.location.hash.replace(/^#/, '').toLowerCase();
+    if (HUB_VIEWS.has(hash)) return hash;
+    return 'all';
+  }
+
+  function initiativeDescriptionHtml(text) {
+    const safe = esc(text || '');
+    return safe.replace(MENTION_RE, (_, label, href) =>
+      `<a class="event-ig-tag" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`
+    ).replace(/\n/g, '<br>');
+  }
+
+  function initiativeGuestToken() {
+    let token = localStorage.getItem('ssaRsvpGuestId') || '';
+    if (token.length < 16) {
+      token = window.crypto?.randomUUID?.() || `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem('ssaRsvpGuestId', token);
+    }
+    return token;
+  }
+
+  function initiativeCollaboratorHtml(item) {
+    const ig = item.igUrl
+      ? `<a class="initiative-ig" href="${esc(item.igUrl)}" target="_blank" rel="noopener noreferrer">@${esc(item.igHandle || 'instagram')}</a>`
+      : '';
+    const avatar = item.avatarUrl
+      ? `<img class="initiative-collab-avatar" src="${esc(item.avatarUrl)}" alt="" />`
+      : `<span class="initiative-collab-fallback">@</span>`;
+    return `<article class="initiative-collab">
+      <div class="initiative-collab-head">
+        ${avatar}
+        <div>
+          <span class="eyebrow">${esc(item.kind === 'org' ? 'Organization' : 'Collaborator')}</span>
+          <strong>${esc(item.name)}</strong>
+          ${ig}
+        </div>
+      </div>
+      ${item.description ? `<p>${initiativeDescriptionHtml(item.description)}</p>` : ''}
+    </article>`;
+  }
+
+  function initiativeCard(item) {
+    const photos = (item.photos || []).map((photo) =>
+      `<figure><img src="${esc(photo.src)}" alt="${esc(photo.caption || item.title)}" loading="lazy" /><figcaption>${esc(photo.caption || '')}</figcaption></figure>`
+    ).join('');
+    const link = item.linkUrl
+      ? `<a class="button button-line handdrawn" href="${esc(item.linkUrl)}" target="_blank" rel="noopener noreferrer">${esc(item.linkLabel || 'Learn more')}</a>`
+      : '';
+    return `<article class="initiative-card" id="initiative-${item.id}">
+      ${item.imageUrl ? `<div class="initiative-card-media"><img src="${esc(item.imageUrl)}" alt="" loading="lazy" /></div>` : ''}
+      <div class="initiative-card-body">
+        <span class="eyebrow">Initiative</span>
+        <h2>${esc(item.title)}</h2>
+        ${item.description ? `<div class="initiative-desc">${initiativeDescriptionHtml(item.description)}</div>` : ''}
+        ${item.paragraph ? `<p class="initiative-paragraph">${initiativeDescriptionHtml(item.paragraph)}</p>` : ''}
+        ${(item.collaborators || []).length ? `<div class="initiative-collab-grid">${item.collaborators.map(initiativeCollaboratorHtml).join('')}</div>` : ''}
+        ${photos ? `<div class="initiative-photo-grid">${photos}</div>` : ''}
+        <div class="initiative-card-actions">
+          ${link}
+          <button class="button button-dark handdrawn" type="button" data-review-initiative="${item.id}" data-title="${esc(item.title)}">Would you want us to do this again?</button>
+        </div>
+      </div>
+    </article>`;
+  }
+
+  function openInitiativeReview(id, title) {
+    const reviewModal = document.getElementById('initiativeReviewModal');
+    const reviewForm = document.getElementById('initiativeReviewForm');
+    if (!reviewModal || !reviewForm) return;
+    reviewForm.elements.initiativeId.value = id;
+    document.getElementById('initiativeReviewMeta').textContent = title || '';
+    reviewForm.querySelector('output').textContent = '';
+    reviewModal.classList.add('open');
+    reviewModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeInitiativeReview() {
+    const reviewModal = document.getElementById('initiativeReviewModal');
+    reviewModal?.classList.remove('open');
+    reviewModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  function wireInitiativeReview() {
+    if (hubInitiativeWired) return;
+    const list = document.getElementById('initiativesList');
+    const reviewModal = document.getElementById('initiativeReviewModal');
+    const reviewForm = document.getElementById('initiativeReviewForm');
+    if (!list || !reviewModal || !reviewForm) return;
+    hubInitiativeWired = true;
+    list.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-review-initiative]');
+      if (!btn) return;
+      openInitiativeReview(btn.dataset.reviewInitiative, btn.dataset.title);
+    });
+    document.getElementById('initiativeReviewClose')?.addEventListener('click', closeInitiativeReview);
+    reviewModal.addEventListener('click', (event) => {
+      if (event.target === reviewModal) closeInitiativeReview();
+    });
+    reviewForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const out = reviewForm.querySelector('output');
+      const button = reviewForm.querySelector('button[type="submit"]');
+      button.disabled = true;
+      out.textContent = 'Sending…';
+      try {
+        await api('/api/initiative-feedback', {
+          method: 'POST',
+          body: {
+            initiativeId: Number(reviewForm.elements.initiativeId.value),
+            rating: Number(reviewForm.elements.rating.value),
+            comment: reviewForm.elements.comment.value.trim(),
+            guestToken: initiativeGuestToken()
+          }
+        });
+        out.textContent = 'Thanks — this helps us decide what to run again.';
+        reviewForm.reset();
+        window.setTimeout(closeInitiativeReview, 900);
+      } catch (error) {
+        out.textContent = error.message || 'Could not send review.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  async function loadHubInitiatives() {
+    const list = document.getElementById('initiativesList');
+    if (!list) return;
+    try {
+      const data = await api('/api/initiatives');
+      const items = data.initiatives || [];
+      if (!items.length) {
+        list.innerHTML = '<p class="home-album-empty">Initiatives will show up here once the board publishes them.</p>';
+        return;
+      }
+      list.innerHTML = items.map(initiativeCard).join('');
+    } catch (_) {
+      list.innerHTML = '<p class="home-album-empty">Initiatives could not load right now.</p>';
+    }
+  }
+
+  async function loadHubAsked() {
+    const asked = document.getElementById('askedList');
+    if (!asked) return;
+    try {
+      const data = await api('/api/suggestions/answered');
+      const items = data.items || [];
+      if (!items.length) {
+        asked.innerHTML = '<p class="home-album-empty">When the board answers a suggested idea, it will appear here.</p>';
+        return;
+      }
+      asked.innerHTML = `<div class="asked-grid">${items.map((item) => {
+        let listened = `<p class="asked-a">${esc(item.answer)}</p>`;
+        if (item.eventId) {
+          listened = `<p class="asked-a">Resolved as event: <a href="#event-${esc(item.eventId)}">${esc(item.eventTitle || 'View event')}</a></p>`;
+        } else if (item.initiativeId) {
+          listened = `<p class="asked-a">Answered with initiative: <a href="#initiative-${esc(item.initiativeId)}">${esc(item.initiativeTitle || 'View initiative')}</a></p>`;
+        }
+        return `<article class="asked-card">
+          <span class="eyebrow">${item.eventId ? 'Resolved' : 'You asked'}</span>
+          <h3>${esc(item.name)}</h3>
+          <p class="asked-q">${esc(item.description)}</p>
+          <span class="eyebrow">We listened</span>
+          ${listened}
+        </article>`;
+      }).join('')}</div>`;
+    } catch (_) {
+      asked.innerHTML = '<p class="home-album-empty">Answers could not load right now.</p>';
+    }
+  }
+
+  function setHubView(view, options = {}) {
+    if (!document.getElementById('eventsHubFilters')) return;
+    if (!HUB_VIEWS.has(view)) view = 'all';
+    currentHubView = view;
+    document.getElementById('eventsHubFilters')?.querySelectorAll('[data-hub-filter]').forEach((chip) => {
+      const active = chip.dataset.hubFilter === view;
+      chip.classList.toggle('active', active);
+      chip.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-hub-section]').forEach((section) => {
+      const allowed = (section.dataset.hubSection || '').split(/\s+/).filter(Boolean);
+      section.hidden = view !== 'all' && !allowed.includes(view);
+    });
+    const featuredEl = document.getElementById('eventsFeatured');
+    const secondaryEl = document.getElementById('eventsFeaturedSecondary');
+    [featuredEl, secondaryEl].forEach((slot) => {
+      if (!slot?.dataset.eventKey) return;
+      const item = findEvent(slot.dataset.eventKey);
+      if (!item) return;
+      if (view === 'initiatives') {
+        setHidden(slot, true);
+      } else if (view === 'events') {
+        setHidden(slot, isFormEvent(item));
+      } else if (view === 'forms') {
+        setHidden(slot, !isFormEvent(item));
+      } else if (view === 'all') {
+        setHidden(slot, !slot.dataset.eventKey);
+      }
+    });
+    if (view === 'events' && secondaryEl) {
+      setHidden(secondaryEl, true);
+    }
+    document.querySelectorAll('#eventsGrid .event-card').forEach((card) => {
+      const kind = card.dataset.eventKind || 'event';
+      if (view === 'all') card.hidden = false;
+      else if (view === 'events') card.hidden = kind === 'form';
+      else if (view === 'forms') card.hidden = kind !== 'form';
+      else card.hidden = true;
+    });
+    document.querySelectorAll('#eventsGrid .event-past-head').forEach((head) => {
+      head.hidden = view !== 'all' && view !== 'events';
+    });
+    if (options.push) {
+      const url = new URL(window.location.href);
+      if (view === 'all') url.searchParams.delete('view');
+      else url.searchParams.set('view', view);
+      window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+    }
+  }
+
+  function applyHubViewFilter() {
+    if (!document.getElementById('eventsHubFilters')) return;
+    setHubView(currentHubView);
+  }
+
   function startCountdown(featured) {
     if (countdownTimer) {
       window.clearInterval(countdownTimer);
       countdownTimer = null;
     }
     const countdown = document.getElementById('cmsFeaturedCountdown');
-    if (!countdown || !featured?.startsAt) return;
+    if (!countdown || !featured?.startsAt || isFormEvent(featured)) return;
     const start = new Date(featured.startsAt).getTime();
     const update = () => {
       const remaining = start - Date.now();
@@ -767,11 +1101,36 @@
     countdownTimer = window.setInterval(update, 1000);
   }
 
+  const hubFilters = document.getElementById('eventsHubFilters');
+  if (hubFilters) {
+    currentHubView = parseHubView();
+    hubFilters.addEventListener('click', (event) => {
+      const chip = event.target.closest('[data-hub-filter]');
+      if (!chip) return;
+      setHubView(chip.dataset.hubFilter, { push: true });
+    });
+    wireInitiativeReview();
+    loadHubInitiatives();
+    loadHubAsked();
+  }
+
+  function focusEventFromHash() {
+    const match = window.location.hash.match(/^#event-(\d+)$/i);
+    if (!match) return;
+    const target = document.getElementById(`event-${match[1]}`);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('is-hash-focus');
+    window.setTimeout(() => target.classList.remove('is-hash-focus'), 1800);
+  }
+
   api('/api/events').then((data) => {
     sourceEvents = data.events || [];
     paint(sourceEvents);
+    focusEventFromHash();
   }).catch(() => {
     clearPlaceholders();
+    if (hubFilters) applyHubViewFilter();
     document.dispatchEvent(new CustomEvent('ssa:events-rendered'));
   });
 })();

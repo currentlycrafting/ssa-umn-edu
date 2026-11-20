@@ -166,8 +166,13 @@
   enforceExactCount('preferredArea', 2);
   enforceExactCount('stayOn', 1);
 
-  document.getElementById('internOpenApply')?.addEventListener('click', openModal);
-  document.getElementById('internFooterApply')?.addEventListener('click', openModal);
+  window.openInternApply = openModal;
+  document.querySelectorAll('[data-open-intern-apply], #internOpenApply, #internFooterApply').forEach((btn) => {
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      openModal();
+    });
+  });
   document.getElementById('internApplyClose')?.addEventListener('click', closeModal);
   modal.addEventListener('click', (event) => {
     if (event.target === modal) closeModal();
@@ -219,4 +224,7 @@
   loadCounts();
   setInterval(loadCounts, 60000);
   if (window.location.hash === '#apply') openModal();
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#apply') openModal();
+  });
 })();

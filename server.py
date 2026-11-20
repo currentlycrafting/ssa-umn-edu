@@ -183,22 +183,27 @@ def warm_leaderboard_cache():
 # Pretty routes served as static HTML under ssaumn.com/<route>
 PAGE_ROUTES = {
     "/events": "events.html",
-    "/games": "games.html",
-    "/daily": "daily.html",
-    "/newsletter": "newsletter-page.html",
-    "/newsletter/studio": "newsletter-studio.html",
     "/donate": "donate.html",
     "/aux": "aux.html",
     "/board": "board.html",
-    "/bulletin": "bulletin.html",
-    "/schedule": "schedule.html",
     "/gallery": "gallery.html",
-    "/interns": "interns.html",
-    "/initiatives": "initiatives.html",
-    "/timeline": "timeline.html",
-    "/connections": "connections.html",
     "/admin": "admin.html",
     "/suggest": "suggest.html",
+}
+
+# Retired pages redirect into the current site structure.
+PAGE_REDIRECTS = {
+    "/games": "/index.html",
+    "/daily": "/index.html",
+    "/newsletter": "/index.html",
+    "/newsletter/studio": "/admin",
+    "/bulletin": "/index.html",
+    "/schedule": "/index.html",
+    "/interns": "/index.html#apply",
+    "/initiatives": "/events?view=initiatives",
+    "/timeline": "/index.html#timeline",
+    "/connections": "/index.html",
+    "/photoshoots": "/gallery",
 }
 
 
@@ -462,11 +467,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
             self._redirect("/gallery")
             return
 
-        if path == "/photoshoots":
-            self.send_response(301)
-            self.send_header("Location", "/gallery")
-            self.send_header("Content-Length", "0")
-            self.end_headers()
+        if path in PAGE_REDIRECTS:
+            self._redirect(PAGE_REDIRECTS[path])
             return
         if path in PAGE_ROUTES:
             self._send_file(PAGE_ROUTES[path])
@@ -493,7 +495,8 @@ class SSAHandler(SimpleHTTPRequestHandler):
             return
         if path == "/api/timeline":
             try:
-                status, payload = timeline.list_public()
+                newest = (qs.get("newest", ["0"])[0] or "").strip() in ("1", "true", "yes")
+                status, payload = timeline.list_public(newest_first=newest)
             except Exception as exc:
                 status, payload = 503, {"ok": False, "error": str(exc)}
             self._send_json(status, payload, cache_seconds=30)

@@ -110,21 +110,18 @@
     const admin = data.admin;
     content.innerHTML = `
       <div class="admin-stat-grid">
-        ${stat('Published events', data.events.filter((event) => event.published).length, 'Public calendar')}
+        ${stat('Published events', data.events.filter((event) => event.published && event.eventKind !== 'form').length, 'Public calendar')}
+        ${stat('Open forms', data.events.filter((event) => event.published && event.eventKind === 'form').length, 'Featured or listed forms')}
         ${stat('Intern apps', (admin.applications || []).length, 'Internship applications')}
         ${stat('Gallery photos', data.gallery.length, 'Community album')}
-        ${stat('Subscribers', (admin.newsletters || []).length, 'Newsletter audience')}
-        ${stat('Bulletin posts', data.bulletin.filter((post) => post.status === 'active').length, 'Active board notes')}
         ${stat('Messages', inboxCount() + (admin.rsvp || []).length, 'Inbox, ideas, and RSVPs')}
       </div>
       <div class="admin-quick-grid">
-        <button data-go="events"><strong>Event</strong><span>Add the next event to the calendar.</span></button>
+        <button data-go="events"><strong>Event / form</strong><span>Add a calendar event or open form.</span></button>
         <button data-go="initiatives"><strong>Initiative</strong><span>Publish a project with collaborators.</span></button>
         <button data-go="applications"><strong>Applications</strong><span>Review internship applications.</span></button>
         <button data-go="gallery"><strong>Gallery</strong><span>Add or remove community photos.</span></button>
-        <button data-go="timeline"><strong>Timeline</strong><span>Add sticky-note moments to the timeline.</span></button>
-        <button data-go="bulletin"><strong>Bulletin</strong><span>Edit or remove board posts.</span></button>
-        <a href="/newsletter/studio"><strong>Newsletter</strong><span>Publish the next edition.</span></a>
+        <button data-go="timeline"><strong>Timeline</strong><span>Add moments with photos and @mentions.</span></button>
         <button data-go="messages"><strong>Message</strong><span>Review community inbox and RSVPs.</span></button>
       </div>`;
   }
@@ -144,6 +141,10 @@
   }
 
   function eventStatus(event) {
+    if (event.eventKind === 'form') {
+      if (event.featured || event.featuredSecondary) return 'Form · Featured';
+      return 'Form';
+    }
     if (!event.startsAt) return 'Needs date';
     const start = new Date(event.startsAt).getTime();
     if (Number.isNaN(start)) return 'Needs date';
@@ -156,18 +157,25 @@
     const previewImage = event.imageUrl || '';
     const startsAt = toDatetimeLocal(event.startsAt);
     const hasImage = Boolean(previewImage);
+    const isForm = event.eventKind === 'form';
+    const answering = Boolean(event.suggestionId || initiativeDraft.suggestionId);
+    const suggestionId = event.suggestionId || initiativeDraft.suggestionId || '';
     return `<form class="admin-editor" id="adminEventForm">
       <input type="hidden" name="id" value="${esc(event.id || '')}" />
       <input type="hidden" name="rsvpKey" value="${esc(event.rsvpKey || '')}" />
       <input type="hidden" name="sortOrder" value="${esc(event.sortOrder ?? data.events.length * 10)}" />
       <input type="hidden" name="imageUrl" value="${esc(event.imageUrl || '')}" />
-      <div class="admin-editor-head"><div><span class="eyebrow">${event.id ? 'Edit event' : 'New event'}</span><h3>${event.id ? esc(event.title) : 'Add to the calendar'}</h3></div>${event.id ? '<button type="button" class="button button-line" data-new-event>New event</button>' : ''}</div>
+      <input type="hidden" name="suggestionId" value="${esc(suggestionId)}" />
+      <div class="admin-editor-head"><div><span class="eyebrow">${event.id ? 'Edit' : answering ? 'Answer suggestion' : 'New'}</span><h3>${event.id ? esc(event.title) : answering ? 'Turn this idea into an event' : 'Add an event or form'}</h3></div>${event.id || answering ? '<button type="button" class="button button-line" data-new-event>New</button>' : ''}</div>
+      ${answering ? `<p class="admin-idea-answered">Answering suggestion: <strong>${esc(initiativeDraft.suggestionTitle || event.title || 'Untitled idea')}</strong></p>` : ''}
+      <fieldset class="admin-feature-choice"><legend>Type</legend><div><label><input type="radio" name="eventKind" value="event" ${isForm ? '' : 'checked'} /><span>Event</span></label><label><input type="radio" name="eventKind" value="form" ${isForm ? 'checked' : ''} /><span>Form</span></label></div><small>Forms can be featured under the next event (or first if none).</small></fieldset>
       <div class="admin-form-grid admin-form-grid-simple">
-        <label>Title<input name="title" value="${esc(event.title || '')}" required /></label>
-        <label>Date &amp; start time<input type="datetime-local" name="startsAt" value="${esc(startsAt)}" required /></label>
-        <label>Location<input name="location" value="${esc(event.location || '')}" placeholder="Coffman, Northrop lawn…" /></label>
+        <label>Title<input name="title" value="${esc(event.title || initiativeDraft.suggestionTitle || '')}" required /></label>
+        <label data-event-only>Date &amp; start time<input type="datetime-local" name="startsAt" value="${esc(startsAt)}" /></label>
+        <label data-event-only>Location<input name="location" value="${esc(event.location || '')}" placeholder="Coffman, Northrop lawn…" /></label>
+        <label data-form-only hidden>Form link<input type="url" name="formUrl" value="${esc(event.formUrl || '')}" placeholder="https://forms.gle/…" /></label>
       </div>
-      <label class="admin-field-label">Event image</label>
+      <label class="admin-field-label">Cover image</label>
       <label class="gallery-drop admin-event-drop ${hasImage ? 'has-preview' : ''}" id="adminEventDrop">
         <input type="file" name="image" accept="image/png,image/jpeg,image/webp" />
         <span class="admin-event-drop-prompt">
@@ -183,8 +191,8 @@
       <label class="admin-desc-field">Description
         <small>Type @ then a name — a popup lets you attach their Instagram link.</small>
         <div class="admin-desc-shell" id="adminDescShell">
-          <div class="admin-desc-editor" id="adminDescEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="What’s this event about?"></div>
-          <textarea name="description" id="adminDescValue" hidden required>${esc(event.description || '')}</textarea>
+          <div class="admin-desc-editor" id="adminDescEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="What’s this about?"></div>
+          <textarea name="description" id="adminDescValue" hidden required>${esc(event.description || initiativeDraft.suggestionDescription || '')}</textarea>
           <div class="admin-mention-pop" id="adminMentionPop" hidden>
             <span>Instagram link for <strong id="adminMentionName">…</strong></span>
             <input id="adminMentionUrl" type="url" placeholder="https://instagram.com/handle" autocomplete="off" />
@@ -195,9 +203,10 @@
           </div>
         </div>
       </label>
-      <fieldset class="admin-feature-choice"><legend>How should guests respond?</legend><div><label><input type="radio" name="attendanceMode" value="rsvp" ${event.attendanceMode === 'quick' ? '' : 'checked'} /><span>Full RSVP form</span></label><label><input type="radio" name="attendanceMode" value="quick" ${event.attendanceMode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label></div><small>The next upcoming event is featured automatically with a countdown.</small></fieldset>
+      <fieldset class="admin-feature-choice" data-event-only><legend>How should guests respond?</legend><div><label><input type="radio" name="attendanceMode" value="rsvp" ${event.attendanceMode === 'quick' ? '' : 'checked'} /><span>Full RSVP form</span></label><label><input type="radio" name="attendanceMode" value="quick" ${event.attendanceMode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label></div><small>The next upcoming event is featured automatically with a countdown.</small></fieldset>
+      <label data-form-only hidden class="admin-check-inline"><input type="checkbox" name="featured" ${event.featured || event.featuredSecondary ? 'checked' : ''} /> Feature this form (under a featured event, or first if none)</label>
       <div class="admin-event-preview" id="adminEventPreview" data-image="${esc(previewImage)}"></div>
-      <div class="admin-editor-actions"><button class="button button-dark" type="submit">${event.id ? 'Save changes' : 'Publish event'}</button><output></output></div>
+      <div class="admin-editor-actions"><button class="button button-dark" type="submit">${event.id ? 'Save changes' : answering ? 'Publish as event' : 'Publish'}</button><output></output></div>
     </form>`;
   }
 
@@ -515,19 +524,39 @@
       updatePreview();
     }
 
+    function syncKindUi() {
+      const isForm = form.eventKind?.value === 'form';
+      form.querySelectorAll('[data-event-only]').forEach((el) => { el.hidden = isForm; });
+      form.querySelectorAll('[data-form-only]').forEach((el) => { el.hidden = !isForm; });
+      if (form.startsAt) form.startsAt.required = !isForm;
+      if (form.formUrl) form.formUrl.required = isForm;
+    }
+
     function updatePreview() {
       if (!preview) return;
-      const responseLabel = form.attendanceMode.value === 'quick' ? 'Are you coming? · Yes / No' : 'Full RSVP form';
-      const eventTitle = form.title.value.trim() || 'Event title';
-      const startsAt = form.startsAt.value;
-      const when = startsAt
-        ? new Date(startsAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
-        : 'Date & start time';
-      const description = form.description.value.trim() || 'Your event description will appear here.';
+      syncKindUi();
+      const isForm = form.eventKind?.value === 'form';
+      const responseLabel = isForm
+        ? 'Open form link'
+        : (form.attendanceMode?.value === 'quick' ? 'Are you coming? · Yes / No' : 'Full RSVP form');
+      const eventTitle = form.title.value.trim() || (isForm ? 'Form title' : 'Event title');
+      const startsAt = form.startsAt?.value || '';
+      const when = isForm
+        ? (form.formUrl?.value.trim() || 'Form link')
+        : (startsAt
+          ? new Date(startsAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+          : 'Date & start time');
+      const description = form.description.value.trim() || 'Your description will appear here.';
       const art = previewImage
         ? `<div class="featured-event-art"><img src="${esc(previewImage)}" alt="" /></div>`
         : '';
-      preview.innerHTML = `<span class="admin-preview-label">Preview · ${esc(responseLabel)} · Countdown on</span><article class="featured-event${!previewImage ? ' featured-event--no-art' : ''}">${art}<div class="featured-event-body"><span class="eyebrow">Featured Event</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(when)}</p><p class="featured-copy">${descriptionPreviewHtml(description)}</p><div class="featured-countdown" aria-label="Countdown preview"><div class="fc-cell"><b>00</b><span>days</span></div><div class="fc-cell"><b>00</b><span>hrs</span></div><div class="fc-cell"><b>00</b><span>min</span></div><div class="fc-cell"><b>00</b><span>sec</span></div></div><button class="button button-dark" type="button">${form.attendanceMode.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot'}</button></div></article>`;
+      const cta = isForm
+        ? 'Open form'
+        : (form.attendanceMode?.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot');
+      const countdown = isForm
+        ? ''
+        : '<div class="featured-countdown" aria-label="Countdown preview"><div class="fc-cell"><b>00</b><span>days</span></div><div class="fc-cell"><b>00</b><span>hrs</span></div><div class="fc-cell"><b>00</b><span>min</span></div><div class="fc-cell"><b>00</b><span>sec</span></div></div>';
+      preview.innerHTML = `<span class="admin-preview-label">Preview · ${esc(responseLabel)}</span><article class="featured-event${!previewImage ? ' featured-event--no-art' : ''}">${art}<div class="featured-event-body"><span class="eyebrow">${isForm ? 'Featured Form' : 'Featured Event'}</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(when)}</p><p class="featured-copy">${descriptionPreviewHtml(description)}</p>${countdown}<button class="button button-dark" type="button">${cta}</button></div></article>`;
     }
 
     bindDescriptionMentions(form, updatePreview);
@@ -578,22 +607,31 @@
           const upload = await post('/api/uploads', { filename: file.name, data: await readFile(file) });
           imageUrl = upload.url;
         }
-        const startsAt = fromDatetimeLocal(form.startsAt.value);
-        if (!startsAt) throw new Error('Set a date and start time.');
+        const isForm = form.eventKind?.value === 'form';
+        const startsAt = fromDatetimeLocal(form.startsAt?.value || '');
+        if (!isForm && !startsAt) throw new Error('Set a date and start time.');
         const description = (hidden?.value || form.description.value || '').trim();
         if (!description) throw new Error('Add a description.');
+        if (isForm && !String(form.formUrl?.value || '').trim()) throw new Error('Add a form link.');
         await post('/api/events', {
           id: form.id.value || undefined,
           rsvpKey: form.rsvpKey.value.trim(),
           title: form.title.value.trim(),
-          startsAt,
-          location: form.location.value.trim(),
+          startsAt: startsAt || undefined,
+          location: form.location?.value.trim() || '',
           sortOrder: Number(form.sortOrder.value || 0),
           description,
           imageUrl,
-          attendanceMode: form.attendanceMode.value,
+          eventKind: isForm ? 'form' : 'event',
+          formUrl: form.formUrl?.value.trim() || '',
+          featured: Boolean(form.featured?.checked),
+          attendanceMode: form.attendanceMode?.value || 'rsvp',
+          suggestionId: form.suggestionId?.value || undefined,
           published: true
         });
+        initiativeDraft.suggestionId = null;
+        initiativeDraft.suggestionTitle = '';
+        initiativeDraft.suggestionDescription = '';
         await loadAll();
         section = 'events';
         renderEvents();
@@ -787,11 +825,12 @@
       ...(admin.event_suggestions || []).map((item) => ({
         kind: 'Event idea',
         id: item.id,
-        answered: Boolean(item.adminAnswer || item.answeredInitiativeId),
+        answered: Boolean(item.adminAnswer || item.answeredInitiativeId || item.answeredEventId),
         primary: `${item.name} · ${item.type || 'Suggestion'} · ${item.votes || 0} votes`,
         meta: item.preferred_date || item.audience || '',
         detail: [item.description, item.notes].filter(Boolean).join('\n\n'),
         answer: item.adminAnswer || '',
+        answeredEventId: item.answeredEventId || null,
         date: item.created_at
       })),
       ...(admin.event_feedback || []).map((item) => ({
@@ -863,8 +902,8 @@
                 <strong>${esc(item.kind)} · ${esc(item.primary)}</strong>
                 ${item.meta ? `<span>${esc(item.meta)}</span>` : ''}
                 ${item.detail ? `<p>${esc(item.detail)}</p>` : ''}
-                ${item.answered ? `<p class="admin-idea-answered">Already answered as an initiative.</p>` : ''}
-                <button class="button button-dark" type="button" data-answer-suggestion="${item.id}">Answer Suggestion</button>
+                ${item.answered ? `<p class="admin-idea-answered">${item.answeredEventId ? 'Resolved as an event.' : 'Already answered.'}</p>` : ''}
+                <button class="button button-dark" type="button" data-answer-suggestion="${item.id}">${item.answered ? 'Update answer' : 'Answer with event'}</button>
               </div>
               <div><time>${fmt(item.date)}</time></div>
             </article>`;
@@ -884,8 +923,8 @@
           suggestionTitle: suggestion?.name || '',
           suggestionDescription: suggestion?.description || ''
         };
-        section = 'initiatives';
-        renderInitiatives();
+        section = 'events';
+        renderEvents();
       });
     });
   }
@@ -1003,8 +1042,11 @@
   }
 
   function timelineForm(event = {}) {
+    const previewImage = event.imageUrl || '';
+    const hasImage = Boolean(previewImage);
     return `<form class="admin-editor" id="adminTimelineForm">
       <input type="hidden" name="id" value="${esc(event.id || '')}" />
+      <input type="hidden" name="imageUrl" value="${esc(previewImage)}" />
       <div class="admin-editor-head"><div><span class="eyebrow">${event.id ? 'Edit card' : 'New card'}</span><h3>${event.id ? esc(event.title) : 'Add a timeline moment'}</h3></div>${event.id ? '<button type="button" class="button button-line" data-new-timeline>New card</button>' : ''}</div>
       <div class="admin-form-grid admin-form-grid-simple">
         <label>Date<input type="date" name="eventDate" value="${esc(event.eventDate || '')}" required /></label>
@@ -1012,7 +1054,27 @@
       </div>
       <label>Title<input name="title" value="${esc(event.title || '')}" required maxlength="160" /></label>
       <label>Held at<input name="heldAt" value="${esc(event.heldAt || '')}" maxlength="160" /></label>
-      <label>Description<textarea name="copy" rows="4" required>${esc(event.copy || '')}</textarea></label>
+      <label class="admin-field-label">Photo</label>
+      <label class="gallery-drop admin-event-drop ${hasImage ? 'has-preview' : ''}" id="adminTimelineDrop">
+        <input type="file" name="image" accept="image/png,image/jpeg,image/webp" />
+        <span class="admin-event-drop-prompt"><strong>Drop a photo</strong><small>optional · PNG, JPG, or WEBP</small></span>
+        <img class="admin-event-drop-preview" id="adminTimelineDropPreview" src="${esc(previewImage)}" alt="" ${hasImage ? '' : 'hidden'} />
+      </label>
+      <label class="admin-desc-field">Description
+        <small>Type @ then a name — popup attaches their Instagram link.</small>
+        <div class="admin-desc-shell" id="adminDescShell">
+          <div class="admin-desc-editor" id="adminDescEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="What happened?"></div>
+          <textarea name="copy" id="adminDescValue" hidden required>${esc(event.copy || '')}</textarea>
+          <div class="admin-mention-pop" id="adminMentionPop" hidden>
+            <span>Instagram link for <strong id="adminMentionName">…</strong></span>
+            <input id="adminMentionUrl" type="url" placeholder="https://instagram.com/handle" autocomplete="off" />
+            <div class="admin-mention-pop-actions">
+              <button class="button button-dark" type="button" id="adminMentionSave">Save</button>
+              <button class="button button-line" type="button" id="adminMentionCancel">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </label>
       <label>Link<input name="linkUrl" value="${esc(event.linkUrl || '')}" placeholder="https://" /></label>
       <div class="admin-editor-actions"><button class="button button-dark" type="submit">${event.id ? 'Save changes' : 'Publish card'}</button><output></output></div>
     </form>`;
@@ -1020,13 +1082,37 @@
 
   function bindTimelineForm() {
     const form = document.getElementById('adminTimelineForm');
-    form?.addEventListener('submit', async (event) => {
+    if (!form) return;
+    bindDescriptionMentions(form);
+    const drop = document.getElementById('adminTimelineDrop');
+    const dropPreview = document.getElementById('adminTimelineDropPreview');
+    let selectedFile = null;
+    form.image?.addEventListener('change', async () => {
+      const file = form.image.files[0];
+      if (!file) return;
+      selectedFile = file;
+      const preview = await readFile(file);
+      if (dropPreview) {
+        dropPreview.src = preview;
+        dropPreview.hidden = false;
+      }
+      drop?.classList.add('has-preview');
+    });
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const button = form.querySelector('button[type="submit"]');
       const output = form.querySelector('output');
+      const editor = document.getElementById('adminDescEditor');
+      const hidden = document.getElementById('adminDescValue');
+      if (editor && hidden) hidden.value = descriptionFromEditor(editor);
       button.disabled = true;
       output.textContent = 'Saving…';
       try {
+        let imageUrl = form.imageUrl.value;
+        if (selectedFile) {
+          const upload = await post('/api/uploads', { filename: selectedFile.name, data: await readFile(selectedFile) });
+          imageUrl = upload.url;
+        }
         const eventDate = form.eventDate.value;
         await post('/api/timeline', {
           id: form.id.value || undefined,
@@ -1035,7 +1121,8 @@
           pill: form.pill.value.trim(),
           title: form.title.value.trim(),
           heldAt: form.heldAt.value.trim(),
-          copy: form.copy.value.trim(),
+          copy: (hidden?.value || form.copy.value || '').trim(),
+          imageUrl,
           linkUrl: form.linkUrl.value.trim(),
           linkLabel: 'View the fun',
           deco: 'none',
