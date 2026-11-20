@@ -310,16 +310,16 @@ def _annotate_events(events, public_only=False):
         if kind not in ("event", "form"):
             kind = "event"
         event["eventKind"] = kind
-        event["showCountdown"] = kind == "event"
+        event["showCountdown"] = kind == "event" and event.get("attendanceMode") != "none"
         event["_starts"] = starts
         past = bool(starts and starts <= now)
         event["past"] = past
         if public_only:
             if kind == "form":
-                # Featured forms stay visible; others need a date in window.
-                if not event.get("featured") and not starts:
+                # Forms stay visible while open (end date in the future) or recently ended.
+                if not starts:
                     continue
-                if past and starts and starts < past_cutoff and not event.get("featured"):
+                if past and starts < past_cutoff:
                     continue
             else:
                 if not starts:
@@ -332,47 +332,52 @@ def _annotate_events(events, public_only=False):
         e for e in annotated
         if e.get("eventKind") != "form" and not e.get("past")
     ]
-    form_items = [e for e in annotated if e.get("eventKind") == "form"]
+    form_upcoming = [
+        e for e in annotated
+        if e.get("eventKind") == "form" and not e.get("past")
+    ]
+    form_past = [
+        e for e in annotated
+        if e.get("eventKind") == "form" and e.get("past")
+    ]
     past_events = [
         e for e in annotated
         if e.get("eventKind") != "form" and e.get("past")
     ]
-    regular_upcoming.sort(
-        key=lambda event: (
-            event["_starts"] is None,
-            event["_starts"] or datetime.max.replace(tzinfo=timezone.utc),
-            event.get("sortOrder", 0),
-        )
+    by_start = lambda event: (
+        event["_starts"] is None,
+        event["_starts"] or datetime.max.replace(tzinfo=timezone.utc),
+        event.get("sortOrder", 0),
     )
-    form_items.sort(
-        key=lambda event: (
-            not event.get("featured"),
-            event["_starts"] is None,
-            event["_starts"] or datetime.max.replace(tzinfo=timezone.utc),
-            event.get("sortOrder", 0),
-        )
+    regular_upcoming.sort(key=by_start)
+    form_upcoming.sort(key=by_start)
+    form_past.sort(
+        key=lambda event: event["_starts"] or datetime.min.replace(tzinfo=timezone.utc),
+        reverse=True,
     )
     past_events.sort(
         key=lambda event: event["_starts"] or datetime.min.replace(tzinfo=timezone.utc),
         reverse=True,
     )
 
-    primary = regular_upcoming[0] if regular_upcoming else None
-    featured_form = next((e for e in form_items if e.get("featured")), None)
-    # Primary featured = next regular event, else the featured form.
-    # Featured form is secondary when a regular event owns the primary slot.
-    primary_id = primary["id"] if primary else (featured_form["id"] if featured_form else None)
-    secondary_id = (
-        featured_form["id"]
-        if featured_form and primary and featured_form["id"] != primary_id
-        else None
-    )
+    # Featured order: soonest event, then soonest form, then remaining events/forms.
+    next_event = regular_upcoming[0] if regular_upcoming else None
+    next_form = form_upcoming[0] if form_upcoming else None
+    primary = next_event or next_form
+    secondary = next_form if next_event and next_form else None
+    primary_id = primary["id"] if primary else None
+    secondary_id = secondary["id"] if secondary else None
 
     ordered = []
     seen = set()
-    for event in ([primary] if primary else []) + ([featured_form] if featured_form and featured_form is not primary else []) + regular_upcoming[1:] + [
-        e for e in form_items if e is not featured_form
-    ] + past_events:
+    for event in (
+        ([next_event] if next_event else [])
+        + ([next_form] if next_form else [])
+        + regular_upcoming[1:]
+        + form_upcoming[1:]
+        + past_events
+        + form_past
+    ):
         if not event or event["id"] in seen:
             continue
         seen.add(event["id"])
@@ -474,37 +479,38 @@ def save_event(payload):
         return 400, {"error": "Choose event or form."}
     form_url = str(payload.get("formUrl", "")).strip()[:500]
     attendance_mode = str(payload.get("attendanceMode", "rsvp")).strip().lower()
-    if event_kind == "event" and attendance_mode not in ("rsvp", "quick"):
-        return 400, {"error": "Choose RSVP form or quick Yes/No."}
+    if event_kind == "event" and attendance_mode not in ("rsvp", "quick", "none"):
+        return 400, {"error": "Choose RSVP, quick Yes/No, or view only."}
     if event_kind == "form":
-        attendance_mode = "rsvp"
+        attendance_mode = "none"
+        location = ""
         if not form_url or not re.match(r"^https?://", form_url, re.I):
             return 400, {"error": "Add a valid form link (http/https)."}
+    elif form_url and not re.match(r"^https?://", form_url, re.I):
+        return 400, {"error": "Form link must start with http:// or https://."}
     published = payload.get("published") is not False
     try:
         sort_order = int(payload.get("sortOrder", 0))
     except (TypeError, ValueError):
         sort_order = 0
     starts = _parse_starts_at(payload.get("startsAt"))
-    if event_kind == "event" and not starts:
-        return 400, {"error": "Set a date and start time."}
-    if starts:
-        starts_at = starts.isoformat()
-        local = starts.astimezone(DISPLAY_TZ)
-        start_time = local.strftime("%H:%M")
+    if not starts:
+        return 400, {"error": "Set an end date." if event_kind == "form" else "Set a date and start time."}
+    starts_at = starts.isoformat()
+    local = starts.astimezone(DISPLAY_TZ)
+    start_time = local.strftime("%H:%M")
+    if event_kind == "form":
+        date_label = f"Ends {local.strftime('%B %d, %Y · %I:%M %p').replace(' 0', ' ')}"
+        short_date = local.strftime("%b %d").replace(" 0", " ")
+    else:
         date_label = local.strftime("%B %d, %Y · %I:%M %p").replace(" 0", " ")
         short_date = local.strftime("%b %d").replace(" 0", " ")
         if location:
             date_label = f"{local.strftime('%B %d').replace(' 0', ' ')} - {location}"
             short_date = local.strftime("%b %d").replace(" 0", " ")
-    else:
-        starts_at = None
-        start_time = ""
-        date_label = "Open form"
-        short_date = "Form"
-    show_countdown = event_kind == "event"
-    # Regular events are auto-featured by date; forms use the admin featured flag.
-    featured = bool(payload.get("featured")) if event_kind == "form" else False
+    show_countdown = event_kind == "event" and attendance_mode != "none"
+    # Featured ranking is computed from upcoming dates; never store a manual pin.
+    featured = False
     if not rsvp_key:
         rsvp_key = title
     if not title or not description:

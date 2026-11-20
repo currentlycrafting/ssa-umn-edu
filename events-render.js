@@ -175,11 +175,33 @@
     };
   }
 
-  function formOpenButton(event, featured) {
+  function formOpenButton(event, featured, label) {
     const url = String(event.formUrl || '').trim();
     if (!url) return '';
     const classes = featured ? 'button button-dark handdrawn' : 'micro-button';
-    return `<a class="${classes}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open form</a>`;
+    return `<a class="${classes}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label || 'Open form')}</a>`;
+  }
+
+  function isViewOnly(event) {
+    return String(event?.attendanceMode || '').toLowerCase() === 'none';
+  }
+
+  function eventActionButtons(event, options = {}) {
+    const featured = Boolean(options.featured);
+    const past = isPast(event);
+    if (isFormEvent(event)) return formOpenButton(event, featured);
+    const formLink = formOpenButton(event, featured, featured ? 'Open RSVP form' : 'Form link');
+    if (past) {
+      const who = `<button class="${featured ? 'button button-dark handdrawn' : 'micro-button'} rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button>`;
+      const feedback = `<button class="${featured ? 'button button-line' : 'micro-button'} feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`;
+      return isViewOnly(event) ? `${igCardButton(event, featured)}` : `${who}${feedback}${igCardButton(event, featured)}`;
+    }
+    if (isViewOnly(event)) {
+      return `${formLink}${calendarButton(event, { featured })}${igCardButton(event, featured)}`;
+    }
+    const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : (featured ? 'Reserve Your Spot' : 'RSVP');
+    const rsvp = `<button class="${featured ? 'button button-dark handdrawn' : 'micro-button'} rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>`;
+    return `${rsvp}${formLink}${calendarButton(event, { featured })}${igCardButton(event, featured)}`;
   }
 
   function googleCalendarUrl(event) {
@@ -218,6 +240,7 @@
       ? '<span class="home-event-ribbon" aria-hidden="true">Next up</span>'
       : '';
     const form = isFormEvent(event);
+    const viewOnly = isViewOnly(event);
     const countdownId = options.countdownId || 'cmsFeaturedCountdown';
     const eyebrow = form ? 'Featured Form' : 'Featured Event';
     if (form) {
@@ -239,8 +262,10 @@
           </div>
         </div>`;
     }
-    const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
-    const showCountdown = event.startsAt && event.showCountdown !== false;
+    const showCountdown = event.startsAt && event.showCountdown !== false && !viewOnly;
+    const going = viewOnly
+      ? ''
+      : `<p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>`;
     return `
       ${ribbon}
       ${art}
@@ -250,16 +275,14 @@
           <h3>${esc(event.title)}</h3>
           <p class="featured-location">${esc(displayDate(event))}</p>
           ${showCountdown ? `<div class="featured-countdown" id="${esc(countdownId)}" data-start="${esc(event.startsAt)}" aria-label="Countdown"><div class="fc-cell"><b data-fc="days">—</b><span>days</span></div><div class="fc-cell"><b data-fc="hours">—</b><span>hrs</span></div><div class="fc-cell"><b data-fc="mins">—</b><span>min</span></div><div class="fc-cell"><b data-fc="secs">—</b><span>sec</span></div></div>` : ''}
-          <p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>
+          ${going}
           <div class="event-copy-stack">
             <p class="featured-copy event-card-copy is-clamped" data-full-copy>${descriptionHtml(event)}</p>
             <button class="event-read-more" type="button" hidden>Read more</button>
           </div>
         </div>
         <div class="featured-event-actions">
-          <button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>
-          ${calendarButton(event, { featured: true })}
-          ${igCardButton(event, true)}
+          ${eventActionButtons(event, { featured: true })}
         </div>
       </div>`;
   }
@@ -267,22 +290,15 @@
   function eventCard(event) {
     const past = isPast(event);
     const form = isFormEvent(event);
+    const viewOnly = isViewOnly(event);
     const short = displayShort(event);
     const time = event.startsAt
       ? new Date(event.startsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
       : displayTime(event.startTime);
-    const rsvpLabel = 'RSVP';
     const poster = event.imageUrl
       ? `<button class="event-card-poster" type="button" data-open-event-poster="${esc(event.imageUrl)}" data-event-caption="${esc(event.title)}" aria-label="View ${esc(event.title)} poster"><img src="${esc(event.imageUrl)}" alt="${esc(event.title)} poster" loading="lazy" /></button>`
       : '';
-    const whoRsvped = past
-      ? `<button class="micro-button rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button>`
-      : '';
-    const actions = form
-      ? formOpenButton(event, false)
-      : past
-        ? `${whoRsvped}<button class="micro-button feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>${igCardButton(event)}`
-        : `<button class="micro-button rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event)}${igCardButton(event)}`;
+    const actions = eventActionButtons(event, { featured: false });
     const dateLine = form
       ? `<span class="event-date">${esc(short || displayDate(event) || 'Open now')}</span>`
       : `<span class="event-date">${esc(short)}${time ? ` · ${esc(time)}` : ''}</span>`;
@@ -292,14 +308,14 @@
         ${form ? '<span class="eyebrow">Form</span>' : past ? '<span class="event-finished">Finished</span>' : ''}
         ${dateLine}
         <h3>${esc(event.title)}</h3>
-        ${past || form ? '' : `<p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>`}
+        ${past || form || viewOnly ? '' : `<p class="event-going"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> coming</p>`}
         <div class="event-copy-stack">
           <p class="event-card-copy is-clamped" data-full-copy>${descriptionHtml(event)}</p>
           <button class="event-read-more" type="button" hidden>Read more</button>
         </div>
       </div>
       <div class="event-card-actions">
-        ${past && !form ? `<button class="event-going event-going--past rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> RSVP&apos;d</button>` : ''}
+        ${past && !form && !viewOnly ? `<button class="event-going event-going--past rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true"><span class="event-going-num" data-event-count="${esc(event.rsvpKey)}">—</span> RSVP&apos;d</button>` : ''}
         ${actions}
       </div>
     </article>`;
@@ -308,6 +324,40 @@
   let countdownTimer = null;
   let sourceEvents = [];
   let stickyFeatured = null;
+  let hubFeaturedInitiative = null;
+
+  function renderFeaturedInitiative(target, item) {
+    if (!target) return;
+    if (!item) {
+      target.innerHTML = '';
+      delete target.dataset.initiativeId;
+      setHidden(target, true);
+      return;
+    }
+    const image = item.imageUrl || '';
+    const art = image
+      ? `<button class="featured-event-art" type="button" data-open-event-poster="${esc(image)}" data-event-caption="${esc(item.title)}" aria-label="View ${esc(item.title)} cover"><img src="${esc(image)}" alt="${esc(item.title)} cover" /></button>`
+      : '';
+    const link = item.linkUrl
+      ? `<a class="button button-dark handdrawn" href="${esc(item.linkUrl)}" target="_blank" rel="noopener noreferrer">${esc(item.linkLabel || 'Learn more')}</a>`
+      : `<a class="button button-dark handdrawn" href="/events?view=initiatives#initiative-${item.id}">View initiative</a>`;
+    target.classList.toggle('featured-event--no-art', !image);
+    target.dataset.initiativeId = String(item.id);
+    target.innerHTML = `
+      ${art}
+      <div class="featured-event-body">
+        <div class="featured-event-copy">
+          <span class="eyebrow">Featured Initiative</span>
+          <h3>${esc(item.title)}</h3>
+          <div class="event-copy-stack">
+            <p class="featured-copy event-card-copy is-clamped" data-full-copy>${initiativeDescriptionHtml(item.description || '')}</p>
+            <button class="event-read-more" type="button" hidden>Read more</button>
+          </div>
+        </div>
+        <div class="featured-event-actions">${link}</div>
+      </div>`;
+    setHidden(target, false);
+  }
 
   function renderFeatured(target, event, options = {}) {
     if (!target) return;
@@ -359,7 +409,7 @@
       bar?.remove();
       return;
     }
-    if (!featured || isFormEvent(featured)) {
+    if (!featured || isFormEvent(featured) || isViewOnly(featured)) {
       bar?.remove();
       return;
     }
@@ -394,8 +444,10 @@
     const homeRegular = document.getElementById('homeEvents');
     const eventsFeatured = document.getElementById('eventsFeatured');
     const eventsFeaturedSecondary = document.getElementById('eventsFeaturedSecondary');
+    const eventsFeaturedTertiary = document.getElementById('eventsFeaturedTertiary');
     const eventsGrid = document.getElementById('eventsGrid');
     const condensedHome = Boolean(document.querySelector('.home-upcoming'));
+    const featuredInitiative = hubFeaturedInitiative;
 
     if (featured) {
       renderFeatured(homeFeatured, featured, { ribbon: condensedHome });
@@ -416,6 +468,9 @@
     renderFeatured(eventsFeatured, featured);
     if (eventsFeaturedSecondary) {
       renderFeatured(eventsFeaturedSecondary, featuredSecondary, { countdownId: 'cmsFeaturedCountdownSecondary' });
+    }
+    if (eventsFeaturedTertiary) {
+      renderFeaturedInitiative(eventsFeaturedTertiary, featuredInitiative);
     }
     updateStickyBar(featured);
 
@@ -712,10 +767,10 @@
     art.hidden = true;
     art.innerHTML = '';
     const past = isPast(event);
-    const rsvpLabel = event.attendanceMode === 'quick' ? 'RSVP' : 'Reserve Your Spot';
+    const viewOnly = isViewOnly(event);
     const countWrap = modal.querySelector('.event-going');
     if (countWrap) {
-      if (form) {
+      if (form || viewOnly) {
         countWrap.hidden = true;
       } else {
         countWrap.hidden = false;
@@ -727,10 +782,7 @@
     if (form) {
       actions.innerHTML = formOpenButton(event, true);
     } else {
-      const rsvp = past
-        ? `<button class="button button-dark handdrawn rsvp-attendees-button" type="button" data-event="${esc(event.rsvpKey)}" data-past="true">Who RSVP&apos;d</button><button class="button button-line feedback-button" type="button" data-event="${esc(event.rsvpKey)}" data-event-title="${esc(event.title)}">How was it?</button>`
-        : `<button class="button button-dark handdrawn rsvp-button" type="button" data-event="${esc(event.rsvpKey)}" data-date="${esc(displayDate(event))}" data-attendance-mode="${esc(event.attendanceMode || 'rsvp')}" data-default-label="${rsvpLabel}"><span class="rsvp-btn-label">${rsvpLabel}</span></button>${calendarButton(event, { featured: true })}`;
-      actions.innerHTML = `${rsvp}<button class="button button-dark event-detail-download" type="button">Download IG card</button>`;
+      actions.innerHTML = `${eventActionButtons(event, { featured: true })}<button class="button button-dark event-detail-download" type="button">Download IG card</button>`;
       actions.querySelector('.event-detail-download')?.addEventListener('click', () => downloadEventGraphic(event));
     }
     modal.classList.add('open');
@@ -977,12 +1029,17 @@
     try {
       const data = await api('/api/initiatives');
       const items = data.initiatives || [];
+      hubFeaturedInitiative = items[0] || null;
+      renderFeaturedInitiative(document.getElementById('eventsFeaturedTertiary'), hubFeaturedInitiative);
+      applyHubViewFilter();
       if (!items.length) {
         list.innerHTML = '<p class="home-album-empty">Initiatives will show up here once the board publishes them.</p>';
         return;
       }
       list.innerHTML = items.map(initiativeCard).join('');
     } catch (_) {
+      hubFeaturedInitiative = null;
+      renderFeaturedInitiative(document.getElementById('eventsFeaturedTertiary'), null);
       list.innerHTML = '<p class="home-album-empty">Initiatives could not load right now.</p>';
     }
   }
@@ -1032,6 +1089,7 @@
     });
     const featuredEl = document.getElementById('eventsFeatured');
     const secondaryEl = document.getElementById('eventsFeaturedSecondary');
+    const tertiaryEl = document.getElementById('eventsFeaturedTertiary');
     [featuredEl, secondaryEl].forEach((slot) => {
       if (!slot?.dataset.eventKey) return;
       const item = findEvent(slot.dataset.eventKey);
@@ -1048,6 +1106,10 @@
     });
     if (view === 'events' && secondaryEl) {
       setHidden(secondaryEl, true);
+    }
+    if (tertiaryEl) {
+      if (view === 'forms' || view === 'events') setHidden(tertiaryEl, true);
+      else setHidden(tertiaryEl, !tertiaryEl.dataset.initiativeId);
     }
     document.querySelectorAll('#eventsGrid .event-card').forEach((card) => {
       const kind = card.dataset.eventKind || 'event';
@@ -1078,7 +1140,7 @@
       countdownTimer = null;
     }
     const countdown = document.getElementById('cmsFeaturedCountdown');
-    if (!countdown || !featured?.startsAt || isFormEvent(featured)) return;
+    if (!countdown || !featured?.startsAt || isFormEvent(featured) || isViewOnly(featured)) return;
     const start = new Date(featured.startsAt).getTime();
     const update = () => {
       const remaining = start - Date.now();

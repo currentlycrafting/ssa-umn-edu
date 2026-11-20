@@ -112,13 +112,13 @@
       <div class="admin-stat-grid">
         ${stat('Published events', data.events.filter((event) => event.published && event.eventKind !== 'form').length, 'Public calendar')}
         ${stat('Open forms', data.events.filter((event) => event.published && event.eventKind === 'form').length, 'Featured or listed forms')}
+        ${stat('Initiatives', data.initiatives.filter((item) => item.published).length, 'Published projects')}
         ${stat('Intern apps', (admin.applications || []).length, 'Internship applications')}
         ${stat('Gallery photos', data.gallery.length, 'Community album')}
         ${stat('Messages', inboxCount() + (admin.rsvp || []).length, 'Inbox, ideas, and RSVPs')}
       </div>
       <div class="admin-quick-grid">
-        <button data-go="events"><strong>Event / form</strong><span>Add a calendar event or open form.</span></button>
-        <button data-go="initiatives"><strong>Initiative</strong><span>Publish a project with collaborators.</span></button>
+        <button data-go="events"><strong>Event / form / initiative</strong><span>Add a calendar event, open form, or initiative.</span></button>
         <button data-go="applications"><strong>Applications</strong><span>Review internship applications.</span></button>
         <button data-go="gallery"><strong>Gallery</strong><span>Add or remove community photos.</span></button>
         <button data-go="timeline"><strong>Timeline</strong><span>Add moments with photos and @mentions.</span></button>
@@ -153,27 +153,55 @@
     return 'Upcoming';
   }
 
-  function eventForm(event = {}) {
-    const previewImage = event.imageUrl || '';
+  function eventForm(event = {}, options = {}) {
+    const kind = options.kind || event.eventKind || 'event';
+    const isForm = kind === 'form';
+    const isInitiative = kind === 'initiative';
+    const initiative = options.initiative || {};
+    const previewImage = (isInitiative ? initiative.imageUrl : event.imageUrl) || '';
     const startsAt = toDatetimeLocal(event.startsAt);
     const hasImage = Boolean(previewImage);
-    const isForm = event.eventKind === 'form';
-    const answering = Boolean(event.suggestionId || initiativeDraft.suggestionId);
+    const answering = Boolean(event.suggestionId || initiativeDraft.suggestionId || initiative.suggestionId);
     const suggestionId = event.suggestionId || initiativeDraft.suggestionId || '';
+    const title = isInitiative
+      ? (initiative.title || initiativeDraft.suggestionTitle || '')
+      : (event.title || initiativeDraft.suggestionTitle || '');
+    const description = isInitiative
+      ? (initiative.description || initiativeDraft.suggestionDescription || '')
+      : (event.description || initiativeDraft.suggestionDescription || '');
+    const mode = event.attendanceMode || 'rsvp';
+    if (isInitiative && initiative.id) {
+      initiativeDraft = {
+        collaborators: (initiative.collaborators || []).map((row) => ({ ...row })),
+        photos: [],
+        suggestionId: null,
+        suggestionTitle: '',
+        suggestionDescription: ''
+      };
+    } else if (isInitiative) {
+      initiativeDraft.collaborators = initiativeDraft.collaborators || [];
+    }
     return `<form class="admin-editor" id="adminEventForm">
-      <input type="hidden" name="id" value="${esc(event.id || '')}" />
+      <input type="hidden" name="id" value="${esc(isInitiative ? (initiative.id || '') : (event.id || ''))}" />
       <input type="hidden" name="rsvpKey" value="${esc(event.rsvpKey || '')}" />
-      <input type="hidden" name="sortOrder" value="${esc(event.sortOrder ?? data.events.length * 10)}" />
-      <input type="hidden" name="imageUrl" value="${esc(event.imageUrl || '')}" />
+      <input type="hidden" name="sortOrder" value="${esc(isInitiative ? (initiative.sortOrder ?? data.initiatives.length * 10) : (event.sortOrder ?? data.events.length * 10))}" />
+      <input type="hidden" name="imageUrl" value="${esc(previewImage)}" />
       <input type="hidden" name="suggestionId" value="${esc(suggestionId)}" />
-      <div class="admin-editor-head"><div><span class="eyebrow">${event.id ? 'Edit' : answering ? 'Answer suggestion' : 'New'}</span><h3>${event.id ? esc(event.title) : answering ? 'Turn this idea into an event' : 'Add an event or form'}</h3></div>${event.id || answering ? '<button type="button" class="button button-line" data-new-event>New</button>' : ''}</div>
-      ${answering ? `<p class="admin-idea-answered">Answering suggestion: <strong>${esc(initiativeDraft.suggestionTitle || event.title || 'Untitled idea')}</strong></p>` : ''}
-      <fieldset class="admin-feature-choice"><legend>Type</legend><div><label><input type="radio" name="eventKind" value="event" ${isForm ? '' : 'checked'} /><span>Event</span></label><label><input type="radio" name="eventKind" value="form" ${isForm ? 'checked' : ''} /><span>Form</span></label></div><small>Forms can be featured under the next event (or first if none).</small></fieldset>
+      <div class="admin-editor-head"><div><span class="eyebrow">${(isInitiative ? initiative.id : event.id) ? 'Edit' : answering ? 'Answer suggestion' : 'New'}</span><h3>${(isInitiative ? initiative.id : event.id) ? esc(title) : answering ? 'Turn this idea into a listing' : 'Add an event, form, or initiative'}</h3></div>${(isInitiative ? initiative.id : event.id) || answering ? '<button type="button" class="button button-line" data-new-event>New</button>' : ''}</div>
+      ${answering ? `<p class="admin-idea-answered">Answering suggestion: <strong>${esc(initiativeDraft.suggestionTitle || title || 'Untitled idea')}</strong></p>` : ''}
+      <fieldset class="admin-feature-choice"><legend>Type</legend><div>
+        <label><input type="radio" name="eventKind" value="event" ${!isForm && !isInitiative ? 'checked' : ''} /><span>Event</span></label>
+        <label><input type="radio" name="eventKind" value="form" ${isForm ? 'checked' : ''} /><span>Form</span></label>
+        <label><input type="radio" name="eventKind" value="initiative" ${isInitiative ? 'checked' : ''} /><span>Initiative</span></label>
+      </div><small>Featured order is automatic: next event, then form, then initiative.</small></fieldset>
       <div class="admin-form-grid admin-form-grid-simple">
-        <label>Title<input name="title" value="${esc(event.title || initiativeDraft.suggestionTitle || '')}" required /></label>
-        <label data-event-only>Date &amp; start time<input type="datetime-local" name="startsAt" value="${esc(startsAt)}" /></label>
-        <label data-event-only>Location<input name="location" value="${esc(event.location || '')}" placeholder="Coffman, Northrop lawn…" /></label>
-        <label data-form-only hidden>Form link<input type="url" name="formUrl" value="${esc(event.formUrl || '')}" placeholder="https://forms.gle/…" /></label>
+        <label>Title<input name="title" value="${esc(title)}" required /></label>
+        <label data-event-only ${isForm || isInitiative ? 'hidden' : ''}>Date &amp; start time<input type="datetime-local" name="startsAt" value="${esc(startsAt)}" /></label>
+        <label data-form-only ${isForm ? '' : 'hidden'}>End Date<input type="datetime-local" name="endsAt" value="${esc(startsAt)}" /></label>
+        <label data-event-only ${isForm || isInitiative ? 'hidden' : ''}>Location<input name="location" value="${esc(event.location || '')}" placeholder="Coffman, Northrop lawn…" /></label>
+        <label data-form-only ${isForm ? '' : 'hidden'}>Form link<input type="url" name="formUrl" value="${esc(event.formUrl || '')}" placeholder="https://forms.gle/…" /></label>
+        <label data-initiative-only ${isInitiative ? '' : 'hidden'}>External link<input name="linkUrl" value="${esc(initiative.linkUrl || '')}" placeholder="https://…" /></label>
+        <label data-initiative-only ${isInitiative ? '' : 'hidden'}>Link label<input name="linkLabel" value="${esc(initiative.linkLabel || '')}" placeholder="Learn more" /></label>
       </div>
       <label class="admin-field-label">Cover image</label>
       <label class="gallery-drop admin-event-drop ${hasImage ? 'has-preview' : ''}" id="adminEventDrop">
@@ -189,10 +217,10 @@
         <img class="admin-event-drop-preview" id="adminEventDropPreview" src="${esc(previewImage)}" alt="" ${hasImage ? '' : 'hidden'} />
       </label>
       <label class="admin-desc-field">Description
-        <small>Type @ then a name — a popup lets you attach their Instagram link.</small>
+        <small>Type @ then a name — popup attaches their Instagram link.</small>
         <div class="admin-desc-shell" id="adminDescShell">
           <div class="admin-desc-editor" id="adminDescEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="What’s this about?"></div>
-          <textarea name="description" id="adminDescValue" hidden required>${esc(event.description || initiativeDraft.suggestionDescription || '')}</textarea>
+          <textarea name="description" id="adminDescValue" hidden required>${esc(description)}</textarea>
           <div class="admin-mention-pop" id="adminMentionPop" hidden>
             <span>Instagram link for <strong id="adminMentionName">…</strong></span>
             <input id="adminMentionUrl" type="url" placeholder="https://instagram.com/handle" autocomplete="off" />
@@ -203,10 +231,19 @@
           </div>
         </div>
       </label>
-      <fieldset class="admin-feature-choice" data-event-only><legend>How should guests respond?</legend><div><label><input type="radio" name="attendanceMode" value="rsvp" ${event.attendanceMode === 'quick' ? '' : 'checked'} /><span>Full RSVP form</span></label><label><input type="radio" name="attendanceMode" value="quick" ${event.attendanceMode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label></div><small>The next upcoming event is featured automatically with a countdown.</small></fieldset>
-      <label data-form-only hidden class="admin-check-inline"><input type="checkbox" name="featured" ${event.featured || event.featuredSecondary ? 'checked' : ''} /> Feature this form (under a featured event, or first if none)</label>
+      <label data-initiative-only ${isInitiative ? '' : 'hidden'}>Paragraph<textarea name="paragraph" rows="4" placeholder="Longer story / impact paragraph">${esc(initiative.paragraph || '')}</textarea></label>
+      <div data-initiative-only ${isInitiative ? '' : 'hidden'}>
+        <div class="admin-list-head"><h3>Collaborators &amp; orgs</h3><button class="button button-dark" type="button" id="adminAddCollab">Add collabs &amp; orgs</button></div>
+        <div id="adminCollabList">${collaboratorRowsHtml()}</div>
+      </div>
+      <fieldset class="admin-feature-choice" data-event-only ${isForm || isInitiative ? 'hidden' : ''}><legend>How should guests respond?</legend><div>
+        <label><input type="radio" name="attendanceMode" value="rsvp" ${mode !== 'quick' && mode !== 'none' ? 'checked' : ''} /><span>Full RSVP form</span></label>
+        <label><input type="radio" name="attendanceMode" value="quick" ${mode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label>
+        <label><input type="radio" name="attendanceMode" value="none" ${mode === 'none' ? 'checked' : ''} /><span>View event only</span></label>
+      </div><small>Featured listings are chosen automatically by soonest date.</small></fieldset>
+      <label data-event-only ${isForm || isInitiative ? 'hidden' : ''}>Optional form / RSVP link<input type="url" name="eventFormUrl" value="${esc(event.formUrl || '')}" placeholder="https://forms.gle/… (optional)" /></label>
       <div class="admin-event-preview" id="adminEventPreview" data-image="${esc(previewImage)}"></div>
-      <div class="admin-editor-actions"><button class="button button-dark" type="submit">${event.id ? 'Save changes' : answering ? 'Publish as event' : 'Publish'}</button><output></output></div>
+      <div class="admin-editor-actions"><button class="button button-dark" type="submit">${(isInitiative ? initiative.id : event.id) ? 'Save changes' : isInitiative ? 'Publish initiative' : answering ? 'Publish' : 'Publish'}</button><output></output></div>
     </form>`;
   }
 
@@ -239,21 +276,48 @@
     ).join('')}</div></div>`;
   }
 
-  function renderEvents(editId) {
-    const editing = data.events.find((event) => event.id === Number(editId));
-    content.innerHTML = eventForm(editing)
-      + (editing ? eventRsvpPanel(editing) : '')
-      + `<div class="admin-list-head"><h3>Calendar</h3><span>${data.events.length} events</span></div><div class="admin-event-list">${data.events.map((event) => {
-      const when = event.location
-        ? `${esc(event.shortDate || fmt(event.startsAt))} - ${esc(event.location)}`
-        : esc(event.dateLabel || fmt(event.startsAt));
-      const rsvpCount = rsvpPartyTotal(rsvpsForEvent(event.rsvpKey));
-      return `
+  function renderEvents(editId, options = {}) {
+    const kind = options.kind || null;
+    const initiativeId = options.initiativeId != null ? Number(options.initiativeId) : null;
+    const editingEvent = !kind || kind === 'event' || kind === 'form'
+      ? data.events.find((event) => event.id === Number(editId))
+      : null;
+    const editingInitiative = kind === 'initiative' || initiativeId
+      ? data.initiatives.find((item) => item.id === Number(initiativeId || editId))
+      : null;
+    const formKind = editingInitiative ? 'initiative' : (editingEvent?.eventKind || kind || 'event');
+    if (formKind === 'initiative' && editId == null && initiativeId == null && !initiativeDraft.suggestionId) {
+      initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
+    }
+    content.innerHTML = eventForm(editingEvent || {}, {
+      kind: formKind,
+      initiative: editingInitiative || {}
+    })
+      + (editingEvent && formKind !== 'initiative' ? eventRsvpPanel(editingEvent) : '')
+      + `<div class="admin-list-head"><h3>Listings</h3><span>${data.events.length + data.initiatives.length}</span></div>
+         <div class="admin-event-list">${[
+           ...data.events.map((event) => {
+             const when = event.eventKind === 'form'
+               ? esc(event.dateLabel || fmt(event.startsAt))
+               : event.location
+                 ? `${esc(event.shortDate || fmt(event.startsAt))} - ${esc(event.location)}`
+                 : esc(event.dateLabel || fmt(event.startsAt));
+             const rsvpCount = event.eventKind === 'form' || event.attendanceMode === 'none'
+               ? ''
+               : `<p class="admin-event-rsvp-count">${rsvpPartyTotal(rsvpsForEvent(event.rsvpKey))} RSVP&apos;d</p>`;
+             return `
       <article class="admin-event-item admin-event-item-clean ${event.published ? '' : 'is-draft'}">
-        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${when}</p><p class="admin-event-rsvp-count">${rsvpCount} RSVP&apos;d</p></div>
+        <div><span class="eyebrow">${esc(eventStatus(event))}</span><h3>${esc(event.title)}</h3><p>${when}</p>${rsvpCount}</div>
         <div class="admin-item-actions"><button class="button button-line" data-edit-event="${event.id}">Edit</button><button class="button button-line" data-delete-event="${event.id}">Remove</button></div>
       </article>`;
-    }).join('') || '<p class="admin-empty">No events yet.</p>'}</div>`;
+           }),
+           ...data.initiatives.map((item) => `
+      <article class="admin-event-item admin-event-item-clean ${item.published ? '' : 'is-draft'}">
+        <div><span class="eyebrow">Initiative${item.published ? '' : ' · Draft'}</span><h3>${esc(item.title)}</h3>
+        <p>${(item.collaborators || []).length} collaborators</p></div>
+        <div class="admin-item-actions"><button class="button button-line" data-edit-initiative="${item.id}">Edit</button><button class="button button-line" data-delete-initiative="${item.id}">Remove</button></div>
+      </article>`)
+         ].join('') || '<p class="admin-empty">No listings yet.</p>'}</div>`;
     bindEventForm();
   }
 
@@ -506,11 +570,13 @@
 
   function bindEventForm() {
     const form = document.getElementById('adminEventForm');
+    if (!form) return;
     const preview = document.getElementById('adminEventPreview');
     const drop = document.getElementById('adminEventDrop');
     const dropPreview = document.getElementById('adminEventDropPreview');
     let previewImage = preview?.dataset.image || '';
     let selectedFile = null;
+    let activeKind = form.eventKind?.value || 'event';
 
     async function applyImageFile(file) {
       if (!file || !/^image\/(png|jpeg|webp)$/i.test(file.type)) return;
@@ -525,49 +591,118 @@
     }
 
     function syncKindUi() {
-      const isForm = form.eventKind?.value === 'form';
-      form.querySelectorAll('[data-event-only]').forEach((el) => { el.hidden = isForm; });
+      const kind = form.eventKind?.value || 'event';
+      const isForm = kind === 'form';
+      const isInitiative = kind === 'initiative';
+      const isEvent = kind === 'event';
+      form.querySelectorAll('[data-event-only]').forEach((el) => { el.hidden = !isEvent; });
       form.querySelectorAll('[data-form-only]').forEach((el) => { el.hidden = !isForm; });
-      if (form.startsAt) form.startsAt.required = !isForm;
+      form.querySelectorAll('[data-initiative-only]').forEach((el) => { el.hidden = !isInitiative; });
+      if (form.startsAt) form.startsAt.required = isEvent;
+      if (form.endsAt) form.endsAt.required = isForm;
       if (form.formUrl) form.formUrl.required = isForm;
+      if (form.description) form.description.required = !isInitiative;
+      const submit = form.querySelector('button[type="submit"]');
+      if (submit && !form.id.value) {
+        submit.textContent = isInitiative ? 'Publish initiative' : 'Publish';
+      }
     }
 
     function updatePreview() {
       if (!preview) return;
       syncKindUi();
-      const isForm = form.eventKind?.value === 'form';
-      const responseLabel = isForm
-        ? 'Open form link'
-        : (form.attendanceMode?.value === 'quick' ? 'Are you coming? · Yes / No' : 'Full RSVP form');
-      const eventTitle = form.title.value.trim() || (isForm ? 'Form title' : 'Event title');
-      const startsAt = form.startsAt?.value || '';
-      const when = isForm
-        ? (form.formUrl?.value.trim() || 'Form link')
-        : (startsAt
-          ? new Date(startsAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
-          : 'Date & start time');
-      const description = form.description.value.trim() || 'Your description will appear here.';
+      const kind = form.eventKind?.value || 'event';
+      const isForm = kind === 'form';
+      const isInitiative = kind === 'initiative';
+      const mode = form.attendanceMode?.value || 'rsvp';
+      const responseLabel = isInitiative
+        ? 'Initiative'
+        : isForm
+          ? 'Open form link'
+          : mode === 'none'
+            ? 'View only'
+            : mode === 'quick'
+              ? 'Are you coming? · Yes / No'
+              : 'Full RSVP form';
+      const eventTitle = form.title.value.trim()
+        || (isInitiative ? 'Initiative title' : isForm ? 'Form title' : 'Event title');
+      const startsAt = isForm ? (form.endsAt?.value || '') : (form.startsAt?.value || '');
+      const when = isInitiative
+        ? (form.linkUrl?.value.trim() || form.linkLabel?.value.trim() || 'External link')
+        : isForm
+          ? (form.formUrl?.value.trim() || 'Form link')
+          : (startsAt
+            ? new Date(startsAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
+            : 'Date & start time');
+      const description = (document.getElementById('adminDescValue')?.value || form.description?.value || '').trim()
+        || 'Your description will appear here.';
       const art = previewImage
         ? `<div class="featured-event-art"><img src="${esc(previewImage)}" alt="" /></div>`
         : '';
-      const cta = isForm
-        ? 'Open form'
-        : (form.attendanceMode?.value === 'quick' ? 'Are you coming?' : 'Reserve Your Spot');
-      const countdown = isForm
+      const cta = isInitiative
+        ? (form.linkLabel?.value.trim() || 'Learn more')
+        : isForm
+          ? 'Open form'
+          : mode === 'none'
+            ? 'View event'
+            : mode === 'quick'
+              ? 'Are you coming?'
+              : 'Reserve Your Spot';
+      const countdown = isForm || isInitiative || mode === 'none'
         ? ''
         : '<div class="featured-countdown" aria-label="Countdown preview"><div class="fc-cell"><b>00</b><span>days</span></div><div class="fc-cell"><b>00</b><span>hrs</span></div><div class="fc-cell"><b>00</b><span>min</span></div><div class="fc-cell"><b>00</b><span>sec</span></div></div>';
-      preview.innerHTML = `<span class="admin-preview-label">Preview · ${esc(responseLabel)}</span><article class="featured-event${!previewImage ? ' featured-event--no-art' : ''}">${art}<div class="featured-event-body"><span class="eyebrow">${isForm ? 'Featured Form' : 'Featured Event'}</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(when)}</p><p class="featured-copy">${descriptionPreviewHtml(description)}</p>${countdown}<button class="button button-dark" type="button">${cta}</button></div></article>`;
+      const eyebrow = isInitiative ? 'Featured Initiative' : isForm ? 'Featured Form' : 'Featured Event';
+      preview.innerHTML = `<span class="admin-preview-label">Preview · ${esc(responseLabel)}</span><article class="featured-event${!previewImage ? ' featured-event--no-art' : ''}">${art}<div class="featured-event-body"><span class="eyebrow">${eyebrow}</span><h3>${esc(eventTitle)}</h3><p class="featured-location">${esc(when)}</p><p class="featured-copy">${descriptionPreviewHtml(description)}</p>${countdown}<button class="button button-dark" type="button">${esc(cta)}</button></div></article>`;
     }
 
     bindDescriptionMentions(form, updatePreview);
+    bindCollabModal();
+    document.getElementById('adminAddCollab')?.addEventListener('click', openCollabModal);
+    content.querySelector('#adminCollabList')?.addEventListener('click', (event) => {
+      const remove = event.target.closest('[data-remove-collab]');
+      if (!remove) return;
+      initiativeDraft.collaborators.splice(Number(remove.dataset.removeCollab), 1);
+      document.getElementById('adminCollabList').innerHTML = collaboratorRowsHtml();
+    });
 
-    form?.querySelectorAll('input, textarea').forEach((field) => {
+    form.querySelectorAll('input, textarea').forEach((field) => {
       if (field.type !== 'file' && field.id !== 'adminMentionUrl') {
         field.addEventListener('input', updatePreview);
       }
-      if (field.type === 'radio') field.addEventListener('change', updatePreview);
+      if (field.type === 'radio') {
+        field.addEventListener('change', () => {
+          if (field.name !== 'eventKind') {
+            updatePreview();
+            return;
+          }
+          const nextKind = form.eventKind?.value || 'event';
+          const wasInitiative = activeKind === 'initiative';
+          const crossingInitiative = wasInitiative !== (nextKind === 'initiative');
+          activeKind = nextKind;
+          if (crossingInitiative) {
+            const keepDraft = {
+              suggestionId: initiativeDraft.suggestionId,
+              suggestionTitle: initiativeDraft.suggestionTitle,
+              suggestionDescription: initiativeDraft.suggestionDescription
+            };
+            if (nextKind === 'initiative') {
+              initiativeDraft = { collaborators: [], photos: [], ...keepDraft };
+            }
+            renderEvents(null, { kind: nextKind });
+            return;
+          }
+          if (nextKind === 'form' && form.startsAt?.value && form.endsAt && !form.endsAt.value) {
+            form.endsAt.value = form.startsAt.value;
+          }
+          if (nextKind === 'event' && form.endsAt?.value && form.startsAt && !form.startsAt.value) {
+            form.startsAt.value = form.endsAt.value;
+          }
+          syncKindUi();
+          updatePreview();
+        });
+      }
     });
-    form?.image.addEventListener('change', async () => {
+    form.image?.addEventListener('change', async () => {
       await applyImageFile(form.image.files[0]);
     });
     ['dragenter', 'dragover'].forEach((type) => {
@@ -591,7 +726,7 @@
       await applyImageFile(file);
     });
     updatePreview();
-    form?.addEventListener('submit', async (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const button = form.querySelector('button[type="submit"]');
       const output = form.querySelector('output');
@@ -607,36 +742,59 @@
           const upload = await post('/api/uploads', { filename: file.name, data: await readFile(file) });
           imageUrl = upload.url;
         }
-        const isForm = form.eventKind?.value === 'form';
-        const startsAt = fromDatetimeLocal(form.startsAt?.value || '');
-        if (!isForm && !startsAt) throw new Error('Set a date and start time.');
+        const kind = form.eventKind?.value || 'event';
         const description = (hidden?.value || form.description.value || '').trim();
         if (!description) throw new Error('Add a description.');
-        if (isForm && !String(form.formUrl?.value || '').trim()) throw new Error('Add a form link.');
-        await post('/api/events', {
-          id: form.id.value || undefined,
-          rsvpKey: form.rsvpKey.value.trim(),
-          title: form.title.value.trim(),
-          startsAt: startsAt || undefined,
-          location: form.location?.value.trim() || '',
-          sortOrder: Number(form.sortOrder.value || 0),
-          description,
-          imageUrl,
-          eventKind: isForm ? 'form' : 'event',
-          formUrl: form.formUrl?.value.trim() || '',
-          featured: Boolean(form.featured?.checked),
-          attendanceMode: form.attendanceMode?.value || 'rsvp',
-          suggestionId: form.suggestionId?.value || undefined,
-          published: true
-        });
-        initiativeDraft.suggestionId = null;
-        initiativeDraft.suggestionTitle = '';
-        initiativeDraft.suggestionDescription = '';
+
+        if (kind === 'initiative') {
+          await post('/api/initiatives', {
+            id: form.id.value || undefined,
+            suggestionId: form.suggestionId.value || undefined,
+            title: form.title.value.trim(),
+            description,
+            paragraph: form.paragraph?.value.trim() || '',
+            imageUrl,
+            linkUrl: form.linkUrl?.value.trim() || '',
+            linkLabel: form.linkLabel?.value.trim() || '',
+            sortOrder: Number(form.sortOrder.value) || 0,
+            published: true,
+            collaborators: (initiativeDraft.collaborators || []).filter((row) => row.igHandle || row.name),
+            photos: []
+          });
+          initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
+        } else {
+          const isForm = kind === 'form';
+          const startsAt = fromDatetimeLocal(isForm ? (form.endsAt?.value || '') : (form.startsAt?.value || ''));
+          if (!startsAt) throw new Error(isForm ? 'Set an end date.' : 'Set a date and start time.');
+          if (isForm && !String(form.formUrl?.value || '').trim()) throw new Error('Add a form link.');
+          const formUrl = isForm
+            ? (form.formUrl?.value.trim() || '')
+            : (form.eventFormUrl?.value.trim() || '');
+          await post('/api/events', {
+            id: form.id.value || undefined,
+            rsvpKey: form.rsvpKey.value.trim(),
+            title: form.title.value.trim(),
+            startsAt,
+            location: isForm ? '' : (form.location?.value.trim() || ''),
+            sortOrder: Number(form.sortOrder.value || 0),
+            description,
+            imageUrl,
+            eventKind: isForm ? 'form' : 'event',
+            formUrl,
+            featured: false,
+            attendanceMode: isForm ? 'none' : (form.attendanceMode?.value || 'rsvp'),
+            suggestionId: form.suggestionId?.value || undefined,
+            published: true
+          });
+          initiativeDraft.suggestionId = null;
+          initiativeDraft.suggestionTitle = '';
+          initiativeDraft.suggestionDescription = '';
+        }
         await loadAll();
         section = 'events';
         renderEvents();
       } catch (error) {
-        output.textContent = error.message || 'Could not save event.';
+        output.textContent = error.message || 'Could not save.';
       } finally {
         button.disabled = false;
       }
@@ -903,7 +1061,7 @@
                 ${item.meta ? `<span>${esc(item.meta)}</span>` : ''}
                 ${item.detail ? `<p>${esc(item.detail)}</p>` : ''}
                 ${item.answered ? `<p class="admin-idea-answered">${item.answeredEventId ? 'Resolved as an event.' : 'Already answered.'}</p>` : ''}
-                <button class="button button-dark" type="button" data-answer-suggestion="${item.id}">${item.answered ? 'Update answer' : 'Answer with event'}</button>
+                <button class="button button-dark" type="button" data-answer-suggestion="${item.id}">${item.answered ? 'Update answer' : 'Answer with listing'}</button>
               </div>
               <div><time>${fmt(item.date)}</time></div>
             </article>`;
@@ -1470,7 +1628,7 @@
     const labels = {
       overview: 'Overview',
       events: 'Events',
-      initiatives: 'Initiatives',
+      initiatives: 'Events',
       applications: 'Applications',
       gallery: 'Gallery',
       photoshoots: 'Photoshoots',
@@ -1479,13 +1637,13 @@
       bulletin: 'Bulletin',
       newsletters: 'Newsletter'
     };
+    if (section === 'initiatives') section = 'events';
     title.textContent = labels[section] || 'Admin';
     document.querySelectorAll('#adminSections [data-section]').forEach((button) => {
       button.classList.toggle('active', button.dataset.section === section);
     });
     if (section === 'overview') renderOverview();
     else if (section === 'events') renderEvents();
-    else if (section === 'initiatives') renderInitiatives();
     else if (section === 'applications') renderApplications();
     else if (section === 'gallery') renderGallery();
     else if (section === 'photoshoots') renderPhotoshoots();
@@ -1532,19 +1690,26 @@
     }
     const edit = event.target.closest('[data-edit-event]');
     if (edit) { renderEvents(edit.dataset.editEvent); return; }
-    if (event.target.closest('[data-new-event]')) { renderEvents(); return; }
+    if (event.target.closest('[data-new-event]')) {
+      initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
+      renderEvents();
+      return;
+    }
     const editInitiative = event.target.closest('[data-edit-initiative]');
-    if (editInitiative) { renderInitiatives(editInitiative.dataset.editInitiative); return; }
+    if (editInitiative) {
+      renderEvents(null, { kind: 'initiative', initiativeId: editInitiative.dataset.editInitiative });
+      return;
+    }
     if (event.target.closest('[data-new-initiative]')) {
       initiativeDraft = { collaborators: [], photos: [], suggestionId: null, suggestionTitle: '', suggestionDescription: '' };
-      renderInitiatives();
+      renderEvents(null, { kind: 'initiative' });
       return;
     }
     const deleteInitiative = event.target.closest('[data-delete-initiative]');
     if (deleteInitiative) {
       if (!(await askConfirm({ title: 'Remove this initiative?', copy: 'This permanently deletes the initiative, collaborators, and photos.', confirmLabel: 'Yes, remove' }))) return;
       await post(`/api/initiatives/${deleteInitiative.dataset.deleteInitiative}/delete`);
-      await loadAll(); section = 'initiatives'; render();
+      await loadAll(); section = 'events'; render();
       return;
     }
     const editTl = event.target.closest('[data-edit-timeline]');

@@ -201,13 +201,17 @@
 .events-hub-filters { justify-content: center; margin: 20px auto 0; max-width: 100%; }
 .events-hub-events { display: grid; gap: 28px; }
 .events-page #eventsFeaturedSecondary.featured-event,
-.events-page #eventsFeaturedSecondary.featured-event.featured-event--no-art {
+.events-page #eventsFeaturedSecondary.featured-event.featured-event--no-art,
+.events-page #eventsFeaturedTertiary.featured-event,
+.events-page #eventsFeaturedTertiary.featured-event.featured-event--no-art {
   grid-template-columns: minmax(0, 1.15fr) minmax(240px, 36%);
   grid-template-areas: "copy media";
   align-items: stretch;
 }
-.events-page #eventsFeaturedSecondary .featured-event-body { grid-area: copy; align-self: stretch; }
-.events-page #eventsFeaturedSecondary .featured-event-art {
+.events-page #eventsFeaturedSecondary .featured-event-body,
+.events-page #eventsFeaturedTertiary .featured-event-body { grid-area: copy; align-self: stretch; }
+.events-page #eventsFeaturedSecondary .featured-event-art,
+.events-page #eventsFeaturedTertiary .featured-event-art {
   grid-area: media;
   aspect-ratio: 4 / 5;
   width: 100%;
@@ -234,13 +238,15 @@
     margin: 0 auto;
     min-height: 0;
   }
-  .events-page #eventsFeaturedSecondary.featured-event {
+  .events-page #eventsFeaturedSecondary.featured-event,
+  .events-page #eventsFeaturedTertiary.featured-event {
     grid-template-columns: 1fr;
     grid-template-areas:
       "media"
       "copy";
   }
-  .events-page #eventsFeaturedSecondary .featured-event-art {
+  .events-page #eventsFeaturedSecondary .featured-event-art,
+  .events-page #eventsFeaturedTertiary .featured-event-art {
     aspect-ratio: 4 / 5;
     width: min(100%, 420px);
     margin: 0 auto;
@@ -3377,18 +3383,27 @@ body.board-page {
 }
 @media (max-width: 900px) {
   .home-upcoming-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .home-upcoming-event,
+  .home-upcoming-suggest,
+  .home-upcoming-newsletter,
+  .home-upcoming-timeline,
+  .home-upcoming-album {
+    width: 100%;
+    min-width: 0;
+    grid-area: unset;
+  }
+  .home-upcoming-cell.featured-event,
+  .home-upcoming-event.featured-event {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "event"
-      "suggest"
-      "newsletter"
-      "album";
   }
   .home-explore-grid {
-    grid-template-areas:
-      "aux"
-      "more";
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
   .home-suggest-feed-compact {
     grid-template-columns: 1fr;
