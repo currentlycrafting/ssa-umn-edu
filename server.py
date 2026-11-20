@@ -190,6 +190,7 @@ PAGE_ROUTES = {
     "/admin": "admin.html",
     "/suggest": "suggest.html",
     "/timeline": "timeline.html",
+    "/apply": "index.html",
 }
 
 # Retired pages redirect into the current site structure.
@@ -200,7 +201,7 @@ PAGE_REDIRECTS = {
     "/newsletter/studio": "/admin",
     "/bulletin": "/index.html",
     "/schedule": "/index.html",
-    "/interns": "/index.html#apply",
+    "/interns": "/apply",
     "/initiatives": "/events?view=initiatives",
     "/connections": "/index.html",
     "/photoshoots": "/gallery",

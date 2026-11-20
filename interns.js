@@ -35,17 +35,41 @@
     } catch (_) {}
   }
 
+  function isApplyPath() {
+    const path = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+    return path === '/apply';
+  }
+
+  function syncApplyUrl(open) {
+    const path = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+    if (open) {
+      if (!isApplyPath()) {
+        history.pushState({ internApply: true }, '', '/apply');
+      } else if (window.location.hash === '#apply') {
+        history.replaceState({ internApply: true }, '', '/apply');
+      }
+      return;
+    }
+    if (isApplyPath()) {
+      history.pushState({}, '', '/index.html');
+    } else if (window.location.hash === '#apply') {
+      history.replaceState({}, '', `${path}${window.location.search || ''}`);
+    }
+  }
+
   function openModal() {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
     showStep(1);
+    syncApplyUrl(true);
   }
 
   function closeModal() {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
+    syncApplyUrl(false);
   }
 
   function showStep(next) {
@@ -223,8 +247,16 @@
 
   loadCounts();
   setInterval(loadCounts, 60000);
-  if (window.location.hash === '#apply') openModal();
+  if (isApplyPath() || window.location.hash === '#apply') openModal();
   window.addEventListener('hashchange', () => {
     if (window.location.hash === '#apply') openModal();
+  });
+  window.addEventListener('popstate', () => {
+    if (isApplyPath() || window.location.hash === '#apply') openModal();
+    else if (modal.classList.contains('open')) {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+    }
   });
 })();
