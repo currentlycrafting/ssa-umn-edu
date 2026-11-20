@@ -19,7 +19,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="index.css?v=53" />
-  <link rel="stylesheet" href="site-pages.css?v=52" />
+  <link rel="stylesheet" href="site-pages.css?v=53" />
+  <link rel="stylesheet" href="timeline.css?v=9" />
   <script src="api.js"></script>
   <script>
     (function () {
@@ -36,13 +37,7 @@
       <img src="assets/brand/ssa-logo.png" alt="SSA logo" />
       <span>SSA</span>
     </a>
-    <div class="nav-links" id="navLinks">
-      <a href="index.html" class="active">Home</a>
-      <a href="/events">Events</a>
-      <a href="/games">Games</a>
-      <a href="/aux">Want The Aux</a>
-      <button type="button">Options</button>
-    </div>
+    <div class="nav-links" id="navLinks"></div>
     <div class="nav-tools">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Change theme"><span class="theme-icon" aria-hidden="true"></span></button>
       <a class="nav-admin" id="adminToggle" href="/admin" aria-label="Admin">
@@ -155,15 +150,17 @@
       </aside>
     </section>
 
-    <section class="section" id="timeline" data-reveal>
+    <section class="section home-timeline-section" id="timeline" data-reveal>
       <div class="section-head">
         <span class="eyebrow">SSA news</span>
         <h2>Latest on the timeline</h2>
-        <p>Recent moments, photos, and updates from the board.</p>
+        <p>The four most recent moments from SSA.</p>
       </div>
-      <div class="home-timeline-board" id="homeTimelineBoard" aria-live="polite">
-        <p class="tl-empty">Loading timeline…</p>
-      </div>
+      <section class="timeline-board home-timeline-board" aria-label="Recent SSA timeline">
+        <div class="timeline-board-list" id="homeTimelineBoard" aria-live="polite">
+          <p class="tl-empty">Loading timeline…</p>
+        </div>
+      </section>
     </section>
 
     <section class="section home-explore" id="explore">
@@ -421,12 +418,12 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=23"></script>
+  <script src="nav.js?v=24"></script>
   <script src="micro.js?v=2"></script>
   <script src="/events-render.js?v=32"></script>
   <script src="/rsvp.js?v=7"></script>
   <script src="index.js?v=24"></script>
-  <script src="/timeline.js?v=2"></script>
+  <script src="/timeline.js?v=3"></script>
   <script src="/interns.js?v=7"></script>
   <script src="/outreach.js?v=4"></script>
   <script src="/whats-new.js?v=8"></script>

@@ -2992,12 +2992,20 @@ body.board-page {
 .home-upcoming-newsletter,
 .home-upcoming-timeline { grid-area: timeline; }
 .home-upcoming-album { grid-area: album; }
-.home-timeline-board {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+.home-timeline-section {
+  position: relative;
 }
-.home-timeline-board .tl-item { margin: 0; }
+.home-timeline-board.timeline-board {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 8px 0 12px;
+}
+.home-timeline-board .timeline-board-list {
+  gap: clamp(28px, 5vw, 48px);
+}
+.home-timeline-board .tl-item {
+  width: min(380px, 88%);
+}
 .home-tl-snap {
   display: grid;
   gap: 6px;
@@ -3006,9 +3014,10 @@ body.board-page {
 }
 .home-tl-snap strong { font-size: 18px; letter-spacing: -.02em; }
 .tl-photo {
-  margin: 8px 0 0;
-  border-radius: 14px;
+  margin: 10px 0 4px;
+  border-radius: 10px;
   overflow: hidden;
+  border: 1px solid var(--line);
 }
 .tl-photo img {
   display: block;

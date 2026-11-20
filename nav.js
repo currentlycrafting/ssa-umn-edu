@@ -29,16 +29,9 @@
         <a href="/events">Events</a>
         <a href="/gallery">Gallery</a>
         <a href="/board">Board</a>
-        <div class="nav-options">
-          <button class="nav-options-toggle" type="button" aria-label="More pages" aria-expanded="false" aria-controls="navOptionsMenu">
-            <span class="nav-options-icon" aria-hidden="true"></span>
-          </button>
-          <div class="nav-options-menu" id="navOptionsMenu">
-            <a href="/suggest">Suggest an idea</a>
-            <a href="/aux">Want The Aux</a>
-            <a href="/donate">Donate</a>
-          </div>
-        </div>`;
+        <a href="/suggest">Suggest</a>
+        <a href="/aux">Want The Aux</a>
+        <a href="/donate">Donate</a>`;
     }
     nav.querySelectorAll('.nav-newsletter, .signup-menu, .nav-action.connect').forEach((el) => el.remove());
     nav.querySelectorAll('.theme-label').forEach((el) => el.remove());
@@ -89,30 +82,6 @@
     window.addEventListener('resize', () => { if (window.innerWidth > 900) close(); });
   }
 
-  const options = document.querySelector('.nav-options');
-  const optionsToggle = document.querySelector('.nav-options-toggle');
-  const closeOptions = () => {
-    options?.classList.remove('open');
-    optionsToggle?.setAttribute('aria-expanded', 'false');
-  };
-  optionsToggle?.addEventListener('click', (event) => {
-    event.stopPropagation();
-    const open = options.classList.toggle('open');
-    optionsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  options?.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.stopPropagation();
-      closeOptions();
-    });
-  });
-  document.addEventListener('click', (event) => {
-    if (options?.classList.contains('open') && !options.contains(event.target)) closeOptions();
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeOptions();
-  });
-
   document.querySelectorAll('[data-suggest-event]').forEach((btn) => {
     btn.addEventListener('click', (event) => {
       const type = btn.dataset.suggestType || 'campus';
@@ -127,16 +96,17 @@
     const href = a.getAttribute('href');
     if (!href || href.startsWith('#')) return;
     const normalized = href.replace(/\/$/, '');
-  if (path === normalized
-      || (path.endsWith('index.html') && normalized === '/index.html')
-      || (path === '/events' && normalized === '/events')) {
+    if (path === normalized
+      || ((path === '/' || path.endsWith('index.html')) && normalized === '/index.html')
+      || (path === '/events' && normalized === '/events')
+      || (path === '/gallery' && (normalized === '/gallery' || normalized.endsWith('/gallery.html')))
+      || (path === '/board' && normalized === '/board')
+      || (path === '/suggest' && normalized === '/suggest')
+      || (path === '/aux' && normalized === '/aux')
+      || (path === '/donate' && normalized === '/donate')) {
       a.classList.add('active');
     }
   });
-  if (['/donate', '/suggest', '/aux'].includes(path)) {
-    optionsToggle?.classList.add('active');
-  }
-  if (options?.querySelector('a.active')) optionsToggle?.classList.add('active');
 
   {
     const footerHtml = `

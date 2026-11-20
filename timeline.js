@@ -92,8 +92,9 @@
         if (!events.length) {
           homeBoard.innerHTML = '<p class="tl-empty">Timeline moments will appear here soon.</p>';
         } else {
-          homeBoard.innerHTML = events.slice(0, 6).map(cardHtml).join('');
-          requestAnimationFrame(() => observeCards(homeBoard));
+          homeBoard.innerHTML = events.slice(0, 4).map(cardHtml).join('');
+          // Condensed home section: show notes immediately in the sticky-note layout.
+          homeBoard.querySelectorAll('.tl-item').forEach((item) => item.classList.add('is-in'));
         }
       }
       if (list) {
