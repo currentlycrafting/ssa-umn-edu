@@ -7,11 +7,11 @@
   <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/index.css" />
   <link rel="stylesheet" href="/site-pages.css" />
   <script src="/api.js"></script>
-  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ssaTheme') === 'dark' ? 'dark' : 'light');</script>
+  <script>document.documentElement.setAttribute('data-theme', (function(t){return (t==='dark'||t==='cultural')?t:'light';})(localStorage.getItem('ssaTheme')));</script>
 </head>
 <body class="game-page">
   <nav class="nav page-nav" aria-label="Primary navigation">
@@ -48,7 +48,7 @@
 
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 Somali Student Association — University of Minnesota</small></div></footer>
   <script src="/motion.js"></script>
-  <script src="/nav.js?v=24"></script>
+  <script src="/nav.js?v=26"></script>
   <script src="/micro.js?v=2"></script>
   <script src="/daily.js"></script>
 </body>

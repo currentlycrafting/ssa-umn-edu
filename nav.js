@@ -1,9 +1,11 @@
 /* Shared SSA navigation — compact links, theme, modal triggers. */
 (function () {
-  const THEMES = ['light', 'dark'];
+  const THEMES = ['light', 'dark', 'cultural'];
 
   function themeLabel(name) {
-    return name === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    if (name === 'light') return 'Switch to dark mode';
+    if (name === 'dark') return 'Switch to cultural theme';
+    return 'Switch to light mode';
   }
 
   function applyTheme(name) {
@@ -27,6 +29,7 @@
       links.innerHTML = `
         <a href="/index.html">Home</a>
         <a href="/events">Events</a>
+        <a href="/timeline">Timeline</a>
         <a href="/gallery">Gallery</a>
         <a href="/board">Board</a>
         <a href="/suggest">Suggest</a>

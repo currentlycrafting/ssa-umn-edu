@@ -189,6 +189,7 @@ PAGE_ROUTES = {
     "/gallery": "gallery.html",
     "/admin": "admin.html",
     "/suggest": "suggest.html",
+    "/timeline": "timeline.html",
 }
 
 # Retired pages redirect into the current site structure.
@@ -201,7 +202,6 @@ PAGE_REDIRECTS = {
     "/schedule": "/index.html",
     "/interns": "/index.html#apply",
     "/initiatives": "/events?view=initiatives",
-    "/timeline": "/index.html#timeline",
     "/connections": "/index.html",
     "/photoshoots": "/gallery",
 }

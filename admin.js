@@ -199,8 +199,7 @@
         <label data-event-only ${isForm || isInitiative ? 'hidden' : ''}>Date &amp; start time<input type="datetime-local" name="startsAt" value="${esc(startsAt)}" /></label>
         <label data-form-only ${isForm ? '' : 'hidden'}>End Date<input type="datetime-local" name="endsAt" value="${esc(startsAt)}" /></label>
         <label data-event-only ${isForm || isInitiative ? 'hidden' : ''}>Location<input name="location" value="${esc(event.location || '')}" placeholder="Coffman, Northrop lawn…" /></label>
-        <label data-form-only ${isForm ? '' : 'hidden'}>Form link<input type="url" name="formUrl" value="${esc(event.formUrl || '')}" placeholder="https://forms.gle/…" /></label>
-        <label data-initiative-only ${isInitiative ? '' : 'hidden'}>External link<input name="linkUrl" value="${esc(initiative.linkUrl || '')}" placeholder="https://…" /></label>
+        <label>Link<input type="url" name="link" value="${esc(isInitiative ? (initiative.linkUrl || '') : (event.formUrl || ''))}" placeholder="https://…" ${isForm ? 'required' : ''} /></label>
         <label data-initiative-only ${isInitiative ? '' : 'hidden'}>Link label<input name="linkLabel" value="${esc(initiative.linkLabel || '')}" placeholder="Learn more" /></label>
       </div>
       <label class="admin-field-label">Cover image</label>
@@ -241,7 +240,6 @@
         <label><input type="radio" name="attendanceMode" value="quick" ${mode === 'quick' ? 'checked' : ''} /><span>Quick Yes / No</span></label>
         <label><input type="radio" name="attendanceMode" value="none" ${mode === 'none' ? 'checked' : ''} /><span>View event only</span></label>
       </div><small>Featured listings are chosen automatically by soonest date.</small></fieldset>
-      <label data-event-only ${isForm || isInitiative ? 'hidden' : ''}>Optional form / RSVP link<input type="url" name="eventFormUrl" value="${esc(event.formUrl || '')}" placeholder="https://forms.gle/… (optional)" /></label>
       <div class="admin-event-preview" id="adminEventPreview" data-image="${esc(previewImage)}"></div>
       <div class="admin-editor-actions"><button class="button button-dark" type="submit">${(isInitiative ? initiative.id : event.id) ? 'Save changes' : isInitiative ? 'Publish initiative' : answering ? 'Publish' : 'Publish'}</button><output></output></div>
     </form>`;
@@ -600,7 +598,7 @@
       form.querySelectorAll('[data-initiative-only]').forEach((el) => { el.hidden = !isInitiative; });
       if (form.startsAt) form.startsAt.required = isEvent;
       if (form.endsAt) form.endsAt.required = isForm;
-      if (form.formUrl) form.formUrl.required = isForm;
+      if (form.link) form.link.required = isForm;
       if (form.description) form.description.required = !isInitiative;
       const submit = form.querySelector('button[type="submit"]');
       if (submit && !form.id.value) {
@@ -627,10 +625,11 @@
       const eventTitle = form.title.value.trim()
         || (isInitiative ? 'Initiative title' : isForm ? 'Form title' : 'Event title');
       const startsAt = isForm ? (form.endsAt?.value || '') : (form.startsAt?.value || '');
+      const linkValue = form.link?.value.trim() || '';
       const when = isInitiative
-        ? (form.linkUrl?.value.trim() || form.linkLabel?.value.trim() || 'External link')
+        ? (linkValue || form.linkLabel?.value.trim() || 'Link')
         : isForm
-          ? (form.formUrl?.value.trim() || 'Form link')
+          ? (linkValue || 'Link')
           : (startsAt
             ? new Date(startsAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
             : 'Date & start time');
@@ -643,11 +642,13 @@
         ? (form.linkLabel?.value.trim() || 'Learn more')
         : isForm
           ? 'Open form'
-          : mode === 'none'
-            ? 'View event'
-            : mode === 'quick'
-              ? 'Are you coming?'
-              : 'Reserve Your Spot';
+          : linkValue
+            ? 'Open link'
+            : mode === 'none'
+              ? 'View event'
+              : mode === 'quick'
+                ? 'Are you coming?'
+                : 'Reserve Your Spot';
       const countdown = isForm || isInitiative || mode === 'none'
         ? ''
         : '<div class="featured-countdown" aria-label="Countdown preview"><div class="fc-cell"><b>00</b><span>days</span></div><div class="fc-cell"><b>00</b><span>hrs</span></div><div class="fc-cell"><b>00</b><span>min</span></div><div class="fc-cell"><b>00</b><span>sec</span></div></div>';
@@ -746,6 +747,7 @@
         const description = (hidden?.value || form.description.value || '').trim();
         if (!description) throw new Error('Add a description.');
 
+        const linkValue = form.link?.value.trim() || '';
         if (kind === 'initiative') {
           await post('/api/initiatives', {
             id: form.id.value || undefined,
@@ -754,7 +756,7 @@
             description,
             paragraph: form.paragraph?.value.trim() || '',
             imageUrl,
-            linkUrl: form.linkUrl?.value.trim() || '',
+            linkUrl: linkValue,
             linkLabel: form.linkLabel?.value.trim() || '',
             sortOrder: Number(form.sortOrder.value) || 0,
             published: true,
@@ -766,10 +768,8 @@
           const isForm = kind === 'form';
           const startsAt = fromDatetimeLocal(isForm ? (form.endsAt?.value || '') : (form.startsAt?.value || ''));
           if (!startsAt) throw new Error(isForm ? 'Set an end date.' : 'Set a date and start time.');
-          if (isForm && !String(form.formUrl?.value || '').trim()) throw new Error('Add a form link.');
-          const formUrl = isForm
-            ? (form.formUrl?.value.trim() || '')
-            : (form.eventFormUrl?.value.trim() || '');
+          if (isForm && !linkValue) throw new Error('Add a link.');
+          const formUrl = linkValue;
           await post('/api/events', {
             id: form.id.value || undefined,
             rsvpKey: form.rsvpKey.value.trim(),

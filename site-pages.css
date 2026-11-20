@@ -2989,14 +2989,12 @@ body.board-page {
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   grid-template-areas:
     "event suggest"
-    "timeline album";
+    "album album";
   gap: 12px;
   align-items: stretch;
 }
 .home-upcoming-event { grid-area: event; min-height: 100%; }
 .home-upcoming-suggest { grid-area: suggest; }
-.home-upcoming-newsletter,
-.home-upcoming-timeline { grid-area: timeline; }
 .home-upcoming-album { grid-area: album; }
 .home-timeline-section {
   position: relative;
@@ -3012,13 +3010,39 @@ body.board-page {
 .home-timeline-board .tl-item {
   width: min(380px, 88%);
 }
+.home-tl-preview-list {
+  display: grid;
+  gap: 10px;
+}
 .home-tl-snap {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   text-decoration: none;
   color: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in oklch, var(--surface) 88%, var(--blue-2));
+  transition: border-color .2s ease, transform .2s ease;
 }
-.home-tl-snap strong { font-size: 18px; letter-spacing: -.02em; }
+.home-tl-snap:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+.home-tl-snap .eyebrow {
+  margin: 0;
+  font-size: 11px;
+}
+.home-tl-snap strong { font-size: 15px; letter-spacing: -.02em; line-height: 1.25; }
+.home-tl-snap span:last-child {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+@media (max-width: 900px) {
+  .home-tl-preview-list { gap: 8px; }
+  .home-tl-snap { padding: 9px 11px; }
+}
 .tl-photo {
   margin: 10px 0 4px;
   border-radius: 10px;
@@ -3268,6 +3292,15 @@ body.board-page {
   background: var(--accent);
   color: oklch(22% 0.06 264);
 }
+[data-theme="cultural"] .home-upcoming-event .home-event-ribbon {
+  background: var(--accent);
+  color: oklch(22% 0.05 30);
+}
+[data-theme="cultural"] .interest-chip.active {
+  background: var(--accent);
+  color: oklch(22% 0.05 30);
+  border-color: var(--accent);
+}
 .home-upcoming-cell-head {
   display: flex;
   align-items: baseline;
@@ -3389,8 +3422,6 @@ body.board-page {
   }
   .home-upcoming-event,
   .home-upcoming-suggest,
-  .home-upcoming-newsletter,
-  .home-upcoming-timeline,
   .home-upcoming-album {
     width: 100%;
     min-width: 0;

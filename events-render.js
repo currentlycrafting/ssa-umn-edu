@@ -1033,7 +1033,7 @@
       renderFeaturedInitiative(document.getElementById('eventsFeaturedTertiary'), hubFeaturedInitiative);
       applyHubViewFilter();
       if (!items.length) {
-        list.innerHTML = '<p class="home-album-empty">Initiatives will show up here once the board publishes them.</p>';
+        list.innerHTML = '';
         return;
       }
       list.innerHTML = items.map(initiativeCard).join('');

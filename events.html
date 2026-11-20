@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>What&apos;s happening — SSA</title>
   <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/index.css?v=53" />
-  <link rel="stylesheet" href="/site-pages.css?v=54" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/index.css?v=56" />
+  <link rel="stylesheet" href="/site-pages.css?v=56" />
   <script src="/api.js"></script>
   <script>
-    (function () {
-      var stored = localStorage.getItem('ssaTheme');
-      var theme = stored === 'dark' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
+    (function(){var t=localStorage.getItem('ssaTheme');document.documentElement.setAttribute('data-theme',(t==='dark'||t==='cultural')?t:'light');})();
   </script>
 </head>
 <body class="events-page">
@@ -42,8 +38,6 @@
       <p>Join the SSA board through our rotational internship. Deadline November 27th at 11:59 PM — <strong data-app-count="total">—</strong> people have applied so far.</p>
       <div class="ssa-promo-actions">
         <a class="button button-dark handdrawn" href="/index.html#apply">Apply now</a>
-        <a class="button button-line handdrawn" href="/events?view=initiatives">Browse initiatives</a>
-        <a class="button button-line handdrawn" href="/suggest">Suggest an idea</a>
       </div>
     </aside>
   <div class="events-hub-events" id="eventsHubEvents" data-hub-section="all events forms">
@@ -51,7 +45,6 @@
     <aside class="featured-event events-featured-secondary" id="eventsFeaturedSecondary" aria-label="Featured form" data-reveal hidden></aside>
     <aside class="featured-event events-featured-tertiary" id="eventsFeaturedTertiary" aria-label="Featured initiative" data-reveal hidden></aside>
     <div class="event-grid" id="eventsGrid" data-reveal-group></div>
-    <p class="events-hub-suggest" style="text-align:center;margin-top:32px" data-reveal data-hub-section="all events forms"><a class="button button-line" href="/suggest">Suggest an event</a></p>
   </div>
     <section class="initiatives-list events-hub-initiatives" id="initiativesList" data-reveal data-hub-section="all initiatives" aria-live="polite">
       <p class="home-album-empty">Loading initiatives…</p>
@@ -159,8 +152,8 @@
   </div>
   <footer class="footer"><div class="footer-card"><a class="footer-brand" href="/index.html"><img src="/assets/brand/ssa-logo.png" alt="" />SSA</a><small>© 2026 SSA — U of M</small></div></footer>
   <script src="/motion.js"></script>
-  <script src="/nav.js?v=24"></script>
-  <script src="/events-render.js?v=34"></script>
+  <script src="/nav.js?v=26"></script>
+  <script src="/events-render.js?v=35"></script>
   <script src="/rsvp.js?v=7"></script>
   <script>
     (function () {

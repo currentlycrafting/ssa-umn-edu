@@ -73,6 +73,65 @@
 [data-theme="dark"] .social-row a:hover { background: var(--accent); color: oklch(22% 0.06 264); border-color: var(--accent); }
 [data-theme="dark"] .tile.selected { background: var(--accent); color: oklch(22% 0.06 264); }
 
+/* Cultural theme — Hido iyo Dhaqan reds, orange, gold */
+[data-theme="cultural"] {
+  --paper: oklch(28% 0.085 28);
+  --paper-soft: oklch(32% 0.09 30);
+  --surface: oklch(34% 0.08 28);
+  --surface-2: oklch(30% 0.078 26);
+  --glass: rgba(80, 18, 16, .55);
+  --glass-strong: rgba(58, 12, 12, .9);
+  --ink: oklch(96% 0.02 90);
+  --ink-2: oklch(90% 0.035 85);
+  --muted: oklch(78% 0.05 70);
+  --line: oklch(42% 0.07 28);
+  --line-strong: oklch(55% 0.1 45);
+  --blue: oklch(72% 0.15 55);
+  --blue-2: oklch(40% 0.09 30);
+  --blue-3: oklch(78% 0.16 70);
+  --accent: oklch(74% 0.17 55);
+  --green: oklch(72% 0.12 145);
+  --hero-fade: rgba(72, 14, 14, .88);
+  --hero-fade-2: rgba(72, 14, 14, .4);
+  --hero-stripe: rgba(244, 124, 32, .18);
+  --hero-base: oklch(30% 0.09 28);
+  --shadow: 0 24px 80px rgba(40, 0, 0, .55);
+  --shadow-soft: 0 12px 40px rgba(40, 0, 0, .4);
+}
+[data-theme="cultural"] .button-dark,
+[data-theme="cultural"] .nav-action.connect {
+  background: var(--accent);
+  color: oklch(22% 0.05 30);
+  border-color: var(--accent);
+}
+[data-theme="cultural"] .button-dark:hover,
+[data-theme="cultural"] .nav-action.connect:hover { box-shadow: 0 14px 44px rgba(40, 0, 0, .5); }
+[data-theme="cultural"] .nav-links a:hover,
+[data-theme="cultural"] .nav-links a.active { background: var(--accent); color: oklch(22% 0.05 30); }
+[data-theme="cultural"] .nav-links a:hover::before,
+[data-theme="cultural"] .nav-links a.active::before { background: var(--accent); }
+[data-theme="cultural"] .side-nav a.active .dot { background: var(--accent); }
+[data-theme="cultural"] .micro-button.done,
+[data-theme="cultural"] .checklist-steps button.done { background: var(--accent); color: oklch(22% 0.05 30); }
+[data-theme="cultural"] .president-links a:hover,
+[data-theme="cultural"] .social-row a:hover { background: var(--accent); color: oklch(22% 0.05 30); border-color: var(--accent); }
+[data-theme="cultural"] .tile.selected { background: var(--accent); color: oklch(22% 0.05 30); }
+[data-theme="cultural"] .theme-toggle .theme-icon {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  background:
+    linear-gradient(180deg,
+      #e6a528 0 18%,
+      #e41f18 18% 36%,
+      #f47c20 36% 54%,
+      #8b1a1a 54% 72%,
+      #e6a528 72% 86%,
+      #d8211e 86% 100%);
+  box-shadow: none;
+  transform: rotate(12deg);
+}
+
 
 html {
   scroll-behavior: smooth;
@@ -420,6 +479,10 @@ button, input, textarea { font: inherit; }
   filter: invert(1) hue-rotate(185deg) brightness(.82) saturate(1.05);
   opacity: .22;
 }
+[data-theme="cultural"] .hero::before {
+  filter: sepia(1) saturate(2.4) hue-rotate(-25deg) brightness(.7);
+  opacity: .2;
+}
 /* White center fade that also sits behind the logo, keeping everything readable */
 .hero::after {
   content: "";
@@ -506,6 +569,7 @@ button, input, textarea { font: inherit; }
 @media (max-width: 760px) { .hero-arrow { display: none; } }
 .blue-word { color: oklch(58% 0.17 255); }
 [data-theme="dark"] .blue-word { color: oklch(70% 0.15 250); }
+[data-theme="cultural"] .blue-word { color: oklch(78% 0.15 70); }
 .hero h1 .word, .hero h1 .blue-word, .hero h1 .scribble { margin: 0 0.12em; }
 .hero h1 .word:first-child { margin-left: 0; }
 @keyframes heroFloat {
@@ -915,6 +979,7 @@ p { color: var(--muted); }
 .micro-button.done { background: var(--ink); color: var(--paper); }
 .micro-button.going { background: var(--ink); color: var(--paper); }
 [data-theme="dark"] .micro-button.going { background: var(--accent); color: oklch(22% 0.06 264); }
+[data-theme="cultural"] .micro-button.going { background: var(--accent); color: oklch(22% 0.05 30); }
 
 /* ---------- Carousel ---------- */
 .carousel-section {
@@ -2666,6 +2731,11 @@ output { min-height: 20px; color: var(--green); font-weight: 750; }
   filter: invert(1) hue-rotate(185deg) brightness(.82) saturate(1.05);
   opacity: .22;
 }
+[data-theme="cultural"] .game-page::before,
+[data-theme="cultural"] .events-page::before {
+  filter: sepia(1) saturate(2.4) hue-rotate(-25deg) brightness(.7);
+  opacity: .18;
+}
 .game-page main, .game-page .footer,
 .events-page main, .events-page .footer { position: relative; z-index: 1; }
 .game-page .nav,
@@ -3968,6 +4038,16 @@ button.event-going--past.rsvp-attendees-button:hover {
   border-color: var(--accent);
 }
 [data-theme="dark"] .event-card--past .rsvp-attendees-button.micro-button {
+  background: transparent;
+  color: var(--paper);
+  border-color: color-mix(in oklch, var(--paper) 55%, transparent);
+}
+[data-theme="cultural"] .event-card--past .feedback-button {
+  background: var(--accent);
+  color: oklch(22% 0.05 30);
+  border-color: var(--accent);
+}
+[data-theme="cultural"] .event-card--past .rsvp-attendees-button.micro-button {
   background: transparent;
   color: var(--paper);
   border-color: color-mix(in oklch, var(--paper) 55%, transparent);

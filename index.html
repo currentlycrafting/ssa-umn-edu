@@ -18,16 +18,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="index.css?v=53" />
-  <link rel="stylesheet" href="site-pages.css?v=54" />
-  <link rel="stylesheet" href="timeline.css?v=9" />
+  <link rel="stylesheet" href="index.css?v=56" />
+  <link rel="stylesheet" href="site-pages.css?v=56" />
   <script src="api.js"></script>
   <script>
-    (function () {
-      var stored = localStorage.getItem('ssaTheme');
-      var theme = stored === 'dark' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
+    (function(){var t=localStorage.getItem('ssaTheme');document.documentElement.setAttribute('data-theme',(t==='dark'||t==='cultural')?t:'light');})();
   </script>
 </head>
 <body>
@@ -50,7 +45,6 @@
   <nav class="side-nav" id="sideNav" aria-label="Section navigation">
     <a href="#hero" data-section="hero" class="active"><span class="dot" aria-hidden="true"></span><span class="side-label">Home</span></a>
     <a href="#events" data-section="events"><span class="dot" aria-hidden="true"></span><span class="side-label">Upcoming</span></a>
-    <a href="#timeline" data-section="timeline"><span class="dot" aria-hidden="true"></span><span class="side-label">Timeline</span></a>
     <a href="#demo" data-section="demo"><span class="dot" aria-hidden="true"></span><span class="side-label">By the numbers</span></a>
   </nav>
 
@@ -92,7 +86,7 @@
       <div class="section-head" id="featuredSectionHead">
         <span class="eyebrow">Upcoming</span>
         <h2>What&apos;s happening next</h2>
-        <p>Next event, fresh ideas, recent timeline news, and a peek at the album.</p>
+        <p>Next event, fresh ideas, and a peek at the album.</p>
       </div>
 
       <div class="home-upcoming-grid">
@@ -106,14 +100,6 @@
           <div class="home-suggest-feed home-suggest-feed-compact" id="homeSuggestFeed" aria-live="polite">
             <p class="home-suggest-empty">Loading ideas…</p>
           </div>
-        </article>
-
-        <article class="home-upcoming-cell home-upcoming-timeline" id="homeTimelineSnap" aria-live="polite">
-          <div class="home-upcoming-cell-head">
-            <span class="eyebrow">Timeline</span>
-            <a href="#timeline">More →</a>
-          </div>
-          <div id="homeTimelinePreview"><p class="home-newsletter-empty">Loading news…</p></div>
         </article>
 
         <article class="home-upcoming-cell home-upcoming-album">
@@ -132,6 +118,7 @@
         <button class="button button-dark handdrawn" type="button" data-open-intern-apply>Internship</button>
         <a class="button button-dark handdrawn" href="/suggest">Suggest an idea</a>
         <a class="button button-dark handdrawn" href="/gallery">Photo Album</a>
+        <a class="button button-dark handdrawn" href="/timeline">Timeline</a>
         <a class="button button-dark handdrawn" href="/aux">Want the Aux</a>
         <a class="button button-line handdrawn" href="/events?view=initiatives">Initiatives</a>
         <button class="button button-line handdrawn" type="button" data-open-outreach>Other ways to reach us</button>
@@ -148,19 +135,6 @@
           <a class="button button-line handdrawn" href="/events">See what&apos;s happening</a>
         </div>
       </aside>
-    </section>
-
-    <section class="section home-timeline-section" id="timeline" data-reveal>
-      <div class="section-head">
-        <span class="eyebrow">SSA news</span>
-        <h2>Latest on the timeline</h2>
-        <p>The four most recent moments from SSA.</p>
-      </div>
-      <section class="timeline-board home-timeline-board" aria-label="Recent SSA timeline">
-        <div class="timeline-board-list" id="homeTimelineBoard" aria-live="polite">
-          <p class="tl-empty">Loading timeline…</p>
-        </div>
-      </section>
     </section>
 
     <section class="section home-explore" id="explore">
@@ -266,8 +240,7 @@
         <a href="index.html#demo">About Us</a>
         <a href="/gallery">Gallery</a>
         <a href="/suggest">Suggest</a>
-        <a href="/suggest">Suggest</a>
-        <a href="#timeline">Timeline</a>
+        <a href="/timeline">Timeline</a>
         <a href="/board">Board</a>
       </nav>
       <div class="social-row">
@@ -418,12 +391,11 @@
   </div>
 
   <script src="motion.js"></script>
-  <script src="nav.js?v=24"></script>
+  <script src="nav.js?v=26"></script>
   <script src="micro.js?v=2"></script>
-  <script src="/events-render.js?v=34"></script>
+  <script src="/events-render.js?v=35"></script>
   <script src="/rsvp.js?v=7"></script>
   <script src="index.js?v=24"></script>
-  <script src="/timeline.js?v=3"></script>
   <script src="/interns.js?v=7"></script>
   <script src="/outreach.js?v=4"></script>
   <script src="/whats-new.js?v=8"></script>

@@ -48,11 +48,19 @@
   }
 
   function previewHtml(event) {
-    return `<a class="home-tl-snap" href="#timeline">
+    return `<a class="home-tl-snap" href="/timeline">
       <span class="eyebrow">${esc(event.pill || 'Update')}</span>
       <strong>${esc(event.title)}</strong>
       <span>${esc(event.dateLabel || '')}</span>
     </a>`;
+  }
+
+  function previewListHtml(events) {
+    const items = (events || []).slice(0, 5);
+    if (!items.length) {
+      return '<p class="home-newsletter-empty">Timeline updates will land here.</p>';
+    }
+    return `<div class="home-tl-preview-list">${items.map(previewHtml).join('')}</div>`;
   }
 
   function observeCards(root) {
@@ -84,9 +92,7 @@
       const data = await api('/api/timeline?newest=1');
       const events = data.events || [];
       if (homePreview) {
-        homePreview.innerHTML = events[0]
-          ? previewHtml(events[0])
-          : '<p class="home-newsletter-empty">Timeline updates will land here.</p>';
+        homePreview.innerHTML = previewListHtml(events);
       }
       if (homeBoard) {
         if (!events.length) {

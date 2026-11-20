@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Photoshoots — SSA</title>
   <link rel="icon" type="image/png" href="/assets/brand/ssa-logo.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/index.css?v=49" />
   <link rel="stylesheet" href="/site-pages.css?v=43" />
   <script src="/api.js"></script>
   <script>
-    (function () {
-      var stored = localStorage.getItem('ssaTheme');
-      var theme = stored === 'dark' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', theme);
-    })();
+    (function(){var t=localStorage.getItem('ssaTheme');document.documentElement.setAttribute('data-theme',(t==='dark'||t==='cultural')?t:'light');})();
   </script>
 </head>
 <body class="photoshoot-page">
@@ -33,7 +29,7 @@
     <div id="photoshootList" aria-live="polite"></div>
   </main>
   <script src="/motion.js"></script>
-  <script src="/nav.js?v=24"></script>
+  <script src="/nav.js?v=26"></script>
   <script src="/photoshoots.js?v=3"></script>
 </body>
 </html>
